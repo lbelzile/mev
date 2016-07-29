@@ -1,0 +1,64 @@
+mev v1.7 (Release date: 2016-06-07)
+==============
+* fixed an error in the acceptance rate for the gp.fit MCMC
+New: 
+* ext.index Extremal index estimates based on interexceedance and gap times
+* infomat.test Information matrix test of Suveges and Davison (2010)
+
+mev v1.6.1 (Release date: 2016-03-15)
+==============
+* fixed an error in the normal sampler (affecting version 1.5 and 1.6)
+All simulations of Brown-Resnick or extremal-Student were affected by the mistake 
+
+mev v1.6 (Release date: 2016-03-08)
+==============
+
+New:
+*Empirical and Euclidean likelihood estimation of spectral measure
+Changes: 
+*gp.fit ample changes to the function, in particular a fix for the printing method, handling of errors and inclusion of the Zhang (2010) method and MCMC algorithm for the latter. This function is still preliminary and may updated in the nearby future to include further possibilities.
+
+mev v1.5 (Release date: 2016-02-16)
+==============
+
+New: 
+* Wadsworth (2015) Technometrics's proposal for threshold selection based on NHPP superposition
+* Northrop & Coleman diagnostic (2014) Extremes for shape equality and p-value path
+
+mev v1.4 (not on CRAN)
+==============
+Changes:
+
+* fixed error for simulation on grids
+* check for marginal mean constraint for the Dirichlet mixture now has tolerance
+
+mev v1.3 (Release date: 2015-10-05)
+==============
+
+Changes:
+
+* Extremal Dirichlet model now implemented with "ef"
+* Added Smith and asymmetric (negative) logistic model (differs from bivariate setting for aneglog, given that the later is not a valid DF according to Stephenson).
+* rmev can now return arrays for random fields on regular grids ("hr","exstud" and "smith" models).
+
+
+
+mev v1.2 (Release date: 2015-08-23)
+==============
+
+Changes:
+
+* Added the negative bilogistic and the scaled Dirichlet models.
+* Extremal Dirichlet model implemented with "sm" only.
+
+mev v1.1 (Release date: 2015-08-19)
+==============
+
+Changes:
+
+* Implementation of sampler from spectral distribution, moving rdirspec and rbilogspec to background along with other functions.
+* Fixed a typo in rPextstud setting arguments of newly created arma vector to zero
+
+mev v1.0 (Release date: 2014-08-16)
+==============
+

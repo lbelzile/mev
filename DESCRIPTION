@@ -1,0 +1,11 @@
+Package: mev
+Type: Package
+Title: Multivariate Extreme Value Distributions
+Version: 1.7
+Date: 2016-06-07
+Authors@R: c(person(given="Leo", family="Belzile", role = c("aut", "cre"), email = "leo.belzile@epfl.ch"), person(given="Jennifer L.", family="Wadsworth", role=c("aut")), person(given="Paul J.", family="Northrop", role=c("aut")), person(given="Scott D.", family="Grimshaw", role=c("aut")), person(given="Jin.", family="Zhang", role=c("ctb")), person(given="Michael A.", family="Newton", role=c("ctb")), person(given="Art", family="Owen", role=c("ctb")))
+Description: Exact simulation from max-stable processes and multivariate extreme value distributions for various parametric models. Threshold selection methods.
+License: GPL-3
+Imports: stats, Rcpp (>= 0.11.6), ismev, evd
+LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 5.0.1
