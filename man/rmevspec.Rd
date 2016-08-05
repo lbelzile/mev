@@ -32,7 +32,7 @@ the Brown-Resnick and extremal Student max-stable process (which generate the Hu
 an \code{n} by \code{d} exact sample from the corresponding multivariate extreme value model
 }
 \description{
-Generate from \eqn{Q_i}{Qi}, the spectral measure of a given multivariate extreme value model
+Generate from \eqn{Q_i}{Qi}, the spectral measure of a given multivariate extreme value model based on the L1 norm.
 }
 \details{
 The vector param differs depending on the model
@@ -46,6 +46,10 @@ The vector param differs depending on the model
  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
 }
+}
+\section{Note}{
+
+ This functionality can be useful to generate for example Pareto processes (by multiplying by a standard Pareto variable the output). Other functionals are not currently implemented.
 }
 \examples{
 set.seed(1)

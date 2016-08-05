@@ -36,7 +36,7 @@
 #' @references Northrop & Coleman (2014). Improved threshold diagnostic plots for extreme value
 #' analyses, \emph{Extremes}, \bold{17}(2), 289--303.
 #' @references Wadsworth & Tawn (2012). Likelihood-based procedures for threshold
-#' diagnostics and uncertainty in extreme value modelling, \emph{J. R. Statist. Soc. B}, \bold{74}(3), 543-???567.
+#' diagnostics and uncertainty in extreme value modelling, \emph{J. R. Statist. Soc. B}, \bold{74}(3), 543--567.
 #' @export
 #' @author Paul J. Northrop and Claire L. Coleman
 #' @return a plot of P-values for the test at the different thresholds \code{u}
@@ -891,7 +891,7 @@ gpd.vcov.mat <- function(data, scale, shape, loc=NULL){
 #'
 #' Function for estimating parameters \code{k} and \code{a} for a random sample from a GPD.
 #'
-#' @author Paul J. Northrop and Claire L. Coleman
+#' @author Scott D. Grimshaw
 #' @param x sample values
 #' @return a list with the maximum likelihood estimates of components \code{a} and \code{k}
 .gpd_grimshaw <- function(x) {
@@ -1418,7 +1418,7 @@ function(x) {# x: sample data from the GPD
 
 
 
-#' Peaks-Over-Threshold Modelling using the Generalized Pareto Distribution
+#' Peaks-over-threshold modelling using the generalized Pareto distribution
 #'
 #' Numerical optimization of the Generalized Pareto distribution over a
 #' high threshold.
@@ -1435,7 +1435,7 @@ function(x) {# x: sample data from the GPD
 #' The approximate Bayesian methods (\code{"zs"} and \code{"zhang"}) are extracted respectively from Zhang and Stephens (2009) and Zhang (2010) and consists of a approximate posterior mean calculated via importance
 #' sampling assuming a GPD prior is placed on the parameter of the profile likelihood.
 #' @note Some of the internal functions (which are hidden from the user) allow for modelling of the parameters using covariates. This is not currently implemented within \code{gp.fit}, but users can call internal functions should they wish to use these features.
-#' @author Paul J. Northrop and Claire L. Coleman for the frequentist functions.
+#' @author Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the other frequentist functions.
 #' Zhang and Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for the wrapper and MCMC samplers.
 #'
 #' @references Davison, A.C. (1984). Modelling excesses over high thresholds, with an application, in

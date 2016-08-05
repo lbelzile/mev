@@ -178,7 +178,7 @@ ext.index <- function(x, q=0.95, method=c("wls","mle","intervals"), plot=FALSE){
   threshold <- quantile(x, q)
   q <- sort(q)
   #Main function, to be called recursively
-  extmethods <- function(x=x, threshold=thresh[1], method=method){
+  extmethods <- function(x=x, threshold=threshold[1], method=method){
     #The gap of exceedances
     exceeds <- c(diff(sapply(threshold, function(thresh){which(x>thresh)})))-1
     if(length(exceeds) < 50){

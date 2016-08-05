@@ -284,7 +284,10 @@ rmev <-function(n, d, param, asy, sigma,
 
 #' Random samples from spectral distributions of multivariate extreme value models.
 #'
-#' Generate from \eqn{Q_i}{Qi}, the spectral measure of a given multivariate extreme value model
+#' Generate from \eqn{Q_i}{Qi}, the spectral measure of a given multivariate extreme value model based on the L1 norm.
+#'
+#' @section Note:
+#'  This functionality can be useful to generate for example Pareto processes (by multiplying by a standard Pareto variable the output). Other functionals are not currently implemented.
 #'
 #'@param n number of observations
 #'@param d dimension of sample

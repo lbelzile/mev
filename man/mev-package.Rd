@@ -18,8 +18,8 @@ in the article, the bilogistic and Coles and Tawn extremal Dirichlet model using
 the algorithm of Boldi (2009) and the Dirichlet mixture. 
 The extremal Student and Husler-Reiss (Brown-Resnick) models are also implemented.
 
-A Dirichlet and a multinormal generator are part of the internal functions and are 
-exported. 
+Other features of the package include threshold diagnostic tests and other tools not
+found otherwise in packages \code{evd} and \link[ismev]{ismev}.
 
 }
 \author{
@@ -28,9 +28,7 @@ Leo Belzile
 Maintainer: <leo.belzile@epfl.ch>
 }
 \references{
-Dombry, Engelke and Oesting (2015)
-Exact simulation of max-stable processes
-\emph{arXiv:1506.04430v1}, 1--24.
+Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes, \emph{Biometrika}, \bold{103}(2), 303--317.
 
 Boldi (2009). A note on the representation of parametric 
 models for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
