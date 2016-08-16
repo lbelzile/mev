@@ -2,9 +2,8 @@
 ##
 ##  This file is part of the "mev" package for R.  This program
 ##  is free software; you can redistribute it and/or modify it under the
-##  terms of the GNU General Public License as published by the Free
-##  Software Foundation; either version 2 of the License, or (at your
-##  option) any later version.
+##  terms of the GNU General Public License 3.0 as published by the Free
+##  Software Foundation.
 ##
 ##  This library is distributed in the hope that it will be useful,
 ##  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,22 +23,22 @@
 #' and max-stable processes based on the two algorithms described in
 #' Dombry, Engelke and Oesting (2016).
 #'
-#'@param n number of observations
-#'@param d dimension of sample
-#'@param param parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
+#' @param n number of observations
+#' @param d dimension of sample
+#' @param param parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
 #' Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model. See \bold{Details}.
-#'@param sigma covariance matrix for Husler-Reiss and extremal Student-t distributions
-#'@param asy list of asymmetry parameters, as in \code{\link[evd]{rmvevd}}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.
-#'@param alg algorithm, either simulation via extremal function or via the spectral measure. The extremal Dirichlet model is only implemented with \code{sm}.
-#'@param model choice between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic and the extremal Dirichlet model of Coles and Tawn,
-#' the Brown-Resnick (which generate the Husler-Reiss MEV distribution), Smith, Schlather and extremal Student max-stable process , or the Dirichlet mixture.
-#'@param vario function specifying the variogram. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing
-#'@param loc \code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.
-#'@param weights vector of length \code{m} for the \code{m} mixture components. Must sum to one
-#'@param grid Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).
-#'@param ... additional arguments for the \code{vario} function
-#'@author Leo Belzile
-#'@details The vector param differs depending on the model
+#' @param sigma covariance matrix for Brown-Resnick and extremal Student-t distributions. Symmetric matrix of squared  coefficients \eqn{\lambda^2} for the Husler-Reiss model, with zero diagonal elements.
+#' @param asy list of asymmetry parameters, as in \code{\link[evd]{rmvevd}}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.
+#' @param alg algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.
+#' @param model for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
+#' the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.
+#' @param vario function specifying the variogram. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing
+#' @param loc \code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.
+#' @param weights vector of length \code{m} for the \code{m} mixture components. Must sum to one
+#' @param grid Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).
+#' @param ... additional arguments for the \code{vario} function
+#' @author Leo Belzile
+#' @details The vector param differs depending on the model
 #' \itemize{
 #'  \item \code{log}: one dimensional parameter greater than 1
 #'  \item \code{alog}: \eqn{2^d-d-1} dimensional parameter for \code{dep}. Values are recycled if needed.
@@ -58,19 +57,18 @@
 #' and as such it does not match the bivariate implementation of \link[evd]{rbvevd}.
 #'
 #' The dependence parameter of the \code{evd} package for the Husler-Reiss distribution can be recovered taking
-#' \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the lag vector between sites, or else if \code{sigma} is supplied,
-#' or else via \eqn{2/r=\sqrt(2(1-\rho))}{2/r=(2(1-\code{cor}))^(1/2)} where \eqn{\rho}{cor} is the entry in the correlation matrix
-#' between the pair of variables of interest.
+#' for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the lag vector between sites and \eqn{r=1/\lambda} for the Husler--Reiss.
 #'
+#' @section Warning:
+#'As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter must now be used in place
 #'
+#' @return an \code{n} by \code{d} exact sample from the corresponding multivariate extreme value model
 #'
-#'@return an \code{n} by \code{d} exact sample from the corresponding multivariate extreme value model
-#'
-#'@export
-#'@references
+#' @export
+#' @references
 #'Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes, \emph{Biometrika}, \bold{103}(2), 303--317.
-#'@seealso \link{rmevspec}, \link[evd]{rmvevd}, \link[evd]{rbvevd}
-#'@examples
+#' @seealso \link{rmevspec}, \link[evd]{rmvevd}, \link[evd]{rbvevd}
+#' @examples
 #'set.seed(1)
 #'rmev(n=100, d=3, param=2.5, model="log", alg="ef")
 #'rmev(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog", alg="sm")
@@ -80,14 +78,15 @@
 #'vario <- function(x) scale*sqrt(sum(x^2))^alpha
 #'#grid specification
 #'grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#'rmev(n=100, vario=vario,loc=grid.loc, model="hr")
+#'rmev(n=100, vario=vario,loc=grid.loc, model="br")
 #'#Example with a grid (generating an array)
 #'rmev(n=10, sigma=cbind(c(2,1),c(1,3)), loc=cbind(runif(4),runif(4)),model="smith", grid=TRUE)
 #'## Example with Dirichlet mixture
 #'alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 #'rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 rmev <-function(n, d, param, asy, sigma,
-                model= c("log","alog","neglog","aneglog","bilog","negbilog","hr","xstud","smith","schlather","ct","dirmix"),
+                model= c("log","alog","neglog","aneglog","bilog","negbilog","hr","br",
+                         "xstud","smith","schlather","ct","dirmix"),
                 alg=c("ef","sm"), weights, vario, loc, grid=FALSE, ...){
   #Create gridded values if specification is for random field discretization
   if(!missing(loc)){
@@ -118,7 +117,7 @@ rmev <-function(n, d, param, asy, sigma,
   #Define model families
   m1 <- c("log","neglog")
   m2 <- c("bilog","negbilog","ct")
-  m3 <- c("hr","xstud","smith")
+  m3 <- c("br","xstud","smith")
   #Check spatial requirements
   if((!missing(loc) || !missing(vario)) && ! model %in% m3){
     warning("Unused arguments `vario' or `loc'; only implemented for Extremal student or Brown-Resnick process");
@@ -178,12 +177,12 @@ rmev <-function(n, d, param, asy, sigma,
     }
     d <- switch(model,
                 xstud = ncol(sigma),
-                hr    = ncol(sigma),
+                br    = ncol(sigma),
                 smith = nrow(loc)
     )
     if(model=="xstud"){
       mod <- 5
-    } else if(model=="hr"){
+    } else if(model=="br"){
       mod <- 6; param = 0
     } else if(model=="smith"){
       mod <- 8; param <- 0
@@ -204,7 +203,7 @@ rmev <-function(n, d, param, asy, sigma,
     }
     #Transform list to matrix, with correct correspondance
     asym <- sigma>0
-    #Shred output to remove zero weight combinations
+    #Shed output to remove zero weight combinations
     if(d==2){
       param <- c(sigma[1,1]!=0, sigma[2,2]!=0, param) # not a matrix for d=2
     } else{
@@ -248,6 +247,12 @@ rmev <-function(n, d, param, asy, sigma,
     sigma <- param
     param <- weights
     mod <- 3
+    } else if(model=="hr"){
+      if(any(c(sigma<0,diag(sigma)!=rep(0,ncol(sigma)), ncol(sigma)!=nrow(sigma)))){
+        stop("Invalid parameter matrix for the Husler-Reiss model.
+             For Brown-Resnick model, please use model=`br' instead.");
+      }
+     mod <- 9; param <- 0
     }
 
   if(model %in% c("alog","aneglog")){
@@ -289,20 +294,10 @@ rmev <-function(n, d, param, asy, sigma,
 #' @section Note:
 #'  This functionality can be useful to generate for example Pareto processes (by multiplying by a standard Pareto variable the output). Other functionals are not currently implemented.
 #'
-#'@param n number of observations
-#'@param d dimension of sample
-#'@param param parameter vector for the logistic, bilogistic, negative bilogistic and Dirichlet (Coles and Tawn) model.
-#' Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model.
-#'@param sigma covariance matrix for Husler-Reiss and extremal Student-t distributions
-#'@param model choice between 1-parameter logistic and negative logistic, bilogistic, negative bilogistic and extremal Dirichlet,
-#' the Brown-Resnick and extremal Student max-stable process (which generate the Husler-Reiss MEV distribution), or the Dirichlet mixture.
-#'@param vario function specifying the variogram. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing
-#'@param loc \code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter in the Smith \code{smith} model.
-#'@param weights vector of length \code{m} for the \code{m} mixture components. Must sum to one
-#'@param ... additional arguments for the \code{vario} function
+#' @inheritParams rmev
 #'
-#'@author Leo Belzile
-#'@details The vector param differs depending on the model
+#' @author Leo Belzile
+#' @details The vector param differs depending on the model
 #' \itemize{
 #'  \item \code{log}: one dimensional parameter greater than 1
 #'  \item \code{neglog}: one dimensional positive parameter
@@ -313,30 +308,30 @@ rmev <-function(n, d, param, asy, sigma,
 #'  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
 #'  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
 #' }
-#'@return an \code{n} by \code{d} exact sample from the corresponding multivariate extreme value model
+#' @return an \code{n} by \code{d} exact sample from the corresponding multivariate extreme value model
 #'
-#'@references
+#' @references
 #'Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes, \emph{Biometrika}, \bold{103}(2), 303--317.
-#'@references Boldi (2009). A note on the representation of parametric models for multivariate extremes.
+#' @references Boldi (2009). A note on the representation of parametric models for multivariate extremes.
 #' \emph{Extremes} \bold{12}, 211--218.
 #'
 #' @examples
-#'set.seed(1)
-#'rmevspec(n=100, d=3, param=2.5, model="log")
-#'rmevspec(n=100, d=3, param=2.5, model="neglog")
-#'rmevspec(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog")
-#'rmevspec(n=100, d=2, param=c(0.8,1.2), model="ct") #Dirichlet model
-#'rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="ct") #with additional scale parameter
+#' set.seed(1)
+#' rmevspec(n=100, d=3, param=2.5, model="log")
+#' rmevspec(n=100, d=3, param=2.5, model="neglog")
+#' rmevspec(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog")
+#' rmevspec(n=100, d=2, param=c(0.8,1.2), model="ct") #Dirichlet model
+#' rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="ct") #with additional scale parameter
 #'#Variogram gamma(h) = scale*||h||^alpha
-#'scale <- 0.5; alpha <- 1
-#'vario <- function(x) scale*sqrt(sum(x^2))^alpha
-#'#grid specification
-#'grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#'rmevspec(n=100, vario=vario,loc=grid.loc, model="hr")
-#'## Example with Dirichlet mixture
-#'alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
-#'rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
-#'@export
+#' scale <- 0.5; alpha <- 1
+#' vario <- function(x) scale*sqrt(sum(x^2))^alpha
+#' #grid specification
+#' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
+#' rmevspec(n=100, vario=vario,loc=grid.loc, model="br")
+#' ## Example with Dirichlet mixture
+#' alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
+#' rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
+#' @export
 rmevspec <-function(n, d, param, sigma,
                     model=c("log","neglog","bilog","negbilog","hr","xstud","ct","dirmix"),
                     weights, vario, loc,...){
@@ -344,7 +339,7 @@ rmevspec <-function(n, d, param, sigma,
   model <- match.arg(model)
   m1 <- c("log","neglog")
   m2 <- c("bilog","negbilog","ct")
-  m3 <- c("hr","xstud")
+  m3 <- c("br","xstud")
   if(model %in% m1){
     d <- as.integer(d)
     sigma = cbind(0)
@@ -424,6 +419,8 @@ rmevspec <-function(n, d, param, sigma,
     sigma <- param
     param <- weights
     mod <- 3
+    } else if(model=="hr"){
+     mod <- 9; param = 0
     }
   if(!model=="smith"){
     loc <- cbind(0)

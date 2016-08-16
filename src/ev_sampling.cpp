@@ -259,7 +259,7 @@ NumericVector rPexstud (int index, arma::mat sigma, NumericVector al){
   arma::vec zeromean = arma::vec(sigma.n_cols-1);// b/c need constructor, then setter
   zeromean.zeros(); // set elements of vector to zero
   arma::mat Covar = (sigma - sigma.col(index) * sigma.row(index))/(al[0]+1.0);
-  //Covar matrix is not positive definite; shred it
+  //Covar matrix is not positive definite; shed it
   Covar.shed_row(index); Covar.shed_col(index);
   //Sample from d-1 dimensional normal
   arma::vec normalsamp = mvrnorm_arma(1, zeromean, Covar).row(0).t();
@@ -277,16 +277,65 @@ NumericVector rPexstud (int index, arma::mat sigma, NumericVector al){
   return samp;
 }
 
-//' Generate from extremal Husler-Reiss distribution (Brown-Resnick) \eqn{Y \sim {P_x}}, where
+//' Generate from extremal Husler-Reiss distribution \eqn{Y \sim {P_x}}, where
+//' \eqn{P_{x}} is probability of extremal function
+//'
+//' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
+//' @param Lambda an symmetric square matrix of coefficients \eqn{\lambda^2}
+//'
+//' @return a \code{d}-vector from \eqn{P_x}
+//[[Rcpp::export(.rPHuslerReiss)]]
+NumericVector rPHuslerReiss (int index, arma::mat Lambda){
+  if(index<0 || index >= Lambda.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
+
+  arma::vec mu = arma::vec(Lambda.n_cols);// b/c need constructor, then setter
+  mu = -2.0*Lambda.col(index);
+  mu.shed_row(index);
+  arma::mat Covar = 2.0*(repmat(Lambda.col(index),1,Lambda.n_rows) +
+    repmat(Lambda.row(index),Lambda.n_cols,1) - Lambda);
+  //Covar matrix is not positive definite; shed it
+  Covar.shed_row(index); Covar.shed_col(index);
+  //Sample from d-1 dimensional normal
+  arma::vec normalsamp = mvrnorm_arma(1, mu, Covar).row(0).t();
+  //Add the missing zero entry back
+  arma::vec indexentry = arma::vec(1);
+  indexentry.zeros();
+  normalsamp.insert_rows(index, indexentry);
+  mu.insert_rows(index, indexentry);
+  NumericVector samp = Rcpp::as<Rcpp::NumericVector>(wrap(exp(normalsamp)));
+  samp[index] = 1.0; //Sometimes off due to rounding
+  return samp;
+
+
+  // NumericVector mu(Lambda.ncol()-1);
+  // NumericMatrix GammaM(Lambda.nrow()-1, Lambda.ncol()-1);
+  // for(int k=0; k<Lambda.ncol(); k++){
+  //   if(k==index){break;}
+  //   mu[k] = 2*Lambda(k+(k>index), index);
+  //   for(int i=0; i<k(); i++){
+  //     if(i==index){break;}
+  //     GammaM(i,k) = 2.0*(Lambda(i+(i>index), index) + Lambda(k+(k>index), index) + (i!=k)*Lambda(i, k));
+  //     GammaM(k,i) = GammaM(i,k);
+  //   }
+  // }
+  // NumericMatrix mvnormsamp = mvrnorm(1, mu, GammaM);
+  // NumericVector samp(Lambda.ncol());
+  // for(int j=0; j < Lambda.ncol(); j++){
+  //   samp[j] = exp(mvnormsamp(0,j)-mu(j));
+  // }
+  // return samp;
+}
+
+//' Generate from Brown-Resnick process \eqn{Y \sim {P_x}}, where
 //' \eqn{P_{x}} is probability of extremal function
 //'
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param Sigma a positive semi-definite covariance matrix
 //'
 //' @return a \code{d}-vector from \eqn{P_x}
-//[[Rcpp::export(.rPHuslerReiss)]]
-NumericVector rPHuslerReiss (int index, NumericMatrix Sigma){
-  if(index<0 || index >= Sigma.ncol()) Rcpp::stop("Invalid argument in rPHuslerReiss");
+//[[Rcpp::export(.rPBrownResnick)]]
+NumericVector rPBrownResnick (int index, NumericMatrix Sigma){
+  if(index<0 || index >= Sigma.ncol()) Rcpp::stop("Invalid argument in rPBrownResnick");
   NumericVector mu(Sigma.ncol());
   NumericMatrix mvnormsamp = mvrnorm(1, mu, Sigma);
   NumericVector samp(Sigma.ncol());
@@ -296,6 +345,7 @@ NumericVector rPHuslerReiss (int index, NumericMatrix Sigma){
   }
   return samp;
 }
+
 
 
 //' Generate from Smith model (moving maxima) \eqn{Y \sim {P_x}}, where
@@ -509,19 +559,19 @@ NumericMatrix rexstudspec (int n, arma::mat sigma, NumericVector al){
   NumericMatrix samp(n,d);
   int j;
   arma::mat Covar = arma::mat(sigma.n_rows,sigma.n_cols);
-  //Need to adjust the size of Covar because it is shreded
+  //Need to adjust the size of Covar because it was shed
   arma::vec normalsamp = arma::vec(d-1);
   arma::vec indexentry = arma::vec(1);
   arma::vec studsamp = arma::vec(d);
   indexentry.zeros();
   double nu;
-  for(int r=0; r<0; r++){
+  for(int r=0; r<n; r++){
     j = sampleone(d);
     //Redefine values
     Covar = arma::mat(sigma.n_rows,sigma.n_cols);
     normalsamp = arma::vec(d-1);
     Covar = (sigma - sigma.col(j) * sigma.row(j))/(al[0]+1.0);
-    //Covar matrix is not positive definite; shred it
+    //Covar matrix is not positive definite; shed it
     Covar.shed_row(j); Covar.shed_col(j);
     //Sample from d-1 dimensional normal
     normalsamp = mvrnorm_arma(1, zeromean, Covar).row(0).t();
@@ -538,7 +588,49 @@ NumericMatrix rexstudspec (int n, arma::mat sigma, NumericVector al){
   return samp;
 }
 
-//' Generates from \eqn{Q_i}{Qi}, the spectral measure of the Brown-Resnick (or Husler-Reiss) model
+//' Generates from \eqn{Q_i}{Qi}, the spectral measure of the Husler-Reiss model
+//'
+//' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
+//' @param Lambda an symmetric square matrix of coefficients \eqn{\lambda^2}
+//'
+//' @return an \code{n} by \code{d} sample from the spectral distribution
+// [[Rcpp::export(.rhrspec)]]
+NumericMatrix rhrspec (int n, arma::mat Lambda){
+   //Define containers and auxiliary variables
+  arma::vec mu = arma::vec(Lambda.n_cols);// b/c need constructor, then setter
+  int d = Lambda.n_cols;
+  NumericMatrix samp(n,d);
+  int j;
+  arma::mat Covar = arma::mat(Lambda.n_rows,Lambda.n_cols);
+  //Need to adjust the size of Covar because it was shed
+  arma::vec normalsamp = arma::vec(d-1);
+  arma::vec indexentry = arma::vec(1);
+  indexentry.zeros();
+  for(int r=0; r<n; r++){
+    j = sampleone(d);
+    //Redefine values
+    Covar = arma::mat(Lambda.n_rows,Lambda.n_cols);
+    normalsamp = arma::vec(d-1);
+    mu = arma::vec(Lambda.n_cols-1);// b/c need constructor, then setter
+    mu = -2.0*Lambda.col(j);
+    mu.shed_row(j);
+    Covar = 2.0*(repmat(Lambda.col(j),1,Lambda.n_rows) +
+      repmat(Lambda.row(j),Lambda.n_cols,1) - Lambda);
+    //Covar matrix is not positive definite; shed it
+    Covar.shed_row(j); Covar.shed_col(j);
+    //Sample from d-1 dimensional normal
+    normalsamp = mvrnorm_arma(1, mu, Covar).row(0).t();
+    normalsamp.insert_rows(j, indexentry);
+    mu.insert_rows(j, indexentry);
+    samp(r,_) = Rcpp::as<Rcpp::NumericVector>(wrap(exp(normalsamp)));
+    samp(r,j) = 1.0; //Sometimes off due to rounding
+    samp(r,_) = samp(r,_)/sum(samp(r,_));
+  }
+  return samp;
+}
+
+
+//' Generates from \eqn{Q_i}{Qi}, the spectral measure of the Brown-Resnick model
 //'
 //' Simulation algorithm of Dombry et al. (2015)
 //'
@@ -549,8 +641,8 @@ NumericMatrix rexstudspec (int n, arma::mat sigma, NumericVector al){
 //'\emph{Biometrika}, \bold{103}(2), 303--317.
 //'
 //' @return an \code{n} by \code{d} sample from the spectral distribution
-// [[Rcpp::export(.rhrspec)]]
-NumericMatrix rhrspec (int n, NumericMatrix Sigma){
+// [[Rcpp::export(.rbrspec)]]
+NumericMatrix rbrspec (int n, NumericMatrix Sigma){
   int d = Sigma.ncol();
   NumericVector mu(d);
   NumericMatrix mvnormsamp = mvrnorm(n, mu, Sigma);
@@ -677,7 +769,7 @@ void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigm
         Rcpp::stop("Invalid degree of freedom");
         }
 
-      //Model 6: Brown-Resnick (Husler-Reiss)
+      //Model 6: Brown-Resnick
     } else if(model == 6){
       if(Sigma.ncol()!=Sigma.nrow()) Rcpp::stop("Provided covariance matrix is not square");
 
@@ -692,8 +784,12 @@ void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigm
       if((unsigned) Sigma.ncol()!= loc.n_cols){
         Rcpp::stop("Smith model requires location matching covariance matrix");
       }
+    //Model 9: Husler-Reiss
+    } else if(model == 9){
+      //Copy entries in a vector, to use sugar (otherwise need to cast to &int)
+      if(Sigma.ncol()!=Sigma.nrow()) Rcpp::stop("Provided matrix is not square");
     }
-    if (model > 8){
+    if (model > 9){
       Rcpp::stop("Model not currently implemented");
     }
   }
@@ -712,7 +808,7 @@ void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigm
 //' @param model integer, currently ranging from 1 to 8, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
 //' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and (8) \code{smith}.
-//' @param Sigma covariance matrix for Husler-Reiss, Smith and extremal student. Default for compatibility
+//' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 //' @param loc matrix of location for Smith model.
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
@@ -762,11 +858,13 @@ NumericMatrix rmevA1(int n, int d, NumericVector param, int model, NumericMatrix
       } else if(model == 5){
         Y = rexstudspec(1, sigma, param)(0,_);
       } else if(model == 6){
-        Y = rhrspec(1, Sigma)(0,_);
+        Y = rbrspec(1, Sigma)(0,_);
       } else if(model == 7){
         Y = rdirspec(1, d, param, irv)(0,_);
       } else if(model == 8){
         Y = rsmithspec(1, sigma, loc)(0,_);
+      }  else if(model == 9){
+        Y = rhrspec(1, sigma)(0,_);
       } else {
         Rcpp::stop("Model not yet implemented");
       }
@@ -793,7 +891,7 @@ NumericMatrix rmevA1(int n, int d, NumericVector param, int model, NumericMatrix
 //' @param model integer, currently ranging from 1 to 8, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
 //' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and (8) \code{smith}.
-//' @param Sigma covariance matrix for Husler-Reiss, Smith and extremal student. Default for compatibility
+//' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 //' @param loc matrix of location for Smith model.
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
@@ -842,11 +940,13 @@ NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix
     } else if(model == 5){
       Y = rPexstud(0, sigma, param);
     } else if(model == 6){
-      Y = rPHuslerReiss(0, Sigma);
+      Y = rPBrownResnick(0, Sigma);
     } else if(model == 7){
       Y = rPdir(d, 0, param, irv);
     } else if(model == 8){
       Y = rPSmith(0, sigma, loc);
+    } else if(model == 9){
+      Y = rPHuslerReiss(0, sigma);
     } else{
       Rcpp::stop("Sampler not yet implemented with extremal functions");
     }
@@ -868,11 +968,13 @@ NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix
         } else if(model == 5){
           Y = rPexstud(j, sigma, param);
         } else if(model == 6){
-          Y = rPHuslerReiss(j, Sigma);
+          Y = rPBrownResnick(j, Sigma);
         } else if(model == 7){
           Y = rPdir(d, j, param, irv);
         }  else if(model == 8){
           Y = rPSmith(j, sigma, loc);
+        } else if(model == 9){
+          Y = rPHuslerReiss(j, sigma);
         }
         bool res = true;
         for(int k = 0; k < j; k++){ //(7) Check previous extremal functions
@@ -902,8 +1004,9 @@ NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix
 //' @param param a vector of parameters
 //' @param model integer, currently ranging from 1 to 7, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-//' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and (8) \code{smith}.
-//' @param Sigma covariance matrix for Husler-Reiss and extremal student. Default for compatibility
+//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct}, (8) \code{smith} and (9) \code{hr}.
+//' @param Sigma covariance matrix for Brown-Resnick and extremal student, symmetric matrix
+//' of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility
 //' @param loc matrix of locations for the Smith model
 //'
 //'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
@@ -948,12 +1051,14 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector param, int model, Numeric
   } else if(model == 5){
     samp = rexstudspec(n, sigma, param);
   } else if(model == 6){
-    samp = rhrspec(n, Sigma);
+    samp = rbrspec(n, Sigma);
   } else if(model == 7){
     samp = rdirspec(n, d, param, irv);
   } else if(model == 8){
-    samp = rsmithspec(n, param, loc);
-  }  else{
+    samp = rsmithspec(n, sigma, loc);
+  }  else if(model == 9){
+    samp = rhrspec(n, sigma);
+  } else{
     Rcpp::stop("Invalid model");
   }
   return samp;

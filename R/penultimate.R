@@ -12,7 +12,7 @@
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
 #'
-#'@author Leo Belzile
+#' @author Leo Belzile
 #' @param xdat vector of observations, greater than the threshold
 #' @param thresh threshold value
 #' @param par parameter vector (\eqn{\kappa}, \eqn{\sigma},\eqn{\xi}).
