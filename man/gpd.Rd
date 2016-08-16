@@ -87,4 +87,5 @@ Giles, D. E., Feng, H. and R. T. Godwin (2016).  Bias-corrected maximum likeliho
 
 Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 }
+\keyword{internal}
 

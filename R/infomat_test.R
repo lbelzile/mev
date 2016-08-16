@@ -125,23 +125,24 @@ infomat.test <- function(x, q, K, plot=TRUE){
 #' Extremal index estimators based on interexceedance time and gap of exceedances
 #'
 #' The function implements the maximum likelihood estimator and iteratively reweigthed least
-#' square estimators of Suveges (2007) - the implementation differs from the presentation of the paper
-#' The intervals estimator is added. Multiple thresholds can be supplied
+#' square estimators of Suveges (2007)  as well as the intervals estimator. The implementation
+#' differs from the presentation of the paper in that an iteration limit is enforced to make sure
+#' the iterative procedure terminates. sMultiple thresholds can be supplied
 #'
 #' The iteratively reweighted least square is a procedure based on the gaps of exceedances \eqn{S_n=T_n-1}{Tn-1}
 #' The model is first fitted to non-zero gaps, which are rescaled to have unit exponential scale. The slope
-#' between the theoretical quantiles and the normalized gap of exceedances is \eqn{b=1/\theta}{b=1/theta},
-#' with intercept \eqn{a=\log(\theta)/\theta}\eqn{a=log(theta)/theta}.
-#' As such, the estimate of the extremal index is based on \eqn{\hat{\theta}=\exp(\hat{a}/\hat{b})}{theta=exp(a/b)}.
+#' between the theoretical quantiles and the normalized gap of exceedances is \eqn{b=1/\theta}{b=1/\theta},
+#' with intercept \eqn{a=\log(\theta)/\theta}{a=log(\theta)/\theta}.
+#' As such, the estimate of the extremal index is based on \eqn{\hat{\theta}=\exp(\hat{a}/\hat{b})}{\theta=exp(a/b)}.
 #' The weights are chosen in such a way as to reduce the influence of the smallest values.
 #' The estimator exploits the dual role of \eqn{\theta}{theta} as the parameter of the mean for
 #' the interexceedance time as well as the mixture proportion for the non-zero component.
 #'
 #' The maximum likelihood is based on an independence likelihood for the rescaled gap of exceedances,
 #' namely \eqn{\bar{F}(u_n)S(u_n)}{(1-F(u))*S(u)}. The score equation is equivalent to a quadratic equation in
-#'  \eqn{\theta}{theta} and the maximum likelihood estimate is available in closed form.
-#'   Its validity requires however condition \eqn{D^{(2)}(u_n)}{D2(u)} to apply;
-#'   this should be checked by the user beforehand.
+#' \eqn{\theta}{theta} and the maximum likelihood estimate is available in closed form.
+#' Its validity requires however condition \eqn{D^{(2)}(u_n)}{D2(u)} to apply;
+#' this should be checked by the user beforehand.
 #'
 #'A warning is emitted if the effective sample size is less than 50 observations.
 #'

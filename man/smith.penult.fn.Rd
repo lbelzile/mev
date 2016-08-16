@@ -56,7 +56,7 @@ This is inherent to the method and can be resolved by `not' evaluating the funct
 m <- 100 #block of size 100
 p <- c(smith.penult(densF=dnorm, distF=pnorm,
    ddensF=function(x){-x*dnorm(x)},model="bm",m=m))
-approx <- smith.penult.fn(loc=p[1], scale=p[2], shape=p[3], 
+approx <- smith.penult.fn(loc=p[1], scale=p[2], shape=p[3],
    eps=p[3]^2+p[3]+p[2]^2, mdaGumbel=TRUE, model="bm")
 x <- seq(0.5,6,by=0.001)
 #First penultimate approximation

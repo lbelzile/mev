@@ -14,6 +14,7 @@ NULL
 #' @param tol numerical tolerance for the Gumbel model
 #' @describeIn gpd log-likelihood
 #' @export
+#' @keywords internal
 gpd.ll <- function(par, dat, tol=1e-5){
   sigma = par[1]; xi = par[2]
   if(abs(xi)>tol){

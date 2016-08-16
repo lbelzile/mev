@@ -36,7 +36,7 @@ egp.fitrange(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3,
 \code{egp.fit} is a numerical optimization routine to fit the extended generalised Pareto models of Papastathopoulos and Tawn (2013),
 using maximum likelihood estimation.
 
-The function \code{egp.fitrange} provides classical parameter stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95% confidence intervals.
+The function \code{egp.fitrange} provides classical parameter stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
 \code{egp.fitrange} can also be used to fit the model to multiple thresholds.
 }

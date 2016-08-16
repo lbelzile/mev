@@ -11,7 +11,7 @@
 #' In the case \eqn{\kappa=1}, the models reduce to the generalised Pareto.
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
-#' 
+#'
 #'@author Leo Belzile
 #' @param xdat vector of observations, greater than the threshold
 #' @param thresh threshold value
@@ -191,7 +191,7 @@ egp.fit <- function(xdat, thresh, model=c("egp1","egp2","egp3"), init){
   }
 }
 
-#' @description The function \code{egp.fitrange} provides classical parameter stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95% confidence intervals.
+#' @description The function \code{egp.fitrange} provides classical parameter stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
 #'  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
 #' \code{egp.fitrange} can also be used to fit the model to multiple thresholds.
 #' @inheritParams egp.ll
@@ -415,7 +415,7 @@ smith.penult <- function(densF, distF, ddensF=NULL,
 #' m <- 100 #block of size 100
 #' p <- c(smith.penult(densF=dnorm, distF=pnorm,
 #'    ddensF=function(x){-x*dnorm(x)},model="bm",m=m))
-#' approx <- smith.penult.fn(loc=p[1], scale=p[2], shape=p[3], 
+#' approx <- smith.penult.fn(loc=p[1], scale=p[2], shape=p[3],
 #'    eps=p[3]^2+p[3]+p[2]^2, mdaGumbel=TRUE, model="bm")
 #' x <- seq(0.5,6,by=0.001)
 #' #First penultimate approximation
