@@ -12,74 +12,124 @@
 \alias{gev.phi}
 \alias{gev.retlev}
 \alias{gev.score}
+\alias{gevr.Vfun}
+\alias{gevr.dphi}
+\alias{gevr.infomat}
+\alias{gevr.ll}
+\alias{gevr.ll.optim}
+\alias{gevr.phi}
+\alias{gevr.score}
 \title{Generalized extreme value distribution}
-\usage{
-gev.ll(par, dat)
-
-gev.ll.optim(par, dat)
-
-gev.score(par, dat)
-
-gev.infomat(par, dat, method = c("obs", "exp"))
-
-gev.Vfun(par, dat)
-
-gev.phi(par, dat, V)
-
-gev.dphi(par, dat, V)
-
-gev.bias(par, n)
-
-gev.Fscore(par, dat, method = "obs")
-
-gev.retlev(par, p)
-}
 \arguments{
-\item{par}{vector of parameters, \code{loc}, \code{scale} and \code{shape}}
+\item{par}{vector of \code{loc}, \code{scale} and \code{shape}}
 
 \item{dat}{sample vector}
 
+\item{tol}{numerical tolerance for the Gumbel model}
+
 \item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
 
-\item{V}{vector calculated by \code{\link{gev.Vfun}}}
+\item{V}{vector calculated by \code{gev.Vfun}}
 
 \item{n}{sample size}
 
-\item{p}{probability}
+\item{p}{vector of probabilities}
+
+\item{par}{vector of \code{retlev}, \code{scale} and \code{shape}}
+
+\item{dat}{sample vector}
+
+\item{V}{vector calculated by \code{gevr.Vfun}}
+
+\item{p}{probability, corresponding to \eqn{(1-p)}th quantile for \eqn{z}}
 }
 \description{
-Likelihood, score function and information matrix, bias, approximate ancillary statistics and sample space derivative for the generalized extreme value distribution
+Likelihood, score function and information matrix, bias,
+approximate ancillary statistics and sample space derivative
+for the generalized extreme value distribution
+
+Likelihood, score function and information matrix, bias,
+approximate ancillary statistics and sample space derivative
+for the generalized extreme value distribution  parametrized in terms of the return level \eqn{z}, scale and shape.
 }
+\section{Usage}{
+ \code{gev.ll(par, dat)}
+
+ \code{gev.ll.optim(par, dat)}
+
+ \code{gev.score(par, dat)}
+
+ \code{gev.infomat(par, dat, method = c("obs","exp"))}
+
+ \code{gev.retlev(par, p)}
+
+ \code{gev.bias(par, n)}
+
+ \code{gev.Fscore(par, dat, method=c("obs","exp"))}
+
+ \code{gev.Vfun(par, dat)}
+
+ \code{gev.phi(par, dat, V)}
+
+ \code{gev.dphi(par, dat, V)}
+
+ \code{gevr.ll(par, dat, p)}
+
+ \code{gevr.ll.optim(par, dat, p)}
+
+ \code{gevr.score(par, dat, p)}
+
+ \code{gevr.infomat(par, dat, p)}
+
+ \code{gevr.Vfun(par, dat, p)}
+
+ \code{gevr.phi(par, dat, p, V)}
+
+ \code{gevr.dphi(par, dat, p, V)}
+}
+
+\section{Note}{
+
+The Gumbel case is not currently handled.
+}
+
 \section{Functions}{
+
 \itemize{
-\item \code{gev.ll}: log-likelihood
+\item{\code{gev.ll}:} {log-likelihood}
+\item{\code{gev.ll.optim}:} {negative log-likelihood parametrized in terms of location, \code{log(scale)} and shape
+in order to perform unconstrained optimization}
+\item{\code{gev.score}:} {score vector}
+\item{\code{gev.infomat}:} {observed or expected information matrix}
+\item{\code{gev.retlev}:} {return level, corresponding to the \eqn{(1-p)}th quantile}
+\item{\code{gev.bias}:} {Cox-Snell first order bias}
+\item{\code{gev.Fscore}:} {Firth's modified score equation}
+\item{\code{gev.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
+\item{\code{gev.phi}:} {canonical parameter in the local exponential family approximation}
+\item{\code{gev.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+}
 
-\item \code{gev.ll.optim}: negative log-likelihood parametrized in terms of \code{loc}, \code{log(scale)} and \code{shape}
 
-\item \code{gev.score}: score vector
-
-\item \code{gev.infomat}: observed or expected information matrix
-
-\item \code{gev.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
-
-\item \code{gev.phi}: canonical parameter in the local exponential family approximation
-
-\item \code{gev.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
-
-\item \code{gev.bias}: Cox-Snell first order bias
-
-\item \code{gev.Fscore}: Firth's modified score equation
-
-\item \code{gev.retlev}: return level, corresponding to the (1-\eqn{p})th quantile
-}}
-\note{
-The Gumbel case is not currently handled
+\itemize{
+\item{\code{gevr.ll}:} {log-likelihood}
+\item{\code{gevr.ll.optim}:} {negative log-likelihood parametrized in terms of return levels, \code{log(scale)} and shape in order to perform unconstrained optimization}
+\item{\code{gevr.score}:} {score vector}
+\item{\code{gevr.infomat}:} {observed information matrix}
+\item{\code{gevr.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
+\item{\code{gevr.phi}:} {canonical parameter in the local exponential family approximation}
+\item{\code{gevr.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+}
+}
+\author{
+Leo Belzile
 }
 \references{
+Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
+
+Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
+
 Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, \strong{30}, 248--275.
 
 Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Statistics and Probability Letters}, \strong{19}(3), 169--176.
-
-Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 }
 

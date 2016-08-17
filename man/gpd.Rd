@@ -12,71 +12,67 @@
 \alias{gpd.phi}
 \alias{gpd.score}
 \title{Generalized Pareto distribution}
-\usage{
-gpd.ll(par, dat, tol = 1e-05)
-
-gpd.ll.optim(par, dat, tol = 1e-05)
-
-gpd.score(par, dat)
-
-gpd.infomat(par, dat, method = c("obs", "exp"))
-
-gpd.Vfun(par, dat)
-
-gpd.phi(par, dat, V)
-
-gpd.dphi(par, dat, V)
-
-gpd.bias(par, n)
-
-gpd.Fscore(par, dat, method = c("obs", "exp"))
-}
 \arguments{
 \item{par}{vector of \code{scale} and \code{shape}}
 
 \item{dat}{sample vector}
 
-\item{tol}{numerical tolerance for the Gumbel model}
+\item{tol}{numerical tolerance for the exponential model}
 
 \item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
 
-\item{V}{vector calculated by \code{\link{gpd.Vfun}}}
+\item{V}{vector calculated by \code{gpd.Vfun}}
 
 \item{n}{sample size}
-}
-\value{
-numeric vector of bias
 }
 \description{
 Likelihood, score function and information matrix, bias,
 approximate ancillary statistics and sample space derivative
 for the generalized Pareto distribution
 }
+\section{Usage}{
+ \code{gpd.ll(par, dat, tol=1e-5)}
+
+ \code{gpd.ll.optim(par, dat, tol=1e-5)}
+
+ \code{gpd.score(par, dat)}
+
+ \code{gpd.infomat(par,dat,method = c("obs","exp"))}
+
+ \code{gpd.bias(par, n)}
+
+ \code{gpd.Fscore(par, dat, method=c("obs","exp"))}
+
+ \code{gpd.Vfun(par, dat)}
+
+ \code{gpd.phi(par, dat, V)}
+
+ \code{gpd.dphi(par, dat, V)}
+}
+
 \section{Functions}{
+
+
 \itemize{
-\item \code{gpd.ll}: log-likelihood
-
-\item \code{gpd.ll.optim}: negative log-likelihood parametrized in terms of \code{log(scale)} and shape
-in order to perform unconstrained optimization
-
-\item \code{gpd.score}: score vector
-
-\item \code{gpd.infomat}: observed or expected information matrix
-
-\item \code{gpd.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
-
-\item \code{gpd.phi}: canonical parameter in the local exponential family approximation
-
-\item \code{gpd.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
-
-\item \code{gpd.bias}: Cox-Snell first order bias
-
-\item \code{gpd.Fscore}: Firth's modified score equation
-}}
+\item{\code{gpd.ll}:} {log-likelihood}
+\item{\code{gpd.ll.optim}:} {negative log-likelihood parametrized in terms of \code{log(scale)} and shape
+in order to perform unconstrained optimization}
+\item{\code{gpd.score}:} {score vector}
+\item{\code{gpd.infomat}:} {observed or expected information matrix}
+\item{\code{gpd.bias}:} {Cox-Snell first order bias}
+\item{\code{gpd.Fscore}:} {Firth's modified score equation}
+\item{\code{gpd.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
+\item{\code{gpd.phi}:} {canonical parameter in the local exponential family approximation}
+\item{\code{gpd.dphi}:} {derivative matrix of the canonical parameter in the local
+exponential family approximation}
+}
+}
 \author{
 Leo Belzile
 }
 \references{
+Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
+
 Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 
 Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, \strong{30}, 248--275.
@@ -84,8 +80,5 @@ Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Jour
 Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Statistics and Probability Letters}, \strong{19}(3), 169--176.
 
 Giles, D. E., Feng, H. and R. T. Godwin (2016).  Bias-corrected maximum likelihood estimation of the  parameters of the generalized Pareto distribution, \emph{Communications in Statistics - Theory and Methods}, \strong{45}(8), 2465--2483.
-
-Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 }
-\keyword{internal}
 

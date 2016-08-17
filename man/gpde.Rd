@@ -10,60 +10,58 @@
 \alias{gpde.phi}
 \alias{gpde.score}
 \title{Generalized Pareto distribution (expected shortfall parametrization)}
-\usage{
-gpde.ll(par, dat, m)
-
-gpde.ll.optim(par, dat, m)
-
-gpde.score(par, dat, m)
-
-gpde.infomat(par, dat, m)
-
-gpde.Vfun(par, dat, m)
-
-gpde.phi(par, dat, V, m)
-
-gpde.dphi(par, dat, V, m)
-}
 \arguments{
-\item{par}{vector of parameters (expected shortfall and shape)}
+\item{par}{vector of length 2 containing \eqn{y_m} and \eqn{\xi}, respectively the \eqn{m}-year return level and the shape parameter.}
 
-\item{dat}{sample vector.}
+\item{dat}{sample vector}
 
 \item{m}{number of observations of interest for return levels. See \strong{Details}}
 
-\item{V}{vector implementing conditioning on approximate ancillary statistics for the TEM}
+\item{tol}{numerical tolerance for the exponential model}
+
+\item{V}{vector calculated by \code{gpde.Vfun}}
 }
 \description{
 Likelihood, score function and information matrix, bias,
 approximate ancillary statistics and sample space derivative
-for the generalized Pareto distribution (expected shortfall parametrization)
+for the generalized Pareto distribution parametrized in terms of expected shortfall.
 }
 \details{
 The observed information matrix was calculated using the second Bartlett identity as the negative of the second derivative of the log-likelihood function, using symbolic calculus in Sage.
 
 The interpretation for \code{m} is as follows: if there are on average \eqn{m_y} observations per year above the threshold, then  \eqn{m=Tm_y} corresponds to \eqn{T}-year return level.
 }
+\section{Usage}{
+ \code{gpde.ll(par, dat, m, tol=1e-5)}
+
+ \code{gpde.ll.optim(par, dat, m, tol=1e-5)}
+
+ \code{gpde.score(par, dat, m)}
+
+ \code{gpde.infomat(par, dat, m}
+
+ \code{gpde.Vfun(par, dat, m)}
+
+ \code{gpde.phi(par, dat, V, m)}
+
+ \code{gpde.dphi(par, dat, V, m)}
+}
+
 \section{Functions}{
+
+
 \itemize{
-\item \code{gpde.ll}: log-likelihood
-
-\item \code{gpde.ll.optim}: negative log-likelihood parametrized in terms of log expected shortfall and shape in order to perform unconstrained optimization
-
-\item \code{gpde.score}: score vector
-
-\item \code{gpde.infomat}: observed information matrix for GPD parametrized in terms of rate of expected shortfall and shape
-
-\item \code{gpde.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
-
-\item \code{gpde.phi}: canonical parameter in the local exponential family approximation
-
-\item \code{gpde.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
-}}
+\item{\code{gpde.ll}:} {log-likelihood}
+\item{\code{gpde.ll.optim}:} {negative log-likelihood parametrized in terms of log expected
+shortfall and shape in order to perform unconstrained optimization}
+\item{\code{gpde.score}:} {score vector}
+\item{\code{gpde.infomat}:} {observed information matrix for GPD parametrized in terms of rate of expected shortfall and shape}
+\item{\code{gpde.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
+\item{\code{gpde.phi}:} {canonical parameter in the local exponential family approximation}
+\item{\code{gpde.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+}
+}
 \author{
 Leo Belzile
-}
-\seealso{
-\code{\link{gpd}}
 }
 

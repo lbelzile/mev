@@ -333,7 +333,7 @@ rmev <-function(n, d, param, asy, sigma,
 #' rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 #' @export
 rmevspec <-function(n, d, param, sigma,
-                    model=c("log","neglog","bilog","negbilog","hr","xstud","ct","dirmix"),
+                    model=c("log","neglog","bilog","negbilog","hr","br","xstud","ct","dirmix"),
                     weights, vario, loc,...){
   if(!missing(param) && mode(param) != "numeric") stop("Invalid parameter")
   model <- match.arg(model)

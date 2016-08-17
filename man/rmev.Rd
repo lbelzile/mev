@@ -5,8 +5,8 @@
 \title{Exact simulations of multivariate extreme value distributions}
 \usage{
 rmev(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "aneglog",
-  "bilog", "negbilog", "hr", "xstud", "smith", "schlather", "ct", "dirmix"),
-  alg = c("ef", "sm"), weights, vario, loc, grid = FALSE, ...)
+  "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct",
+  "dirmix"), alg = c("ef", "sm"), weights, vario, loc, grid = FALSE, ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -18,12 +18,12 @@ Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal stud
 
 \item{asy}{list of asymmetry parameters, as in \code{\link[evd]{rmvevd}}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.}
 
-\item{sigma}{covariance matrix for Husler-Reiss and extremal Student-t distributions}
+\item{sigma}{covariance matrix for Brown-Resnick and extremal Student-t distributions. Symmetric matrix of squared  coefficients \eqn{\lambda^2} for the Husler-Reiss model, with zero diagonal elements.}
 
-\item{model}{choice between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic and the extremal Dirichlet model of Coles and Tawn,
-the Brown-Resnick (which generate the Husler-Reiss MEV distribution), Smith, Schlather and extremal Student max-stable process , or the Dirichlet mixture.}
+\item{model}{for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
+the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 
-\item{alg}{algorithm, either simulation via extremal function or via the spectral measure. The extremal Dirichlet model is only implemented with \code{sm}.}
+\item{alg}{algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.}
 
 \item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
 
@@ -63,9 +63,11 @@ The implementation in \code{mev} uses the same construction as the asymmetric lo
 and as such it does not match the bivariate implementation of \link[evd]{rbvevd}.
 
 The dependence parameter of the \code{evd} package for the Husler-Reiss distribution can be recovered taking
-\eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the lag vector between sites, or else if \code{sigma} is supplied,
-or else via \eqn{2/r=\sqrt(2(1-\rho))}{2/r=(2(1-\code{cor}))^(1/2)} where \eqn{\rho}{cor} is the entry in the correlation matrix
-between the pair of variables of interest.
+for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the lag vector between sites and \eqn{r=1/\lambda} for the Husler--Reiss.
+}
+\section{Warning}{
+
+As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter must now be used in place
 }
 \examples{
 set.seed(1)
@@ -77,7 +79,7 @@ scale <- 0.5; alpha <- 1
 vario <- function(x) scale*sqrt(sum(x^2))^alpha
 #grid specification
 grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-rmev(n=100, vario=vario,loc=grid.loc, model="hr")
+rmev(n=100, vario=vario,loc=grid.loc, model="br")
 #Example with a grid (generating an array)
 rmev(n=10, sigma=cbind(c(2,1),c(1,3)), loc=cbind(runif(4),runif(4)),model="smith", grid=TRUE)
 ## Example with Dirichlet mixture

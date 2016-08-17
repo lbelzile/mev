@@ -141,14 +141,26 @@ BEGIN_RCPP
 END_RCPP
 }
 // rPHuslerReiss
-NumericVector rPHuslerReiss(int index, NumericMatrix Sigma);
-RcppExport SEXP mev_rPHuslerReiss(SEXP indexSEXP, SEXP SigmaSEXP) {
+NumericVector rPHuslerReiss(int index, arma::mat Lambda);
+RcppExport SEXP mev_rPHuslerReiss(SEXP indexSEXP, SEXP LambdaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type index(indexSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Lambda(LambdaSEXP);
+    __result = Rcpp::wrap(rPHuslerReiss(index, Lambda));
+    return __result;
+END_RCPP
+}
+// rPBrownResnick
+NumericVector rPBrownResnick(int index, NumericMatrix Sigma);
+RcppExport SEXP mev_rPBrownResnick(SEXP indexSEXP, SEXP SigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< int >::type index(indexSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
-    __result = Rcpp::wrap(rPHuslerReiss(index, Sigma));
+    __result = Rcpp::wrap(rPBrownResnick(index, Sigma));
     return __result;
 END_RCPP
 }
@@ -245,14 +257,26 @@ BEGIN_RCPP
 END_RCPP
 }
 // rhrspec
-NumericMatrix rhrspec(int n, NumericMatrix Sigma);
-RcppExport SEXP mev_rhrspec(SEXP nSEXP, SEXP SigmaSEXP) {
+NumericMatrix rhrspec(int n, arma::mat Lambda);
+RcppExport SEXP mev_rhrspec(SEXP nSEXP, SEXP LambdaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Lambda(LambdaSEXP);
+    __result = Rcpp::wrap(rhrspec(n, Lambda));
+    return __result;
+END_RCPP
+}
+// rbrspec
+NumericMatrix rbrspec(int n, NumericMatrix Sigma);
+RcppExport SEXP mev_rbrspec(SEXP nSEXP, SEXP SigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
-    __result = Rcpp::wrap(rhrspec(n, Sigma));
+    __result = Rcpp::wrap(rbrspec(n, Sigma));
     return __result;
 END_RCPP
 }

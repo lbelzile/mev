@@ -3,22 +3,55 @@
 ## (2) the penultimate approximations of Smith (1987)
 
 
-#' Extended generalised Pareto families
+#' @title Extended generalised Pareto families
 #'
-#' This function provides the log-likelihood and quantiles for the three different families presented
+#' @description This function provides the log-likelihood and quantiles for the three different families presented
 #' in Papastathopoulos and Tawn (2013). The latter include an additional parameter, \eqn{\kappa}.
 #' All three families share the same tail index than the GP model, while allowing for lower thresholds.
 #' In the case \eqn{\kappa=1}, the models reduce to the generalised Pareto.
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
-#'
-#' @author Leo Belzile
+#' @section Usage:
+#' \code{egp.ll(xdat, thresh, par, model=c("egp1","egp2","egp3"))}
+#' @section Usage:
+#' \code{egp.retlev(xdat, thresh, par, model=c("egp1","egp2","egp3"), p, plot=TRUE)}
+#' @description \code{egp.retlev} gives the return levels for the extended generalised Pareto distributions
+#' @name egp
+#' @aliases egp.retlev egp.ll
 #' @param xdat vector of observations, greater than the threshold
 #' @param thresh threshold value
 #' @param par parameter vector (\eqn{\kappa}, \eqn{\sigma},\eqn{\xi}).
 #' @param model a string indicating which extended family to fit
-#' @return \code{egp.ll} returns the log-likelihood value
+#' @param p extreme event probability; \code{p} must be greater than the rate of exceedance for the calculation to make sense. See \bold{Details}.
+#' @param plot boolean indicating whether or not to plot the return levels
 #' @importFrom grDevices rainbow
+#'
+#' @details
+#'
+#'For return levels, the \code{p} argument can be related to \eqn{T} year exceedances as follows:
+#'if there are \eqn{n_y} observations per year, than take \code{p}
+#'to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
+#' @author Leo Belzile
+#' @return \code{egp.ll} returns the log-likelihood value.
+#' @return \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a matrix of return levels.
+#' @examples
+#' set.seed(123)
+#' xdat <- evd::rgpd(1000, loc=0, scale=1, shape=0.5)
+#' par <- egp.fit(xdat, thresh=0, model="egp3")$par
+#' p <- c(1/1000,1/1500,1/2000)
+#' egp.retlev(xdat, 0, par, "egp3",p)
+#' #With multiple thresholds
+#' th <- c(0,0.1,0.2,1)
+#' opt <- egp.fitrange(xdat, th, model="egp1",plots=NA)
+#' egp.retlev(xdat, opt$thresh, opt$par, "egp1",p=p)
+#' opt <- egp.fitrange(xdat, th, model="egp2",plots=NA)
+#' egp.retlev(xdat, opt$thresh, opt$par, "egp2",p=p)
+#' opt <- egp.fitrange(xdat, th, model="egp3",plots=NA)
+#' egp.retlev(xdat, opt$thresh, opt$par, "egp3",p=p)
+NULL
+
+
+#' @keywords internal
 #' @export
 egp.ll <- function(xdat, thresh, par, model=c("egp1","egp2","egp3")){
   if(!(model %in% c("egp1","egp2","egp3")) || length(model)!=1){
@@ -68,33 +101,7 @@ egp.ll.opt <- function(par, xdat, thresh, model=c("egp1","egp2","egp3")){
     }
   )
 }
-#' @description \code{egp.retlev} gives the return levels for the extended generalised Pareto distributions
-#'@rdname egp.ll
-#'
-#'@param p extreme event probability; \code{p} must be greater than the rate of exceedance for the calculation to make sense. See \bold{Details}.
-#'@param plot boolean indicating whether or not to plot the return levels
-#'@return \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a matrix of return levels.
-#'@importFrom grDevices rainbow
-#'
-#'@section Details:
-#'
-#'For return levels, the \code{p} argument can be related to \eqn{T} year exceedances as follows:
-#'if there are \eqn{n_y} observations per year, than take \code{p}
-#'to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
-#'@examples
-#' set.seed(123)
-#' xdat <- evd::rgpd(1000, loc=0, scale=1, shape=0.5)
-#' par <- egp.fit(xdat, thresh=0, model="egp3")$par
-#' p <- c(1/1000,1/1500,1/2000)
-#' egp.retlev(xdat, 0, par, "egp3",p)
-#' #With multiple thresholds
-#' th <- c(0,0.1,0.2,1)
-#' opt <- egp.fitrange(xdat, th, model="egp1",plots=NA)
-#' egp.retlev(xdat, opt$thresh, opt$par, "egp1",p=p)
-#' opt <- egp.fitrange(xdat, th, model="egp2",plots=NA)
-#' egp.retlev(xdat, opt$thresh, opt$par, "egp2",p=p)
-#' opt <- egp.fitrange(xdat, th, model="egp3",plots=NA)
-#' egp.retlev(xdat, opt$thresh, opt$par, "egp3",p=p)
+#' @keywords internal
 #' @export
 egp.retlev <- function(xdat, thresh, par, model=c("egp1","egp2","egp3"), p, plot=TRUE){
   if(!(model %in% c("egp1","egp2","egp3")) || length(model)!=1){
@@ -149,10 +156,24 @@ egp.retlev <- function(xdat, thresh, par, model=c("egp1","egp2","egp3"), p, plot
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
 #' @inheritParams egp.ll
-#'@author Leo Belzile
+#' @author Leo Belzile
 #' @param init vector of initial values, with \eqn{\log(\kappa)}{log(\kappa)} and \eqn{\log(\sigma)}{log(\sigma)}; can be omitted.
 #' @return \code{egp.fit} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
+#' @name egp.fit
+#' @aliases egp.fitrange
+#' @description The function \code{egp.fitrange} provides classical parameter stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
+#'  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
+#' \code{egp.fitrange} can also be used to fit the model to multiple thresholds.
+#' @param plots vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots
+#' @param umin optional minimum value considered for threshold (if \code{thresh} is not provided)
+#' @param umax optional maximum value considered for threshold (if \code{thresh} is not provided)
+#' @param nint optional integer number specifying the number of thresholds to test.
+#' @return \code{egp.fitrange} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
+#' @importFrom graphics arrows points polygon title
+NULL
+
 #' @export
+#' @keywords internal
 egp.fit <- function(xdat, thresh, model=c("egp1","egp2","egp3"), init){
   if(!(model %in% c("egp1","egp2","egp3")) || length(model)!=1){
     stop("Invalid model  argument: must be one of `egp1', `egp2' or `egp3'.");
@@ -191,18 +212,8 @@ egp.fit <- function(xdat, thresh, model=c("egp1","egp2","egp3"), init){
   }
 }
 
-#' @description The function \code{egp.fitrange} provides classical parameter stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
-#'  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
-#' \code{egp.fitrange} can also be used to fit the model to multiple thresholds.
-#' @inheritParams egp.ll
-#' @param plots vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots
-#' @param umin optional minimum value considered for threshold (if \code{thresh} is not provided)
-#' @param umax optional maximum value considered for threshold (if \code{thresh} is not provided)
-#' @param nint optional integer number specifying the number of thresholds to test.
-#' @rdname egp.fit
-#' @return \code{egp.fitrange} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
 #' @export
-#' @importFrom graphics arrows points polygon title
+#' @keywords internal
 egp.fitrange <- function(xdat, thresh, model=c("egp1","egp2","egp3"), plots=1:3, umin, umax, nint){
   if(!(model %in% c("egp1","egp2","egp3")) || length(model)!=1){
     stop("Invalid model selection");

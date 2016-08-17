@@ -51,7 +51,7 @@ m3 = gpd.tem(param="VaR", n.psi=50, dat=dat, m=100)
 #Providing psi
 m4 = gpd.tem(param="ES", dat=dat, m=100, psi = c(seq(2,5,length=15),seq(5, 35, length=45)))
 plot(m4, c(2,4)) #displays numerical instability for values of r around zero
-plot(fr4 <- splinecorr(m4), which=c(2,4))
+plot(fr4 <- spline.corr(m4), which=c(2,4))
 confint(m1)
 confint(m4, parm=2, warn=FALSE)
 }

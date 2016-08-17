@@ -20,7 +20,7 @@ the placement of legends.
 }
 \details{
 Plots produced depend on the integers provided in \code{which}. \code{1} displays the Wald pivot, the likelihood root \code{r}, the modified likelihood root \code{rstar} and the likelihood modification \code{q} as functions of the parameter \code{psi}. \code{2} gives the renormalized profile log likelihood and adjusted form, with the maximum likelihood having ordinate value of zero. \code{3} provides the significance function, a transformation of \code{1}. Lastly, \code{4} plots the correction factor as a function of the likelihood root; it is a diagnostic plot aimed for detecting failure of the asymptotic approximation, often
-due to poor numerics in a neighborhood of \code{r=0}; the function should be smooth. The function \code{\link{splinecorr}} is designed to handle this by removing the incorrect corrections and providing smoothed estimates, replacing outliers and missing values with the fitted values from the fit.
+due to poor numerics in a neighborhood of \code{r=0}; the function should be smooth. The function \code{\link{spline.corr}} is designed to handle this by removing the incorrect corrections and providing smoothed estimates, replacing outliers and missing values with the fitted values from the fit.
 }
 \references{
 Brazzale, A. R., Davison, A. C. and Reid, N. (2007). \emph{Applied Asymptotics: Case Studies in Small-Sample Statistics}. Cambridge University Press, Cambridge.

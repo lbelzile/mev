@@ -10,63 +10,58 @@
 \alias{gpdr.phi}
 \alias{gpdr.score}
 \title{Generalized Pareto distribution (return level parametrization)}
-\usage{
-gpdr.ll(par, dat, m, tol = 1e-05)
-
-gpdr.ll.optim(par, dat, m)
-
-gpdr.score(par, dat, m)
-
-gpdr.infomat(par, dat, m)
-
-gpdr.Vfun(par, dat, m)
-
-gpdr.dphi(par, V, dat, m)
-
-gpdr.phi(par, V, dat, m)
-}
 \arguments{
-\item{par}{vector of length 2 containing \eqn{y_m} and \eqn{\xi}, respectively the \code{m}-year return level
-and the shape parameter.}
+\item{par}{vector of length 2 containing \eqn{y_m} and \eqn{\xi}, respectively the \eqn{m}-year return level and the shape parameter.}
 
-\item{dat}{sample vector.}
+\item{dat}{sample vector}
 
 \item{m}{number of observations of interest for return levels. See \strong{Details}}
 
-\item{tol}{numerical tolerance for the Gumbel model.}
+\item{tol}{numerical tolerance for the exponential model}
 
-\item{V}{vector calculated by \code{\link{gpdr.Vfun}}}
+\item{V}{vector calculated by \code{gpdr.Vfun}}
 }
 \description{
 Likelihood, score function and information matrix, bias,
 approximate ancillary statistics and sample space derivative
-for the generalized Pareto distribution parametrized in terms of return levels
+for the generalized Pareto distribution parametrized in terms of return levels.
 }
 \details{
 The observed information matrix was calculated using the second Bartlett identity as the negative of the second derivative of the log-likelihood function, using symbolic calculus in Sage.
 
 The interpretation for \code{m} is as follows: if there are on average \eqn{m_y} observations per year above the threshold, then  \eqn{m=Tm_y} corresponds to \eqn{T}-year return level.
 }
+\section{Usage}{
+ \code{gpdr.ll(par, dat, m, tol=1e-5)}
+
+ \code{gpdr.ll.optim(par, dat, m, tol=1e-5)}
+
+ \code{gpdr.score(par, dat, m)}
+
+ \code{gpdr.infomat(par, dat, m}
+
+ \code{gpdr.Vfun(par, dat, m)}
+
+ \code{gpdr.phi(par, V, dat, m)}
+
+ \code{gpdr.dphi(par, V, dat, m)}
+}
+
 \section{Functions}{
+
+
 \itemize{
-\item \code{gpdr.ll}: log-likelihood
-
-\item \code{gpdr.ll.optim}: negative log-likelihood parametrized in terms of log return level and shape in order to perform unconstrained optimization
-
-\item \code{gpdr.score}: score vector
-
-\item \code{gpdr.infomat}: observed information matrix for GPD parametrized in terms of rate of \code{m}-year return level and shape
-
-\item \code{gpdr.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
-
-\item \code{gpdr.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
-
-\item \code{gpdr.phi}: canonical parameter in the local exponential family approximation
-}}
+\item{\code{gpdr.ll}:} {log-likelihood}
+\item{\code{gpdr.ll.optim}:} {negative log-likelihood parametrized in terms of \code{log(scale)} and shape
+in order to perform unconstrained optimization}
+\item{\code{gpdr.score}:} {score vector}
+\item{\code{gpdr.infomat}:} {observed information matrix for GPD parametrized in terms of rate of \eqn{m}-year return level and shape}
+\item{\code{gpdr.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
+\item{\code{gpdr.phi}:} {canonical parameter in the local exponential family approximation}
+\item{\code{gpdr.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+}
+}
 \author{
 Leo Belzile
-}
-\seealso{
-\code{\link{gpd}}
 }
 

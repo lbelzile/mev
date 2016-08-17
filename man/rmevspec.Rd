@@ -5,26 +5,26 @@
 \title{Random samples from spectral distributions of multivariate extreme value models.}
 \usage{
 rmevspec(n, d, param, sigma, model = c("log", "neglog", "bilog", "negbilog",
-  "hr", "xstud", "ct", "dirmix"), weights, vario, loc, ...)
+  "hr", "br", "xstud", "ct", "dirmix"), weights, vario, loc, ...)
 }
 \arguments{
 \item{n}{number of observations}
 
 \item{d}{dimension of sample}
 
-\item{param}{parameter vector for the logistic, bilogistic, negative bilogistic and Dirichlet (Coles and Tawn) model.
-Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model.}
+\item{param}{parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
+Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model. See \bold{Details}.}
 
-\item{sigma}{covariance matrix for Husler-Reiss and extremal Student-t distributions}
+\item{sigma}{covariance matrix for Brown-Resnick and extremal Student-t distributions. Symmetric matrix of squared  coefficients \eqn{\lambda^2} for the Husler-Reiss model, with zero diagonal elements.}
 
-\item{model}{choice between 1-parameter logistic and negative logistic, bilogistic, negative bilogistic and extremal Dirichlet,
-the Brown-Resnick and extremal Student max-stable process (which generate the Husler-Reiss MEV distribution), or the Dirichlet mixture.}
+\item{model}{for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
+the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 
 \item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
 
 \item{vario}{function specifying the variogram. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing}
 
-\item{loc}{\code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter in the Smith \code{smith} model.}
+\item{loc}{\code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
 \item{...}{additional arguments for the \code{vario} function}
 }
@@ -63,7 +63,7 @@ scale <- 0.5; alpha <- 1
 vario <- function(x) scale*sqrt(sum(x^2))^alpha
 #grid specification
 grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-rmevspec(n=100, vario=vario,loc=grid.loc, model="hr")
+rmevspec(n=100, vario=vario,loc=grid.loc, model="br")
 ## Example with Dirichlet mixture
 alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
