@@ -4,17 +4,17 @@
 \alias{egp2.fit}
 \title{Fit an extended generalized Pareto distribution of Naveau et al.}
 \usage{
-egp2.fit(data, model = 1, method = c("ML", "PWM"), init, censoring = c(0,
+egp2.fit(data, model = 1, method = c("mle", "pwm"), init, censoring = c(0,
   Inf), rounded = 0, CI = FALSE, R = 1000, ncpus = 1, plots = TRUE)
 }
 \arguments{
 \item{data}{data vector.}
 
-\item{model}{integer ranging from 0 to 4 indicating the model to select}
+\item{model}{integer ranging from 0 to 4 indicating the model to select (see \code{\link{egp2}}).}
 
-\item{method}{string; either \code{"ML"} for maximum likelihood, or \code{"PWM"} for probability weighted moments, or both.}
+\item{method}{string; either \code{"mle"} for maximum likelihood, or \code{"pwm"} for probability weighted moments, or both.}
 
-\item{init}{vector of initial values for (\eqn{kappa},\eqn{sigma},\eqn{xi}) for the optimization.}
+\item{init}{vector of initial values, comprising of \eqn{p}, \eqn{\kappa}, \eqn{\delta},\eqn{\sigma},\eqn{\xi} (in that order) for the optimization. All parameters may not appear depending on \code{model}.}
 
 \item{censoring}{numeric vector of length 2 containing the lower and upper bound for censoring; \code{censoring=c(0,Inf)} is equivalent to no censoring.}
 
@@ -34,16 +34,26 @@ the extended GP models of Naveau et al. (2016) for rainfall intensities. The fun
 by means of nonparametric percentile bootstrap and returns histograms and QQ plots of
 the fitted distributions. The function handles both censoring and rounding.
 }
+\details{
+The different models include the following transformations:
+\itemize{
+\item \code{model} 0 corresponds to uniform carrier, \eqn{G(u)=u}.
+\item \code{model} 1 corresponds to a three parameters family, with carrier \eqn{G(u)=u^\kappa}.
+\item \code{model} 2 corresponds to a three parameters family, with carrier \eqn{G(u)=1-V_\delta((1-u)^\delta)}.
+\item \code{model} 3 corresponds to a four parameters family, with carrier \deqn{G(u)=1-V_\delta((1-u)^\delta))^{\kappa/2}}.
+\item \code{model} 4 corresponds to a five parameter model (a mixture of \code{type} 2, with \eqn{G(u)=pu^\kappa + (1-p)*u^\delta}
+}
+}
 \examples{
 \donttest{
 library(ismev)
 data(rain)
-egp2.fit(rain[rain>0], model=1, method="ML", init=c(0.9s, gp.fit(rain,0, show=FALSE)$est),
+egp2.fit(rain[rain>0], model=1, method="mle", init=c(0.9, gp.fit(rain,0, show=FALSE)$est),
  rounded=0.1,CI=TRUE, R=20)
 }
 }
 \author{
-Raphael Huser
+Raphael Huser and Philippe Naveau
 }
 \references{
 Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.

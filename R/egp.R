@@ -1,5 +1,5 @@
-### Code by Raphael Huser for the methods described in
-##@references Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753–2769, \code{doi:10.1002/2015WR018552}.
+### Code by Raphael Huser with contributions from P. Naveau for the methods described in
+##@references Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.
 
 
 #' Fit an extended generalized Pareto distribution of Naveau et al.
@@ -9,11 +9,21 @@
 #' by means of nonparametric percentile bootstrap and returns histograms and QQ plots of
 #' the fitted distributions. The function handles both censoring and rounding.
 #'
-#' @author Raphael Huser
+#' @details
+#' The different models include the following transformations:
+#' \itemize{
+#' \item \code{model} 0 corresponds to uniform carrier, \eqn{G(u)=u}.
+#' \item \code{model} 1 corresponds to a three parameters family, with carrier \eqn{G(u)=u^\kappa}.
+#' \item \code{model} 2 corresponds to a three parameters family, with carrier \eqn{G(u)=1-V_\delta((1-u)^\delta)}.
+#' \item \code{model} 3 corresponds to a four parameters family, with carrier \deqn{G(u)=1-V_\delta((1-u)^\delta))^{\kappa/2}}.
+#' \item \code{model} 4 corresponds to a five parameter model (a mixture of \code{type} 2, with \eqn{G(u)=pu^\kappa + (1-p)*u^\delta}
+#' }
+#'
+#' @author Raphael Huser and Philippe Naveau
 #' @param data data vector.
-#' @param model integer ranging from 0 to 4 indicating the model to select
-#' @param method string; either \code{"ML"} for maximum likelihood, or \code{"PWM"} for probability weighted moments, or both.
-#' @param init vector of initial values for (\eqn{kappa},\eqn{sigma},\eqn{xi}) for the optimization.
+#' @param model integer ranging from 0 to 4 indicating the model to select (see \code{\link{egp2}}).
+#' @param method string; either \code{"mle"} for maximum likelihood, or \code{"pwm"} for probability weighted moments, or both.
+#' @param init vector of initial values, comprising of \eqn{p}, \eqn{\kappa}, \eqn{\delta},\eqn{\sigma},\eqn{\xi} (in that order) for the optimization. All parameters may not appear depending on \code{model}.
 #' @param censoring numeric vector of length 2 containing the lower and upper bound for censoring; \code{censoring=c(0,Inf)} is equivalent to no censoring.
 #' @param rounded numeric giving the instrumental precision (and rounding of the data), with default of 0.
 #' @param CI logical; should confidence interval be returned (percentile bootstrap).
@@ -32,211 +42,219 @@
 #' \donttest{
 #' library(ismev)
 #' data(rain)
-#' egp2.fit(rain[rain>0], model=1, method="ML", init=c(0.9s, gp.fit(rain,0, show=FALSE)$est),
+#' egp2.fit(rain[rain>0], model=1, method="mle", init=c(0.9, gp.fit(rain,0, show=FALSE)$est),
 #'  rounded=0.1,CI=TRUE, R=20)
 #' }
-egp2.fit <- function(data,model=1,method=c("ML","PWM"),init,censoring=c(0,Inf),
+egp2.fit <- function(data,model=1,method=c("mle","pwm"),init,censoring=c(0,Inf),
                         rounded=0,CI=FALSE,R=1000,ncpus=1,plots=TRUE){
+  #Sanity checks
+  initsize <- switch(model, 3, 3, 4, 5)
+  if(length(init)!=initsize){stop("Invalid starting values in `init'; incorrect length.");}
+  data = data[data>0]
+  if(model==3 && "pwm" %in% method){stop("No explicit formula for PWMs for this model...")}
+
 	x <- seq(0,max(data,na.rm=TRUE),by=0.05);
 	degp2s <- c();
 	qegp2s <- c();
 
-	if(any(method=="PWM")){
+	if(any(method=="pwm")){
 		if(model==1){
-			fit.PWM <- egp2.fit.pwm(x=data,type=1,kappa0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring);
+			fit.pwm <- egp2.fit.pwm(x=data,type=1,kappa0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring);
 			if(CI){
-				fit.PWM.boot <- boot::boot(data=data,statistic=egp2.fit.pwm.boot,R=R,type=1,kappa0=init[1],sigma0=init[2],
-				                     xi0=init[3],censoring=censoring,parallel="multicore",ncpus=ncpus);
-				CI.PWM.kappa <- boot::boot.ci(boot.out=fit.PWM.boot,index=1,type="perc")$perc[4:5];
-				CI.PWM.sigma <- boot::boot.ci(boot.out=fit.PWM.boot,index=2,type="perc")$perc[4:5];
-				CI.PWM.xi <- boot::boot.ci(boot.out=fit.PWM.boot,index=3,type="perc")$perc[4:5];
-				CIs.PWM <- cbind(CI.PWM.kappa,CI.PWM.sigma,CI.PWM.xi);
+				fit.pwm.boot <- boot::boot(data=data,statistic=egp2.fit.pwm.boot,R=R,
+				                      type=1,kappa0=init[1],sigma0=init[2],ncpus=ncpus,
+				                     xi0=init[3],censoring=censoring,parallel="multicore");
+				CI.pwm.kappa <- boot::boot.ci(boot.out=fit.pwm.boot,index=1,type="perc")$perc[4:5];
+				CI.pwm.sigma <- boot::boot.ci(boot.out=fit.pwm.boot,index=2,type="perc")$perc[4:5];
+				CI.pwm.xi <- boot::boot.ci(boot.out=fit.pwm.boot,index=3,type="perc")$perc[4:5];
+				CIs.pwm <- cbind(CI.pwm.kappa,CI.pwm.sigma,CI.pwm.xi);
 			}
-			degp2.PWM <- degp2(x=x,type=1,kappa=fit.PWM[1],sigma=fit.PWM[2],xi=fit.PWM[3]);
-			degp2s <- c(degp2s,degp2.PWM);
+			degp2.pwm <- degp2(x=x,type=1,kappa=fit.pwm[1],sigma=fit.pwm[2],xi=fit.pwm[3]);
+			degp2s <- c(degp2s,degp2.pwm);
 			if(plots){
-				qegp2.PWM <- qegp2(p=c(1:length(data))/(length(data)+1),type=1,kappa=fit.PWM[1],sigma=fit.PWM[2],xi=fit.PWM[3]);
-				qegp2s <- c(qegp2s,qegp2.PWM);
+				qegp2.pwm <- qegp2(p=c(1:length(data))/(length(data)+1),type=1,kappa=fit.pwm[1],
+				                   sigma=fit.pwm[2],xi=fit.pwm[3]);
+				qegp2s <- c(qegp2s,qegp2.pwm);
 				if(CI){
-					q.PWM.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(1),kappa=as.list(fit.PWM.boot$t[,1]),sigma=as.list(fit.PWM.boot$t[,2]),xi=as.list(fit.PWM.boot$t[,3]));
-					q.PWM.L <- apply(q.PWM.boot,1,quantile,0.025,na.rm=TRUE);
-					q.PWM.U <- apply(q.PWM.boot,1,quantile,0.975,na.rm=TRUE);
+					q.pwm.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(1),kappa=as.list(fit.pwm.boot$t[,1]),sigma=as.list(fit.pwm.boot$t[,2]),xi=as.list(fit.pwm.boot$t[,3]));
+					q.pwm.L <- apply(q.pwm.boot,1,quantile,0.025,na.rm=TRUE);
+					q.pwm.U <- apply(q.pwm.boot,1,quantile,0.975,na.rm=TRUE);
 				}
 			}
 		} else if(model==2){
-			fit.PWM <- egp2.fit.pwm(x=data,type=2,delta0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring);
+			fit.pwm <- egp2.fit.pwm(x=data,type=2,delta0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring);
 			if(CI){
-				fit.PWM.boot <- boot::boot(data=data,statistic=egp2.fit.pwm.boot,R=R,type=2,delta0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,parallel="multicore",ncpus=ncpus);
-				CI.PWM.delta <- boot::boot.ci(boot.out=fit.PWM.boot,index=1,type="perc")$perc[4:5];
-				CI.PWM.sigma <- boot::boot.ci(boot.out=fit.PWM.boot,index=2,type="perc")$perc[4:5];
-				CI.PWM.xi <- boot::boot.ci(boot.out=fit.PWM.boot,index=3,type="perc")$perc[4:5];
-				CIs.PWM <- cbind(CI.PWM.delta,CI.PWM.sigma,CI.PWM.xi)
+				fit.pwm.boot <- boot::boot(data=data,statistic=egp2.fit.pwm.boot,R=R,type=2,delta0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,parallel="multicore",ncpus=ncpus);
+				CI.pwm.delta <- boot::boot.ci(boot.out=fit.pwm.boot,index=1,type="perc")$perc[4:5];
+				CI.pwm.sigma <- boot::boot.ci(boot.out=fit.pwm.boot,index=2,type="perc")$perc[4:5];
+				CI.pwm.xi <- boot::boot.ci(boot.out=fit.pwm.boot,index=3,type="perc")$perc[4:5];
+				CIs.pwm <- cbind(CI.pwm.delta,CI.pwm.sigma,CI.pwm.xi)
 			}
-			degp2.PWM <- degp2(x=x,type=2,delta=fit.PWM[1],sigma=fit.PWM[2],xi=fit.PWM[3]);
-			degp2s <- c(degp2s,degp2.PWM);
+			degp2.pwm <- degp2(x=x,type=2,delta=fit.pwm[1],sigma=fit.pwm[2],xi=fit.pwm[3]);
+			degp2s <- c(degp2s,degp2.pwm);
 			if(plots){
-				qegp2.PWM <- qegp2(p=c(1:length(data))/(length(data)+1),type=2,delta=fit.PWM[1],sigma=fit.PWM[2],xi=fit.PWM[3]);
-				qegp2s <- c(qegp2s,qegp2.PWM);
+				qegp2.pwm <- qegp2(p=c(1:length(data))/(length(data)+1),type=2,delta=fit.pwm[1],sigma=fit.pwm[2],xi=fit.pwm[3]);
+				qegp2s <- c(qegp2s,qegp2.pwm);
 				if(CI){
-					q.PWM.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(2),delta=as.list(fit.PWM.boot$t[,1]),sigma=as.list(fit.PWM.boot$t[,2]),xi=as.list(fit.PWM.boot$t[,3]));
-					q.PWM.L <- apply(q.PWM.boot,1,quantile,0.025,na.rm=TRUE);
-					q.PWM.U <- apply(q.PWM.boot,1,quantile,0.975,na.rm=TRUE);
+					q.pwm.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(2),delta=as.list(fit.pwm.boot$t[,1]),sigma=as.list(fit.pwm.boot$t[,2]),xi=as.list(fit.pwm.boot$t[,3]));
+					q.pwm.L <- apply(q.pwm.boot,1,quantile,0.025,na.rm=TRUE);
+					q.pwm.U <- apply(q.pwm.boot,1,quantile,0.975,na.rm=TRUE);
 				}
 			}
 		} else if(model==3){
-			fit.PWM <- egp2.fit.pwm(x=data,type=3,kappa0=init[1],delta0=init[2],sigma0=init[3],xi0=init[4],censoring=censoring);
+			fit.pwm <- egp2.fit.pwm(x=data,type=3,kappa0=init[1],delta0=init[2],sigma0=init[3],xi0=init[4],censoring=censoring);
 			if(CI){
-				fit.PWM.boot <- boot::boot(data=data,statistic=egp2.fit.pwm.boot,R=R,type=3,kappa0=init[1],delta0=init[2],sigma0=init[3],xi0=init[4],censoring=censoring,parallel="multicore",ncpus=ncpus);
-				CI.PWM.kappa <- boot::boot.ci(boot.out=fit.PWM.boot,index=1,type="perc")$perc[4:5];
-				CI.PWM.delta <- boot::boot.ci(boot.out=fit.PWM.boot,index=2,type="perc")$perc[4:5];
-				CI.PWM.sigma <- boot::boot.ci(boot.out=fit.PWM.boot,index=3,type="perc")$perc[4:5];
-				CI.PWM.xi <- boot::boot.ci(boot.out=fit.PWM.boot,index=4,type="perc")$perc[4:5];
-				CIs.PWM <- cbind(CI.PWM.kappa,CI.PWM.delta,CI.PWM.sigma,CI.PWM.xi);
+				fit.pwm.boot <- boot::boot(data=data,statistic=egp2.fit.pwm.boot,R=R,type=3,kappa0=init[1],delta0=init[2],sigma0=init[3],xi0=init[4],censoring=censoring,parallel="multicore",ncpus=ncpus);
+				CI.pwm.kappa <- boot::boot.ci(boot.out=fit.pwm.boot,index=1,type="perc")$perc[4:5];
+				CI.pwm.delta <- boot::boot.ci(boot.out=fit.pwm.boot,index=2,type="perc")$perc[4:5];
+				CI.pwm.sigma <- boot::boot.ci(boot.out=fit.pwm.boot,index=3,type="perc")$perc[4:5];
+				CI.pwm.xi <- boot::boot.ci(boot.out=fit.pwm.boot,index=4,type="perc")$perc[4:5];
+				CIs.pwm <- cbind(CI.pwm.kappa,CI.pwm.delta,CI.pwm.sigma,CI.pwm.xi);
 			}
-			degp2.PWM <- degp2(x=x,type=3,kappa=fit.PWM[1],delta=fit.PWM[2],sigma=fit.PWM[3],xi=fit.PWM[4]);
-			degp2s <- c(degp2s,degp2.PWM);
+			degp2.pwm <- degp2(x=x,type=3,kappa=fit.pwm[1],delta=fit.pwm[2],sigma=fit.pwm[3],xi=fit.pwm[4]);
+			degp2s <- c(degp2s,degp2.pwm);
 			if(plots){
-				qegp2.PWM <- qegp2(p=c(1:length(data))/(length(data)+1),type=3,kappa=fit.PWM[1],delta=fit.PWM[2],sigma=fit.PWM[3],xi=fit.PWM[4]);
-				qegp2s <- c(qegp2s,qegp2.PWM);
+				qegp2.pwm <- qegp2(p=c(1:length(data))/(length(data)+1),type=3,kappa=fit.pwm[1],delta=fit.pwm[2],sigma=fit.pwm[3],xi=fit.pwm[4]);
+				qegp2s <- c(qegp2s,qegp2.pwm);
 				if(CI){
-					q.PWM.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(3),kappa=as.list(fit.PWM.boot$t[,1]),delta=as.list(fit.PWM.boot$t[,2]),sigma=as.list(fit.PWM.boot$t[,3]),xi=as.list(fit.PWM.boot$t[,4]));
-					q.PWM.L <- apply(q.PWM.boot,1,quantile,0.025,na.rm=TRUE);
-					q.PWM.U <- apply(q.PWM.boot,1,quantile,0.975,na.rm=TRUE);
+					q.pwm.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(3),kappa=as.list(fit.pwm.boot$t[,1]),delta=as.list(fit.pwm.boot$t[,2]),sigma=as.list(fit.pwm.boot$t[,3]),xi=as.list(fit.pwm.boot$t[,4]));
+					q.pwm.L <- apply(q.pwm.boot,1,quantile,0.025,na.rm=TRUE);
+					q.pwm.U <- apply(q.pwm.boot,1,quantile,0.975,na.rm=TRUE);
 				}
 			}
 		} else if(model==4){
-			fit.PWM <- egp2.fit.pwm(x=data,type=4,prob0=init[1],kappa0=init[2],delta0=init[3],sigma0=init[4],xi0=init[5],censoring=censoring);
+			fit.pwm <- egp2.fit.pwm(x=data,type=4,prob0=init[1],kappa0=init[2],delta0=init[3],sigma0=init[4],xi0=init[5],censoring=censoring);
 			if(CI){
-				fit.PWM.boot <- boot::boot(data=data,statistic=egp2.fit.pwm.boot,R=R,type=4,prob0=init[1],kappa0=init[2],delta0=init[3],sigma0=init[4],xi0=init[5],censoring=censoring,parallel="multicore",ncpus=ncpus);
-				CI.PWM.prob <- boot::boot.ci(boot.out=fit.PWM.boot,index=1,type="perc")$perc[4:5];
-				CI.PWM.kappa <- boot::boot.ci(boot.out=fit.PWM.boot,index=2,type="perc")$perc[4:5];
-				CI.PWM.delta <- boot::boot.ci(boot.out=fit.PWM.boot,index=3,type="perc")$perc[4:5];
-				CI.PWM.sigma <- boot::boot.ci(boot.out=fit.PWM.boot,index=4,type="perc")$perc[4:5];
-				CI.PWM.xi <- boot::boot.ci(boot.out=fit.PWM.boot,index=5,type="perc")$perc[4:5];
-				CIs.PWM <- cbind(CI.PWM.prob,CI.PWM.kappa,CI.PWM.delta,CI.PWM.sigma,CI.PWM.xi);
+				fit.pwm.boot <- boot::boot(data=data,statistic=egp2.fit.pwm.boot,R=R,type=4,prob0=init[1],kappa0=init[2],delta0=init[3],sigma0=init[4],xi0=init[5],censoring=censoring,parallel="multicore",ncpus=ncpus);
+				CI.pwm.prob <- boot::boot.ci(boot.out=fit.pwm.boot,index=1,type="perc")$perc[4:5];
+				CI.pwm.kappa <- boot::boot.ci(boot.out=fit.pwm.boot,index=2,type="perc")$perc[4:5];
+				CI.pwm.delta <- boot::boot.ci(boot.out=fit.pwm.boot,index=3,type="perc")$perc[4:5];
+				CI.pwm.sigma <- boot::boot.ci(boot.out=fit.pwm.boot,index=4,type="perc")$perc[4:5];
+				CI.pwm.xi <- boot::boot.ci(boot.out=fit.pwm.boot,index=5,type="perc")$perc[4:5];
+				CIs.pwm <- cbind(CI.pwm.prob,CI.pwm.kappa,CI.pwm.delta,CI.pwm.sigma,CI.pwm.xi);
 			}
-			degp2.PWM <- degp2(x=x,type=4,prob=fit.PWM[1],kappa=fit.PWM[2],delta=fit.PWM[3],sigma=fit.PWM[4],xi=fit.PWM[5]);
-			degp2s <- c(degp2s,degp2.PWM);
+			degp2.pwm <- degp2(x=x,type=4,prob=fit.pwm[1],kappa=fit.pwm[2],delta=fit.pwm[3],sigma=fit.pwm[4],xi=fit.pwm[5]);
+			degp2s <- c(degp2s,degp2.pwm);
 			if(plots){
-				qegp2.PWM <- qegp2(p=c(1:length(data))/(length(data)+1),type=4,prob=fit.PWM[1],kappa=fit.PWM[2],delta=fit.PWM[3],sigma=fit.PWM[4],xi=fit.PWM[5]);
-				qegp2s <- c(qegp2s,qegp2.PWM);
+				qegp2.pwm <- qegp2(p=c(1:length(data))/(length(data)+1),type=4,prob=fit.pwm[1],kappa=fit.pwm[2],delta=fit.pwm[3],sigma=fit.pwm[4],xi=fit.pwm[5]);
+				qegp2s <- c(qegp2s,qegp2.pwm);
 				if(CI){
-					q.PWM.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(4),prob=as.list(fit.PWM.boot$t[,1]),kappa=as.list(fit.PWM.boot$t[,2]),delta=as.list(fit.PWM.boot$t[,3]),sigma=as.list(fit.PWM.boot$t[,4]),xi=as.list(fit.PWM.boot$t[,5]));
-					q.PWM.L <- apply(q.PWM.boot,1,quantile,0.025,na.rm=TRUE);
-					q.PWM.U <- apply(q.PWM.boot,1,quantile,0.975,na.rm=TRUE);
+					q.pwm.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(4),prob=as.list(fit.pwm.boot$t[,1]),kappa=as.list(fit.pwm.boot$t[,2]),delta=as.list(fit.pwm.boot$t[,3]),sigma=as.list(fit.pwm.boot$t[,4]),xi=as.list(fit.pwm.boot$t[,5]));
+					q.pwm.L <- apply(q.pwm.boot,1,quantile,0.025,na.rm=TRUE);
+					q.pwm.U <- apply(q.pwm.boot,1,quantile,0.975,na.rm=TRUE);
 				}
 			}
 		}
 	}
 
-	if(any(method=="ML")){
+	if(any(method=="mle")){
 		if(model==1){
-			fit.ML <- egp2.fit.ml(x=data,type=1,kappa0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,rounded=rounded);
+			fit.mle <- egp2.fit.ml(x=data,type=1,kappa0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,rounded=rounded);
 			if(CI){
-				fit.ML.boot <- boot::boot(data=data,statistic=egp2.fit.ml.boot,R=R,type=1,kappa0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,rounded=rounded,parallel="multicore",ncpus=ncpus);
-				CI.ML.kappa <- boot::boot.ci(boot.out=fit.ML.boot,index=1,type="perc")$perc[4:5];
-				CI.ML.sigma <- boot::boot.ci(boot.out=fit.ML.boot,index=2,type="perc")$perc[4:5];
-				CI.ML.xi <- boot::boot.ci(boot.out=fit.ML.boot,index=3,type="perc")$perc[4:5];
-				CIs.ML <- cbind(CI.ML.kappa,CI.ML.sigma,CI.ML.xi);
+				fit.mle.boot <- boot::boot(data=data,statistic=egp2.fit.ml.boot,R=R,type=1,kappa0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,rounded=rounded,parallel="multicore",ncpus=ncpus);
+				CI.mle.kappa <- boot::boot.ci(boot.out=fit.mle.boot,index=1,type="perc")$perc[4:5];
+				CI.mle.sigma <- boot::boot.ci(boot.out=fit.mle.boot,index=2,type="perc")$perc[4:5];
+				CI.mle.xi <- boot::boot.ci(boot.out=fit.mle.boot,index=3,type="perc")$perc[4:5];
+				CIs.mle <- cbind(CI.mle.kappa,CI.mle.sigma,CI.mle.xi);
 			}
-			degp2.ML <- degp2(x=x,type=1,kappa=fit.ML[1],sigma=fit.ML[2],xi=fit.ML[3]);
-			degp2s <- c(degp2s,degp2.ML);
+			degp2.mle <- degp2(x=x,type=1,kappa=fit.mle[1],sigma=fit.mle[2],xi=fit.mle[3]);
+			degp2s <- c(degp2s,degp2.mle);
 			if(plots){
-				qegp2.ML <- qegp2(p=c(1:length(data))/(length(data)+1),type=1,kappa=fit.ML[1],sigma=fit.ML[2],xi=fit.ML[3]);
-				qegp2s <- c(qegp2s,qegp2.ML);
+				qegp2.mle <- qegp2(p=c(1:length(data))/(length(data)+1),type=1,kappa=fit.mle[1],sigma=fit.mle[2],xi=fit.mle[3]);
+				qegp2s <- c(qegp2s,qegp2.mle);
 				if(CI){
-					q.ML.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(1),kappa=as.list(fit.ML.boot$t[,1]),sigma=as.list(fit.ML.boot$t[,2]),xi=as.list(fit.ML.boot$t[,3]));
-					q.ML.L <- apply(q.ML.boot,1,quantile,0.025,na.rm=TRUE);
-					q.ML.U <- apply(q.ML.boot,1,quantile,0.975,na.rm=TRUE);
+					q.mle.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(1),kappa=as.list(fit.mle.boot$t[,1]),sigma=as.list(fit.mle.boot$t[,2]),xi=as.list(fit.mle.boot$t[,3]));
+					q.mle.L <- apply(q.mle.boot,1,quantile,0.025,na.rm=TRUE);
+					q.mle.U <- apply(q.mle.boot,1,quantile,0.975,na.rm=TRUE);
 				}
 			}
 		} else if(model==2){
-			fit.ML <- egp2.fit.ml(x=data,type=2,delta0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,rounded=rounded);
+			fit.mle <- egp2.fit.ml(x=data,type=2,delta0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,rounded=rounded);
 			if(CI){
-				fit.ML.boot <- boot::boot(data=data,statistic=egp2.fit.ml.boot,R=R,type=2,delta0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,rounded=rounded,parallel="multicore",ncpus=ncpus);
-				CI.ML.delta <- boot::boot.ci(boot.out=fit.ML.boot,index=1,type="perc")$perc[4:5];
-				CI.ML.sigma <- boot::boot.ci(boot.out=fit.ML.boot,index=2,type="perc")$perc[4:5];
-				CI.ML.xi <- boot::boot.ci(boot.out=fit.ML.boot,index=3,type="perc")$perc[4:5];
-				CIs.ML <- cbind(CI.ML.delta,CI.ML.sigma,CI.ML.xi);
+				fit.mle.boot <- boot::boot(data=data,statistic=egp2.fit.ml.boot,R=R,type=2,delta0=init[1],sigma0=init[2],xi0=init[3],censoring=censoring,rounded=rounded,parallel="multicore",ncpus=ncpus);
+				CI.mle.delta <- boot::boot.ci(boot.out=fit.mle.boot,index=1,type="perc")$perc[4:5];
+				CI.mle.sigma <- boot::boot.ci(boot.out=fit.mle.boot,index=2,type="perc")$perc[4:5];
+				CI.mle.xi <- boot::boot.ci(boot.out=fit.mle.boot,index=3,type="perc")$perc[4:5];
+				CIs.mle <- cbind(CI.mle.delta,CI.mle.sigma,CI.mle.xi);
 			}
-			degp2.ML <- degp2(x=x,type=2,delta=fit.ML[1],sigma=fit.ML[2],xi=fit.ML[3]);
-			degp2s <- c(degp2s,degp2.ML);
+			degp2.mle <- degp2(x=x,type=2,delta=fit.mle[1],sigma=fit.mle[2],xi=fit.mle[3]);
+			degp2s <- c(degp2s,degp2.mle);
 			if(plots){
-				qegp2.ML <- qegp2(p=c(1:length(data))/(length(data)+1),type=2,delta=fit.ML[1],sigma=fit.ML[2],xi=fit.ML[3]);
-				qegp2s <- c(qegp2s,qegp2.ML);
+				qegp2.mle <- qegp2(p=c(1:length(data))/(length(data)+1),type=2,delta=fit.mle[1],sigma=fit.mle[2],xi=fit.mle[3]);
+				qegp2s <- c(qegp2s,qegp2.mle);
 				if(CI){
-					q.ML.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(2),delta=as.list(fit.ML.boot$t[,1]),sigma=as.list(fit.ML.boot$t[,2]),xi=as.list(fit.ML.boot$t[,3]));
-					q.ML.L <- apply(q.ML.boot,1,quantile,0.025,na.rm=TRUE);
-					q.ML.U <- apply(q.ML.boot,1,quantile,0.975,na.rm=TRUE);
+					q.mle.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(2),delta=as.list(fit.mle.boot$t[,1]),sigma=as.list(fit.mle.boot$t[,2]),xi=as.list(fit.mle.boot$t[,3]));
+					q.mle.L <- apply(q.mle.boot,1,quantile,0.025,na.rm=TRUE);
+					q.mle.U <- apply(q.mle.boot,1,quantile,0.975,na.rm=TRUE);
 				}
 			}
 		} else if(model==3){
-			fit.ML <- egp2.fit.ml(x=data,type=3,kappa0=init[1],delta0=init[2],sigma0=init[3],xi0=init[4],censoring=censoring,rounded=rounded);
+			fit.mle <- egp2.fit.ml(x=data,type=3,kappa0=init[1],delta0=init[2],sigma0=init[3],xi0=init[4],censoring=censoring,rounded=rounded);
 			if(CI){
-				fit.ML.boot <- boot::boot(data=data,statistic=egp2.fit.ml.boot,R=R,type=3,kappa0=init[1],delta0=init[2],sigma0=init[3],xi0=init[4],censoring=censoring,rounded=rounded,parallel="multicore",ncpus=ncpus);
-				CI.ML.kappa <- boot::boot.ci(boot.out=fit.ML.boot,index=1,type="perc")$perc[4:5];
-				CI.ML.delta <- boot::boot.ci(boot.out=fit.ML.boot,index=2,type="perc")$perc[4:5];
-				CI.ML.sigma <- boot::boot.ci(boot.out=fit.ML.boot,index=3,type="perc")$perc[4:5];
-				CI.ML.xi <- boot::boot.ci(boot.out=fit.ML.boot,index=4,type="perc")$perc[4:5];
-				CIs.ML <- cbind(CI.ML.kappa,CI.ML.delta,CI.ML.sigma,CI.ML.xi);
+				fit.mle.boot <- boot::boot(data=data,statistic=egp2.fit.ml.boot,R=R,type=3,kappa0=init[1],delta0=init[2],sigma0=init[3],xi0=init[4],censoring=censoring,rounded=rounded,parallel="multicore",ncpus=ncpus);
+				CI.mle.kappa <- boot::boot.ci(boot.out=fit.mle.boot,index=1,type="perc")$perc[4:5];
+				CI.mle.delta <- boot::boot.ci(boot.out=fit.mle.boot,index=2,type="perc")$perc[4:5];
+				CI.mle.sigma <- boot::boot.ci(boot.out=fit.mle.boot,index=3,type="perc")$perc[4:5];
+				CI.mle.xi <- boot::boot.ci(boot.out=fit.mle.boot,index=4,type="perc")$perc[4:5];
+				CIs.mle <- cbind(CI.mle.kappa,CI.mle.delta,CI.mle.sigma,CI.mle.xi);
 			}
-			degp2.ML <- degp2(x=x,type=3,kappa=fit.ML[1],delta=fit.ML[2],sigma=fit.ML[3],xi=fit.ML[4]);
-			degp2s <- c(degp2s,degp2.ML);
+			degp2.mle <- degp2(x=x,type=3,kappa=fit.mle[1],delta=fit.mle[2],sigma=fit.mle[3],xi=fit.mle[4]);
+			degp2s <- c(degp2s,degp2.mle);
 			if(plots){
-				qegp2.ML <- qegp2(p=c(1:length(data))/(length(data)+1),type=3,kappa=fit.ML[1],delta=fit.ML[2],sigma=fit.ML[3],xi=fit.ML[4]);
-				qegp2s <- c(qegp2s,qegp2.ML);
+				qegp2.mle <- qegp2(p=c(1:length(data))/(length(data)+1),type=3,kappa=fit.mle[1],delta=fit.mle[2],sigma=fit.mle[3],xi=fit.mle[4]);
+				qegp2s <- c(qegp2s,qegp2.mle);
 				if(CI){
-					q.ML.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(3),kappa=as.list(fit.ML.boot$t[,1]),delta=as.list(fit.ML.boot$t[,2]),sigma=as.list(fit.ML.boot$t[,3]),xi=as.list(fit.ML.boot$t[,4]));
-					q.ML.L <- apply(q.ML.boot,1,quantile,0.025,na.rm=TRUE);
-					q.ML.U <- apply(q.ML.boot,1,quantile,0.975,na.rm=TRUE);
+					q.mle.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(3),kappa=as.list(fit.mle.boot$t[,1]),delta=as.list(fit.mle.boot$t[,2]),sigma=as.list(fit.mle.boot$t[,3]),xi=as.list(fit.mle.boot$t[,4]));
+					q.mle.L <- apply(q.mle.boot,1,quantile,0.025,na.rm=TRUE);
+					q.mle.U <- apply(q.mle.boot,1,quantile,0.975,na.rm=TRUE);
 				}
 			}
 		} else if(model==4){
-			fit.ML <- egp2.fit.ml(x=data,type=4,prob0=init[1],kappa0=init[2],delta0=init[3],sigma0=init[4],xi0=init[5],censoring=censoring,rounded=rounded);
+			fit.mle <- egp2.fit.ml(x=data,type=4,prob0=init[1],kappa0=init[2],delta0=init[3],sigma0=init[4],xi0=init[5],censoring=censoring,rounded=rounded);
 			if(CI){
-				fit.ML.boot <- boot::boot(data=data,statistic=egp2.fit.ml.boot,R=R,type=4,prob0=init[1],kappa0=init[2],delta0=init[3],sigma0=init[4],xi0=init[5],censoring=censoring,rounded=rounded,parallel="multicore",ncpus=ncpus);
-				CI.ML.prob <- boot::boot.ci(boot.out=fit.ML.boot,index=1,type="perc")$perc[4:5];
-				CI.ML.kappa <- boot::boot.ci(boot.out=fit.ML.boot,index=2,type="perc")$perc[4:5];
-				CI.ML.delta <- boot::boot.ci(boot.out=fit.ML.boot,index=3,type="perc")$perc[4:5];
-				CI.ML.sigma <- boot::boot.ci(boot.out=fit.ML.boot,index=4,type="perc")$perc[4:5];
-				CI.ML.xi <- boot::boot.ci(boot.out=fit.ML.boot,index=5,type="perc")$perc[4:5];
-				CIs.ML <- cbind(CI.ML.prob,CI.ML.kappa,CI.ML.delta,CI.ML.sigma,CI.ML.xi);
+				fit.mle.boot <- boot::boot(data=data,statistic=egp2.fit.ml.boot,R=R,type=4,prob0=init[1],kappa0=init[2],delta0=init[3],sigma0=init[4],xi0=init[5],censoring=censoring,rounded=rounded,parallel="multicore",ncpus=ncpus);
+				CI.mle.prob <- boot::boot.ci(boot.out=fit.mle.boot,index=1,type="perc")$perc[4:5];
+				CI.mle.kappa <- boot::boot.ci(boot.out=fit.mle.boot,index=2,type="perc")$perc[4:5];
+				CI.mle.delta <- boot::boot.ci(boot.out=fit.mle.boot,index=3,type="perc")$perc[4:5];
+				CI.mle.sigma <- boot::boot.ci(boot.out=fit.mle.boot,index=4,type="perc")$perc[4:5];
+				CI.mle.xi <- boot::boot.ci(boot.out=fit.mle.boot,index=5,type="perc")$perc[4:5];
+				CIs.mle <- cbind(CI.mle.prob,CI.mle.kappa,CI.mle.delta,CI.mle.sigma,CI.mle.xi);
 			}
-			degp2.ML <- degp2(x=x,type=4,prob=fit.ML[1],kappa=fit.ML[2],delta=fit.ML[3],sigma=fit.ML[4],xi=fit.ML[5]);
-			degp2s <- c(degp2s,degp2.ML);
+			degp2.mle <- degp2(x=x,type=4,prob=fit.mle[1],kappa=fit.mle[2],delta=fit.mle[3],sigma=fit.mle[4],xi=fit.mle[5]);
+			degp2s <- c(degp2s,degp2.mle);
 			if(plots){
-				qegp2.ML <- qegp2(p=c(1:length(data))/(length(data)+1),type=4,prob=fit.ML[1],kappa=fit.ML[2],delta=fit.ML[3],sigma=fit.ML[4],xi=fit.ML[5]);
-				qegp2s <- c(qegp2s,qegp2.ML);
+				qegp2.mle <- qegp2(p=c(1:length(data))/(length(data)+1),type=4,prob=fit.mle[1],kappa=fit.mle[2],delta=fit.mle[3],sigma=fit.mle[4],xi=fit.mle[5]);
+				qegp2s <- c(qegp2s,qegp2.mle);
 				if(CI){
-					q.ML.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(4),prob=as.list(fit.ML.boot$t[,1]),kappa=as.list(fit.ML.boot$t[,2]),delta=as.list(fit.ML.boot$t[,3]),sigma=as.list(fit.ML.boot$t[,4]),xi=as.list(fit.ML.boot$t[,5]));
-					q.ML.L <- apply(q.ML.boot,1,quantile,0.025,na.rm=TRUE);
-					q.ML.U <- apply(q.ML.boot,1,quantile,0.975,na.rm=TRUE);
+					q.mle.boot <- mapply(FUN=qegp2,p=list(c(1:length(data))/(length(data)+1)),type=list(4),prob=as.list(fit.mle.boot$t[,1]),kappa=as.list(fit.mle.boot$t[,2]),delta=as.list(fit.mle.boot$t[,3]),sigma=as.list(fit.mle.boot$t[,4]),xi=as.list(fit.mle.boot$t[,5]));
+					q.mle.L <- apply(q.mle.boot,1,quantile,0.025,na.rm=TRUE);
+					q.mle.U <- apply(q.mle.boot,1,quantile,0.975,na.rm=TRUE);
 				}
 			}
 		}
 	}
 
-	if(any(method=="PWM")){
-		if(any(method=="ML")){
-			fits <- list(PWM=fit.PWM,ML=fit.ML)
+	if(any(method=="pwm")){
+		if(any(method=="mle")){
+			fits <- list(pwm=fit.pwm,mle=fit.mle)
 			if(CI){
-				CIs <- list(PWM=CIs.PWM,ML=CIs.ML)
+				CIs <- list(pwm=CIs.pwm,mle=CIs.mle)
 			} else{
 				CIs <- NULL
 			}
 		} else{
-			fits <- list(PWM=fit.PWM)
+			fits <- list(pwm=fit.pwm)
 			if(CI & plots){
-				CIs <- list(PWM=CIs.PWM)
+				CIs <- list(pwm=CIs.pwm)
 			} else{
 				CIs <- NULL
 			}
 		}
 	} else{
-		if(any(method=="ML")){
-			fits <- list(ML=fit.ML)
+		if(any(method=="mle")){
+			fits <- list(mle=fit.mle)
 			if(CI){
-				CIs <- list(ML=CIs.ML)
+				CIs <- list(mle=CIs.mle)
 			} else{
 				CIs <- NULL
 			}
@@ -254,39 +272,39 @@ egp2.fit <- function(data,model=1,method=c("ML","PWM"),init,censoring=c(0,Inf),
 		dens <- density(data,from=0); lines(dens$x,dens$y,col="black");
 		abline(v=censoring,col="lightgrey");
 
-		if(any(method=="PWM")){
-			lines(x,degp2.PWM,col="red",lty=2);
+		if(any(method=="pwm")){
+			lines(x,degp2.pwm,col="red",lty=2);
 		}
-		if(any(method=="ML")){
-			lines(x,degp2.ML,col="blue");
+		if(any(method=="mle")){
+			lines(x,degp2.mle,col="blue");
 		}
 
-		if(any(method=="PWM")){
-			plot(data,qegp2.PWM,asp=1,xlab="Empirical quantiles",ylab="Fitted quantiles",
+		if(any(method=="pwm")){
+			plot(data,qegp2.pwm,asp=1,xlab="Empirical quantiles",ylab="Fitted quantiles",
 			     ylim=range(qegp2s,na.rm=TRUE),type="n");
 		} else{
-			if(any(method=="ML")){
-				plot(data,qegp2.ML,asp=1,xlab="Empirical quantiles",ylab="Fitted quantiles",
+			if(any(method=="mle")){
+				plot(data,qegp2.mle,asp=1,xlab="Empirical quantiles",ylab="Fitted quantiles",
 				     ylim=range(qegp2s,na.rm=TRUE),type="n");
 			}
 		}
 		if(CI){
-			if(any(method=="PWM")){
+			if(any(method=="pwm")){
 				polygon(x=c(sort(data),sort(data,decreasing=TRUE)),
-				        y=c(q.PWM.L,q.PWM.U[length(q.PWM.U):1]),col=rgb(1,0,0,alpha=0.1),
+				        y=c(q.pwm.L,q.pwm.U[length(q.pwm.U):1]),col=rgb(1,0,0,alpha=0.1),
 				        lty=2,border=rgb(1,0,0,alpha=0.5));
 			}
-			if(any(method=="ML")){
+			if(any(method=="mle")){
 				polygon(x=c(sort(data),sort(data,decreasing=TRUE)),
-				        y=c(q.ML.L,q.ML.U[length(q.ML.U):1]),col=rgb(0,0,1,alpha=0.1),
+				        y=c(q.mle.L,q.mle.U[length(q.mle.U):1]),col=rgb(0,0,1,alpha=0.1),
 				        lty=1,border=rgb(0,0,1,alpha=0.5));
 			}
 		}
-		if(any(method=="PWM")){
-			lines(sort(data),qegp2.PWM,lty=2,type="b",pch=20,col="red");
+		if(any(method=="pwm")){
+			lines(sort(data),qegp2.pwm,lty=2,type="b",pch=20,col="red");
 		}
-		if(any(method=="ML")){
-			lines(sort(data),qegp2.ML,lty=1,type="b",pch=20,col="blue");
+		if(any(method=="mle")){
+			lines(sort(data),qegp2.mle,lty=1,type="b",pch=20,col="blue");
 		}
 		abline(0,1,col="lightgrey");
 	}
@@ -341,18 +359,17 @@ egp2.fit <- function(data,model=1,method=c("ML","PWM"),init,censoring=c(0,Inf),
 #' generation for the carrier distributions of the extended Generalized Pareto distributions.
 #' @name egp2.G
 #' @seealso \code{\link{egp2}}
-#' @aliases regp2.G degp2.G qegp2.G pegp2.G
 #' @param u vector of observations (\code{degp2.G}), probabilities (\code{qegp2.G}) or quantiles (\code{pegp2.G}), in \eqn{[0,1]}
 #' @param prob mixture probability for model \code{type} \code{4}
-#' @param kappa shape parameter for \code{type} \code{1} ,\code{3} and \code{4}
-#' @param delta additional parameter for \code{type} \code{2} ,\code{3} and \code{4}
+#' @param kappa shape parameter for \code{type} \code{1}, \code{3} and \code{4}
+#' @param delta additional parameter for \code{type} \code{2}, \code{3} and \code{4}
 #' @param type integer between 0 to 5 giving the model choice
 #' @param log logical; should the log-density be returned (default to \code{FALSE})?
 #' @param n sample size
 #' @param unifsamp sample of uniform; if provided, the data will be used in place of new uniform random variates
 #' @param censoring numeric vector of length 2 containing the lower and upper bound for censoring
 #' @param direct logical; which method to use for sampling in model of \code{type} \code{4}?
-#' @author Raphael Huser
+#' @author  Raphael Huser and Philippe Naveau
 #'
 #' @section Usage: \code{pegp2.G(u, type=1,prob, kappa, delta)}
 #' @section Usage: \code{degp2.G(u,type=1, prob=NA, kappa=NA, delta=NA, log=FALSE)}
@@ -360,6 +377,7 @@ egp2.fit <- function(data,model=1,method=c("ML","PWM"),init,censoring=c(0,Inf),
 #' @section Usage: \code{regp2.G(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALSE,censoring=c(0,1))}
 NULL
 
+#' @rdname egp2-functions
 #' @export
 #' @keywords internal
 pegp2.G <- function(u, type=1, prob, kappa, delta){
@@ -381,6 +399,7 @@ pegp2.G <- function(u, type=1, prob, kappa, delta){
   }
 }
 
+#' @rdname egp2-functions
 #' @export
 #' @keywords internal
 degp2.G <- function(u,type=1, prob=NA, kappa=NA, delta=NA, log=FALSE){
@@ -418,6 +437,7 @@ degp2.G <- function(u,type=1, prob=NA, kappa=NA, delta=NA, log=FALSE){
   }
 }
 
+#' @rdname egp2-functions
 #' @export
 #' @keywords internal
 qegp2.G <- function(u,type=1, prob=NA,kappa=NA,delta=NA){
@@ -445,6 +465,7 @@ qegp2.G <- function(u,type=1, prob=NA,kappa=NA,delta=NA){
   }
 }
 
+#' @rdname egp2-functions
 #' @export
 #' @keywords internal
 regp2.G <- function(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALSE,censoring=c(0,1)){
@@ -511,14 +532,13 @@ regp2.G <- function(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALS
 #' \item \code{type} 4 corresponds to a five parameter model (a mixture of \code{type} 2, with \eqn{G(u)=pu^\kappa + (1-p)*u^\delta}
 #' }
 #' @name egp2
-#' @aliases regp2 degp2 qegp2 pegp2
 #' @param q vector of quantiles
 #' @param x vector of observations
 #' @param p vector of probabilities
 #' @param n sample size
 #' @param prob mixture probability for model \code{type} \code{4}
-#' @param kappa shape parameter for \code{type} \code{1} ,\code{3} and \code{4}
-#' @param delta additional parameter for \code{type} \code{2} ,\code{3} and \code{4}
+#' @param kappa shape parameter for \code{type} \code{1}, \code{3} and \code{4}
+#' @param delta additional parameter for \code{type} \code{2}, \code{3} and \code{4}
 #' @param sigma scale parameter
 #' @param xi shape parameter
 #' @param type integer between 0 to 5 giving the model choice
@@ -530,16 +550,23 @@ regp2.G <- function(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALS
 #' @section Usage: \code{degp2(x, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1, log=FALSE)}
 #' @section Usage: \code{qegp2(p, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1)}
 #' @section Usage: \code{regp2(n, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1, unifsamp=NULL, censoring=c(0,Inf))}
-#' @author Raphael Huser
+#' @author  Raphael Huser and Philippe Naveau
 #' @references Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.
 NULL
 
+
+#' EGP functions
+#'
+#' These functions are documented in \code{\link{egp2}} and in \code{link{egp2.G}} for the carrier distributions supported in the unit interval.
+#' @name egp2-functions
 #' @export
+#' @seealso \code{\link{egp2}}, \code{\link{egp2.G}}
 #' @keywords internal
 pegp2 <- function(q,prob=NA,kappa=NA,delta=NA,sigma=NA,xi=NA,type=1){
   return( pegp2.G(pgpd(q,scale=sigma,shape=xi),prob=prob,kappa=kappa,delta=delta,type=type) )
 }
 
+#' @rdname egp2-functions
 #' @export
 #' @keywords internal
 degp2 <- function(x,prob=NA,kappa=NA,delta=NA,sigma=NA,xi=NA,type=1,log=FALSE){
@@ -550,12 +577,14 @@ degp2 <- function(x,prob=NA,kappa=NA,delta=NA,sigma=NA,xi=NA,type=1,log=FALSE){
   }
 }
 
+#' @rdname egp2-functions
 #' @export
 #' @keywords internal
 qegp2 <- function(p,prob=NA,kappa=NA,delta=NA,sigma=NA,xi=NA,type=1){
   return( qgpd(qegp2.G(p,prob=prob,kappa=kappa,delta=delta,type=type),scale=sigma,shape=xi) )
 }
 
+#' @rdname egp2-functions
 #' @export
 #' @keywords internal
 regp2 <- function(n,prob=NA,kappa=NA,delta=NA,sigma=NA,xi=NA,type=1,unifsamp=NULL,censoring=c(0,Inf)){

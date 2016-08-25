@@ -1489,8 +1489,8 @@ function(x) {# x: sample data from the GPD
 #' threshold <- quantile(rain,0.9)
 #' gp.fit(rain, threshold, method="Grimshaw")
 #' gp.fit(rain, threshold, method="zs")
-gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","zs","zhang"), show=TRUE, MCMC=NULL){
-	xi.tol = 1e-3
+gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","zs","zhang"), show=FALSE, MCMC=NULL){
+	xi.tol = 1e-4
 	#Optimization of model, depending on routine
 	method <- match.arg(method)
 	if(!is.null(MCMC) && ! method %in% c("zs","zhang")) warning("Ignoring argument `MCMC` for frequentist estimation")

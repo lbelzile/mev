@@ -14,14 +14,13 @@
 #' @param m number of observations of interest for return levels. See \strong{Details}
 #' @param tol numerical tolerance for the exponential model
 #' @param V vector calculated by \code{gpde.Vfun}
-#' @aliases gpde.ll gpde.ll.optim gpde.score gpde.infomat gpde.Vfun gpde.phi gpde.dphi
-#' @section Usage: \code{gpde.ll(par, dat, m, tol=1e-5)}
-#' @section Usage: \code{gpde.ll.optim(par, dat, m, tol=1e-5)}
-#' @section Usage: \code{gpde.score(par, dat, m)}
-#' @section Usage: \code{gpde.infomat(par, dat, m}
-#' @section Usage: \code{gpde.Vfun(par, dat, m)}
-#' @section Usage: \code{gpde.phi(par, dat, V, m)}
-#' @section Usage: \code{gpde.dphi(par, dat, V, m)}
+#' @section Usage: \preformatted{gpde.ll(par, dat, m, tol=1e-5)
+#' gpde.ll.optim(par, dat, m, tol=1e-5)
+#' gpde.score(par, dat, m)
+#' gpde.infomat(par, dat, m
+#' gpde.Vfun(par, dat, m)
+#' gpde.phi(par, dat, V, m)
+#' gpde.dphi(par, dat, V, m)}
 #'
 #' @section Functions:
 #'
@@ -54,14 +53,13 @@ NULL
 #' @param tol numerical tolerance for the exponential model
 #' @param V vector calculated by \code{gpdr.Vfun}
 #'
-#' @section Usage: \code{gpdr.ll(par, dat, m, tol=1e-5)}
-#' @section Usage: \code{gpdr.ll.optim(par, dat, m, tol=1e-5)}
-#' @section Usage: \code{gpdr.score(par, dat, m)}
-#' @section Usage: \code{gpdr.infomat(par, dat, m}
-#' @section Usage: \code{gpdr.Vfun(par, dat, m)}
-#' @section Usage: \code{gpdr.phi(par, V, dat, m)}
-#' @section Usage: \code{gpdr.dphi(par, V, dat, m)}
-#' @aliases gpdr.ll gpdr.ll.optim gpdr.score gpdr.infomat gpdr.Vfun gpdr.phi gpdr.dphi
+#' @section Usage: \preformatted{gpdr.ll(par, dat, m, tol=1e-5)
+#' gpdr.ll.optim(par, dat, m, tol=1e-5)
+#' gpdr.score(par, dat, m)
+#' gpdr.infomat(par, dat, m
+#' gpdr.Vfun(par, dat, m)
+#' gpdr.phi(par, V, dat, m)
+#' gpdr.dphi(par, V, dat, m)}
 #' @section Functions:
 #'
 #' \itemize{
@@ -83,19 +81,18 @@ NULL
 #' for the generalized extreme value distribution  parametrized in terms of the return level \eqn{z}, scale and shape.
 #'
 #' @author Leo Belzile
-#' @name gev
+#' @name gevr
 #' @param par vector of \code{retlev}, \code{scale} and \code{shape}
 #' @param dat sample vector
 #' @param V vector calculated by \code{gevr.Vfun}
 #' @param p probability, corresponding to \eqn{(1-p)}th quantile for \eqn{z}
-#' @aliases gevr.ll gevr.ll.optim gevr.score gevr.infomat gevr.Vfun gevr.phi gevr.dphi
-#' @section Usage: \code{gevr.ll(par, dat, p)}
-#' @section Usage: \code{gevr.ll.optim(par, dat, p)}
-#' @section Usage: \code{gevr.score(par, dat, p)}
-#' @section Usage: \code{gevr.infomat(par, dat, p)}
-#' @section Usage: \code{gevr.Vfun(par, dat, p)}
-#' @section Usage: \code{gevr.phi(par, dat, p, V)}
-#' @section Usage: \code{gevr.dphi(par, dat, p, V)}
+#' @section Usage: \preformatted{gevr.ll(par, dat, p)
+#' gevr.ll.optim(par, dat, p)
+#' gevr.score(par, dat, p)
+#' gevr.infomat(par, dat, p)
+#' gevr.Vfun(par, dat, p)
+#' gevr.phi(par, dat, p, V)
+#' gevr.dphi(par, dat, p, V)}
 #'
 #' @section Functions:
 #' \itemize{
@@ -109,9 +106,10 @@ NULL
 #' }
 NULL
 
-
-
-
+#' Negative log-likelihood of the generalized Pareto distribution (expected shortfall)
+#'
+#' @seealso \code{\link{gpde}}
+#' @inheritParams gpde
 #' @keywords internal
 #' @export
 gpde.ll <- function(par, dat, m){
@@ -120,7 +118,11 @@ gpde.ll <- function(par, dat, m){
 	sum(-log(xi*(1-xi)/(m^xi-1+xi))-log(es)-(1+1/xi)*log(1+(m^xi-1+xi)/((1-xi)*es)*dat))
 }
 
-## negative log-likelihood parametrized in terms of log expected shortfall and shape in order to perform unconstrained optimization
+
+#' The negative log-likelihood is parametrized in terms of log expected shortfall and shape in order to perform unconstrained optimization
+#' @rdname gpde.ll
+#' @seealso \code{\link{gpde}}
+#' @inheritParams gpde
 #' @keywords internal
 #' @export
 gpde.ll.optim <- function(par, dat, m){
@@ -128,7 +130,9 @@ gpde.ll.optim <- function(par, dat, m){
 	if(xi>1){ return(1e10)}
 	-sum(-log(xi*(1-xi)/(m^xi-1+xi))-log(es)-(1+1/xi)*log(1+(m^xi-1+xi)/((1-xi)*es)*dat))
 }
-## score vector
+#' Score vector for the GP distribution (expected shortfall)
+#' @seealso \code{\link{gpde}}
+#' @inheritParams gpde
 #' @keywords internal
 #' @export
 gpde.score <- function(par, dat, m){
@@ -138,7 +142,11 @@ gpde.score <- function(par, dat, m){
 		sum(-((m^xi*log(m) + 1)*dat/(es*(xi - 1)) - dat*(m^xi + xi - 1)/(es*(xi - 1)^2))*(1/xi + 1)/(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1) + (m^xi + xi - 1)*((m^xi*log(m) + 1)*(xi - 1)*xi/(m^xi + xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) - xi/(m^xi + xi - 1))/((xi - 1)*xi) + log(-dat*(m^xi + xi - 1)/(es*(xi - 1)) + 1)/xi^2))
 }
 
-## observed information matrix for GPD parametrized in terms of rate of expected shortfall and shape
+#' Observed information matrix for the GP distribution (expected shortfall)
+#'
+#' The information matrix is parametrized in terms of rate of expected shortfall and shape
+#' @seealso \code{\link{gpde}}
+#' @inheritParams gpde
 #' @keywords internal
 #' @export
 gpde.infomat <- function(par, dat, m){
@@ -149,8 +157,12 @@ gpde.infomat <- function(par, dat, m){
 	k12 = sum(-((m^xi*log(m) + 1)*dat/(es^2*(xi - 1)) - dat*(m^xi + xi - 1)/(es^2*(xi - 1)^2))*(1/xi + 1)/(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1) + dat*(m^xi + xi - 1)*((m^xi*log(m) + 1)*dat/(es*(xi - 1)) - dat*(m^xi + xi - 1)/(es*(xi - 1)^2))*(1/xi + 1)/(es^2*(xi - 1)*(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1)^2) + dat*(m^xi + xi - 1)/(es^2*(xi - 1)*xi^2*(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1)))
 	cbind(c(k11,k12),c(k12,k22))
 }
-
-## vector implementing conditioning on approximate ancillary statistics for the TEM
+#' Tangent exponential model statistics for the generalized Pareto distribution (expected shortfall)
+#'
+#' Vector implementing conditioning on approximate ancillary statistics for the TEM
+#' @seealso \code{\link{gpde}}
+#' @name gpde.temstat
+#' @inheritParams gpde
 #' @keywords internal
 #' @export
 gpde.Vfun <- function(par, dat, m){
@@ -160,7 +172,10 @@ gpde.Vfun <- function(par, dat, m){
 	)
 }
 
-## canonical parameter in the local exponential family approximation
+#' Canonical parameter in the local exponential family approximation
+#'
+#' @inheritParams gpde
+#' @rdname gpde.temstat
 #' @keywords internal
 #' @export
 gpde.phi <- function(par, dat, V, m){
@@ -168,7 +183,9 @@ gpde.phi <- function(par, dat, V, m){
 	rbind(-(m^xi + xi - 1)*(1/xi + 1)/(es*(xi - 1)*(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1)))%*%V
 }
 
-## derivative matrix of the canonical parameter in the local exponential family approximation
+## Derivative matrix of the canonical parameter in the local exponential family approximation
+#' @inheritParams gpde
+#' @rdname gpde.temstat
 #' @keywords internal
 #' @export
 gpde.dphi <- function(par, dat, V, m){
@@ -177,7 +194,10 @@ gpde.dphi <- function(par, dat, V, m){
 				,(m^xi + xi - 1)*((m^xi*log(m) + 1)*dat/(es*(xi - 1)) - dat*(m^xi + xi - 1)/(es*(xi - 1)^2))*(1/xi + 1)/(es*(xi - 1)*(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1)^2) - (m^xi*log(m) + 1)*(1/xi + 1)/(es*(xi - 1)*(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1)) + (m^xi + xi - 1)*(1/xi + 1)/(es*(xi - 1)^2*(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1)) + (m^xi + xi - 1)/(es*(xi - 1)*xi^2*(dat*(m^xi + xi - 1)/(es*(xi - 1)) - 1)))%*%V
 }
 
-
+#' Negative log-likelihood of the generalized Pareto distribution (return levels)
+#'
+#' @seealso \code{\link{gpdr}}
+#' @inheritParams gpdr
 #' @keywords internal
 #' @export
 gpdr.ll <- function(par, dat, m, tol=1e-5){
@@ -192,8 +212,11 @@ gpdr.ll <- function(par, dat, m, tol=1e-5){
 	}
 }
 
-## negative log-likelihood parametrized in terms of log return level and shape in order to perform unconstrained optimization
+#' Negative log-likelihood parametrized in terms of log return level and shape in order to perform unconstrained optimization
+#' @seealso \code{\link{gpdr}}
+#' @inheritParams gpdr
 #' @keywords internal
+#' @rdname gpdr.ll
 #' @export
 gpdr.ll.optim <- function(par, dat, m){
 	tol <- 1e-5
@@ -207,7 +230,9 @@ gpdr.ll.optim <- function(par, dat, m){
 	}
 }
 
-## Score of the profile log-likelihood for the GPD parametrized in terms of return levels
+#' Score of the profile log-likelihood for the GP distribution (return levels parametrization)
+#' @seealso \code{\link{gpdr}}
+#' @inheritParams gpdr
 #' @keywords internal
 #' @export
 gpdr.score <- function(par, dat, m){
@@ -219,7 +244,11 @@ gpdr.score <- function(par, dat, m){
 	)
 }
 
-## observed information matrix for GPD parametrized in terms of rate of \code{m}-year return level and shape
+#' Observed information matrix for GP distribution (return levels)
+#'
+#'The information matrix is parametrized in terms of rate of \code{m}-year return level and shape
+#' @seealso \code{\link{gpdr}}
+#' @inheritParams gpdr
 #' @keywords internal
 #' @export
 gpdr.infomat <- function(par, dat, m){
@@ -231,8 +260,12 @@ gpdr.infomat <- function(par, dat, m){
 	-info
 }
 
-
-## Approximate ancillary statistics in the local exponential family approximation
+#' Tangent exponential model statistics for the generalized Pareto distribution (return level)
+#'
+#' Vector implementing conditioning on approximate ancillary statistics for the TEM
+#' @seealso \code{\link{gpdr}}
+#' @name gpdr.temstat
+#' @inheritParams gpdr
 #' @keywords internal
 #' @export
 gpdr.Vfun <- function(par, dat, m){
@@ -244,7 +277,9 @@ gpdr.Vfun <- function(par, dat, m){
 }
 
 
-## Derivative of the canonical parameter \eqn{\phi(\theta)} in the local exponential family approximation
+#' Derivative of the canonical parameter \eqn{\phi(\theta)} in the local exponential family approximation
+#' @rdname gpdr.temstat
+#' @inheritParams gpdr
 #' @keywords internal
 #' @export
 gpdr.dphi <- function(par, dat, V, m){ #TODO fix
@@ -256,7 +291,10 @@ gpdr.dphi <- function(par, dat, V, m){ #TODO fix
 }
 
 
-## canonical parameter in the local exponential family approximation
+#' Canonical parameter in the local exponential family approximation
+#' @seealso \code{\link{gpdr}}
+#' @rdname gpdr.temstat
+#' @inheritParams gpdr
 #' @keywords internal
 #' @export
 gpdr.phi <- function(par, dat, V, m){
@@ -284,16 +322,16 @@ gpdr.phi <- function(par, dat, V, m){
 #' @param plot logical indiating whether \code{plot.fr} should be called upon exit
 #' @author Leo Belzile, from code by A. Davison from the \code{hoa} package
 #' @return an object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
-#' \enumerate{
-#' \item{normal}{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
-#' \item{par.hat}{maximum likelihood estimates}
-#' \item{par.hat.se}{standard errors of maximum likelihood estimates}
-#' \item{th.rest}{estimated maximum profile likelihood at (\eqn{psi},\eqn{\hat{\lambda}})}
-#' \item{r}{values of likelihood root corresponding to \eqn{\psi}}
-#' \item{psi}{vector of interest parameter}
-#' \item{q}{vector of likelihood modifications}
-#' \item{rstar}{modified likelihood root vector}
-#' \item{param}{parameter}
+#' \itemize{
+#' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
+#' \item{\code{par.hat}: }{maximum likelihood estimates}
+#' \item{\code{par.hat.se}: }{standard errors of maximum likelihood estimates}
+#' \item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{psi},\eqn{\hat{\lambda}})}
+#' \item{\code{r}: }{values of likelihood root corresponding to \eqn{\psi}}
+#' \item{\code{psi}: }{vector of interest parameter}
+#' \item{\code{q}: }{vector of likelihood modifications}
+#' \item{\code{rstar}: }{modified likelihood root vector}
+#' \item{\code{param}: }{parameter}
 #' }
 #' @export
 #' @examples
@@ -932,6 +970,12 @@ confint.fr <- function(object, parm, level=0.95, ...){
 #######################################
 ###  GEV in terms of return levels  ###
 #######################################
+
+#' Return level for the generalized extreme value distribution
+#'
+#' This function returns the \eqn{1-p}th quantile of the GEV.
+#' @inheritParams gev
+#' @seealso \code{\link{gev}}
 #' @keywords internal
 #' @export
 gev.retlev <- function(par, p){
@@ -940,7 +984,10 @@ gev.retlev <- function(par, p){
 }
 
 
-
+#' Negative log-likelihood of the generalized extreme value distribution (return levels)
+#'
+#' @seealso \code{\link{gevr}}
+#' @inheritParams gevr
 #' @keywords internal
 #' @export
 gevr.ll <- function(par, dat, p){
@@ -950,12 +997,20 @@ gevr.ll <- function(par, dat, p){
 	#sum(log(-((dat - z)*xi/sigma + (-log(-p + 1))^(-xi))^(-1/xi - 1)*exp(-((dat - z)*xi/sigma + (-log(-p + 1))^(-xi))^(-1/xi))/sigma))
 }
 
+#' Negative log-likelihood parametrized in terms of location, log return level and shape in order to perform unconstrained optimization
+#' @rdname gevr.ll
+#' @seealso \code{\link{gevr}}
+#' @inheritParams gevr
 #' @keywords internal
 #' @export
 gevr.ll.optim <- function(par, dat, p){
 	tpar = par; tpar[2] = exp(par[2])
 	-gevr.ll(tpar,dat, p)
 }
+
+#' Score of the log-likelihood for the GEV distribution (return levels)
+#' @seealso \code{\link{gevr}}
+#' @inheritParams gevr
 #' @keywords internal
 #' @export
 gevr.score <- function(par, dat, p){
@@ -966,6 +1021,11 @@ gevr.score <- function(par, dat, p){
 		))
 }
 
+#' Observed information matrix for GEV distribution (return levels)
+#'
+#'The information matrix is parametrized in terms of location, \eqn{(1-p)}th quantile and shape.
+#' @seealso \code{\link{gevr}}
+#' @inheritParams gevr
 #' @keywords internal
 #' @export
 gevr.infomat <- function(par, dat, p){
@@ -983,8 +1043,12 @@ gevr.infomat <- function(par, dat, p){
 }
 
 
-
-
+#' Tangent exponential model statistics for the GEV distribution (return level)
+#'
+#' Vector implementing conditioning on approximate ancillary statistics for the TEM
+#' @seealso \code{\link{gevr}}
+#' @name gevr.temstat
+#' @inheritParams gevr
 #' @keywords internal
 #' @export
 gevr.Vfun <- function(par, dat, p){
@@ -994,6 +1058,9 @@ gevr.Vfun <- function(par, dat, p){
 				sigma*((dat - z)*xi/sigma + (-log(-p + 1))^(-xi))^(-1/xi)*(((-log(-p + 1))^(-xi)*log(-log(-p + 1)) - (dat - z)/sigma)/(((dat - z)*xi/sigma + (-log(-p + 1))^(-xi))*xi) + log((dat - z)*xi/sigma + (-log(-p + 1))^(-xi))/xi^2)/((dat - z)*xi/sigma + (-log(-p + 1))^(-xi))^(-1/xi - 1))
 }
 
+#' Canonical parameter in the local exponential family approximation
+#' @rdname gevr.temstat
+#' @inheritParams gevr
 #' @keywords internal
 #' @export
 gevr.phi <- function(par, dat, p, V){
@@ -1001,7 +1068,9 @@ gevr.phi <- function(par, dat, p, V){
 	t(-((xi*(-log(-p + 1))^xi + (-log(-p + 1))^xi)*((dat*xi*(-log(-p + 1))^xi - xi*z*(-log(-p + 1))^xi + sigma)/(sigma*(-log(-p + 1))^xi))^(1/xi) - (-log(-p + 1))^xi)/((dat*xi*(-log(-p + 1))^xi - xi*z*(-log(-p + 1))^xi + sigma)*((dat*xi*(-log(-p + 1))^xi - xi*z*(-log(-p + 1))^xi + sigma)/(sigma*(-log(-p + 1))^xi))^(1/xi)))%*%V
 }
 
-
+#' Derivative of the canonical parameter \eqn{\phi(\theta)} in the local exponential family approximation
+#' @rdname gevr.temstat
+#' @inheritParams gevr
 #' @keywords internal
 #' @export
 gevr.dphi <- function(par, dat, p, V){
@@ -1035,16 +1104,16 @@ gevr.dphi <- function(par, dat, p, V){
 #' @author Leo Belzile, from code by A. Davison from the \code{hoa} package
 #' @importFrom ismev gev.fit
 #' @return an object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
-#' \enumerate{
-#' \item{normal}{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
-#' \item{par.hat}{maximum likelihood estimates}
-#' \item{par.hat.se}{standard errors of maximum likelihood estimates}
-#' \item{th.rest}{estimated maximum profile likelihood at (\eqn{psi},\eqn{\hat{\lambda}})}
-#' \item{r}{values of likelihood root corresponding to \eqn{\psi}}
-#' \item{psi}{vector of interest parameter}
-#' \item{q}{vector of likelihood modifications}
-#' \item{rstar}{modified likelihood root vector}
-#' \item{param}{parameter}
+#' \itemize{
+#' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
+#' \item{\code{par.hat}: }{maximum likelihood estimates}
+#' \item{\code{par.hat.se}: }{standard errors of maximum likelihood estimates}
+#' \item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{psi},\eqn{\hat{\lambda}})}
+#' \item{\code{r}: }{values of likelihood root corresponding to \eqn{\psi}}
+#' \item{\code{psi}: }{vector of interest parameter}
+#' \item{\code{q}: }{vector of likelihood modifications}
+#' \item{\code{rstar}: }{modified likelihood root vector}
+#' \item{\code{param}: }{parameter}
 #' }
 #' @export
 gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,

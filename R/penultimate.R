@@ -17,7 +17,6 @@
 #' \code{egp.retlev(xdat, thresh, par, model=c("egp1","egp2","egp3"), p, plot=TRUE)}
 #' @description \code{egp.retlev} gives the return levels for the extended generalised Pareto distributions
 #' @name egp
-#' @aliases egp.retlev egp.ll
 #' @param xdat vector of observations, greater than the threshold
 #' @param thresh threshold value
 #' @param par parameter vector (\eqn{\kappa}, \eqn{\sigma},\eqn{\xi}).
@@ -51,8 +50,14 @@
 NULL
 
 
-#' @keywords internal
+#' @title Extended generalised Pareto families of Papastathopoulos and Tawn (functions)
+#' @description This function provides the log-likelihood and quantiles for the three different families presented
+#' in Papastathopoulos and Tawn (2013). The latter include an additional parameter, \eqn{\kappa}.
+#' All three families share the same tail index than the GP model, while allowing for lower thresholds.
 #' @export
+#' @inheritParams egp
+#' @name egp-function
+#' @keywords internal
 egp.ll <- function(xdat, thresh, par, model=c("egp1","egp2","egp3")){
   if(!(model %in% c("egp1","egp2","egp3")) || length(model)!=1){
     stop("Invalid model selection");
@@ -101,8 +106,11 @@ egp.ll.opt <- function(par, xdat, thresh, model=c("egp1","egp2","egp3")){
     }
   )
 }
-#' @keywords internal
+
+#' @name egp-function
 #' @export
+#' @inheritParams egp
+#' @keywords internal
 egp.retlev <- function(xdat, thresh, par, model=c("egp1","egp2","egp3"), p, plot=TRUE){
   if(!(model %in% c("egp1","egp2","egp3")) || length(model)!=1){
     stop("Invalid model selection");
@@ -155,25 +163,22 @@ egp.retlev <- function(xdat, thresh, par, model=c("egp1","egp2","egp3"), p, plot
 #' using maximum likelihood estimation.
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
-#' @inheritParams egp.ll
+#' @inheritParams egp
 #' @author Leo Belzile
 #' @param init vector of initial values, with \eqn{\log(\kappa)}{log(\kappa)} and \eqn{\log(\sigma)}{log(\sigma)}; can be omitted.
 #' @return \code{egp.fit} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
 #' @name egp.fit
-#' @aliases egp.fitrange
 #' @description The function \code{egp.fitrange} provides classical parameter stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
 #'  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
 #' \code{egp.fitrange} can also be used to fit the model to multiple thresholds.
 #' @param plots vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots
+#' @inheritParams egp
 #' @param umin optional minimum value considered for threshold (if \code{thresh} is not provided)
 #' @param umax optional maximum value considered for threshold (if \code{thresh} is not provided)
 #' @param nint optional integer number specifying the number of thresholds to test.
 #' @return \code{egp.fitrange} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
 #' @importFrom graphics arrows points polygon title
-NULL
-
 #' @export
-#' @keywords internal
 egp.fit <- function(xdat, thresh, model=c("egp1","egp2","egp3"), init){
   if(!(model %in% c("egp1","egp2","egp3")) || length(model)!=1){
     stop("Invalid model  argument: must be one of `egp1', `egp2' or `egp3'.");
@@ -212,8 +217,9 @@ egp.fit <- function(xdat, thresh, model=c("egp1","egp2","egp3"), init){
   }
 }
 
+#' @inheritParams egp
+#' @rdname egp.fit
 #' @export
-#' @keywords internal
 egp.fitrange <- function(xdat, thresh, model=c("egp1","egp2","egp3"), plots=1:3, umin, umax, nint){
   if(!(model %in% c("egp1","egp2","egp3")) || length(model)!=1){
     stop("Invalid model selection");

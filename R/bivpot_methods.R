@@ -24,6 +24,12 @@
 #' \item \code{threshold} a vector of length 2 containing the two thresholds.
 #' \item \code{pat} the proportion of observations above the corresponding \code{threshold}
 #' }
+#'
+#' @examples
+#' y <- evd::rgpd(1000,1,1,1)
+#' x <- y*rmevspec(n=1000,d=2,sigma=cbind(c(0,0.5),c(0.5,0)),model="hr")
+#' mod <- evd::fbvpot(x,threshold = c(1,1),model = "hr",likelihood ="censored")
+#' ibvpot(mod, c(20,20))
 ibvpot <- function (fitted, q, silent=FALSE) {
 	#If input is an object resulting from a call to "fpot"
 	if(all(c("bvpot","evd") %in% class(fitted)) && length(class(fitted)==2)){
@@ -32,7 +38,7 @@ ibvpot <- function (fitted, q, silent=FALSE) {
 	if(any(is.null(fitted$model),is.null(fitted$pat), is.null(fitted$threshold),
 				is.null(fitted$param))){
 	stop("Invalid argument for `fitted'. Please provide a list with components
-							`model',`threshold', `pat',`param' or the output of `evd::fvbpot'")
+							`model',`threshold', `pat',`param' or the output of `evd::fbvpot'")
 	}
 	if(! all(c("shape1","scale1","shape2","scale2") %in% names(fitted$param))){
 		stop("Invalid arguments for `param'. Missing marginal parameters.")

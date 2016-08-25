@@ -5,7 +5,7 @@
 \title{Peaks-over-threshold modelling using the generalized Pareto distribution}
 \usage{
 gp.fit(xdat, threshold, method = c("Grimshaw", "nlm", "optim", "ismev", "zs",
-  "zhang"), show = TRUE, MCMC = NULL)
+  "zhang"), show = FALSE, MCMC = NULL)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}

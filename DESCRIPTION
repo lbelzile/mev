@@ -1,11 +1,13 @@
 Package: mev
 Type: Package
 Title: Multivariate Extreme Value Distributions
-Version: 1.81
-Date: 2016-08-16
-Authors@R: c(person(given="Leo", family="Belzile", role = c("aut", "cre"), email = "leo.belzile@epfl.ch"), person(given="Jennifer L.", family="Wadsworth", role=c("aut")), person(given="Paul J.", family="Northrop", role=c("aut")), person(given="Scott D.", family="Grimshaw", role=c("aut")), person(given="Jin.", family="Zhang", role=c("ctb")), person(given="Michael A.", family="Stephens", role=c("ctb")), person(given="Art B.", family="Owen", role=c("ctb")), person(given="Anthony C.", family="Davison", role=c("ctb")))
+Version: 1.8.2
+Date: 2016-08-24
+Authors@R: c(person(given="Leo", family="Belzile", role = c("aut", "cre"), email = "leo.belzile@epfl.ch"), person(given="Jennifer L.", family="Wadsworth", role=c("aut")), person(given="Paul J.", family="Northrop", role=c("aut")), person(given="Scott D.", family="Grimshaw", role=c("aut")), person(given="Jin.", family="Zhang", role=c("ctb")), person(given="Michael A.", family="Stephens", role=c("ctb")), person(given="Art B.", family="Owen", role=c("ctb")), person(given="Anthony C.", family="Davison", role=c("ctb")), person(given="Raphael", family="Huser", role=c("aut")))
 Description: Exact simulation from max-stable processes and multivariate extreme value distributions for various parametric models. Threshold selection methods.
 License: GPL-3
+BugReports: https://github.com/lbelzile/mev/issues
+URL: https://github.com/lbelzile/mev/
 Imports: boot, evd, gmm, ismev, methods, nleqslv, numDeriv, Rcpp (>= 0.11.6), rootSolve, stats
 Suggests: cobs
 LinkingTo: Rcpp, RcppArmadillo

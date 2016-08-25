@@ -2,15 +2,6 @@
 % Please edit documentation in R/bias.R
 \name{gpd}
 \alias{gpd}
-\alias{gpd.Fscore}
-\alias{gpd.Vfun}
-\alias{gpd.bias}
-\alias{gpd.dphi}
-\alias{gpd.infomat}
-\alias{gpd.ll}
-\alias{gpd.ll.optim}
-\alias{gpd.phi}
-\alias{gpd.score}
 \title{Generalized Pareto distribution}
 \arguments{
 \item{par}{vector of \code{scale} and \code{shape}}
@@ -31,23 +22,15 @@ approximate ancillary statistics and sample space derivative
 for the generalized Pareto distribution
 }
 \section{Usage}{
- \code{gpd.ll(par, dat, tol=1e-5)}
-
- \code{gpd.ll.optim(par, dat, tol=1e-5)}
-
- \code{gpd.score(par, dat)}
-
- \code{gpd.infomat(par,dat,method = c("obs","exp"))}
-
- \code{gpd.bias(par, n)}
-
- \code{gpd.Fscore(par, dat, method=c("obs","exp"))}
-
- \code{gpd.Vfun(par, dat)}
-
- \code{gpd.phi(par, dat, V)}
-
- \code{gpd.dphi(par, dat, V)}
+ \preformatted{gpd.ll(par, dat, tol=1e-5)
+gpd.ll.optim(par, dat, tol=1e-5)
+gpd.score(par, dat)
+gpd.infomat(par,dat,method = c("obs","exp"))
+gpd.bias(par, n)
+gpd.Fscore(par, dat, method=c("obs","exp"))
+gpd.Vfun(par, dat)
+gpd.phi(par, dat, V)
+gpd.dphi(par, dat, V)}
 }
 
 \section{Functions}{

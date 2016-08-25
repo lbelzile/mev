@@ -2,13 +2,6 @@
 % Please edit documentation in R/tem.R
 \name{gpde}
 \alias{gpde}
-\alias{gpde.Vfun}
-\alias{gpde.dphi}
-\alias{gpde.infomat}
-\alias{gpde.ll}
-\alias{gpde.ll.optim}
-\alias{gpde.phi}
-\alias{gpde.score}
 \title{Generalized Pareto distribution (expected shortfall parametrization)}
 \arguments{
 \item{par}{vector of length 2 containing \eqn{y_m} and \eqn{\xi}, respectively the \eqn{m}-year return level and the shape parameter.}
@@ -32,19 +25,13 @@ The observed information matrix was calculated using the second Bartlett identit
 The interpretation for \code{m} is as follows: if there are on average \eqn{m_y} observations per year above the threshold, then  \eqn{m=Tm_y} corresponds to \eqn{T}-year return level.
 }
 \section{Usage}{
- \code{gpde.ll(par, dat, m, tol=1e-5)}
-
- \code{gpde.ll.optim(par, dat, m, tol=1e-5)}
-
- \code{gpde.score(par, dat, m)}
-
- \code{gpde.infomat(par, dat, m}
-
- \code{gpde.Vfun(par, dat, m)}
-
- \code{gpde.phi(par, dat, V, m)}
-
- \code{gpde.dphi(par, dat, V, m)}
+ \preformatted{gpde.ll(par, dat, m, tol=1e-5)
+gpde.ll.optim(par, dat, m, tol=1e-5)
+gpde.score(par, dat, m)
+gpde.infomat(par, dat, m
+gpde.Vfun(par, dat, m)
+gpde.phi(par, dat, V, m)
+gpde.dphi(par, dat, V, m)}
 }
 
 \section{Functions}{

@@ -44,7 +44,7 @@
 #' @return plots of the requested diagnostics and a list with components
 #' \itemize{
 #' \item \code{MLE}  maximum likelihood estimates from all thresholds
-#' \item \code{Cov}  joint asymptotic covariance matrix for \eqn{\xi}{xi}, \eqn{\eta}{eta} or \eqn{\eta^{-1}}{1/eta}.
+#' \item \code{Cov}  joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{\eta^{-1}}{1/\eta}.
 #' \item \code{WN}  values of the white noise process.
 #' \item \code{LRT} values of the likelihood ratio test statistic vs threshold.
 #' \item \code{pval} P-value of the likelihood ratio test.

@@ -60,7 +60,7 @@
 #' for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the lag vector between sites and \eqn{r=1/\lambda} for the Husler--Reiss.
 #'
 #' @section Warning:
-#'As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter must now be used in place
+#'As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
 #'
 #' @return an \code{n} by \code{d} exact sample from the corresponding multivariate extreme value model
 #'
@@ -120,7 +120,12 @@ rmev <-function(n, d, param, asy, sigma,
   m3 <- c("br","xstud","smith")
   #Check spatial requirements
   if((!missing(loc) || !missing(vario)) && ! model %in% m3){
+    if(model == "hr"){
+      warning("Obsolete. Please use `model=br' instead of `hr' for spatial models.");
+      model <- "br"
+    } else{
     warning("Unused arguments `vario' or `loc'; only implemented for Extremal student or Brown-Resnick process");
+    }
   }
   #One-parameter families
   if(model %in% m1){

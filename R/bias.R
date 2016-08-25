@@ -1,6 +1,6 @@
-#' @title Generalized Pareto distribution
+#' Generalized Pareto distribution
 #'
-#' @description Likelihood, score function and information matrix, bias,
+#' Likelihood, score function and information matrix, bias,
 #' approximate ancillary statistics and sample space derivative
 #' for the generalized Pareto distribution
 #'
@@ -12,16 +12,15 @@
 #' @param method string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.
 #' @param V vector calculated by \code{gpd.Vfun}
 #' @param n sample size
-#'
-#' @section Usage: \code{gpd.ll(par, dat, tol=1e-5)}
-#' @section Usage: \code{gpd.ll.optim(par, dat, tol=1e-5)}
-#' @section Usage: \code{gpd.score(par, dat)}
-#' @section Usage: \code{gpd.infomat(par,dat,method = c("obs","exp"))}
-#' @section Usage: \code{gpd.bias(par, n)}
-#' @section Usage: \code{gpd.Fscore(par, dat, method=c("obs","exp"))}
-#' @section Usage: \code{gpd.Vfun(par, dat)}
-#' @section Usage: \code{gpd.phi(par, dat, V)}
-#' @section Usage: \code{gpd.dphi(par, dat, V)}
+#' @section Usage: \preformatted{gpd.ll(par, dat, tol=1e-5)
+#' gpd.ll.optim(par, dat, tol=1e-5)
+#' gpd.score(par, dat)
+#' gpd.infomat(par,dat,method = c("obs","exp"))
+#' gpd.bias(par, n)
+#' gpd.Fscore(par, dat, method=c("obs","exp"))
+#' gpd.Vfun(par, dat)
+#' gpd.phi(par, dat, V)
+#' gpd.dphi(par, dat, V)}
 #'
 #' @section Functions:
 #'
@@ -44,7 +43,6 @@
 #' @references Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Statistics and Probability Letters}, \strong{19}(3), 169--176.
 #' @references Giles, D. E., Feng, H. and R. T. Godwin (2016).  Bias-corrected maximum likelihood estimation of the  parameters of the generalized Pareto distribution, \emph{Communications in Statistics - Theory and Methods}, \strong{45}(8), 2465--2483.
 #'
-#' @aliases gpd.ll gpd.ll.optim gpd.score gpd.infomat gpd.bias gpd.Fscore gpd.Vfun gpd.phi gpd.dphi
 NULL
 
 
@@ -58,22 +56,20 @@ NULL
 #' @name gev
 #' @param par vector of \code{loc}, \code{scale} and \code{shape}
 #' @param dat sample vector
-#' @param tol numerical tolerance for the Gumbel model
 #' @param method string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.
 #' @param V vector calculated by \code{gev.Vfun}
 #' @param n sample size
 #' @param p vector of probabilities
-#'
-#' @section Usage: \code{gev.ll(par, dat)}
-#' @section Usage: \code{gev.ll.optim(par, dat)}
-#' @section Usage: \code{gev.score(par, dat)}
-#' @section Usage: \code{gev.infomat(par, dat, method = c("obs","exp"))}
-#' @section Usage: \code{gev.retlev(par, p)}
-#' @section Usage: \code{gev.bias(par, n)}
-#' @section Usage: \code{gev.Fscore(par, dat, method=c("obs","exp"))}
-#' @section Usage: \code{gev.Vfun(par, dat)}
-#' @section Usage: \code{gev.phi(par, dat, V)}
-#' @section Usage: \code{gev.dphi(par, dat, V)}
+#' @section Usage: \preformatted{gev.ll(par, dat)
+#' gev.ll.optim(par, dat)
+#' gev.score(par, dat)
+#' gev.infomat(par, dat, method = c("obs","exp"))
+#' gev.retlev(par, p)
+#' gev.bias(par, n)
+#' gev.Fscore(par, dat, method=c("obs","exp"))
+#' gev.Vfun(par, dat)
+#' gev.phi(par, dat, V)
+#' gev.dphi(par, dat, V)}
 #'
 #' @section Note:
 #' The Gumbel case is not currently handled.
@@ -92,7 +88,6 @@ NULL
 #' \item{\code{gev.phi}:} {canonical parameter in the local exponential family approximation}
 #' \item{\code{gev.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
 #' }
-#' @aliases gev.ll gev.ll.optim gev.score gev.infomat gev.bias gev.Fscore gev.Vfun gev.phi gev.dphi gev.retlev
 #' @references Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 #' @references Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, \strong{30}, 248--275.
@@ -100,7 +95,13 @@ NULL
 NULL
 
 
-## Log-likelihood
+#' Log-likelihood for the generalized Pareto distribution
+#'
+#' Function returning the density of an \code{n} sample from the GP distribution.
+#' \code{gpd.ll.optim} returnsthe negative log-likelihood parametrized in terms of \code{log(scale)} and shape
+#' in order to perform unconstrained optimization
+#' @seealso \code{\link{gpd}}
+#' @inheritParams gpd
 #' @export
 #' @keywords internal
 gpd.ll <- function(par, dat, tol=1e-5){
@@ -111,8 +112,11 @@ gpd.ll <- function(par, dat, tol=1e-5){
     -length(dat)*log(sigma)-sum(dat)/sigma
   }
 }
-## Reparametrized log-likelihood for the generalized Pareto distribution
-#' @keywords internal
+
+
+
+#' @rdname gpd.ll
+#' @inheritParams gpd
 #' @export
 gpd.ll.optim <- function(par, dat,tol=1e-5){
   sigma = exp(par[1]); xi = par[2]
@@ -122,9 +126,12 @@ gpd.ll.optim <- function(par, dat,tol=1e-5){
     length(dat)*log(sigma)+sum(dat)/sigma
   }
 }
-## Score vector for the generalized Pareto distribution
-#' @keywords internal
+#' Score vector for the generalized Pareto distribution
+#'
+#' @seealso \code{\link{gpd}}
+#' @inheritParams gpd
 #' @export
+#' @keywords internal
 gpd.score <- function(par, dat){
   sigma = par[1]; xi = par[2]
   c(sum(dat*xi*(1/xi + 1)/(sigma^2*(dat*xi/sigma + 1)) - 1/sigma),
@@ -136,7 +143,13 @@ gpd.score <- function(par, dat){
 #   c(-1/(sigma^2*sqrt(2*xi + 1)*(xi + 1)),
 #   -1/(sigma*sqrt(2*xi + 1)*(xi + 1)^2) - 1/(sigma*(2*xi + 1)^(3/2)*(xi + 1))
 # )}
-## Information matrix for the generalized Pareto distribution
+
+
+#' Information matrix for the generalized Pareto distribution
+#'
+#' The function returns the expected or observed information matrix.
+#' @seealso \code{\link{gpd}}
+#' @inheritParams gpd
 #' @export
 #' @keywords internal
 gpd.infomat <- function(par,dat,method = c("obs","exp")){
@@ -155,9 +168,15 @@ gpd.infomat <- function(par,dat,method = c("obs","exp")){
     -cbind(c(k11,k12),c(k12,k22))
   }
 }
-## Matrix of approximate ancillary statistics for the generalized Pareto distribution
-#' @keywords internal
+#' Tangent exponential model statistics for the generalized Pareto distribution
+#'
+#' Matrix of approximate ancillary statistics, sample space derivative of the
+#' log-likelihood and mixed derivative for the generalized Pareto distribution.
+#' @seealso \code{\link{gpd}}
+#' @inheritParams gpd
 #' @export
+#' @name gpd.temstat
+#' @keywords internal
 gpd.Vfun <- function(par, dat){
   sigma = par[1]; xi = par[2]
   cbind(dat/sigma,
@@ -165,16 +184,17 @@ gpd.Vfun <- function(par, dat){
   )
 }
 
-## Sample space derivative of the log-likelihood
-#' @keywords internal
+#' @inheritParams gpd
+#' @rdname gpd.temstat
 #' @export
 gpd.phi <- function(par, dat, V){
   sigma = par[1]; xi = par[2]
   rbind(-xi*(1/xi + 1)/(sigma*(dat*xi/sigma + 1))	)%*%V
 }
-## Derivative of the sample space derivative of the log-likelihood
-#' @keywords internal
+
+#' @inheritParams gpd
 #' @export
+#' @rdname gpd.temstat
 gpd.dphi <- function(par, dat, V){
   sigma = par[1]; xi = par[2]
   rbind(xi*(1/xi + 1)/(sigma^2*(dat*xi/sigma + 1)) - dat*xi^2*(1/xi + 1)/(sigma^3*(dat*xi/sigma + 1)^2),
@@ -182,9 +202,16 @@ gpd.dphi <- function(par, dat, V){
 }
 
 
-
-#' @keywords internal
+#' Log-likelihood for the generalized extreme value distribution
+#'
+#' Function returning the density of an \code{n} sample from the GEV distribution.
+#'
+#' \code{gev.ll.optim} returns the negative log-likelihood parametrized in terms of location, \code{log(scale)} and shape in order to perform unconstrained optimization
+#'
+#' @inheritParams gev
 #' @export
+#' @keywords internal
+#' @seealso \code{\link{gev}}
 gev.ll <- function(par, dat){
   dat <- as.vector(dat)
 
@@ -192,16 +219,22 @@ gev.ll <- function(par, dat){
   sum(-log(par[2])-(1/par[3]+1)*log(tx)-tx^(-1/par[3]))
 }
 
-#' @keywords internal
+#' @rdname gev.ll
+#' @inheritParams gev
 #' @export
+#' @keywords internal
 gev.ll.optim <- function(par, dat){
   tpar = par; tpar[2] = exp(par[2])
   #parameters with log-scale
   nll = -gev.ll(tpar,dat)
   return(nll)
 }
-#' @keywords internal
+
+#' Score vector for the generalized extreme value distribution
+#'
+#' @inheritParams gev
 #' @export
+#' @keywords internal
 gev.score <- function(par, dat){
   mu = par[1]; sigma = par[2]; xi = par[3]
   c(sum(-(-(mu - dat)*xi/sigma + 1)^(-1/xi - 1)/sigma - xi*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1))),
@@ -210,8 +243,12 @@ gev.score <- function(par, dat){
   )
 }
 
-#' @keywords internal
+#' Information matrix for the generalized extreme value distribution
+#'
+#' The function returns the expected or observed information matrix.
+#' @inheritParams gev
 #' @export
+#' @keywords internal
 gev.infomat <- function(par, dat, method=c("obs","exp")){
   method <- match.arg(method,c("obs","exp"))
   if(missing(method)){
@@ -245,26 +282,35 @@ gev.infomat <- function(par, dat, method=c("obs","exp")){
 }
 
 
-
-#' @keywords internal
+#' Tangent exponential model statistics for the generalized extreme value distribution
+#'
+#' Matrix of approximate ancillary statistics, sample space derivative of the
+#' log-likelihood and mixed derivative for the generalized extreme value distribution.
+#' @seealso \code{\link{gev}}
+#' @inheritParams gev
 #' @export
+#' @name gev.temstat
+#' @keywords internal
 gev.Vfun <- function(par, dat){
   cbind(1,
         (dat-par[1])/par[2],
         par[2]*(-(par[1] - dat)*par[3]/par[2] + 1)^(-1/par[3])*(log(-(par[1] - dat)*par[3]/par[2] + 1)/par[3]^2 - (par[1] - dat)/(par[2]*((par[1] - dat)*par[3]/par[2] - 1)*par[3]))/(-(par[1] - dat)*par[3]/par[2] + 1)^(-1/par[3] - 1))
 }
 
-
-#' @keywords internal
+#' @rdname gev.temstat
+#' @inheritParams gev
 #' @export
+#' @keywords internal
 gev.phi <- function(par, dat, V){
   mu = par[1]; sigma = par[2]; xi = par[3]
   t(((dat - mu)*xi/sigma + 1)^(-1/xi - 1)/sigma + xi*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1)))%*%V
 }
 
 
-#' @keywords internal
+#' @rdname gev.temstat
+#' @inheritParams gev
 #' @export
+#' @keywords internal
 gev.dphi <- function(par, dat, V){
   mu = par[1]; sigma = par[2]; xi = par[3]
   rbind((-(mu - dat)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^2 - xi^2*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1)^2),
@@ -277,9 +323,13 @@ gev.dphi <- function(par, dat, V){
 
 
 
-
-#' @keywords internal
+#' Cox-Snell first order bias expression for the GEV distribution
+#'
+#' Bias vector for the GEV distribution based on an \code{n} sample.
+#' @inheritParams gev
 #' @export
+#' @keywords internal
+#' @seealso \code{\link{gev}}
 gev.bias <- function(par, n){
 	if(length(n)>1){stop("Invalid argument for sample size")}
 	sigma <- par[2] ; xi <- par[3]
@@ -362,16 +412,17 @@ gev.bias <- function(par, n){
 #   }
 
 
-## Cox-Snell first order bias expression for the generalized Pareto distribution
-## @describeIn gpd Cox-Snell first order bias
-# # ' @param n sample size
-# #' @inheritParams gpd.ll
-# #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
-# #'@references Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, \strong{30}, 248--275.
-# #' @references Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Statistics and Probability Letters}, \strong{19}(3), 169--176.
-# #' @references Giles, D. E., Feng, H. and R. T. Godwin (2016).  Bias-corrected maximum likelihood estimation of the  parameters of the generalized Pareto distribution, \emph{Communications in Statistics - Theory and Methods}, \strong{45}(8), 2465--2483.
-#' @keywords internal
+#' Cox-Snell first order bias expression for the generalized Pareto distribution
+#'
+#' Bias vector for the GP distribution based on an \code{n} sample.
+#' @inheritParams gpd
+#' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
+#'@references Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, \strong{30}, 248--275.
+#' @references Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Statistics and Probability Letters}, \strong{19}(3), 169--176.
+#' @references Giles, D. E., Feng, H. and R. T. Godwin (2016).  Bias-corrected maximum likelihood estimation of the  parameters of the generalized Pareto distribution, \emph{Communications in Statistics - Theory and Methods}, \strong{45}(8), 2465--2483.
 #' @export
+#' @keywords internal
+#' @seealso \code{\link{gpd}}, \code{\link{gpd.bcor}}
 gpd.bias <- function(par, n){ #scale, shape
 	if(length(par)!=2){stop("Invalid input for correction")}
 	if(length(n)>1){stop("Invalid argument for sample size")}
@@ -379,21 +430,26 @@ gpd.bias <- function(par, n){ #scale, shape
 	c(par[1]*(3+5*par[2]+4*par[2]^2), -(1+par[2])*(3+par[2]))/(n+3*n*par[2])
 }
 
-# #' @describeIn gpd Firth's modified score equation
-# #' @inheritParams gpd.infomat
-# #' @inheritParams gpd.ll
-# #' @references Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
-# #'
-#' @keywords internal
+#'  Firth's modified score equation for the generalized Pareto distribution
+#'
+#' @inheritParams gpd
+#' @references Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
+#' @seealso \code{\link{gpd}}, \code{\link{gpd.bcor}}
 #' @export
+#' @keywords internal
 gpd.Fscore <- function(par, dat, method=c("obs","exp")){
 	if(missing(method) || method!="exp"){	method="obs"}
 	gpd.score(par, dat) - gpd.infomat(par, dat, method)%*%gpd.bias(par, length(dat))
 }
 
-
-#' @keywords internal
+#'  Firth's modified score equation for the generalized extreme value distribution
+#'
+#' @seealso \code{\link{gev}}
+#' @inheritParams gev
+#' @param method string indicating whether to use the expected ("exp") or the observed ("obs" - the default) information matrix.
+#' @references Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 #' @export
+#' @keywords internal
 gev.Fscore <- function(par, dat, method="obs"){
 	if(missing(method) || method!="exp"){	method="obs"}
 	gev.score(par, dat) - gev.infomat(par, dat, method)%*%gev.bias(par, length(dat))

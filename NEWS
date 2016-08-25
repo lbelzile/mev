@@ -1,3 +1,13 @@
+mev v.18x
+==============
+New:
+* Bias-correction, TEM added
+* Penultimate approximations (Papastathopoulos & Tawn, 2013), Naveau et al. (2014) and Smith (1987)
+Changes:
+* model "br" is now distinct from "hr"
+* fixed invalid random number generation from logistic model for near-independence cases
+
+
 mev v1.7 (Release date: 2016-06-07)
 ==============
 * fixed an error in the acceptance rate for the gp.fit MCMC

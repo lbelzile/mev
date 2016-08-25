@@ -2,13 +2,6 @@
 % Please edit documentation in R/tem.R
 \name{gpdr}
 \alias{gpdr}
-\alias{gpdr.Vfun}
-\alias{gpdr.dphi}
-\alias{gpdr.infomat}
-\alias{gpdr.ll}
-\alias{gpdr.ll.optim}
-\alias{gpdr.phi}
-\alias{gpdr.score}
 \title{Generalized Pareto distribution (return level parametrization)}
 \arguments{
 \item{par}{vector of length 2 containing \eqn{y_m} and \eqn{\xi}, respectively the \eqn{m}-year return level and the shape parameter.}
@@ -32,19 +25,13 @@ The observed information matrix was calculated using the second Bartlett identit
 The interpretation for \code{m} is as follows: if there are on average \eqn{m_y} observations per year above the threshold, then  \eqn{m=Tm_y} corresponds to \eqn{T}-year return level.
 }
 \section{Usage}{
- \code{gpdr.ll(par, dat, m, tol=1e-5)}
-
- \code{gpdr.ll.optim(par, dat, m, tol=1e-5)}
-
- \code{gpdr.score(par, dat, m)}
-
- \code{gpdr.infomat(par, dat, m}
-
- \code{gpdr.Vfun(par, dat, m)}
-
- \code{gpdr.phi(par, V, dat, m)}
-
- \code{gpdr.dphi(par, V, dat, m)}
+ \preformatted{gpdr.ll(par, dat, m, tol=1e-5)
+gpdr.ll.optim(par, dat, m, tol=1e-5)
+gpdr.score(par, dat, m)
+gpdr.infomat(par, dat, m
+gpdr.Vfun(par, dat, m)
+gpdr.phi(par, V, dat, m)
+gpdr.dphi(par, V, dat, m)}
 }
 
 \section{Functions}{

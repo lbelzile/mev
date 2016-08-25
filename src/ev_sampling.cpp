@@ -436,11 +436,13 @@ NumericMatrix rlogspec (int n, int d, NumericVector theta){
   // double scale = 1/tgamma(1.0-1.0/theta[0]);
   //Define containers
   NumericMatrix samp(n,d);
+  NumericVector F0(1);
   int j;
   for(int r=0; r<n; r++){
     j = sampleone(d);
-    samp(r,_) = exp(-log(Rcpp::rexp(d,1.0))/shape);
-    samp(r,j) = exp(-log(rgamma(1,1.0-1.0/theta[0],1.0)[0])/theta[0]);
+    F0[0] = exp(-log(rgamma(1,1.0-1.0/theta[0],1.0)[0])/theta[0]);
+    samp(r,_) = exp(-log(Rcpp::rexp(d,1.0))/shape)/F0[0];
+    samp(r,j) = 1.0;
     samp(r,_) = samp(r,_)/sum(samp(r,_));
   }
   return samp;

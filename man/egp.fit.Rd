@@ -4,7 +4,19 @@
 \alias{egp.fit}
 \alias{egp.fitrange}
 \title{Fit of extended GP models and parameter stability plots}
+\usage{
+egp.fit(xdat, thresh, model = c("egp1", "egp2", "egp3"), init)
+
+egp.fitrange(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3,
+  umin, umax, nint)
+}
 \arguments{
+\item{xdat}{vector of observations, greater than the threshold}
+
+\item{thresh}{threshold value}
+
+\item{model}{a string indicating which extended family to fit}
+
 \item{init}{vector of initial values, with \eqn{\log(\kappa)}{log(\kappa)} and \eqn{\log(\sigma)}{log(\sigma)}; can be omitted.}
 
 \item{plots}{vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots}

@@ -2,8 +2,6 @@
 % Please edit documentation in R/penultimate.R
 \name{egp}
 \alias{egp}
-\alias{egp.ll}
-\alias{egp.retlev}
 \title{Extended generalised Pareto families}
 \arguments{
 \item{xdat}{vector of observations, greater than the threshold}

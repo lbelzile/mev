@@ -67,7 +67,7 @@ for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the l
 }
 \section{Warning}{
 
-As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter must now be used in place
+As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
 }
 \examples{
 set.seed(1)
