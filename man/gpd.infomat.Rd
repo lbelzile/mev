@@ -4,7 +4,7 @@
 \alias{gpd.infomat}
 \title{Information matrix for the generalized Pareto distribution}
 \usage{
-gpd.infomat(par, dat, method = c("obs", "exp"))
+gpd.infomat(par, dat, method = c("obs", "exp"), nobs = length(dat))
 }
 \arguments{
 \item{par}{vector of \code{scale} and \code{shape}}
@@ -12,6 +12,8 @@ gpd.infomat(par, dat, method = c("obs", "exp"))
 \item{dat}{sample vector}
 
 \item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
+
+\item{nobs}{number of observations}
 }
 \description{
 The function returns the expected or observed information matrix.

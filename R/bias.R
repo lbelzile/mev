@@ -133,6 +133,9 @@ gpd.ll.optim <- function(par, dat,tol=1e-5){
 #' @export
 #' @keywords internal
 gpd.score <- function(par, dat){
+  if(isTRUE(all.equal(0,par[2]))){
+   stop("Score function not implemented for the exponential model");
+  }
   sigma = par[1]; xi = par[2]
   c(sum(dat*xi*(1/xi + 1)/(sigma^2*(dat*xi/sigma + 1)) - 1/sigma),
     sum(-dat*(1/xi + 1)/(sigma*(dat*xi/sigma + 1)) + log(pmax(dat*xi/sigma + 1,0))/xi^2))
@@ -150,22 +153,28 @@ gpd.score <- function(par, dat){
 #' The function returns the expected or observed information matrix.
 #' @seealso \code{\link{gpd}}
 #' @inheritParams gpd
+#' @param nobs number of observations
 #' @export
 #' @keywords internal
-gpd.infomat <- function(par,dat,method = c("obs","exp")){
-  if(missing(method)){method = "obs"}
-  sigma = par[1]; xi = par[2]
+gpd.infomat <- function(par,dat,method = c("obs","exp"), nobs=length(dat)){
+  if(missing(method)){method <- "obs"}
+  sigma <- par[1]; xi <- par[2]
+  if(isTRUE(all.equal(xi,0))){
+    stop("Information matrix not implemented for the exponential submodel")
+  }
   if(method=="obs"){
-    -cbind(c( (length(dat)-(1+xi)*sum(dat*(2*sigma+xi*dat)/(sigma+xi*dat)^2))/(sigma^2),
-              (1+xi)*sum(dat/(sigma+xi*dat)^2)/xi-sum(dat/(sigma+xi*dat))/(sigma*xi)),
-           c((1+xi)*sum(dat/(sigma+xi*dat)^2)/xi-sum(dat/(sigma+xi*dat))/(sigma*xi),
-             (2/xi^2)*sum(dat/(sigma+xi*dat))-2*sum(log(1+xi*dat/sigma))/(xi^3)+(1+1/xi)*sum(dat^2/(sigma+xi*dat)^2)
-           ))
+    if(any((1 + xi*dat/sigma)<0)){
+     stop("Data outside of range specified by parameter, yielding a zero likelihood")
+    }
+    c11 <- (length(dat)-(1+xi)*sum(dat*(2*sigma+xi*dat)/(sigma+xi*dat)^2))/(sigma^2)
+    c12 <- (1+xi)*sum(dat/(sigma+xi*dat)^2)/xi-sum(dat/(sigma+xi*dat))/(sigma*xi)
+    c22 <- (2/xi^2)*sum(dat/(sigma+xi*dat))-2*sum(log(pmax(dat*xi/sigma + 1,0)))/(xi^3)+(1+1/xi)*sum(dat^2/(sigma+xi*dat)^2)
+    -matrix(c(c11,c12,c12,c22), nrow=2,ncol=2,byrow=TRUE)
   } else if(method=="exp"){
-    k11 = -2/((1+xi)*(1+2*xi))
-    k22 = -1/(sigma^2*(1+2*xi))
-    k12 = -1/(sigma*(1+xi)*(1+2*xi))
-    -cbind(c(k11,k12),c(k12,k22))
+    k11 <- -2/((1+xi)*(1+2*xi))
+    k22 <- -1/(sigma^2*(1+2*xi))
+    k12 <- -1/(sigma*(1+xi)*(1+2*xi))
+    -nobs*cbind(c(k11,k12),c(k12,k22)) #fixed 12-10-2016
   }
 }
 #' Tangent exponential model statistics for the generalized Pareto distribution
@@ -247,27 +256,40 @@ gev.score <- function(par, dat){
 #'
 #' The function returns the expected or observed information matrix.
 #' @inheritParams gev
+#' @param nobs number of observations
 #' @export
 #' @keywords internal
-gev.infomat <- function(par, dat, method=c("obs","exp")){
+gev.infomat <- function(par, dat, method=c("obs","exp"), nobs=length(dat)){
   method <- match.arg(method,c("obs","exp"))
   if(missing(method)){
     method="obs"
   }
-  n <- length(dat)
   if(method=="exp"){
     #(Expected) Fisher information does not depend on location parameter
     if(length(par)==3){sigma = par[2]; xi = par[3];
     } else{	sigma=par[1]; xi=par[2];
+    if(isTRUE(all.equal(xi,0))){
+      stop("Fisher information not implemented for the Gumbel submodel")
+    }
     }
     p = (1+xi)^2*gamma(1+2*xi)
     q = gamma(2+xi)*(digamma(1+xi)+(1+xi)/xi)
-    return(n*cbind(
+    return(nobs*cbind(
       c(p/sigma^2, -(p-gamma(2+xi))/(sigma^2*xi), (p/xi-q)/(sigma*xi)),
       c(-(p-gamma(2+xi))/(sigma^2*xi), (1-2*gamma(2+xi)+p)/(sigma^2*xi^2), -(1+digamma(1)+(1-gamma(2+xi))/xi-q+p/xi)/(sigma*xi^2)),
       c((p/xi-q)/(sigma*xi), -(1+digamma(1)+(1-gamma(2+xi))/xi-q+p/xi)/(sigma*xi^2), (pi^2/6+(1+digamma(1)+1/xi)^2-2*q/xi+p/xi^2)/xi^2)
     ))
   } else if(method=="obs"){
+    if(length(par)!=3){
+      stop("Invalid parameter vector")
+    }
+    if(isTRUE(all.equal(xi,0))){
+      stop("Observed information not implemented for the Gumbel submodel")
+    }
+    if(any((1 + xi*(dat-mu)/sigma)<0)){
+      stop("Data outside of range specified by parameter, yielding a zero likelihood")
+    }
+
     mu = par[1]; sigma = par[2]; xi = par[3];
     infomat <- matrix(0, ncol=3,nrow=3)
     infomat[1,1] <- sum(-((dat - mu)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^2 + xi^2*(1/xi + 1)/(sigma^2*((dat - mu)*xi/sigma + 1)^2))
@@ -334,7 +356,7 @@ gev.bias <- function(par, n){
 	if(length(n)>1){stop("Invalid argument for sample size")}
 	sigma <- par[2] ; xi <- par[3]
 	if(xi < -1/3){stop("Cox-Snell correction only valid if the shape is greater than -1/3")}
-	zeta3 = 1.20205690315959428539973816151144999076498629234049888179227155
+	zeta3 <- 1.20205690315959428539973816151144999076498629234049888179227155
 	k111 <- ((1 + xi)^2*(1 + 4*xi)*gamma(1 + 3*xi))/sigma^3
 	k112 <- (xi+1)*(gamma(2*xi+2)-(xi+1)*(4*xi+1)*gamma(3*xi+1))/(sigma^3*xi)
 	k113 <- (1 + xi)*((1 + xi)*(1 + 4*xi)*gamma(1+3*xi)- gamma(1+2*xi)*(1 + 2*xi*(2 + xi) + xi*(1 + 2*xi)*psigamma(2+2*xi,0)))/(sigma^2*xi^2)
@@ -438,7 +460,7 @@ gpd.bias <- function(par, n){ #scale, shape
 #' @export
 #' @keywords internal
 gpd.Fscore <- function(par, dat, method=c("obs","exp")){
-	if(missing(method) || method!="exp"){	method="obs"}
+	if(missing(method) || method!="exp"){	method <- "obs"}
 	gpd.score(par, dat) - gpd.infomat(par, dat, method)%*%gpd.bias(par, length(dat))
 }
 
@@ -451,7 +473,7 @@ gpd.Fscore <- function(par, dat, method=c("obs","exp")){
 #' @export
 #' @keywords internal
 gev.Fscore <- function(par, dat, method="obs"){
-	if(missing(method) || method!="exp"){	method="obs"}
+	if(missing(method) || method!="exp"){	method <- "obs"}
 	gev.score(par, dat) - gev.infomat(par, dat, method)%*%gev.bias(par, length(dat))
 }
 
@@ -508,12 +530,13 @@ bcorF <-  function(par, dat, method=c("obs","exp")){
 		#should in principle return the same numerical estimate
 		gpd.Fscore.plus <- function(par, dat,method=c("obs","exp")){
 			parcopy <- c(par[1], par[2]-0.3)
-			if(missing(method)){method="obs"}
 			gpd.score(parcopy, dat) - gpd.infomat(parcopy, dat, method)%*%gpd.bias(parcopy, length(dat))
 		}
 
-		firthplus = try(multiroot(gpd.Fscore.plus,start=par+c(0,0.3),
-															dat=dat, method=method, positive=TRUE), silent=TRUE)
+		firthplus = try(rootSolve::multiroot(gpd.Fscore.plus,start=par+c(0,0.3),
+															dat=dat, method=method, positive=TRUE,
+															atol=1e-10, rtol=1e-8, ctol=1e-10), silent=TRUE)
+		#Changed tolerance on 12-10-2016 to ensure that the root passes the all.equal test
 		if(is.character(firthplus) ||
 			 any(c(isTRUE(all.equal(firthplus$root[2],target=0, check.names=FALSE)),
 					isTRUE(all.equal(firthplus$root[1],target=0, check.names=FALSE)),
@@ -525,7 +548,7 @@ bcorF <-  function(par, dat, method=c("obs","exp")){
 			#Or can reach the boundary and not be able to evaluate the root
 			firthplus <- rep(NA,2)
 		} else{
-			firthplus <- firthplus$root-c(0,1/3)
+			firthplus <- firthplus$root-c(0,0.3)
 		}
 		return(firthplus)
 
