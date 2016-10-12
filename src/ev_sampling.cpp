@@ -286,7 +286,7 @@ NumericVector rPexstud (int index, arma::mat sigma, NumericVector al){
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPHuslerReiss)]]
 NumericVector rPHuslerReiss (int index, arma::mat Lambda){
-  if(index<0 || index >= Lambda.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
+  if(index < 0 || index >= Lambda.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
 
   arma::vec mu = arma::vec(Lambda.n_cols);// b/c need constructor, then setter
   mu = -2.0*Lambda.col(index);
