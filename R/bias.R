@@ -283,6 +283,8 @@ gev.infomat <- function(par, dat, method=c("obs","exp"), nobs=length(dat)){
     if(length(par)!=3){
       stop("Invalid parameter vector")
     }
+    mu = par[1]; sigma = par[2]; xi = par[3];
+    #Bug fixed 21-10-2016 (parameter were defined after they were used).
     if(isTRUE(all.equal(xi,0))){
       stop("Observed information not implemented for the Gumbel submodel")
     }
@@ -290,7 +292,6 @@ gev.infomat <- function(par, dat, method=c("obs","exp"), nobs=length(dat)){
       stop("Data outside of range specified by parameter, yielding a zero likelihood")
     }
 
-    mu = par[1]; sigma = par[2]; xi = par[3];
     infomat <- matrix(0, ncol=3,nrow=3)
     infomat[1,1] <- sum(-((dat - mu)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^2 + xi^2*(1/xi + 1)/(sigma^2*((dat - mu)*xi/sigma + 1)^2))
     infomat[1,2] <- infomat[2,1] <- sum(-(dat - mu)*((dat - mu)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^3 + ((dat - mu)*xi/sigma + 1)^(-1/xi - 1)/sigma^2 - xi*(1/xi + 1)/(sigma^2*((dat - mu)*xi/sigma + 1)) + (dat - mu)*xi^2*(1/xi + 1)/(sigma^3*((dat - mu)*xi/sigma + 1)^2))

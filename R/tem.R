@@ -276,13 +276,12 @@ gpdr.Vfun <- function(par, dat, m){
 	)
 }
 
-
 #' Derivative of the canonical parameter \eqn{\phi(\theta)} in the local exponential family approximation
 #' @rdname gpdr.temstat
 #' @inheritParams gpdr
 #' @keywords internal
 #' @export
-gpdr.dphi <- function(par, dat, V, m){ #TODO fix
+gpdr.dphi <- function(par, dat, V, m){
 	xi = par[2];  r = par[1];  p = m^xi-1
 	rbind((1+1/xi)*p/(r+dat*p)^2,
 				p/(xi^2*(r+dat*p))-(1+1/xi)*log(m)*m^xi*r/(r+dat*p)^2
@@ -311,17 +310,19 @@ gpdr.phi <- function(par, dat, V, m){
 #' for higher order likelihood inference for a scalar parameter for the generalized Pareto distribution. Options include
 #' scale and shape parameters as well as value-at-risk (also referred to as quantiles, or return levels)
 #' and expected shortfall. The function attempts to find good values for \code{psi} that will
-#' cover the range of options, but the fail may fit and return an error.
+#' cover the range of options, but the fit may fail and return an error.
 #'
+#'  @details The interpretation for \code{m} is as follows: if there are on average \eqn{m_y} observations per year above the threshold, then  \eqn{m=Tm_y} corresponds to \eqn{T}-year return level.
 #'
 #' @param param parameter over which to profile
 #' @param psi scalar or ordered vector of values for the interest parameter. If \code{NULL} (default), a grid of values centered at the MLE is selected
-#' @param m number of observations (year) of interest. Required only for \code{param="VaR"} or \code{param="ES"}.
+#' @param m number of observations of interest for return levels. See \strong{Details}. Required only for \code{param="VaR"} or \code{param="ES"}.
 #' @param dat sample vector for the GP distribution
 #' @param n.psi number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE
 #' @param plot logical indiating whether \code{plot.fr} should be called upon exit
+#' @param correction logical indicating whether \link{spline.corr} should be called.
 #' @author Leo Belzile, from code by A. Davison from the \code{hoa} package
-#' @return an object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
+#' @return an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
 #' \itemize{
 #' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
 #' \item{\code{par.hat}: }{maximum likelihood estimates}
@@ -331,6 +332,7 @@ gpdr.phi <- function(par, dat, V, m){
 #' \item{\code{psi}: }{vector of interest parameter}
 #' \item{\code{q}: }{vector of likelihood modifications}
 #' \item{\code{rstar}: }{modified likelihood root vector}
+#' \item{\code{rstar.old}: }{uncorrected modified likelihood root vector}
 #' \item{\code{param}: }{parameter}
 #' }
 #' @export
@@ -342,13 +344,13 @@ gpdr.phi <- function(par, dat, V, m){
 #' m2 = gpd.tem(param="scale", n.psi=50, dat=dat)
 #' m3 = gpd.tem(param="VaR", n.psi=50, dat=dat, m=100)
 #' #Providing psi
-#' m4 = gpd.tem(param="ES", dat=dat, m=100, psi = c(seq(2,5,length=15),seq(5, 35, length=45)))
+#' m4 = gpd.tem(param="ES", dat=dat, m=100, psi = c(seq(2,5,length=15),seq(5, 35, length=45)),correction=FALSE)
 #' plot(m4, c(2,4)) #displays numerical instability for values of r around zero
 #' plot(fr4 <- spline.corr(m4), which=c(2,4))
 #' confint(m1)
 #' confint(m4, parm=2, warn=FALSE)
 gpd.tem <- function (param=c("scale","shape","VaR","ES"), psi = NULL,
-										 m=NULL, dat, n.psi = 50, plot=FALSE){
+										 m=NULL, dat, n.psi = 50, plot=FALSE, correction=TRUE){
 	if(param %in% c("VaR","ES") && is.null(m)){
 		stop("Parameter `m' missing")
 	}
@@ -406,7 +408,7 @@ gpd.tem <- function (param=c("scale","shape","VaR","ES"), psi = NULL,
 			if(pin==1){
 				psi <- seq(from = th.full[pin] - 2*psi.se, to = th.full[pin] + 3*psi.se, length = n.psi) #TODO
 			} else if(pin==2){
-				psi <- seq(from = max(-0.49,th.full[pin] - 2.3*psi.se), to = th.full[pin] + 3.5*psi.se, length = n.psi) #TODO
+				psi <- seq(from = max(-0.49,th.full[pin] - 2.3*psi.se), to = min(2,th.full[pin] + 5*psi.se), length = n.psi) #TODO
 				#Cannot have shape less than -0.5, because the correction is based on the information matrix
 			}
 		}
@@ -546,10 +548,9 @@ gpd.tem <- function (param=c("scale","shape","VaR","ES"), psi = NULL,
 		if (is.null(psi)){
 
 			psi <- seq(from = max(quantile(dat,0.5),th.full[pin] - 2*psi.se),
-								 to = min(ub,th.full[pin] + 5*psi.se), length = n.psi)
+								 to = th.full[pin] + 20*psi.se, length = n.psi)
 		}
 
-		#TODO
 		#psi <- seq(from = max(max(dat),th.full[1] - 2*psi.se), to = th.full[1] + 6*psi.se, length = n.psi) #TODO
 		#Adjusted to return the correct value for psi, meaning strictly positive
 		n.psi <- length(psi)
@@ -715,10 +716,14 @@ gpd.tem <- function (param=c("scale","shape","VaR","ES"), psi = NULL,
 	out$rstar <- out$r + log(out$q/out$r)/out$r
 	out$param <- param
 	class(out) <- "fr"
+	if(correction){
+	  out$rstar.old <- out$rstar
+	  out <- spline.corr(out)
+	}
 	if(plot){
 		plot(out)
 	}
-	return(out)
+	return(invisible(out))
 }
 
 
@@ -810,7 +815,7 @@ plot.fr <- function(x, ...)
 #' The tangent exponential model can be numerically unstable for values close to \eqn{r=0}.
 #' This function corrects these incorrect values, which are interpolated using splines.
 #' The function takes as input an object of class \code{fr} and returns the same object with
-#' different \eqn{r^*}{\code{rstar}} values.
+#' different \code{rstar} values.
 #' @section Warning:
 #'
 #' While penalized (robust) splines often do a good job at capturing and correcting for numerical outliers and \code{NA}, it
@@ -1005,6 +1010,7 @@ gevr.ll <- function(par, dat, p){
 #' @export
 gevr.ll.optim <- function(par, dat, p){
 	tpar = par; tpar[2] = exp(par[2])
+	if(tpar[3] < -1){return(1e10)}
 	-gevr.ll(tpar,dat, p)
 }
 
@@ -1100,10 +1106,11 @@ gevr.dphi <- function(par, dat, p, V){
 #' @param p probability associated with the (1-p)th quantile for return levels if \code{param="VaR"}.
 #' @param dat sample vector for the GEV distribution
 #' @param n.psi number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE
-#' @param plot logical indiating whether \code{plot.fr} should be called upon exit
+#' @param plot logical indicating whether \code{plot.fr} should be called upon exit
+#' @param correction logical indicating whether \link{spline.corr} should be called.
 #' @author Leo Belzile, from code by A. Davison from the \code{hoa} package
 #' @importFrom ismev gev.fit
-#' @return an object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
+#' @return an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
 #' \itemize{
 #' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
 #' \item{\code{par.hat}: }{maximum likelihood estimates}
@@ -1113,11 +1120,21 @@ gevr.dphi <- function(par, dat, p, V){
 #' \item{\code{psi}: }{vector of interest parameter}
 #' \item{\code{q}: }{vector of likelihood modifications}
 #' \item{\code{rstar}: }{modified likelihood root vector}
+#' \item{\code{rstar.old}: }{uncorrected modified likelihood root vector}
 #' \item{\code{param}: }{parameter}
 #' }
 #' @export
+#' @examples
+#' dat <- rgev(n=40, loc=0, scale=2, shape=-0.1)
+#' gev.tem("shape",dat=dat, plot=TRUE)
+#' \dontrun{
+#' gev.tem("VaR",dat=dat, p=0.01,plot=TRUE)
+#' dat <- rgev(n=40, loc=0, scale=2, shape=0.2)
+#' gev.tem("shape",dat=dat, plot=TRUE)
+#' gev.tem("VaR",dat=dat, p=0.01,plot=TRUE)
+#' }
 gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
-										 p=NULL, n.psi = 50, plot=TRUE){
+										 p=NULL, n.psi = 50, plot=TRUE, correction=TRUE){
 	#n.psi = 50; psi = NULL; make.V=gevr.Vfun; th.init <- par0r; plot=TRUE
 	#n.psi = 50; psi = NULL; make.V=gev.Vfun; th.init <- parstart; plot=TRUE
 	tr.par <- function(par){ c(par[1],exp(par[2]),par[3])}
@@ -1175,7 +1192,7 @@ gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 				rest <- optim(fn=nlogL.rest,gr=gr.rest,
 											par=itr.par(out$th.rest[(j+1),]-diff(out$th.rest[(j+1):(j+2),]))[-pin],
 											psi=psi[j], dat=dat, method="BFGS"))
-			rest <- optim(fn=nlogL.rest,par=rest$par, psi=psi[j], dat=dat, method="Nelder-Mead",
+			  rest <- optim(fn=nlogL.rest,par=rest$par, psi=psi[j], dat=dat, method="Nelder-Mead",
 										control=list(parscale=rest$par, abstol=1e-10))
 			if(rest$convergence==0){
 				out$th.rest[j, -pin] <- rest$par
@@ -1192,7 +1209,7 @@ gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 											dat=dat, method="BFGS"))
 		}  else {
 			suppressWarnings(
-				rest <- optim(fn=nlogL.rest,gr=gr.rest,par=itr.par(out$th.rest)[K - 1, -pin],
+				rest <- optim(fn=nlogL.rest,gr=gr.rest,par=itr.par(out$th.rest[K - 1,])[-pin],
 											psi=psi[K], dat=dat, method="BFGS"))
 		}
 		rest <- optim(fn=nlogL.rest,par=rest$par, psi=psi[K], dat=dat, method="Nelder-Mead",
@@ -1204,9 +1221,9 @@ gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 		J.rest[K] <- det(gev.infomat(out$th.rest[K,],dat=dat)[-pin,-pin])
 		for (j in (K + 1):n.psi) {
 			suppressWarnings(
-				rest <- optim(fn=nlogL.rest,gr=gr.rest,par=sapply(out$th.rest[j - 1, -pin],jitter),
+				rest <- optim(fn=nlogL.rest,gr=gr.rest,par=itr.par(out$th.rest[(j-1),]-diff(out$th.rest[(j-2):(j-1),]))[-pin],
 											psi=psi[j], dat=dat, method="BFGS"))
-			rest <- optim(fn=nlogL.rest,par=rest$par, psi=psi[j], dat=dat, method="Nelder-Mead",
+			  rest <- optim(fn=nlogL.rest,par=rest$par, psi=psi[j], dat=dat, method="Nelder-Mead",
 										control=list(parscale=rest$par, abstol=1e-10))
 			out$th.rest[j, -pin] <- rest$par
 			out$th.rest[j, pin] <- psi[j]
@@ -1232,9 +1249,10 @@ gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 		#Quantiles, or value-at-risk
 	} else if(param=="VaR") {
 		if(is.null(p)){stop("Invalid period for return levels")}
-		if(length(th.init)==4){ #th.init was not provided by user
-			th.init <- th.init[c(4,2,3)]
-		}
+		#Reformat init vector
+	  th.init <- th.init[c(4,2,3)]
+
+	  xmax <- max(dat,na.rm=TRUE)
 		make.V = gevr.Vfun
 		nlogLr.full <- function(th, dat, p) gevr.ll.optim(th, dat, p);
 		nlogLr.rest <- function(lam, psi, dat, p) gevr.ll.optim(c(psi,lam), dat, p)
@@ -1258,11 +1276,29 @@ gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 		out$th.hat <- th.full
 		out$th.hat.se <- th.se
 		V.f <- make.V(full$estimate, dat=dat, p=p)
-		if (is.null(psi))
+		if (is.null(psi)){
+		  #clever lower bound: quantile(dat,1-2*p-1/sqrt(length(dat)))
 			psi <- c(seq(from = max(th.full[1] - 2.5*psi.se,quantile(dat,0.9)),th.full[1],length=floor(n.psi/2))[-floor(n.psi/2)],
-							 seq(from=th.full[1], to = th.full[1] + ifelse(th.full[3]<0,7,4)*psi.se, length = ceiling(n.psi/2))[-1]) #TODO
+							 seq(from = th.full[1], to = th.full[1] + ifelse(th.full[3]<0,8,8)*psi.se, length = ceiling(n.psi/2))[-1]) #TODO
 		#psi <- seq(from = max(max(dat),th.full[1] - 2*psi.se), to = th.full[1] + 6*psi.se, length = n.psi) #TODO
+		}
 		#Adjusted to return the correct value for psi, meaning strictly positive
+
+    #Function to ensure the starting values for optim yield a finite initial evaluation
+		checkconstraints_GEV_VaR <- function(par, xmax, p){
+		  satisfiesconstraints <- TRUE
+		  if(par[3]<0){#negative shape, potential upper bound
+		   mu=par[1]+par[2]/par[3]*(1-(-log(1-p))^(-par[3]))
+		   if((1+par[3]*(xmax-mu)/par[2]) <0){
+		     satisfiesconstraints <- FALSE
+		   }
+		  }
+		  if(satisfiesconstraints){
+		    return(par)
+		  } else{
+		   return(c(par[1], pmax(1e-10,-par[3]*(xmax-par[1])/((-log(1-p))^(-par[3]))+1e-2),par[3]))
+		  }
+		}
 		n.psi <- length(psi)
 		K <- ceiling(n.psi/2)
 		if (n.psi%%2==0){   K <- K + 1 }
@@ -1270,8 +1306,12 @@ gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 		out$th.rest <- matrix(th.full, n.psi, length(th.full), byrow = TRUE)
 		for (j in (K - 1):1) {
 			suppressWarnings(
-				rest <- optim(fn=nlogLr.rest,gr=grr.rest,p=p, par=out$th.rest[j+1,][-1], psi=psi[j], dat=dat,
+				rest <- optim(fn=nlogLr.rest,gr=grr.rest,p=p,
+				            # par=checkconstraints_GEV_VaR(itr.par(out$th.rest[(j+1),]-diff(out$th.rest[(j+1):(j+2),])),p=p,xmax=xmax)[-1],
+				            par=itr.par(out$th.rest[(j+1),]-diff(out$th.rest[(j+1):(j+2),]))[-1],
+				              psi=psi[j], dat=dat,
 											method="BFGS",control=list(parscale=th.init[-1],maxit=250)))
+		  #Throws error if the values are not feasible start
 			suppressWarnings(
 				rest <- optim(fn=nlogLr.rest,par=rest$par, psi=psi[j], dat=dat, p=p,
 											control=list(maxit=250), method="Nelder-Mead"))
@@ -1332,9 +1372,15 @@ gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 	}
 
 	out$rstar <- out$r + log(out$q/out$r)/out$r
+	out$param <- param
 	class(out) <- "fr"
-	if(plot){
-		plot(out)
+
+	if(correction){
+	  out$rstar.old <- out$rstar
+	  out <- spline.corr(out)
 	}
-	return(out)
+	if(plot){
+	  plot(out)
+	}
+	return(invisible(out))
 }

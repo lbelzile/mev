@@ -16,7 +16,7 @@ an object of class \code{fr}, containing as additional arguments \code{spline} a
 The tangent exponential model can be numerically unstable for values close to \eqn{r=0}.
 This function corrects these incorrect values, which are interpolated using splines.
 The function takes as input an object of class \code{fr} and returns the same object with
-different \eqn{r^*}{\code{rstar}} values.
+different \code{rstar} values.
 }
 \details{
 If available, the function uses \code{cobs} from the eponym package. The latter handles constraints and smoothness penalties, and is more robust than the equivalent \code{\link[stats]{smooth.spline}}.
