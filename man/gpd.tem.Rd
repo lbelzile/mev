@@ -5,23 +5,25 @@
 \title{Tangent exponential model approximation for the GP distribution}
 \usage{
 gpd.tem(param = c("scale", "shape", "VaR", "ES"), psi = NULL, m = NULL,
-  dat, n.psi = 50, plot = FALSE)
+  dat, n.psi = 50, plot = FALSE, correction = TRUE)
 }
 \arguments{
 \item{param}{parameter over which to profile}
 
 \item{psi}{scalar or ordered vector of values for the interest parameter. If \code{NULL} (default), a grid of values centered at the MLE is selected}
 
-\item{m}{number of observations (year) of interest. Required only for \code{param="VaR"} or \code{param="ES"}.}
+\item{m}{number of observations of interest for return levels. See \strong{Details}. Required only for \code{param="VaR"} or \code{param="ES"}.}
 
 \item{dat}{sample vector for the GP distribution}
 
 \item{n.psi}{number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE}
 
 \item{plot}{logical indiating whether \code{plot.fr} should be called upon exit}
+
+\item{correction}{logical indicating whether \link{spline.corr} should be called.}
 }
 \value{
-an object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
+an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
 \itemize{
 \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
 \item{\code{par.hat}: }{maximum likelihood estimates}
@@ -31,6 +33,7 @@ an object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
 \item{\code{psi}: }{vector of interest parameter}
 \item{\code{q}: }{vector of likelihood modifications}
 \item{\code{rstar}: }{modified likelihood root vector}
+\item{\code{rstar.old}: }{uncorrected modified likelihood root vector}
 \item{\code{param}: }{parameter}
 }
 }
@@ -39,7 +42,10 @@ The function \code{gpd.tem} provides a tangent exponential model (TEM) approxima
 for higher order likelihood inference for a scalar parameter for the generalized Pareto distribution. Options include
 scale and shape parameters as well as value-at-risk (also referred to as quantiles, or return levels)
 and expected shortfall. The function attempts to find good values for \code{psi} that will
-cover the range of options, but the fail may fit and return an error.
+cover the range of options, but the fit may fail and return an error.
+}
+\details{
+@details The interpretation for \code{m} is as follows: if there are on average \eqn{m_y} observations per year above the threshold, then  \eqn{m=Tm_y} corresponds to \eqn{T}-year return level.
 }
 \examples{
 set.seed(123)
@@ -49,7 +55,7 @@ m1 = gpd.tem(param="shape", n.psi=50, dat=dat,plot=TRUE)
 m2 = gpd.tem(param="scale", n.psi=50, dat=dat)
 m3 = gpd.tem(param="VaR", n.psi=50, dat=dat, m=100)
 #Providing psi
-m4 = gpd.tem(param="ES", dat=dat, m=100, psi = c(seq(2,5,length=15),seq(5, 35, length=45)))
+m4 = gpd.tem(param="ES", dat=dat, m=100, psi = c(seq(2,5,length=15),seq(5, 35, length=45)),correction=FALSE)
 plot(m4, c(2,4)) #displays numerical instability for values of r around zero
 plot(fr4 <- spline.corr(m4), which=c(2,4))
 confint(m1)

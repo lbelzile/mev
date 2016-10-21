@@ -5,7 +5,7 @@
 \title{Tangent exponential model approximation for the GEV distribution}
 \usage{
 gev.tem(param = c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
-  p = NULL, n.psi = 50, plot = TRUE)
+  p = NULL, n.psi = 50, plot = TRUE, correction = TRUE)
 }
 \arguments{
 \item{param}{parameter over which to profile}
@@ -18,10 +18,12 @@ gev.tem(param = c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 
 \item{n.psi}{number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE}
 
-\item{plot}{logical indiating whether \code{plot.fr} should be called upon exit}
+\item{plot}{logical indicating whether \code{plot.fr} should be called upon exit}
+
+\item{correction}{logical indicating whether \link{spline.corr} should be called.}
 }
 \value{
-an object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
+an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
 \itemize{
 \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
 \item{\code{par.hat}: }{maximum likelihood estimates}
@@ -31,6 +33,7 @@ an object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
 \item{\code{psi}: }{vector of interest parameter}
 \item{\code{q}: }{vector of likelihood modifications}
 \item{\code{rstar}: }{modified likelihood root vector}
+\item{\code{rstar.old}: }{uncorrected modified likelihood root vector}
 \item{\code{param}: }{parameter}
 }
 }
@@ -40,6 +43,16 @@ for higher order likelihood inference for a scalar parameter for the generalized
 Options include location scale and shape parameters as well as value-at-risk (or return levels).
 The function attempts to find good values for \code{psi} that will
 cover the range of options, but the fail may fit and return an error.
+}
+\examples{
+dat <- rgev(n=40, loc=0, scale=2, shape=-0.1)
+gev.tem("shape",dat=dat, plot=TRUE)
+\dontrun{
+gev.tem("VaR",dat=dat, p=0.01,plot=TRUE)
+dat <- rgev(n=40, loc=0, scale=2, shape=0.2)
+gev.tem("shape",dat=dat, plot=TRUE)
+gev.tem("VaR",dat=dat, p=0.01,plot=TRUE)
+}
 }
 \author{
 Leo Belzile, from code by A. Davison from the \code{hoa} package
