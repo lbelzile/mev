@@ -1175,9 +1175,7 @@ gev.tem <- function (param=c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 	}
 	th.init <- gev.startvals(dat, ifelse(is.null(p),0.01,p))
 
-	# if(!missing(th.init) && !length(th.init)==3){
-	# 	stop("Invalid starting parameter. Either leave unspecified or provide correct input")
-	# }
+
 	if(param %in% c("loc","scale","shape")){
 		th.init <- th.init[1:3]
 		make.V = gev.Vfun
