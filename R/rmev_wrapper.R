@@ -253,9 +253,13 @@ rmev <-function(n, d, param, asy, sigma,
     param <- weights
     mod <- 3
     } else if(model=="hr"){
-      if(any(c(sigma<0,diag(sigma)!=rep(0,ncol(sigma)), ncol(sigma)!=nrow(sigma)))){
+      if(any(c(sigma<0,diag(sigma)!=rep(0,ncol(sigma)), ncol(sigma)!=nrow(sigma),
+        ))){
         stop("Invalid parameter matrix for the Husler-Reiss model.
-             For Brown-Resnick model, please use model=`br' instead.");
+           Note: for Brown-Resnick model, please use model=`br' instead.");
+      }
+      if(!.is.CNSD(sigma)){
+       stop("Parameter matrix for the Husler-Reiss model is not conditionally negative definite")
       }
      mod <- 9; param <- 0
     }
@@ -492,5 +496,32 @@ rmevspec <-function(n, d, param, sigma,
       asy
 }
 
-
-
+#' Is the matrix conditionally negative semi-definite?
+#' Function extracted from the CEGO package, v 2.1.0
+#' @author Martin Zaefferer
+#'
+.is.CNSD <- function (X, method = "alg1", tol = 1e-08)
+{
+    n <- nrow(X)
+    if (method == "alg1") {
+        #P <- (diag(n) - matrix(1, n, n)/n)
+        #P[n, ] <- c(rep(0, n - 1), 1)
+        P <- diag(n)
+        diag(P[,-1]) <- -1
+        Xhat <- P %*% X %*% t(P)
+        eigs <- eigen(Xhat[-n, -n], TRUE, TRUE)$values
+        cnsd <- !eigs[1] > tol
+    }
+    else if (method == "eucl") {
+        P <- (diag(n) - matrix(1, n, n)/n)
+        Xhat <- P %*% X %*% P
+        eigs <- eigen(Xhat, TRUE, TRUE)$values
+        cnsd <- !eigs[1] > tol
+    }
+    else if (method == "alg2") {
+        eigs <- eigen(rbind(cbind(X, rep(1, n)), c(rep(1, n),
+            0)), TRUE, TRUE)$values
+        cnsd <- !(eigs[1] * eigs[2]) > tol
+    }
+    cnsd
+}

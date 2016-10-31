@@ -213,5 +213,15 @@ while(!converged){
         Named("conv") = converged, Named("niter") = iter,Named("ndec") = ndec, Named("gradnorm") = gradnorm);
      }
 
-
-
+// [[Rcpp::export(.Pickands_emp)]]
+NumericVector Pickands_emp(NumericVector s, NumericVector ang, NumericVector wts){
+  if(wts.size()!=ang.size()){
+    warning("Only implemented in the bivariate case");
+    stop("Non-conformal arguments; size of angles does not match weights.");
+  }
+  NumericVector pick(s.size());
+  for(int i=0;i<s.size();i++){
+    pick[i] = 2*sum(pmax((1-s[i])*ang,s[i]*(1-ang))*wts);
+  }
+  return pick;
+}

@@ -74,9 +74,9 @@ NumericMatrix mvrnorm(int n, NumericVector mu, NumericMatrix Sigma){
   arma::mat eigvec;
   //Covariance matrix must be symmetric - otherwise eig_sym throws error
   arma::eig_sym(eigval, eigvec, Xmat);
-  arma::mat sample(n,length);
-  sample = q*arma::diagmat(arma::sqrt(eigval))*trans(eigvec);
-  sample.each_row() += Mu;
+  arma::mat samplemat(n,length);
+  samplemat = q*arma::diagmat(arma::sqrt(eigval))*trans(eigvec);
+  samplemat.each_row() += Mu;
 // arma::colvec intermed(length);
 // for(int t=0;t<n;t++){
 //     intermed = eigvec*arma::diagmat(arma::sqrt(eigval))*q.col(t)+Mu;
@@ -84,7 +84,7 @@ NumericMatrix mvrnorm(int n, NumericVector mu, NumericMatrix Sigma){
 //       sample(t,i)=intermed(i);
 //     }
 //   }
-  return Rcpp::as<Rcpp::NumericMatrix>(wrap(sample));
+  return Rcpp::as<Rcpp::NumericMatrix>(wrap(samplemat));
 }
 //' Multivariate Normal distribution sampler (Rcpp version), derived using the eigendecomposition
 //' of the covariance matrix Sigma. The function utilizes the arma random normal generator
@@ -110,9 +110,9 @@ arma::mat mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat){
   arma::mat eigvec;
   //Covariance matrix must be symmetric - otherwise eig_sym throws error
   arma::eig_sym(eigval, eigvec, Xmat);
-  arma::mat sample(n,length);
-  sample = q*arma::diagmat(arma::sqrt(eigval))*trans(eigvec);
-  sample.each_row() += Mu.t();
+  arma::mat samplemat(n,length);
+  samplemat = q*arma::diagmat(arma::sqrt(eigval))*trans(eigvec);
+  samplemat.each_row() += Mu.t();
 //   arma::colvec intermed(length);
 //   for(int t=0;t<n;t++){
 //     intermed= eigvec*arma::diagmat(arma::sqrt(eigval))*q.col(t)+Mu;
@@ -120,7 +120,7 @@ arma::mat mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat){
 //       sample(t,i)=intermed(i);
 //     }
 //   }
-  return sample;
+  return samplemat;
 }
 
 

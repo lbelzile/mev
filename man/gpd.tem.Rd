@@ -10,7 +10,7 @@ gpd.tem(param = c("scale", "shape", "VaR", "ES"), psi = NULL, m = NULL,
 \arguments{
 \item{param}{parameter over which to profile}
 
-\item{psi}{scalar or ordered vector of values for the interest parameter. If \code{NULL} (default), a grid of values centered at the MLE is selected}
+\item{psi}{scalar or ordered vector of values for the interest parameter. If \code{NULL} (default), a grid of values centered at the MLE is selected. If \code{psi} is of length 2 and \code{n.psi}>2, it is assumed to be the minimal and maximal values at which to evaluate the profile log-likelihood.}
 
 \item{m}{number of observations of interest for return levels. See \strong{Details}. Required only for \code{param="VaR"} or \code{param="ES"}.}
 
@@ -55,7 +55,8 @@ m1 = gpd.tem(param="shape", n.psi=50, dat=dat,plot=TRUE)
 m2 = gpd.tem(param="scale", n.psi=50, dat=dat)
 m3 = gpd.tem(param="VaR", n.psi=50, dat=dat, m=100)
 #Providing psi
-m4 = gpd.tem(param="ES", dat=dat, m=100, psi = c(seq(2,5,length=15),seq(5, 35, length=45)),correction=FALSE)
+psi = c(seq(2,5,length=15),seq(5, 35, length=45))
+m4 = gpd.tem(param="ES", dat=dat, m=100, psi=psi ,correction=FALSE)
 plot(m4, c(2,4)) #displays numerical instability for values of r around zero
 plot(fr4 <- spline.corr(m4), which=c(2,4))
 confint(m1)

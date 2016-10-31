@@ -4,42 +4,53 @@
 \alias{angmeas}
 \title{Rank-based transformation to angular measure}
 \usage{
-angmeas(x, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf",
-  "arctan"), marg = c("Frechet", "Pareto"), wgt = c("Euclidean",
-  "Empirical"))
+angmeas(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf",
+  "arctan"), marg = c("Frechet", "Pareto"), wgt = c("Empirical",
+  "Euclidean"), region = c("sum", "min", "max"))
 }
 \arguments{
 \item{x}{an \code{n} by \code{d} sample matrix}
 
-\item{Rnorm}{the norm for the radial component}
+\item{th}{threshold of length 1 for \code{"sum"}, or \code{d} marginal thresholds otherwise.}
 
-\item{Anorm}{the norm for the angular component. \code{arctan} is only implemented for \eqn{d=2}}
+\item{Rnorm}{character string indicating the norm for the radial component. Only \code{"l1"} is currently supported for empirical and Euclidean likelihood weights estimation.}
 
-\item{marg}{choice of marginal transformation, either to Frechet or Pareto scale}
+\item{Anorm}{character string indicating the norm for the angular component. \code{arctan} is only implemented for \eqn{d=2}}
 
-\item{wgt}{weighting function for the equation. Can be based on Euclidean or empirical likelihood for the mean}
+\item{marg}{character string indicating choice of marginal transformation, either to Frechet or Pareto scale}
+
+\item{wgt}{character string indicating weighting function for the equation. Can be based on Euclidean or empirical likelihood for the mean}
+
+\item{region}{character string specifying which observations to consider (and weight). \code{"sum"} corresponds to a radial threshold
+\eqn{\sum x_i > }\code{th}, \code{"min"} to \eqn{\min x_i >}\code{th} and \code{"max"} to \eqn{\max x_i >}\code{th}.}
 }
 \value{
 a list with arguments \code{ang} for the \eqn{d-1} pseudo-angular sample, \code{rad} with the radial component
-and \code{wts} if \code{Rnorm} is set to "\code{l1}" (default).
+and possibly \code{wts} if \code{Rnorm="l1"} and the empirical likelihood algorithm converged. The Euclidean algorithm always returns weights even if some of these are negative.
 
 a list with components
 \itemize{
 \item \code{ang} matrix of pseudo-angular observations
 \item \code{rad} vector of radial contributions
-\item \code{wts} empirical or Euclidean likelihood weights for observations
+\item \code{wts} empirical or Euclidean likelihood weights for angular observations
 }
 }
 \description{
 The method uses the pseudo-polar transformation for suitable norms, transforming
 the data to pseudo-observations, than marginally to unit Frechet or unit Pareto.
-Empirical or Euclidean weights are computed and return alongside of the angular and
-radial sample
+Empirical or Euclidean weights are computed and returned alongside with the angular and
+radial sample for values above threshold(s) \code{th}, specified in terms of quantiles
+of the radial component \code{R} or marginal quantiles. Only complete tuples are kept.
+}
+\details{
+The empirical likelihood weighted mean problem is implemented for all thresholds,
+ while the Euclidean likelihood is only supported for diagonal thresholds specified
+ via \code{region=sum}.
 }
 \examples{
 x <- rmev(n=25, d=3, param=0.5, model="log")
-wts <- angmeas(x=x, Rnorm="l1", Anorm="l1", marg="Frechet", wgt="Empirical")
-wts2 <- angmeas(x=x, Rnorm="l2", Anorm="l2", marg="Pareto", wgt="Euclidean")
+wts <- angmeas(x=x, th=0, Rnorm="l1", Anorm="l1", marg="Frechet", wgt="Empirical")
+wts2 <- angmeas(x=x, Rnorm="l2", Anorm="l2", marg="Pareto", th=0)
 }
 \author{
 Leo Belzile

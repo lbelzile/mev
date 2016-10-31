@@ -9,6 +9,10 @@
     .Call('mev_emplik', PACKAGE = 'mev', z, mu, lam, eps, M, thresh, itermax)
 }
 
+.Pickands_emp <- function(s, ang, wts) {
+    .Call('mev_Pickands_emp', PACKAGE = 'mev', s, ang, wts)
+}
+
 #' Random variate generation for Dirichlet distribution on \eqn{S_{d}}{Sd}
 #'
 #' A function to sample Dirichlet random variables, based on the representation as ratios of Gamma.

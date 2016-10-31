@@ -35,6 +35,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Pickands_emp
+NumericVector Pickands_emp(NumericVector s, NumericVector ang, NumericVector wts);
+RcppExport SEXP mev_Pickands_emp(SEXP sSEXP, SEXP angSEXP, SEXP wtsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type s(sSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ang(angSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type wts(wtsSEXP);
+    rcpp_result_gen = Rcpp::wrap(Pickands_emp(s, ang, wts));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rdir
 NumericMatrix rdir(int n, NumericVector alpha, bool normalize);
 RcppExport SEXP mev_rdir(SEXP nSEXP, SEXP alphaSEXP, SEXP normalizeSEXP) {

@@ -16,7 +16,7 @@ gev.tem(param = c("loc", "scale", "shape", "VaR"), dat, psi = NULL,
 
 \item{p}{probability associated with the (1-p)th quantile for return levels if \code{param="VaR"}.}
 
-\item{n.psi}{number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE}
+\item{n.psi}{number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE. If \code{psi} is a vector of length 2 and \code{n.psi} is greater than 2, these are taken to be endpoints of the sequence.}
 
 \item{plot}{logical indicating whether \code{plot.fr} should be called upon exit}
 
@@ -45,11 +45,11 @@ The function attempts to find good values for \code{psi} that will
 cover the range of options, but the fail may fit and return an error.
 }
 \examples{
-dat <- rgev(n=40, loc=0, scale=2, shape=-0.1)
+dat <- evd::rgev(n=40, loc=0, scale=2, shape=-0.1)
 gev.tem("shape",dat=dat, plot=TRUE)
 \dontrun{
 gev.tem("VaR",dat=dat, p=0.01,plot=TRUE)
-dat <- rgev(n=40, loc=0, scale=2, shape=0.2)
+dat <- evd::rgev(n=40, loc=0, scale=2, shape=0.2)
 gev.tem("shape",dat=dat, plot=TRUE)
 gev.tem("VaR",dat=dat, p=0.01,plot=TRUE)
 }
