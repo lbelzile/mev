@@ -109,7 +109,7 @@ angmeas <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","
       warning("Less than five observations above the chosen threshold")
     }
     if(Rnorm==Anorm){
-      ang <- S[,-ncol(S)]/R
+      ang <- S[,-ncol(S),drop=FALSE]/R
     } else if(Anorm=="arctan"){
       if(ncol(S)!=2){
         stop("Invalid norm for sample, arctan transformation only for bivariate samples")
@@ -117,13 +117,12 @@ angmeas <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","
       ang <- atan(S[,2]/S[,1])
     } else{
       ang <- switch(Anorm,
-                    l1   = S[,-ncol(S)]/rowSums(S),
-                    l2   = S[,-ncol(S)]/apply(S,1,function(x){sqrt(sum(x^2))}),
-                    linf = S[,-ncol(S)]/apply(S,1,max)
+                    l1   = S[,-ncol(S),drop=FALSE]/rowSums(S),
+                    l2   = S[,-ncol(S),drop=FALSE]/apply(S,1,function(x){sqrt(sum(x^2))}),
+                    linf = S[,-ncol(S),drop=FALSE]/apply(S,1,max)
       )
     }
     #Cast ang to a matrix for the bivariate case
-    ang <- as.matrix(ang)
     ang <- as.matrix(ang[above,])
     rownames(ang) <- NULL #remove names for time series
     R <- as.vector(R[above])

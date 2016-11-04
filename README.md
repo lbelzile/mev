@@ -7,3 +7,10 @@ for the generalized Pareto distribution, bias-correction and tangent exponential
 non-parametric spectral measure estimation using empirical likelihood methods, etc.
 
 
+To install from Github, use 
+
+```R
+devtools::install_github("lbelzile/mev")
+```
+
+after installing `devtools`.
