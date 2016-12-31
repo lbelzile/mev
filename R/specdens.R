@@ -12,7 +12,7 @@
 #'  via \code{region=sum}.
 #'
 #' @param x an \code{n} by \code{d} sample matrix
-#' @param Rnorm  character string indicating the norm for the radial component. Only \code{"l1"} is currently supported for empirical and Euclidean likelihood weights estimation.
+#' @param Rnorm  character string indicating the norm for the radial component.
 #' @param Anorm character string indicating the norm for the angular component. \code{arctan} is only implemented for \eqn{d=2}
 #' @param marg character string indicating choice of marginal transformation, either to Frechet or Pareto scale
 #' @param wgt character string indicating weighting function for the equation. Can be based on Euclidean or empirical likelihood for the mean
@@ -26,6 +26,7 @@
 #' @references de Carvalho, M. and B. Oumow and J. Segers and M. Warchol (2013). A Euclidean likelihood estimator for bivariate tail dependence, \emph{Comm. Statist. Theory Methods}, \bold{42}(7), 1176--1192.
 #' @references Owen, A.B. (2001). \emph{Empirical Likelihood}, CRC Press, 304p.
 #' @export
+#' @importFrom "graphics" "plot.new" "plot.window"
 #' @return a list with components
 #' \itemize{
 #' \item \code{ang} matrix of pseudo-angular observations
@@ -127,16 +128,24 @@ angmeas <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","
     rownames(ang) <- NULL #remove names for time series
     R <- as.vector(R[above])
 
-    #Empirical/Euclidean likelihood not implemented for the case where R norm is not l1
-    if(Rnorm!="l1"){
-      return(list(ang=ang, rad=R))
-    }
     #Other cases supported
     if(region=="sum"){
       if(wgt=="Euclidean"){
-          return(list(ang=ang,rad=R, wts=as.vector(.EuclideanWeights(ang,rep(1/(ncol(ang)+1), ncol(ang))))))
+        if(Rnorm=="l1"){
+          return(list(ang=ang,rad=R,
+                      wts=as.vector(.EuclideanWeights(ang,rep(1/(ncol(ang)+1), ncol(ang))))))
+        } else{
+          return(list(ang=ang,rad=R,
+                      wts=as.vector(.EuclideanWeights(ang-cbind(ang[,-1],ang[,1]),rep(0, ncol(ang))))))
+                        #as.vector(.EuclideanWeights(ang,rep(1/(ncol(ang)+1), ncol(ang))))))
+        }
         } else if(wgt=="Empirical"){
-        		scel.fit <- .emplik(z=ang,mu=rep(1/(ncol(ang)+1), ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
+          if(Rnorm=="l1"){
+            scel.fit <- .emplik(z=ang, mu=rep(1/(ncol(ang)+1), ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
+          } else{
+        		scel.fit <- .emplik(z=ang-cbind(ang[,-1],ang[,1]),
+        		                    mu=rep(0, ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
+          }
         		if(scel.fit$conv){
           return(list(ang=ang,rad=R, wts=as.vector(scel.fit$wts)))
         		} else{
@@ -150,7 +159,8 @@ angmeas <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","
                    "max" = apply(cbind(ang, 1-rowSums(ang)),1,min),
                    "sum" = rep(1, nrow(ang))
       )
-      b <- (ang-1/(ncol(ang)+1))/aw
+      #b <- (ang-1/(ncol(ang)+1))/aw
+      b <- (ang-cbind(ang[,-1],ang[,1]))/aw
       scel.fit <- .emplik(z=b,mu=rep(0, ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
       if(scel.fit$conv){
         su <- 1/(sum((1/aw)*scel.fit$wts)) #mean of p_ia_i

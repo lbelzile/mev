@@ -5,8 +5,9 @@
 \title{Exact simulations of multivariate extreme value distributions}
 \usage{
 rmev(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "aneglog",
-  "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct",
-  "dirmix"), alg = c("ef", "sm"), weights, vario, loc, grid = FALSE, ...)
+  "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "dir",
+  "negdir", "dirmix"), alg = c("ef", "sm"), weights, vario, loc,
+  grid = FALSE, ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -52,8 +53,8 @@ The vector param differs depending on the model
  \item \code{aneglog}: \eqn{2^d-d-1} dimensional parameter for \code{dep}. Values are recycled if needed.
  \item \code{bilog}: \code{d}-dimensional vector of parameters in \eqn{[0,1]}
  \item \code{negbilog}: \code{d}-dimensional vector of negative parameters
- \item \code{ct}: \code{d}-dimensional vector of positive (a)symmetry parameters. Alternatively, a \eqn{d+1}
- vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as scale
+ \item \code{ct, dir, negdir}: \code{d}-dimensional vector of positive (a)symmetry parameters. For \code{dir} and \code{negdir}, a \eqn{d+1}
+ vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as shape parameter
  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
 }

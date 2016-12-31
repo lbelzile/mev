@@ -13,7 +13,7 @@ angmeas(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf",
 
 \item{th}{threshold of length 1 for \code{"sum"}, or \code{d} marginal thresholds otherwise.}
 
-\item{Rnorm}{character string indicating the norm for the radial component. Only \code{"l1"} is currently supported for empirical and Euclidean likelihood weights estimation.}
+\item{Rnorm}{character string indicating the norm for the radial component.}
 
 \item{Anorm}{character string indicating the norm for the angular component. \code{arctan} is only implemented for \eqn{d=2}}
 

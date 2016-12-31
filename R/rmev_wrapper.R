@@ -1,4 +1,4 @@
-##  Copyright (C) 2015-2016 Leo Belzile
+##  Copyright (C) 2015-2017 Leo Belzile
 ##
 ##  This file is part of the "mev" package for R.  This program
 ##  is free software; you can redistribute it and/or modify it under the
@@ -46,8 +46,8 @@
 #'  \item \code{aneglog}: \eqn{2^d-d-1} dimensional parameter for \code{dep}. Values are recycled if needed.
 #'  \item \code{bilog}: \code{d}-dimensional vector of parameters in \eqn{[0,1]}
 #'  \item \code{negbilog}: \code{d}-dimensional vector of negative parameters
-#'  \item \code{ct}: \code{d}-dimensional vector of positive (a)symmetry parameters. Alternatively, a \eqn{d+1}
-#'  vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as scale
+#'  \item \code{ct, dir, negdir}: \code{d}-dimensional vector of positive (a)symmetry parameters. For \code{dir} and \code{negdir}, a \eqn{d+1}
+#'  vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as shape parameter
 #'  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
 #'  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
 #' }
@@ -86,7 +86,7 @@
 #'rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 rmev <-function(n, d, param, asy, sigma,
                 model= c("log","alog","neglog","aneglog","bilog","negbilog","hr","br",
-                         "xstud","smith","schlather","ct","dirmix"),
+                         "xstud","smith","schlather","ct","dir","negdir","dirmix"),
                 alg=c("ef","sm"), weights, vario, loc, grid=FALSE, ...){
   #Create gridded values if specification is for random field discretization
   if(!missing(loc)){
@@ -100,7 +100,6 @@ rmev <-function(n, d, param, asy, sigma,
     }
   }
   alg <- match.arg(alg)
-  if(!missing(param) && mode(param) != "numeric") stop("Invalid parameter")
   model <- match.arg(model)
   if(!model %in% c("alog","aneglog")){
     if(!missing(asy)){
@@ -116,8 +115,13 @@ rmev <-function(n, d, param, asy, sigma,
 	}
   #Define model families
   m1 <- c("log","neglog")
-  m2 <- c("bilog","negbilog","ct")
+  m2 <- c("bilog","negbilog")
   m3 <- c("br","xstud","smith")
+  m4 <- c("ct","dir","negdir")
+  #Check that parameters are provided
+  if(model %in% c(m1,m2, m4) && (!missing(param) && mode(param) != "numeric")){
+    stop("Invalid parameter")
+  }
   #Check spatial requirements
   if((!missing(loc) || !missing(vario)) && ! model %in% m3){
     if(model == "hr"){
@@ -142,14 +146,11 @@ rmev <-function(n, d, param, asy, sigma,
       if(param < 1.0){
         param <- 1.0/param
       }
-      mod <- 1
-    } else{
-      mod <- 2
     }
   } else if(model %in% m2){
     d <- as.integer(d)
     sigma = cbind(0)
-    if(model %in% c("bilog","negbilog")){
+    #if(model %in% c("bilog","negbilog")){
       if(missing(param) || length(param)!=d) stop("Invalid parameter value")
       #Check whether arguments are valid
       if(model=="bilog" && all(param>=1)){ param <- 1/param}
@@ -157,12 +158,25 @@ rmev <-function(n, d, param, asy, sigma,
       if(any(param>1.0)) stop("Invalid param vector for bilogistic or negative bilogistic")
       if(any(param<0) && model=="bilog") warning("Negative parameter values in bilogistic");
       if(any(param>0) && model=="negbilog") warning("Positive parameter values in negative bilogistic");
-      mod <- 4
-    } else{
-      if(missing(param) || (length(param)!=d && length(param)!=d+1)) stop("Invalid parameter value")
-      mod <- 7
-    }
-  } else if(model %in% m3){
+    } else if(model %in% m4){
+      sigma = cbind(0)
+      if(missing(param)){
+        stop("Invalid parameter value")
+      }
+      if(model=="ct"){
+        if(length(param)!=d){
+          if(length(param)==(d+1)){
+            warning("Use `dir' model for the scaled extremal Dirichlet model.");
+          } else{
+           stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
+          }
+        }
+      } else{
+        if(length(param)!=(d+1)){
+          warning("Use `dir' model for the scaled extremal Dirichlet");
+        }
+      }
+    } else if(model %in% m3){
     if(missing(sigma) && !missing(vario) && !missing(loc)){
       if(!is.matrix(loc)) loc <- matrix(loc, ncol=1)
       stopifnot(is.function(vario))
@@ -185,12 +199,10 @@ rmev <-function(n, d, param, asy, sigma,
                 br    = ncol(sigma),
                 smith = nrow(loc)
     )
-    if(model=="xstud"){
-      mod <- 5
-    } else if(model=="br"){
-      mod <- 6; param = 0
+    if(model=="br"){
+      param = 0
     } else if(model=="smith"){
-      mod <- 8; param <- 0
+      param <- 0
     }
   } else if(model %in% c("alog","aneglog")){
     #Sigma will be index of logistic sub-mixtures
@@ -223,10 +235,6 @@ rmev <-function(n, d, param, asy, sigma,
     stopifnot(isTRUE(all.equal(nrow(sigma), nrow(asym),length(param))),
               isTRUE(all.equal(colSums(sigma), rep(1, ncol(sigma)))))
     ncompo <- rowSums(asym)
-    mod <- switch(model,
-                        alog = 1,
-                        aneglog = 2
-      )
     } else if(model=="dirmix"){
     if(any(missing(param),
            length(weights)!=ncol(param) && ncol(param)!=1,
@@ -251,7 +259,6 @@ rmev <-function(n, d, param, asy, sigma,
     #Switching parameters around to pass them to Rcpp function
     sigma <- param
     param <- weights
-    mod <- 3
     } else if(model=="hr"){
       if(any(c(sigma<0,diag(sigma)!=rep(0,ncol(sigma)), ncol(sigma)!=nrow(sigma), ncol(sigma)!=d))){
         stop("Invalid parameter matrix for the Husler-Reiss model.
@@ -260,11 +267,12 @@ rmev <-function(n, d, param, asy, sigma,
       if(!.is.CNSD(sigma)){
        stop("Parameter matrix for the Husler-Reiss model is not conditionally negative definite")
       }
-     mod <- 9; param <- 0
+     param <- 0
     }
-
+  mod <- switch(model, log=1, neglog=2, dirmix=3, bilog=4, negbilog=4, xstud=5, br=6,
+                  ct=7, dir=7, smith=8, hr=9, negdir=10)
   if(model %in% c("alog","aneglog")){
-    .rmevasy(n=n, d=d, param=param, asym=asym, ncompo=ncompo, Sigma=sigma, model=mod)
+    .rmevasy(n=n, d=d, para=param, asym=asym, ncompo=ncompo, Sigma=sigma, model=mod)
   } else{
     if(model != "smith"){
       locat <- cbind(0)
@@ -278,15 +286,15 @@ rmev <-function(n, d, param, asy, sigma,
       }
       ncompo <- c(1)
       array(t(switch(alg,
-             ef=.rmevA2(n=n, d=d, param=param, model=mod,  Sigma=sigma, locat),
-             sm=.rmevA1(n=n, d=d, param=param, model=mod,  Sigma=sigma, locat)
+             ef=.rmevA2(n=n, d=d, para=param, model=mod,  Sigma=sigma, locat),
+             sm=.rmevA1(n=n, d=d, para=param, model=mod,  Sigma=sigma, locat)
         )), dim=c(rep(npdim,ncol(loc)),n)
       )
     } else{
       ncompo <- c(1)
       switch(alg,
-             ef=.rmevA2(n=n, d=d, param=param, model=mod,  Sigma=sigma, locat),
-             sm=.rmevA1(n=n, d=d, param=param, model=mod,  Sigma=sigma, locat)
+             ef=.rmevA2(n=n, d=d, para=param, model=mod,  Sigma=sigma, locat),
+             sm=.rmevA1(n=n, d=d, para=param, model=mod,  Sigma=sigma, locat)
       )
     }
   }
@@ -311,7 +319,7 @@ rmev <-function(n, d, param, asy, sigma,
 #'  \item \code{neglog}: one dimensional positive parameter
 #'  \item \code{bilog}: \code{d}-dimensional vector of parameters in \eqn{[0,1]}
 #'  \item \code{negbilog}: \code{d}-dimensional vector of negative parameters
-#'  \item \code{ct}: \code{d}-dimensional vector of positive (a)symmetry parameters. Alternatively, a \eqn{d+1}
+#'  \item \code{ct}, \code{dir}, \code{negdir}: \code{d}-dimensional vector of positive (a)symmetry parameters. Alternatively, a \eqn{d+1}
 #'  vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as scale
 #'  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
 #'  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
@@ -329,7 +337,7 @@ rmev <-function(n, d, param, asy, sigma,
 #' rmevspec(n=100, d=3, param=2.5, model="neglog")
 #' rmevspec(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog")
 #' rmevspec(n=100, d=2, param=c(0.8,1.2), model="ct") #Dirichlet model
-#' rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="ct") #with additional scale parameter
+#' rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="dir") #with additional scale parameter
 #'#Variogram gamma(h) = scale*||h||^alpha
 #' scale <- 0.5; alpha <- 1
 #' vario <- function(x) scale*sqrt(sum(x^2))^alpha
@@ -341,13 +349,17 @@ rmev <-function(n, d, param, asy, sigma,
 #' rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 #' @export
 rmevspec <-function(n, d, param, sigma,
-                    model=c("log","neglog","bilog","negbilog","hr","br","xstud","ct","dirmix"),
+                    model=c("log","neglog","bilog","negbilog","hr","br","xstud","ct","dir","negdir","dirmix"),
                     weights, vario, loc,...){
-  if(!missing(param) && mode(param) != "numeric") stop("Invalid parameter")
   model <- match.arg(model)
   m1 <- c("log","neglog")
-  m2 <- c("bilog","negbilog","ct")
+  m2 <- c("bilog","negbilog")
   m3 <- c("br","xstud")
+  m4 <- c("ct","dir","negdir")
+  if(model %in% c(m1,m2, m4) && (!missing(param) && mode(param) != "numeric")){
+    stop("Invalid parameter")
+  }
+
   if(model %in% m1){
     d <- as.integer(d)
     sigma = cbind(0)
@@ -362,46 +374,53 @@ rmevspec <-function(n, d, param, sigma,
       if(param < 1.0){
         param <- 1.0/param
       }
-      mod <- 1
-    } else{
-      mod <- 2
     }
   } else if(model %in% m2){
     d <- as.integer(d)
     sigma = cbind(0)
-    if(model %in% c("bilog","negbilog")){
-      if(missing(param) || length(param)!=d) stop("Invalid parameter value")
+    if(missing(param) || length(param)!=d) stop("Invalid parameter value")
       #Check whether arguments are valid
       if(model=="bilog" && all(param>=1)){ param <- 1/param}
       if(model=="negbilog" && all(param>=0)){ param <- -param}
       if(any(param>1.0)) stop("Invalid param vector for bilogistic or negative bilogistic")
       if(any(param<0) && model=="bilog") warning("Negative parameter values in bilogistic");
       if(any(param>0) && model=="negbilog") warning("Positive parameter values in negative bilogistic");
-      mod <- 4
-    } else{
-      if(missing(param) || (length(param)!=d && length(param)!=d+1)) stop("Invalid parameter value")
-      mod <- 7
-    }
-  } else if(model %in% m3){
-    if(missing(sigma) && !missing(vario) && !missing(loc)){
-      if(!is.matrix(loc)) loc <- matrix(loc, ncol=1)
-      stopifnot(is.function(vario))
-      sigma <- sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
-        vario(loc[i,],...) + vario(loc[j,],...) - vario(loc[i,]-loc[j,],...)))
-    }
-  	if(model=="xstud"){
-			sigma <- cov2cor(sigma)
-		}
-    d <- ncol(sigma)
-    if(missing(sigma) || ncol(sigma)!=nrow(sigma)) stop("Invalid covariance matrix")
-    if(any(diag(sigma)<=0)) stop("Degenerate covariance matrix; negative or zero entries found")
-    if(model=="xstud" && any(diag(sigma)!=1)) warning("Extremal student requires correlation matrix")
-    if(model=="xstud" && (missing(param) || length(param)!=1)) stop("Degrees of freedom argument missing or invalid")
-    if(model=="xstud"){
-      mod <- 5
-    } else{
-      mod <- 6; param = 0
-    }
+  } else if(model %in% m4){
+    sigma = cbind(0)
+      if(missing(param)){
+        stop("Invalid parameter value")
+      }
+      if(model=="ct"){
+        if(length(param)!=d){
+          if(length(param)==(d+1)){
+            warning("Use `dir' model for the scaled extremal Dirichlet");
+          } else{
+            stop("Invalid arguments for the Coles and Tawn extremal Dirichlet model")
+          }
+        }
+      } else{ #model 'dir' or 'idir'
+        if(length(param)!=(d+1)){
+          warning("Use `dir' model for the scaled extremal Dirichlet");
+        }
+      }
+    } else if(model %in% m3){
+      if(missing(sigma) && !missing(vario) && !missing(loc)){
+        if(!is.matrix(loc)) loc <- matrix(loc, ncol=1)
+        stopifnot(is.function(vario))
+        sigma <- sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
+          vario(loc[i,],...) + vario(loc[j,],...) - vario(loc[i,]-loc[j,],...)))
+      }
+    	if(model=="xstud"){
+  			sigma <- cov2cor(sigma)
+  			if(any(diag(sigma)!=1)){warning("Extremal student requires correlation matrix") }
+  			if(missing(param) || length(param)!=1){stop("Degrees of freedom argument missing or invalid")}
+  		}
+      d <- ncol(sigma)
+      if(missing(sigma) || ncol(sigma)!=nrow(sigma)) stop("Invalid covariance matrix")
+      if(any(diag(sigma)<=0)) stop("Degenerate covariance matrix; negative or zero entries found")
+      if(model=="br"){
+        param = 0
+      }
     } else if(model=="dirmix"){
     if(any(missing(param),
            length(weights)!=ncol(param) && ncol(param)!=1,
@@ -426,15 +445,18 @@ rmevspec <-function(n, d, param, sigma,
     #Switching parameters around to pass them to Rcpp function
     sigma <- param
     param <- weights
-    mod <- 3
     } else if(model=="hr"){
-     mod <- 9; param = 0
+     param = 0
     }
   if(!model=="smith"){
     loc <- cbind(0)
   }
+  #Model
+  mod <- switch(model, log=1, neglog=2, dirmix=3, bilog=4, negbilog=4, xstud=5, br=6,
+                ct=7, dir=7, smith=8, hr=9, negdir=10)
+
   #Generate from spectral measure
-  .rmevspec_cpp(n=n, d=d, param=param, model=mod, Sigma=sigma, loc=loc)
+  .rmevspec_cpp(n=n, d=d, para=param, model=mod, Sigma=sigma, loc=loc)
 }
 
 

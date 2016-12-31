@@ -139,12 +139,12 @@ W.diag <- function(xdat, model=c("nhpp","exp","invexp"), u=NULL, k, q1=0, q2=1, 
   par(mfrow=c(length(plots), 1), las=1, mar=pmar)
 
   J1 <- .Joint_MLE_NHPP(x=xdat, u=u, k=k, q1=q1, q2=q2, par=par,M=M)
-  warn <- any(eigen(J1$Cov.xi)$val<=.Machine$double.eps)
+  warn <- any(eigen(J1$Cov.xi,only.values = TRUE)$val<=.Machine$double.eps)
   if(!unull && warn){
     stop("Estimated covariance matrix for xi not positive definite: try different thresholds")
   }
 
-  while(any(eigen(J1$Cov.xi)$val<=.Machine$double.eps))
+  while(any(eigen(J1$Cov.xi,only.values = TRUE)$val<=.Machine$double.eps))
   {
     k <- k-1
     J1 <- .Joint_MLE_NHPP(x=xdat,k=k, q1=q1, q2=q2, par=par,M=M)
@@ -181,7 +181,7 @@ W.diag <- function(xdat, model=c("nhpp","exp","invexp"), u=NULL, k, q1=0, q2=1, 
   }
 
   if(is.element("LRT",plots)){
-    if(UseQuantiles  &&  unull){
+    if(!UseQuantiles){
       plot(qs, c(rep(NA,2),nl[,2]),xlab="Quantile",ylab="LR statistic", main=paste("p-value:", pval),...)
     } else{
       plot(u[-c(k+1)], c(rep(NA,2),nl[,2]),xlab="Threshold",ylab="LR statistic", main=paste("p-value:", pval),...)
@@ -189,7 +189,7 @@ W.diag <- function(xdat, model=c("nhpp","exp","invexp"), u=NULL, k, q1=0, q2=1, 
   }
 
   if(is.element("WN",plots)){
-    if(UseQuantiles  &&  unull){
+    if(!UseQuantiles){
       plot(qs, c(NA,wn),xlab="Quantile",ylab="White noise",...)
       abline(h=0,col=2)
       abline(v=mean(xdat<=ustar),col=4)
@@ -202,8 +202,9 @@ W.diag <- function(xdat, model=c("nhpp","exp","invexp"), u=NULL, k, q1=0, q2=1, 
 
   if(is.element("PS",plots)){
     TradCI <- cbind(J1$mle[,3]-qnorm(0.975)*sqrt(diag(J1$Cov.xi)),J1$mle[,3]+qnorm(0.975)*sqrt(diag(J1$Cov.xi)))
-    if(UseQuantiles  &&  unull){
-      plot(qs,J1$mle[,3],ylim=c(min(TradCI[,1]),max(TradCI[,2])), xlab="Quantile", ylab=expression(hat(xi)),...)
+    if(!UseQuantiles){
+      plot(qs,J1$mle[,3],ylim=c(min(TradCI[,1]),max(TradCI[,2])), xlab="Quantile", ylab=ifelse(tikz,"$\\hat{\\xi}$",
+                                                                                               expression(hat(xi))),...)
       lines(qs,TradCI[,1], lty=2)
       lines(qs,TradCI[,2], lty=2)
       abline(v=mean(xdat<=ustar),col=4)

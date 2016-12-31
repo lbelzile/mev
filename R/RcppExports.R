@@ -158,6 +158,8 @@ mvrnorm <- function(n, mu, Sigma) {
 #' \eqn{P_{x}} is probability of extremal functions from the Dirichlet model of
 #' Coles and Tawn.
 #'
+#' Note: we generate from the Dirichlet rather than the Gamma distribution, since the former is parallelized
+#'
 #' @param d dimension of the 1-sample
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param alpha a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector, or
@@ -312,13 +314,13 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param param a vector of parameters
 #' @param model integer, currently ranging from 1 to 8, corresponding respectively to
 #' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-#' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and (8) \code{smith}.
+#' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and \code{dir}, (10) \code{negdir} and (8) \code{smith}.
 #' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 #' @param loc matrix of location for Smith model.
 #'
 #' @return a \code{n} by \code{d} matrix containing the sample
-.rmevA1 <- function(n, d, param, model, Sigma, loc) {
-    .Call('mev_rmevA1', PACKAGE = 'mev', n, d, param, model, Sigma, loc)
+.rmevA1 <- function(n, d, para, model, Sigma, loc) {
+    .Call('mev_rmevA1', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
 }
 
 #' Multivariate extreme value distribution sampling algorithm
@@ -332,13 +334,14 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param param a vector of parameters
 #' @param model integer, currently ranging from 1 to 8, corresponding respectively to
 #' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-#' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and (8) \code{smith}.
+#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct},
+#' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
 #' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 #' @param loc matrix of location for Smith model.
 #'
 #' @return a \code{n} by \code{d} matrix containing the sample
-.rmevA2 <- function(n, d, param, model, Sigma, loc) {
-    .Call('mev_rmevA2', PACKAGE = 'mev', n, d, param, model, Sigma, loc)
+.rmevA2 <- function(n, d, para, model, Sigma, loc) {
+    .Call('mev_rmevA2', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
 }
 
 #' Random number generator from spectral distribution
@@ -350,7 +353,8 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param param a vector of parameters
 #' @param model integer, currently ranging from 1 to 7, corresponding respectively to
 #' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct}, (8) \code{smith} and (9) \code{hr}.
+#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct}, 
+#' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
 #' @param Sigma covariance matrix for Brown-Resnick and extremal student, symmetric matrix
 #' of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility
 #' @param loc matrix of locations for the Smith model
@@ -360,8 +364,8 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @references Boldi (2009). A note on the representation of parametric models for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
 #'
 #' @return a \code{n} by \code{d} matrix containing the sample
-.rmevspec_cpp <- function(n, d, param, model, Sigma, loc) {
-    .Call('mev_rmevspec_cpp', PACKAGE = 'mev', n, d, param, model, Sigma, loc)
+.rmevspec_cpp <- function(n, d, para, model, Sigma, loc) {
+    .Call('mev_rmevspec_cpp', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
 }
 
 #' Random number generator from asymmetric logistic distribution
@@ -381,8 +385,8 @@ mvrnorm <- function(n, mu, Sigma) {
 #' extreme value distributions, \bf{9}, 75--81.
 #'
 #' @return a \code{n} by \code{d} matrix containing the sample
-.rmevasy <- function(n, d, param, asym, ncompo, Sigma, model) {
-    .Call('mev_rmevasy', PACKAGE = 'mev', n, d, param, asym, ncompo, Sigma, model)
+.rmevasy <- function(n, d, para, asym, ncompo, Sigma, model) {
+    .Call('mev_rmevasy', PACKAGE = 'mev', n, d, para, asym, ncompo, Sigma, model)
 }
 
 Zhang_Stephens <- function(x, init, adapt_sd = 0.1, adapt = TRUE, burnin = 1000L, niter = 10000L, thin = 1L, method = 1L) {

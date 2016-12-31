@@ -5,7 +5,8 @@
 \title{Random samples from spectral distributions of multivariate extreme value models.}
 \usage{
 rmevspec(n, d, param, sigma, model = c("log", "neglog", "bilog", "negbilog",
-  "hr", "br", "xstud", "ct", "dirmix"), weights, vario, loc, ...)
+  "hr", "br", "xstud", "ct", "dir", "negdir", "dirmix"), weights, vario, loc,
+  ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -41,7 +42,7 @@ The vector param differs depending on the model
  \item \code{neglog}: one dimensional positive parameter
  \item \code{bilog}: \code{d}-dimensional vector of parameters in \eqn{[0,1]}
  \item \code{negbilog}: \code{d}-dimensional vector of negative parameters
- \item \code{ct}: \code{d}-dimensional vector of positive (a)symmetry parameters. Alternatively, a \eqn{d+1}
+ \item \code{ct}, \code{dir}, \code{negdir}: \code{d}-dimensional vector of positive (a)symmetry parameters. Alternatively, a \eqn{d+1}
  vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as scale
  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
@@ -57,7 +58,7 @@ rmevspec(n=100, d=3, param=2.5, model="log")
 rmevspec(n=100, d=3, param=2.5, model="neglog")
 rmevspec(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog")
 rmevspec(n=100, d=2, param=c(0.8,1.2), model="ct") #Dirichlet model
-rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="ct") #with additional scale parameter
+rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="dir") #with additional scale parameter
 #Variogram gamma(h) = scale*||h||^alpha
 scale <- 0.5; alpha <- 1
 vario <- function(x) scale*sqrt(sum(x^2))^alpha

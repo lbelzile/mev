@@ -20,7 +20,7 @@ The extremal Student and Husler-Reiss (Brown-Resnick) models are also implemente
 
 Other features of the package include threshold diagnostic tests, empirical likelihood estimation for the spectral measure,
 bias-correction and tangent exponential model approximations for the GP and GEV distributions, extended generalized Pareto distributions, information matrix test and penultimate approximations. Many of these are not
-found elsewhere. \code{mev} complements packages \link[evd]{evd} and \link[ismev]{ismev}.
+found elsewhere. \code{mev} complements packages \code{evd} and \link[ismev]{ismev}.
 
 }
 \author{

@@ -321,67 +321,67 @@ BEGIN_RCPP
 END_RCPP
 }
 // rmevA1
-NumericMatrix rmevA1(int n, int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc);
-RcppExport SEXP mev_rmevA1(SEXP nSEXP, SEXP dSEXP, SEXP paramSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc);
+RcppExport SEXP mev_rmevA1(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type param(paramSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type loc(locSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmevA1(n, d, param, model, Sigma, loc));
+    rcpp_result_gen = Rcpp::wrap(rmevA1(n, d, para, model, Sigma, loc));
     return rcpp_result_gen;
 END_RCPP
 }
 // rmevA2
-NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc);
-RcppExport SEXP mev_rmevA2(SEXP nSEXP, SEXP dSEXP, SEXP paramSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc);
+RcppExport SEXP mev_rmevA2(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type param(paramSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type loc(locSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmevA2(n, d, param, model, Sigma, loc));
+    rcpp_result_gen = Rcpp::wrap(rmevA2(n, d, para, model, Sigma, loc));
     return rcpp_result_gen;
 END_RCPP
 }
 // rmevspec_cpp
-NumericMatrix rmevspec_cpp(int n, int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc);
-RcppExport SEXP mev_rmevspec_cpp(SEXP nSEXP, SEXP dSEXP, SEXP paramSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc);
+RcppExport SEXP mev_rmevspec_cpp(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type param(paramSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type loc(locSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmevspec_cpp(n, d, param, model, Sigma, loc));
+    rcpp_result_gen = Rcpp::wrap(rmevspec_cpp(n, d, para, model, Sigma, loc));
     return rcpp_result_gen;
 END_RCPP
 }
 // rmevasy
-NumericMatrix rmevasy(int n, int d, NumericVector param, LogicalMatrix asym, IntegerVector ncompo, NumericMatrix Sigma, int model);
-RcppExport SEXP mev_rmevasy(SEXP nSEXP, SEXP dSEXP, SEXP paramSEXP, SEXP asymSEXP, SEXP ncompoSEXP, SEXP SigmaSEXP, SEXP modelSEXP) {
+NumericMatrix rmevasy(int n, int d, NumericVector para, LogicalMatrix asym, IntegerVector ncompo, NumericMatrix Sigma, int model);
+RcppExport SEXP mev_rmevasy(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP asymSEXP, SEXP ncompoSEXP, SEXP SigmaSEXP, SEXP modelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type param(paramSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
     Rcpp::traits::input_parameter< LogicalMatrix >::type asym(asymSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type ncompo(ncompoSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmevasy(n, d, param, asym, ncompo, Sigma, model));
+    rcpp_result_gen = Rcpp::wrap(rmevasy(n, d, para, asym, ncompo, Sigma, model));
     return rcpp_result_gen;
 END_RCPP
 }

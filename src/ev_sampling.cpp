@@ -379,6 +379,8 @@ NumericVector rPSmith (int index, arma::mat Sigma, arma::mat loc){
 //' \eqn{P_{x}} is probability of extremal functions from the Dirichlet model of
 //' Coles and Tawn.
 //'
+//' Note: we generate from the Dirichlet rather than the Gamma distribution, since the former is parallelized
+//'
 //' @param d dimension of the 1-sample
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param alpha a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector, or
@@ -393,7 +395,7 @@ NumericVector rPdir(int d, int index, NumericVector alpha, bool irv = false){
     alpha_star = clone(alpha);
   } else{
     for(int i=0; i<d; i++){
-      alpha_star[i]=alpha[i];
+      alpha_star[i] = alpha[i]; //shorter vector b/c RV index is alpha[d]
     }
   }
   NumericVector sample(d);
@@ -415,7 +417,6 @@ NumericVector rPdir(int d, int index, NumericVector alpha, bool irv = false){
     return sample;
   }
 }
-
 
 // SPECTRAL DISTRIBUTIONS
 
@@ -721,7 +722,7 @@ NumericMatrix rdirspec(int n, int d, NumericVector alpha, bool irv = false){
   if(irv==true){
     for(int i=0; i<d; i++){
       m[i] = -lgamma(alpha[i])+lgamma(alpha[i]+alpha[d]);
-      alpha_star[i]=alpha[i];
+      alpha_star[i] = alpha[i];
     }
   } else{
     alpha_star = clone(alpha);
@@ -775,10 +776,10 @@ void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigm
     } else if(model == 6){
       if(Sigma.ncol()!=Sigma.nrow()) Rcpp::stop("Provided covariance matrix is not square");
 
-      //Model 7: Coles and Tawn (Beta-Dirichlet extremal distribution)
-    } else if(model == 7){
+      //Model 7 and 10: Coles and Tawn, scaled extremal Dirichlet model and scaled negative Dirichlet model
+    } else if(model == 7 || model == 10){
       if(is_true(any(param < 0.0))){
-        Rcpp::stop("Invalid input for Dirichlet model");
+        Rcpp::stop("Invalid input for Dirichlet models");
       }
       //Model 8: Smith model (moving maxima with multivariate Gaussian)
     } else if(model == 8){
@@ -791,7 +792,7 @@ void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigm
       //Copy entries in a vector, to use sugar (otherwise need to cast to &int)
       if(Sigma.ncol()!=Sigma.nrow()) Rcpp::stop("Provided matrix is not square");
     }
-    if (model > 9){
+    if (model > 10){
       Rcpp::stop("Model not currently implemented");
     }
   }
@@ -809,15 +810,16 @@ void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigm
 //' @param param a vector of parameters
 //' @param model integer, currently ranging from 1 to 8, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-//' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and (8) \code{smith}.
+//' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and \code{dir}, (10) \code{negdir} and (8) \code{smith}.
 //' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 //' @param loc matrix of location for Smith model.
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevA1)]]
-NumericMatrix rmevA1(int n, int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc) {
+NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
   // Transform parameters to different format
   arma::mat sigma(Sigma.begin(), Sigma.nrow(), Sigma.ncol(), false);
+  NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
 	bool irv = false;
 	//Sanity checks
 	check_args(n, d, param, model, Sigma, loc);
@@ -826,7 +828,7 @@ NumericMatrix rmevA1(int n, int d, NumericVector param, int model, NumericMatrix
 	  arma::vec stdev = exp(0.5*log(sigma.diag()));
 	  arma::mat stdevmat = inv(diagmat(stdev));
 	  sigma = stdevmat * sigma * stdevmat;
-	  //Model 7: Coles and Tawn (Beta-Dirichlet extremal distribution)
+	  //Model 7: Coles and Tawn (extremal Dirichlet distribution)
 	} else if(model == 7){
 	  if(param.size() == d+1){
 	    if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
@@ -835,6 +837,16 @@ NumericMatrix rmevA1(int n, int d, NumericVector param, int model, NumericMatrix
 	  //Model 8: Smith model (moving maxima with multivariate Gaussian)
 	} else if(model == 8){
 	  d = loc.n_rows;
+	  //Model 10: Scaled negative extremal Dirichlet model
+	} else if(model == 10){ 
+	  irv = true;
+	  if(param.size() != d+1){
+	    Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model");
+	  }
+	  if(min(param)!=param[d]){
+	    Rcpp::stop("Invalid index of regular variation");
+	  }
+	  param[d] = -param[d];
 	}
 
 
@@ -861,7 +873,7 @@ NumericMatrix rmevA1(int n, int d, NumericVector param, int model, NumericMatrix
         Y = rexstudspec(1, sigma, param)(0,_);
       } else if(model == 6){
         Y = rbrspec(1, Sigma)(0,_);
-      } else if(model == 7){
+      } else if(model == 7 || model == 10){
         Y = rdirspec(1, d, param, irv)(0,_);
       } else if(model == 8){
         Y = rsmithspec(1, sigma, loc)(0,_);
@@ -892,16 +904,18 @@ NumericMatrix rmevA1(int n, int d, NumericVector param, int model, NumericMatrix
 //' @param param a vector of parameters
 //' @param model integer, currently ranging from 1 to 8, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-//' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and (8) \code{smith}.
+//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct},
+//' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
 //' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 //' @param loc matrix of location for Smith model.
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevA2)]]
-NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc) {
+NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
   // Transform parameters to different format
   arma::mat sigma(Sigma.begin(), Sigma.nrow(), Sigma.ncol(), false);
   bool irv = false;
+  NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
   //Sanity checks
   check_args(n, d, param, model, Sigma, loc);
   if(model == 5){
@@ -909,15 +923,25 @@ NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix
     arma::vec stdev = exp(0.5*log(sigma.diag()));
     arma::mat stdevmat = inv(diagmat(stdev));
     sigma = stdevmat * sigma * stdevmat;
-    //Model 7: Coles and Tawn (Beta-Dirichlet extremal distribution)
+    //Model 7: Coles and Tawn (Dirichlet extremal distribution)
   } else if(model == 7){
     if(param.size() == d+1){
-      if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
+    //if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
       irv = true;
     }
     //Model 8: Smith model (moving maxima with multivariate Gaussian)
   } else if(model == 8){
     d = loc.n_rows;
+    //Model 10: scaled negative extremal Dirichlet model
+  } else if(model == 10){ 
+    irv = true;
+    if(param.size() != d+1){
+      Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model");
+    }
+    if(min(param) != param[d]){
+      Rcpp::stop("Invalid index of regular variation");
+    }
+    param[d] = -param[d];
   }
 
 
@@ -943,7 +967,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix
       Y = rPexstud(0, sigma, param);
     } else if(model == 6){
       Y = rPBrownResnick(0, Sigma);
-    } else if(model == 7){
+    } else if(model == 7 || model == 10){
       Y = rPdir(d, 0, param, irv);
     } else if(model == 8){
       Y = rPSmith(0, sigma, loc);
@@ -971,7 +995,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix
           Y = rPexstud(j, sigma, param);
         } else if(model == 6){
           Y = rPBrownResnick(j, Sigma);
-        } else if(model == 7){
+        } else if(model == 7 || model == 10){
           Y = rPdir(d, j, param, irv);
         }  else if(model == 8){
           Y = rPSmith(j, sigma, loc);
@@ -1006,7 +1030,8 @@ NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix
 //' @param param a vector of parameters
 //' @param model integer, currently ranging from 1 to 7, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct}, (8) \code{smith} and (9) \code{hr}.
+//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct}, 
+//' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
 //' @param Sigma covariance matrix for Brown-Resnick and extremal student, symmetric matrix
 //' of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility
 //' @param loc matrix of locations for the Smith model
@@ -1017,10 +1042,11 @@ NumericMatrix rmevA2(int n, int d, NumericVector param, int model, NumericMatrix
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevspec_cpp)]]
-NumericMatrix rmevspec_cpp(int n, int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc) {
+NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
   // Transform parameters to different format
   arma::mat sigma(Sigma.begin(), Sigma.nrow(), Sigma.ncol(), false);
   bool irv = false;
+  NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
   //Sanity checks
   check_args(n, d, param, model, Sigma, loc);
   if(model == 5){
@@ -1028,15 +1054,24 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector param, int model, Numeric
     arma::vec stdev = exp(0.5*log(sigma.diag()));
     arma::mat stdevmat = inv(diagmat(stdev));
     sigma = stdevmat * sigma * stdevmat;
-    //Model 7: Coles and Tawn (Beta-Dirichlet extremal distribution)
+    //Model 7: Coles and Tawn (extremal Dirichlet distribution)
   } else if(model == 7){
     if(param.size() == d+1){
-      if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
+    //if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
       irv = true;
     }
     //Model 8: Smith model (moving maxima with multivariate Gaussian)
   } else if(model == 8){
     d = loc.n_rows;
+  } else if(model == 10){ 
+    irv = true;
+    if(param.size() != d+1){
+      Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model.");
+    }
+    if(min(param)!=param[d]){
+      Rcpp::stop("Invalid index of regular variation");
+    }
+    param[d] = -param[d];
   }
 
 	//Sampling
@@ -1054,7 +1089,7 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector param, int model, Numeric
     samp = rexstudspec(n, sigma, param);
   } else if(model == 6){
     samp = rbrspec(n, Sigma);
-  } else if(model == 7){
+  } else if(model == 7 || model == 10){
     samp = rdirspec(n, d, param, irv);
   } else if(model == 8){
     samp = rsmithspec(n, sigma, loc);
@@ -1086,12 +1121,13 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector param, int model, Numeric
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevasy)]]
-NumericMatrix rmevasy(int n, int d, NumericVector param, LogicalMatrix asym,
+NumericMatrix rmevasy(int n, int d, NumericVector para, LogicalMatrix asym,
                        IntegerVector ncompo, NumericMatrix Sigma, int model) {
   if(!(model == 1 || model == 2)){
     Rcpp::stop("Asymmetric model not implemented");
     }
   NumericMatrix samp(n,d);
+  NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
   IntegerVector siz = IntegerVector::create(d, Sigma.nrow());
   //IntegerVector index = seq_len(d)-1; // can subset using index[asym(r,_)]
   NumericMatrix nullmat;
