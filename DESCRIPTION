@@ -9,6 +9,7 @@ License: GPL-3
 BugReports: https://github.com/lbelzile/mev/issues
 URL: https://github.com/lbelzile/mev/
 Imports: boot, evd, gmm, ismev, methods, nleqslv, numDeriv, Rcpp (>= 0.11.6), rootSolve, stats
-Suggests: cobs
+Suggests: cobs, knitr
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 5.0.1
+VignetteBuilder: knitr

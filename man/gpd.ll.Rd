@@ -18,7 +18,7 @@ gpd.ll.optim(par, dat, tol = 1e-05)
 }
 \description{
 Function returning the density of an \code{n} sample from the GP distribution.
-\code{gpd.ll.optim} returnsthe negative log-likelihood parametrized in terms of \code{log(scale)} and shape
+\code{gpd.ll.optim} returns the negative log-likelihood parametrized in terms of \code{log(scale)} and shape
 in order to perform unconstrained optimization
 }
 \seealso{

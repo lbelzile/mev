@@ -1,0 +1,73 @@
+\begin{thebibliography}{}
+
+\bibitem[Boldi, 2009]{Boldi:2009}
+Boldi, M.-O. (2009).
+\newblock A note on the representation of parametric models for multivariate
+  extremes.
+\newblock {\em Extremes}, 12(3), 211--218.
+
+\bibitem[Boldi \& Davison, 2007]{Boldi:2007}
+Boldi, M.-O. \& Davison, A.~C. (2007).
+\newblock A mixture model for multivariate extremes.
+\newblock {\em Journal of the Royal Statistical Society: Series B (Statistical
+  Methodology)}, 69(2), 217--229.
+
+\bibitem[Coles \& Tawn, 1991]{Coles:1991}
+Coles, S.~G. \& Tawn, J.~A. (1991).
+\newblock Modelling extreme multivariate events.
+\newblock {\em Journal of the Royal Statistical Society. Series B
+  (Methodological)}, 53(2), 377--392.
+
+\bibitem[Dombry et~al., 2016]{Dombry:2016}
+Dombry, C., Engelke, S., \& Oesting, M. (2016).
+\newblock Exact simulation of max-stable processes.
+\newblock {\em Biometrika}, 103(2), 303--317.
+
+\bibitem[Engelke et~al., 2015]{Engelke:2015}
+Engelke, S., Malinowski, A., Kabluchko, Z., \& Schlather, M. (2015).
+\newblock Estimation of {H}üsler--{R}eiss distributions and
+  {B}rown–{R}esnick processes.
+\newblock {\em Journal of the Royal Statistical Society: Series B (Statistical
+  Methodology)}, 77(1), 239--265.
+
+\bibitem[Galambos, 1975]{Galambos:1975}
+Galambos, J. (1975).
+\newblock Order statistics of samples from multivariate distributions.
+\newblock {\em J. Amer. Statist. Assoc.}, 70(351, part 1), 674--680.
+
+\bibitem[Gumbel, 1960]{Gumbel:1960}
+Gumbel, {\'E}.~J. (1960).
+\newblock Distributions des valeurs extr\^emes en plusieurs dimensions.
+\newblock {\em Publ. Inst. Statist. Univ. Paris}, 9, 171--173.
+
+\bibitem[Huser \& Davison, 2013]{Huser:2013}
+Huser, R. \& Davison, A.~C. (2013).
+\newblock Composite likelihood estimation for the brown–resnick process.
+\newblock {\em Biometrika}, 100(2), 511--518.
+
+\bibitem[H{\"u}sler \& Reiss, 1989]{Husler:1989}
+H{\"u}sler, J. \& Reiss, R.-D. (1989).
+\newblock Maxima of normal random vectors: between independence and complete
+  dependence.
+\newblock {\em Statist. Probab. Lett.}, 7(4), 283--286.
+
+\bibitem[Joe, 1990]{Joe:1990}
+Joe, H. (1990).
+\newblock Multivariate concordance.
+\newblock {\em Journal of Multivariate Analysis}, 35(1), 12--30.
+
+\bibitem[Nikoloulopoulos et~al., 2009]{Nikoloulopoulos:2009}
+Nikoloulopoulos, A.~K., Joe, H., \& Li, H. (2009).
+\newblock Extreme value properties of multivariate t copulas.
+\newblock {\em Extremes}, 12(2), 129--148.
+
+\bibitem[Smith, 1990]{Smith:1990}
+Smith, R.~L. (1990).
+\newblock Max-stable processes and spatial extremes.
+
+\bibitem[Tawn, 1990]{Tawn:1990}
+Tawn, J.~A. (1990).
+\newblock Modelling multivariate extreme value distributions.
+\newblock {\em Biometrika}, 77(2), 245--253.
+
+\end{thebibliography}

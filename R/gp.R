@@ -1491,6 +1491,7 @@ function(x) {# x: sample data from the GPD
 #' gp.fit(rain, threshold, method="zs")
 gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","zs","zhang"), show=FALSE, MCMC=NULL){
 	xi.tol = 1e-4
+	xdat <- na.omit(xdat)
 	#Optimization of model, depending on routine
 	method <- match.arg(method)
 	if(!is.null(MCMC) && ! method %in% c("zs","zhang")) warning("Ignoring argument `MCMC` for frequentist estimation")
@@ -1571,7 +1572,7 @@ gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","z
 					accept.rate = bayespost$rate,
 					thin = bayespost$thin,
 					burnin=bayespost$burnin,
-					niter=bayespost$niter), class="gpdbayes")
+					niter=bayespost$niter,xdat=xdat), class="gpdbayes")
 
 				} else{
 					post <- structure(list(
@@ -1624,13 +1625,43 @@ gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","z
 				nat = sum(xdat > threshold),
 				pat=sum(xdat > threshold) / length(xdat),
 				convergence = temp$conv,
-				counts = temp$counts
+				counts = temp$counts,
+				xdat=xdat
 			), class = "gpd")
 		if(show){
 			print(output)
 		}
 			invisible(output)
 }
+
+# #' @param x A fitted object of class \code{gpd}.
+# #' @param main title for the QQ-plot
+# #' @param xlab x-axis label
+# #' @param ylab y-axis label
+# #' @param ... additional argument passed to \code{matplot}.
+# #' @rdname gp.fit
+# #' @S3method plot gpd
+# #' @exportMethods
+#' @export
+plot.gpd <- function (x, main = "Quantile-quantile plot", xlab = "Theoretical quantiles",
+                       ylab = "Sample quantiles", ...){
+  if(is.matrix(x)){
+    stop("Data provided must be a vector, not a matrix")
+  }
+  dat <- sort(x$xdat[x$xdat>x$threshold])
+  n <- length(dat)
+  confint_lim <- t(sapply(1:n, function(i){
+    qgpd(qbeta(c(0.025,0.975),i, n-i+1),loc=x$threshold,
+         scale=x[['estimate']][1], shape=x[['estimate']][2])}))
+  quant <- qgpd(rank(dat)/(n+1), loc = x$threshold, scale = x[['estimate']][1],
+                shape = x[['estimate']][2])
+  matplot(quant, cbind(dat, confint_lim), main = main, xlab = xlab,
+          ylab = ylab, type = "pll", pch = 20,col=c(1,"grey","grey"),lty=c(1,2,2),bty="l",pty="s",...)
+  abline(0, 1)
+  invisible(cbind(quant,confint_lim))
+}
+
+
 
 # #' @param x A fitted object of class \code{gpd}.
 # #' @param digits Number of digits to display in \code{print} call.

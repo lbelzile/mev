@@ -2,6 +2,7 @@
 
 S3method(confint,fr)
 S3method(plot,fr)
+S3method(plot,gpd)
 S3method(print,gpd)
 S3method(print,gpdbayes)
 export(.gpd_2D_fit)
