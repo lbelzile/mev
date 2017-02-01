@@ -761,8 +761,8 @@ gpd.vcov.mat <- function(data, scale, shape, loc=NULL){
 		z$nexc <- length(xdatu)
 		z$data <- xdatu
 		gpd.lik <- function(a) {
-			sc <- siglink(sigmat %*% (a[seq(1, length = npsc)]))
-			xi <- shlink(shmat %*% (a[seq(npsc + 1, length = npsh)]))
+			sc <- siglink(sigmat %*% (a[seq(1, length.out = npsc)]))
+			xi <- shlink(shmat %*% (a[seq(npsc + 1, length.out = npsh)]))
 			y <- (xdatu - u) / sc
 			y <- 1 + xi * y
 			if (min(sc) <= 0){
@@ -800,8 +800,8 @@ gpd.vcov.mat <- function(data, scale, shape, loc=NULL){
 		  z$conv <- 50
 		  return(z)
 		}
-		sc <- siglink(sigmat %*% (x$par[seq(1, length = npsc)]))
-		xi <- shlink(shmat %*% (x$par[seq(npsc + 1, length = npsh)]))
+		sc <- siglink(sigmat %*% (x$par[seq(1, length.out = npsc)]))
+		xi <- shlink(shmat %*% (x$par[seq(npsc + 1, length.out = npsh)]))
 		z$conv <- x$convergence
 		z$counts <- x$counts
 		z$nllh <- x$value

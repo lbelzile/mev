@@ -479,7 +479,7 @@ regp2.G <- function(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALS
   }
   if(type!=4 | (type==4 & direct)){
     if(censoring[1]==0 & censoring[2]==1){
-      return( qegp2.G(unifsamp,prob,kappa,delta,type) )
+      return( qegp2.G(unifsamp,prob=prob,kappa=kappa,delta=delta,type=type) )
     } else{
       x.L <- pegp2.G(censoring[1],prob=prob,kappa=kappa,delta=delta,type=type)
       x.U <- pegp2.G(censoring[2],prob=prob,kappa=kappa,delta=delta,type=type)
