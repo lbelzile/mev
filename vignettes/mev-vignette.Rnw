@@ -41,7 +41,7 @@ if (before && options$fig.show!='none') par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axi
 \maketitle
 \begin{center}
 { \small
-EPFL-SB-MATHAA-STAT \\ Station 8, Bâtiment MA \\CH-1015, Switzerland,\\ \href{leo.belzile@epfl.ch}{\texttt{leo.belzile@epfl.ch}}
+EPFL-SB-MATH-STAT \\ Station 8, Bâtiment MA \\CH-1015, Switzerland,\\ \href{leo.belzile@epfl.ch}{\texttt{leo.belzile@epfl.ch}}
 }
 \end{center}
 
@@ -277,7 +277,7 @@ where $\{\zeta_i, \eta_i\}_{i \in \mathbb{N}}$ is a Poisson point process on $\R
 
 
 \bibliographystyle{apalike2}
-\bibliography{/home/leo/Documents/Dropbox/PhD/Articles/thesis_bib}
+\bibliography{bib}
 
 
 \end{document}

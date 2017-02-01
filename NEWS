@@ -2,6 +2,8 @@ mev v.1.10
 ==============
 New:
 * Added 'negdir' model to rmev
+Changes:
+* Fixed argument matching in function `egp2`
 
 mev v.1.9x
 ==============

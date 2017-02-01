@@ -34,7 +34,7 @@ regp2(n, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA,
   type = 1, unifsamp = NULL, censoring = c(0, Inf))
 }
 \description{
-These functions are documented in \code{\link{egp2}} and in \code{link{egp2.G}} for the carrier distributions supported in the unit interval.
+These functions are documented in \code{\link{egp2}} and in \code{\link{egp2.G}} for the carrier distributions supported in the unit interval.
 }
 \seealso{
 \code{\link{egp2}}, \code{\link{egp2.G}}

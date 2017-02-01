@@ -557,7 +557,7 @@ NULL
 
 #' EGP functions
 #'
-#' These functions are documented in \code{\link{egp2}} and in \code{link{egp2.G}} for the carrier distributions supported in the unit interval.
+#' These functions are documented in \code{\link{egp2}} and in \code{\link{egp2.G}} for the carrier distributions supported in the unit interval.
 #' @name egp2-functions
 #' @export
 #' @seealso \code{\link{egp2}}, \code{\link{egp2.G}}
