@@ -20,4 +20,3 @@ Score of the profile log-likelihood for the GP distribution (return levels param
 \code{\link{gpdr}}
 }
 \keyword{internal}
-

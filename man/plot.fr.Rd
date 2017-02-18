@@ -25,4 +25,3 @@ due to poor numerics in a neighborhood of \code{r=0}; the function should be smo
 \references{
 Brazzale, A. R., Davison, A. C. and Reid, N. (2007). \emph{Applied Asymptotics: Case Studies in Small-Sample Statistics}. Cambridge University Press, Cambridge.
 }
-

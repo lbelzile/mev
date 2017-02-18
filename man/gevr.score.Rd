@@ -20,4 +20,3 @@ Score of the log-likelihood for the GEV distribution (return levels)
 \code{\link{gevr}}
 }
 \keyword{internal}
-

@@ -20,4 +20,3 @@ Score vector for the GP distribution (expected shortfall)
 \code{\link{gpde}}
 }
 \keyword{internal}
-

@@ -1,4 +1,4 @@
-#' @useDynLib mev
+#' @useDynLib mev, .registration=TRUE
 #' @importFrom Rcpp evalCpp
 #' @importFrom grDevices "colorRampPalette"
 #' @importFrom graphics "plot" "lines" "abline" "axis" "par" "matplot" "legend" "image" "mtext" "text"

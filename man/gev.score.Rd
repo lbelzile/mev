@@ -15,4 +15,3 @@ gev.score(par, dat)
 Score vector for the generalized extreme value distribution
 }
 \keyword{internal}
-

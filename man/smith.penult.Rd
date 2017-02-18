@@ -48,10 +48,9 @@ model="bm", m=m, shape=0.1)
 plot(m, penult[,3], type="l",
  xlab="Quantile", ylab="Penultimate shape")
 }
-\author{
-Leo Belzile
-}
 \references{
 Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
 }
-
+\author{
+Leo Belzile
+}

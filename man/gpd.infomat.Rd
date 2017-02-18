@@ -22,4 +22,3 @@ The function returns the expected or observed information matrix.
 \code{\link{gpd}}
 }
 \keyword{internal}
-

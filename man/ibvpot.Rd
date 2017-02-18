@@ -38,9 +38,6 @@ x <- y*rmevspec(n=1000,d=2,sigma=cbind(c(0,0.5),c(0.5,0)),model="hr")
 mod <- evd::fbvpot(x,threshold = c(1,1),model = "hr",likelihood ="censored")
 ibvpot(mod, c(20,20))
 }
-\author{
-Leo Belzile, adapting original S code by Alexander McNeil
-}
 \references{
 Smith, Tawn and Coles (1997), Markov chain models for threshold exceedances. \emph{Biometrika},
 \strong{84}(2), 249--268.
@@ -48,4 +45,6 @@ Smith, Tawn and Coles (1997), Markov chain models for threshold exceedances. \em
 \seealso{
 \code{\link[evir]{interpret.gpdbiv}}
 }
-
+\author{
+Leo Belzile, adapting original S code by Alexander McNeil
+}

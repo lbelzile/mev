@@ -29,4 +29,3 @@ Negative log-likelihood parametrized in terms of log return level and shape in o
 \code{\link{gpdr}}
 }
 \keyword{internal}
-

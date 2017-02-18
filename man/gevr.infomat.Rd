@@ -20,4 +20,3 @@ The information matrix is parametrized in terms of location, \eqn{(1-p)}th quant
 \code{\link{gevr}}
 }
 \keyword{internal}
-

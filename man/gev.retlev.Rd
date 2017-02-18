@@ -18,4 +18,3 @@ This function returns the \eqn{1-p}th quantile of the GEV.
 \code{\link{gev}}
 }
 \keyword{internal}
-

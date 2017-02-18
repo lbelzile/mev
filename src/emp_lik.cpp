@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::interfaces(r, cpp)]]
 # include <RcppArmadillo.h>
 using namespace Rcpp;
 //using namespace arma;
@@ -224,4 +225,66 @@ NumericVector Pickands_emp(NumericVector s, NumericVector ang, NumericVector wts
     pick[i] = 2*sum(pmax((1-s[i])*ang,s[i]*(1-ang))*wts);
   }
   return pick;
+}
+
+// [[Rcpp::export(ldirfn)]]
+double ldirfn(NumericVector param){
+ double res = 0;
+  res = lgamma(sum(param))-sum(lgamma(param));
+  return res;
+}
+
+// [[Rcpp::export(.gloocv)]]
+NumericVector gloocv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts) {
+  NumericVector result(1);
+  int n = loowts.ncol();
+  NumericVector ldirnuw(n);
+  NumericVector nuv(n);
+  for(int i = 0; i < n; i++){
+    nuv[i] = nu / min(ang.row(i));
+    ldirnuw[i] = ldirfn(nuv[i] * ang.row(i));
+  }
+  for(int i = 0; i < n; i++){
+    for(int j = 0; j < n; j++){
+      result[0] = result[0] + exp(log(wts[i]) + log(wts[j]) + ldirfn(nuv[i] * ang.row(i) + nuv[j] * ang.row(j) - 1) - ldirnuw[i] - ldirnuw[j])
+      -2.0 / n * exp(log(loowts(i, j)) + sum((nuv[j] * ang.row(j) - 1) * log(ang.row(i))) - ldirnuw[j]);
+    }
+  }
+  return result;
+}
+
+// [[Rcpp::export(.gloo2cv)]]
+NumericVector gloo2cv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts) {
+  NumericVector result(1);
+  int n = loowts.ncol();
+  NumericVector ldirnuw(n);
+  for(int i = 0; i < n; i++){
+    ldirnuw[i] = ldirfn(nu * ang.row(i));
+  }
+  for(int i = 0; i < n; i++){
+    for(int j = 0; j < n; j++){
+      result[0] = result[0] + exp(log(wts[i]) + log(wts[j]) + ldirfn(nu * ang.row(i) + nu * ang.row(j) - 1) - ldirnuw[i] - ldirnuw[j])
+      -2.0 / n * exp(log(loowts(i, j)) + sum((nu * ang.row(j) - 1) * log(ang.row(i))) - ldirnuw[j]);
+    }
+  }
+  return result;
+}
+
+
+
+// [[Rcpp::export(.gloo3cv)]]
+NumericVector gloo3cv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts) {
+  NumericVector result(1);
+  int n = loowts.ncol();
+  NumericVector ldirnuw(n);
+  for(int i = 0; i < n; i++){
+    ldirnuw[i] = ldirfn(nu * ang.row(i));
+  }
+  for(int i = 0; i < n; i++){
+    for(int j = 0; j < n; j++){
+      result[0] = result[0] + exp(log(wts[i]) + log(wts[j]) + ldirfn(nu * (ang.row(i) + ang.row(j))) - ldirnuw[i] - ldirnuw[j])
+      -2.0 / n * exp(log(loowts(i, j)) + sum(nu * ang.row(j) * log(ang.row(i))) - ldirnuw[j]);
+    }
+  }
+  return result;
 }

@@ -48,9 +48,6 @@ u <- quantile(rain, seq(0.85,0.99,by=0.01))
 NC.diag(rain, u, size=0.05)
 }
 }
-\author{
-Paul J. Northrop and Claire L. Coleman
-}
 \references{
 Grimshaw (1993). Computing Maximum Likelihood Estimates for the Generalized
  Pareto Distribution, \emph{Technometrics}, \bold{35}(2), 185--191.
@@ -61,4 +58,6 @@ analyses, \emph{Extremes}, \bold{17}(2), 289--303.
 Wadsworth & Tawn (2012). Likelihood-based procedures for threshold
 diagnostics and uncertainty in extreme value modelling, \emph{J. R. Statist. Soc. B}, \bold{74}(3), 543--567.
 }
-
+\author{
+Paul J. Northrop and Claire L. Coleman
+}

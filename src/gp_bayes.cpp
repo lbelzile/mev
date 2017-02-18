@@ -1,3 +1,4 @@
+// [[Rcpp::interfaces(r, cpp)]]
 #include <Rcpp.h>
 using namespace Rcpp;
 // Zhang and Stephens (2009) and Zhang (2010) routines for function gp.fit

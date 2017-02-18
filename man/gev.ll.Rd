@@ -24,4 +24,3 @@ Function returning the density of an \code{n} sample from the GEV distribution.
 \code{\link{gev}}
 }
 \keyword{internal}
-

@@ -57,4 +57,3 @@ gev.tem("VaR",dat=dat, p=0.01,plot=TRUE)
 \author{
 Leo Belzile, from code by A. Davison from the \code{hoa} package
 }
-

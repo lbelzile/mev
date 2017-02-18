@@ -20,4 +20,3 @@ The information matrix is parametrized in terms of rate of expected shortfall an
 \code{\link{gpde}}
 }
 \keyword{internal}
-

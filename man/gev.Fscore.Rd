@@ -23,4 +23,3 @@ Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometri
 \code{\link{gev}}
 }
 \keyword{internal}
-

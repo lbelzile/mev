@@ -70,6 +70,7 @@ for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the l
 
 As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
 }
+
 \examples{
 set.seed(1)
 rmev(n=100, d=3, param=2.5, model="log", alg="ef")
@@ -87,13 +88,12 @@ rmev(n=10, sigma=cbind(c(2,1),c(1,3)), loc=cbind(runif(4),runif(4)),model="smith
 alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 }
-\author{
-Leo Belzile
-}
 \references{
 Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes, \emph{Biometrika}, \bold{103}(2), 303--317.
 }
 \seealso{
 \link{rmevspec}, \link[evd]{rmvevd}, \link[evd]{rbvevd}
 }
-
+\author{
+Leo Belzile
+}

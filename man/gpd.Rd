@@ -50,9 +50,7 @@ in order to perform unconstrained optimization}
 exponential family approximation}
 }
 }
-\author{
-Leo Belzile
-}
+
 \references{
 Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 
@@ -64,4 +62,6 @@ Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Stati
 
 Giles, D. E., Feng, H. and R. T. Godwin (2016).  Bias-corrected maximum likelihood estimation of the  parameters of the generalized Pareto distribution, \emph{Communications in Statistics - Theory and Methods}, \strong{45}(8), 2465--2483.
 }
-
+\author{
+Leo Belzile
+}

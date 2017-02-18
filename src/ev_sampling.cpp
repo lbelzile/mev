@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::interfaces(r, cpp)]]
 # include <RcppArmadillo.h>
 # include <RcppArmadilloExtensions/sample.h>
 using namespace Rcpp;

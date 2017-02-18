@@ -27,4 +27,3 @@ Giles, D. E., Feng, H. and R. T. Godwin (2016).  Bias-corrected maximum likeliho
 \code{\link{gpd}}, \code{\link{gpd.bcor}}
 }
 \keyword{internal}
-

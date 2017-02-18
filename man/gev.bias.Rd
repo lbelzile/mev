@@ -18,4 +18,3 @@ Bias vector for the GEV distribution based on an \code{n} sample.
 \code{\link{gev}}
 }
 \keyword{internal}
-

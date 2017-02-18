@@ -52,9 +52,6 @@ x <- rmev(n=25, d=3, param=0.5, model="log")
 wts <- angmeas(x=x, th=0, Rnorm="l1", Anorm="l1", marg="Frechet", wgt="Empirical")
 wts2 <- angmeas(x=x, Rnorm="l2", Anorm="l2", marg="Pareto", th=0)
 }
-\author{
-Leo Belzile
-}
 \references{
 Einmahl, J.H.J. and J. Segers (2009). Maximum empirical likelihood estimation of the spectral measure of an extreme-value distribution, \emph{Annals of Statistics}, \bold{37}(5B), 2953--2989.
 
@@ -62,4 +59,6 @@ de Carvalho, M. and B. Oumow and J. Segers and M. Warchol (2013). A Euclidean li
 
 Owen, A.B. (2001). \emph{Empirical Likelihood}, CRC Press, 304p.
 }
-
+\author{
+Leo Belzile
+}

@@ -25,4 +25,3 @@ in order to perform unconstrained optimization
 \code{\link{gpd}}
 }
 \keyword{internal}
-

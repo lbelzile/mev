@@ -24,4 +24,3 @@ matrix \code{Sigma}. The function uses the Armadillo random normal generator
 \examples{
 mvrnorm(n=10, mu=c(0,2), Sigma=diag(2))
 }
-

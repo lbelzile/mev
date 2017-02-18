@@ -41,10 +41,9 @@ The function \code{egp.fitrange} provides classical parameter stability plot for
 \code{egp.fit} is a numerical optimization routine to fit the extended generalised Pareto models of Papastathopoulos and Tawn (2013),
 using maximum likelihood estimation.
 }
-\author{
-Leo Belzile
-}
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
 }
-
+\author{
+Leo Belzile
+}

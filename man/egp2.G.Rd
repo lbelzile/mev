@@ -37,10 +37,10 @@ generation for the carrier distributions of the extended Generalized Pareto dist
 
  \code{regp2.G(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALSE,censoring=c(0,1))}
 }
-\author{
-Raphael Huser and Philippe Naveau
-}
+
 \seealso{
 \code{\link{egp2}}
 }
-
+\author{
+Raphael Huser and Philippe Naveau
+}

@@ -25,4 +25,3 @@ here
 rdir(n=100, alpha=c(0.5,0.5,2),TRUE)
 rdir(n=100, alpha=c(3,1,2),FALSE)
 }
-

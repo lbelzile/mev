@@ -52,6 +52,7 @@ The vector param differs depending on the model
 
  This functionality can be useful to generate for example Pareto processes (by multiplying by a standard Pareto variable the output). Other functionals are not currently implemented.
 }
+
 \examples{
 set.seed(1)
 rmevspec(n=100, d=3, param=2.5, model="log")
@@ -69,13 +70,12 @@ rmevspec(n=100, vario=vario,loc=grid.loc, model="br")
 alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 }
-\author{
-Leo Belzile
-}
 \references{
 Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes, \emph{Biometrika}, \bold{103}(2), 303--317.
 
 Boldi (2009). A note on the representation of parametric models for multivariate extremes.
 \emph{Extremes} \bold{12}, 211--218.
 }
-
+\author{
+Leo Belzile
+}

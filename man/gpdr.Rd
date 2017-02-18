@@ -48,7 +48,7 @@ in order to perform unconstrained optimization}
 \item{\code{gpdr.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
 }
 }
+
 \author{
 Leo Belzile
 }
-

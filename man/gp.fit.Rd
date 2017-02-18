@@ -71,10 +71,6 @@ threshold <- quantile(rain,0.9)
 gp.fit(rain, threshold, method="Grimshaw")
 gp.fit(rain, threshold, method="zs")
 }
-\author{
-Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the other frequentist functions.
-Zhang and Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for the wrapper and MCMC samplers.
-}
 \references{
 Davison, A.C. (1984). Modelling excesses over high thresholds, with an application, in
 \emph{Statistical extremes and applications}, J. Tiago de Oliveira (editor), D. Reidel Publishing Co., 461--482.
@@ -93,4 +89,7 @@ Zhang, J.  and M.A. Stephens (2009). A new and efficient estimation method for t
 \seealso{
 \code{\link[evd]{fpot}} and \code{\link[ismev]{gpd.fit}}
 }
-
+\author{
+Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the other frequentist functions.
+Zhang and Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for the wrapper and MCMC samplers.
+}

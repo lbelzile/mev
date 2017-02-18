@@ -65,4 +65,3 @@ confint(m4, parm=2, warn=FALSE)
 \author{
 Leo Belzile, from code by A. Davison from the \code{hoa} package
 }
-

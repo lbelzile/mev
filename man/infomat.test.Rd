@@ -50,9 +50,6 @@ Fukutome et al. (2015) propose an ad hoc automated procedure
 library(evd)
 infomat.test(x <- rgpd(n=1000), q = seq(0.9,0.995,length=10), K<- 3)
 }
-\author{
-Leo Belzile
-}
 \references{
 Fukutome, Liniger and Suveges (2015), Automatic threshold and run parameter selection: a climatology for extreme hourly precipitation in Switzerland. \emph{Theoretical and Applied Climatology}, \strong{120}(3), 403-416.
 
@@ -60,4 +57,6 @@ Suveges and Davison (2010), Model misspecification in peaks over threshold analy
 
 White (1982), Maximum Likelihood Estimation of Misspecified Models. \emph{Econometrica}, \strong{50}(1), 1-25.
 }
-
+\author{
+Leo Belzile
+}

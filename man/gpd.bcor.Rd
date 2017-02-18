@@ -34,4 +34,3 @@ gpd.bcor(par,dat, "subtract")
 gpd.bcor(par,dat, "firth") #observed information
 gpd.bcor(par,dat, "firth","exp")
 }
-

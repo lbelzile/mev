@@ -48,7 +48,7 @@ shortfall and shape in order to perform unconstrained optimization}
 \item{\code{gpde.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
 }
 }
+
 \author{
 Leo Belzile
 }
-

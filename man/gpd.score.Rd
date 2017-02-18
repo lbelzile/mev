@@ -18,4 +18,3 @@ Score vector for the generalized Pareto distribution
 \code{\link{gpd}}
 }
 \keyword{internal}
-

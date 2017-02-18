@@ -39,7 +39,7 @@ gevr.dphi(par, dat, p, V)}
 \item{\code{gevr.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
 }
 }
+
 \author{
 Leo Belzile
 }
-

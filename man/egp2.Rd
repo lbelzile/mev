@@ -54,10 +54,10 @@ low rainfall. There are five proposals, the first one being equivalent to the GP
 
  \code{regp2(n, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1, unifsamp=NULL, censoring=c(0,Inf))}
 }
-\author{
-Raphael Huser and Philippe Naveau
-}
+
 \references{
 Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.
 }
-
+\author{
+Raphael Huser and Philippe Naveau
+}

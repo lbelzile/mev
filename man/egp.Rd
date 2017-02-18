@@ -41,6 +41,7 @@ to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
 
 \code{egp.retlev(xdat, thresh, par, model=c("egp1","egp2","egp3"), p, plot=TRUE)}
 }
+
 \examples{
 set.seed(123)
 xdat <- evd::rgpd(1000, loc=0, scale=1, shape=0.5)
@@ -56,10 +57,9 @@ egp.retlev(xdat, opt$thresh, opt$par, "egp2",p=p)
 opt <- egp.fitrange(xdat, th, model="egp3",plots=NA)
 egp.retlev(xdat, opt$thresh, opt$par, "egp3",p=p)
 }
-\author{
-Leo Belzile
-}
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
 }
-
+\author{
+Leo Belzile
+}

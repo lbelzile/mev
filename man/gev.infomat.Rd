@@ -19,4 +19,3 @@ gev.infomat(par, dat, method = c("obs", "exp"), nobs = length(dat))
 The function returns the expected or observed information matrix.
 }
 \keyword{internal}
-

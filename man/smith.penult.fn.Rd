@@ -51,6 +51,7 @@ The third penultimate approximation does not yield a valid distribution function
 The function handles the most standard failure (decreasing distribution function and negative densities), but any oscillatory behaviour will not be captured.
 This is inherent to the method and can be resolved by `not' evaluating the functions \eqn{F} and \eqn{f} at the faulty points.
 }
+
 \examples{
 #Normal maxima example from Smith (1987)
 m <- 100 #block of size 100
@@ -97,4 +98,3 @@ lines(x, approx$f(x),col=4)
 \references{
 Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
 }
-

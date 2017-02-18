@@ -54,9 +54,6 @@ x <- pmax(sim[-length(sim)]*a,sim[-1])
 q <- seq(0.9,0.99,by=0.01)
 ext.index(x=x,q=q,method=c("wls","mle"))
 }
-\author{
-Leo Belzile
-}
 \references{
 Ferro and Segers (2003). Inference for clusters of extreme values,
 JRSS: Series B, \strong{65}(2), 545-556.
@@ -70,4 +67,6 @@ Fukutome, Liniger and Suveges (2015), Automatic threshold and run parameter sele
 for extreme hourly precipitation in Switzerland. \emph{Theoretical and Applied Climatology},
 \strong{120}(3), 403-416.
 }
-
+\author{
+Leo Belzile
+}

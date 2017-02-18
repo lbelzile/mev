@@ -90,10 +90,9 @@ u <- quantile(rain, seq(0.85,0.99,by=0.01))
 W.diag(xdat=rain, u=u, plots="PS")
 }
 }
-\author{
-Jennifer L. Wadsworth
-}
 \references{
 Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
 }
-
+\author{
+Jennifer L. Wadsworth
+}

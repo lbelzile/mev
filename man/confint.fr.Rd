@@ -22,4 +22,3 @@ a 2 by 3 matrix containing point estimates, lower and upper confidence intervals
 This function uses spline interpolation to derive \code{level} confidence intervals
 using the output of either \link{gev.tem} or \link{gpd.tem}.
 }
-

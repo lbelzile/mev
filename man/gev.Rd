@@ -55,6 +55,7 @@ in order to perform unconstrained optimization}
 \item{\code{gev.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
 }
 }
+
 \references{
 Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 
@@ -64,4 +65,3 @@ Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Jour
 
 Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Statistics and Probability Letters}, \strong{19}(3), 169--176.
 }
-

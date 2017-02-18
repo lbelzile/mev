@@ -20,4 +20,3 @@ The information matrix is parametrized in terms of rate of \code{m}-year return 
 \code{\link{gpdr}}
 }
 \keyword{internal}
-
