@@ -868,11 +868,11 @@ spline.corr <- function(fr){
 		resp <-  (fr$rstar-fr$r)
 		regr <- fr$r
 	}
-	if(requireNamespace("cobs", quietly = TRUE)){
-		spline <- cobs::cobs(y=resp, x=regr, w=w, constraint="none", lambda=1, print.mesg=FALSE, print.warn=FALSE)$fitted
-	} else{
-		spline <- rev(stats::smooth.spline(y=resp, x=regr, w=w, spar=0.9)$y)
-	}
+	 if(requireNamespace("cobs", quietly = TRUE)){
+	 	spline <- cobs::cobs(y=resp, x=regr, w=w, constraint="none", lambda=1, print.mesg=FALSE, print.warn=FALSE)$fitted
+	 } else{
+		spline <- rev(stats::smooth.spline(y=resp, x=regr, w=w, spar=0.9, cv=TRUE)$y)
+	 }
 	#Compute difference between fitted values and rstar
 	departure <- spline-resp
 	#Ad-hoc fix of the values close to MLE where the numerical precision causes difficulty

@@ -5,3 +5,7 @@
 #' @importFrom stats "integrate" "quantile" "cov2cor" "dnorm" "median" "nlm" "optim" "pchisq" "qnorm" "rnorm" "sd" "var" "lm"
 NULL
 #> NULL
+
+.onUnload <- function (libpath) {
+  library.dynam.unload("mypackage", libpath)
+}
