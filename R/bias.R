@@ -1,351 +1,3 @@
-#' Generalized Pareto distribution
-#'
-#' Likelihood, score function and information matrix, bias,
-#' approximate ancillary statistics and sample space derivative
-#' for the generalized Pareto distribution
-#'
-#' @author Leo Belzile
-#' @name gpd
-#' @param par vector of \code{scale} and \code{shape}
-#' @param dat sample vector
-#' @param tol numerical tolerance for the exponential model
-#' @param method string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.
-#' @param V vector calculated by \code{gpd.Vfun}
-#' @param n sample size
-#' @section Usage: \preformatted{gpd.ll(par, dat, tol=1e-5)
-#' gpd.ll.optim(par, dat, tol=1e-5)
-#' gpd.score(par, dat)
-#' gpd.infomat(par,dat,method = c("obs","exp"))
-#' gpd.bias(par, n)
-#' gpd.Fscore(par, dat, method=c("obs","exp"))
-#' gpd.Vfun(par, dat)
-#' gpd.phi(par, dat, V)
-#' gpd.dphi(par, dat, V)}
-#'
-#' @section Functions:
-#'
-#' \itemize{
-#' \item{\code{gpd.ll}:} {log-likelihood}
-#' \item{\code{gpd.ll.optim}:} {negative log-likelihood parametrized in terms of \code{log(scale)} and shape
-#' in order to perform unconstrained optimization}
-#' \item{\code{gpd.score}:} {score vector}
-#' \item{\code{gpd.infomat}:} {observed or expected information matrix}
-#' \item{\code{gpd.bias}:} {Cox-Snell first order bias}
-#' \item{\code{gpd.Fscore}:} {Firth's modified score equation}
-#' \item{\code{gpd.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gpd.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gpd.dphi}:} {derivative matrix of the canonical parameter in the local
-#' exponential family approximation}
-#' }
-#' @references Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
-#' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
-#' @references Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, \strong{30}, 248--275.
-#' @references Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Statistics and Probability Letters}, \strong{19}(3), 169--176.
-#' @references Giles, D. E., Feng, H. and R. T. Godwin (2016).  Bias-corrected maximum likelihood estimation of the  parameters of the generalized Pareto distribution, \emph{Communications in Statistics - Theory and Methods}, \strong{45}(8), 2465--2483.
-#'
-NULL
-
-
-
-#' @title Generalized extreme value distribution
-#'
-#' @description Likelihood, score function and information matrix, bias,
-#' approximate ancillary statistics and sample space derivative
-#' for the generalized extreme value distribution
-#'
-#' @name gev
-#' @param par vector of \code{loc}, \code{scale} and \code{shape}
-#' @param dat sample vector
-#' @param method string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.
-#' @param V vector calculated by \code{gev.Vfun}
-#' @param n sample size
-#' @param p vector of probabilities
-#' @section Usage: \preformatted{gev.ll(par, dat)
-#' gev.ll.optim(par, dat)
-#' gev.score(par, dat)
-#' gev.infomat(par, dat, method = c("obs","exp"))
-#' gev.retlev(par, p)
-#' gev.bias(par, n)
-#' gev.Fscore(par, dat, method=c("obs","exp"))
-#' gev.Vfun(par, dat)
-#' gev.phi(par, dat, V)
-#' gev.dphi(par, dat, V)}
-#'
-#' @section Note:
-#' The Gumbel case is not currently handled.
-#'
-#' @section Functions:
-#' \itemize{
-#' \item{\code{gev.ll}:} {log-likelihood}
-#' \item{\code{gev.ll.optim}:} {negative log-likelihood parametrized in terms of location, \code{log(scale)} and shape
-#' in order to perform unconstrained optimization}
-#' \item{\code{gev.score}:} {score vector}
-#' \item{\code{gev.infomat}:} {observed or expected information matrix}
-#' \item{\code{gev.retlev}:} {return level, corresponding to the \eqn{(1-p)}th quantile}
-#' \item{\code{gev.bias}:} {Cox-Snell first order bias}
-#' \item{\code{gev.Fscore}:} {Firth's modified score equation}
-#' \item{\code{gev.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gev.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gev.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
-#' }
-#' @references Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
-#' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
-#' @references Cox, D. R. and E. J. Snell (1968). A general definition of residuals, \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, \strong{30}, 248--275.
-#' @references Cordeiro, G. M. and R. Klein (1994). Bias correction in ARMA models, \emph{Statistics and Probability Letters}, \strong{19}(3), 169--176.
-NULL
-
-
-#' Log-likelihood for the generalized Pareto distribution
-#'
-#' Function returning the density of an \code{n} sample from the GP distribution.
-#' \code{gpd.ll.optim} returns the negative log-likelihood parametrized in terms of \code{log(scale)} and shape
-#' in order to perform unconstrained optimization
-#' @seealso \code{\link{gpd}}
-#' @inheritParams gpd
-#' @export
-#' @keywords internal
-gpd.ll <- function(par, dat, tol=1e-5){
-  sigma = par[1]; xi = par[2]
-  if(abs(xi)>tol){
-    -length(dat)*log(sigma)-(1+1/xi)*sum(log(pmax(1+xi/sigma*dat,0)))
-  } else{
-    -length(dat)*log(sigma)-sum(dat)/sigma
-  }
-}
-
-
-
-#' @rdname gpd.ll
-#' @inheritParams gpd
-#' @export
-gpd.ll.optim <- function(par, dat,tol=1e-5){
-  sigma = exp(par[1]); xi = par[2]
-  if(abs(xi)>tol){
-    length(dat)*log(sigma)+(1+1/xi)*sum(log(pmax(1+xi/sigma*dat,0)))
-  } else{
-    length(dat)*log(sigma)+sum(dat)/sigma
-  }
-}
-#' Score vector for the generalized Pareto distribution
-#'
-#' @seealso \code{\link{gpd}}
-#' @inheritParams gpd
-#' @export
-#' @keywords internal
-gpd.score <- function(par, dat){
-  if(isTRUE(all.equal(0,par[2]))){
-   stop("Score function not implemented for the exponential model");
-  }
-  sigma = par[1]; xi = par[2]
-  c(sum(dat*xi*(1/xi + 1)/(sigma^2*(dat*xi/sigma + 1)) - 1/sigma),
-    sum(-dat*(1/xi + 1)/(sigma*(dat*xi/sigma + 1)) + log(pmax(dat*xi/sigma + 1,0))/xi^2))
-}
-#????
-# Jf.gpd.grad <- function(par){
-#   xi =par[2]; sigma = par[1];
-#   c(-1/(sigma^2*sqrt(2*xi + 1)*(xi + 1)),
-#   -1/(sigma*sqrt(2*xi + 1)*(xi + 1)^2) - 1/(sigma*(2*xi + 1)^(3/2)*(xi + 1))
-# )}
-
-
-#' Information matrix for the generalized Pareto distribution
-#'
-#' The function returns the expected or observed information matrix.
-#' @seealso \code{\link{gpd}}
-#' @inheritParams gpd
-#' @param nobs number of observations
-#' @export
-#' @keywords internal
-gpd.infomat <- function(par,dat,method = c("obs","exp"), nobs=length(dat)){
-  if(missing(method)){method <- "obs"}
-  sigma <- par[1]; xi <- par[2]
-  if(isTRUE(all.equal(xi,0))){
-    stop("Information matrix not implemented for the exponential submodel")
-  }
-  if(method=="obs"){
-    if(any((1 + xi*dat/sigma)<0)){
-     stop("Data outside of range specified by parameter, yielding a zero likelihood")
-    }
-    c11 <- (length(dat)-(1+xi)*sum(dat*(2*sigma+xi*dat)/(sigma+xi*dat)^2))/(sigma^2)
-    c12 <- (1+xi)*sum(dat/(sigma+xi*dat)^2)/xi-sum(dat/(sigma+xi*dat))/(sigma*xi)
-    c22 <- (2/xi^2)*sum(dat/(sigma+xi*dat))-2*sum(log(pmax(dat*xi/sigma + 1,0)))/(xi^3)+(1+1/xi)*sum(dat^2/(sigma+xi*dat)^2)
-    -matrix(c(c11,c12,c12,c22), nrow=2,ncol=2,byrow=TRUE)
-  } else if(method=="exp"){
-    k11 <- -2/((1+xi)*(1+2*xi))
-    k22 <- -1/(sigma^2*(1+2*xi))
-    k12 <- -1/(sigma*(1+xi)*(1+2*xi))
-    -nobs*cbind(c(k11,k12),c(k12,k22)) #fixed 12-10-2016
-  }
-}
-#' Tangent exponential model statistics for the generalized Pareto distribution
-#'
-#' Matrix of approximate ancillary statistics, sample space derivative of the
-#' log-likelihood and mixed derivative for the generalized Pareto distribution.
-#' @seealso \code{\link{gpd}}
-#' @inheritParams gpd
-#' @export
-#' @name gpd.temstat
-#' @keywords internal
-gpd.Vfun <- function(par, dat){
-  sigma = par[1]; xi = par[2]
-  cbind(dat/sigma,
-        sigma*(dat*xi/sigma + 1)^(-1/xi)*(log(dat*xi/sigma + 1)/xi^2 - dat/(sigma*(dat*xi/sigma + 1)*xi))/(dat*xi/sigma + 1)^(-1/xi - 1)
-  )
-}
-
-#' @inheritParams gpd
-#' @rdname gpd.temstat
-#' @export
-gpd.phi <- function(par, dat, V){
-  sigma = par[1]; xi = par[2]
-  rbind(-xi*(1/xi + 1)/(sigma*(dat*xi/sigma + 1))	)%*%V
-}
-
-#' @inheritParams gpd
-#' @export
-#' @rdname gpd.temstat
-gpd.dphi <- function(par, dat, V){
-  sigma = par[1]; xi = par[2]
-  rbind(xi*(1/xi + 1)/(sigma^2*(dat*xi/sigma + 1)) - dat*xi^2*(1/xi + 1)/(sigma^3*(dat*xi/sigma + 1)^2),
-        -(1/xi + 1)/(sigma*(dat*xi/sigma + 1)) + dat*xi*(1/xi + 1)/(sigma^2*(dat*xi/sigma + 1)^2) + 1/(sigma*(dat*xi/sigma + 1)*xi))%*%V
-}
-
-
-#' Log-likelihood for the generalized extreme value distribution
-#'
-#' Function returning the density of an \code{n} sample from the GEV distribution.
-#'
-#' \code{gev.ll.optim} returns the negative log-likelihood parametrized in terms of location, \code{log(scale)} and shape in order to perform unconstrained optimization
-#'
-#' @inheritParams gev
-#' @export
-#' @keywords internal
-#' @seealso \code{\link{gev}}
-gev.ll <- function(par, dat){
-  dat <- as.vector(dat)
-
-  tx <- pmax(1+par[3]/par[2]*(dat-par[1]),0)
-  sum(-log(par[2])-(1/par[3]+1)*log(tx)-tx^(-1/par[3]))
-}
-
-#' @rdname gev.ll
-#' @inheritParams gev
-#' @export
-#' @keywords internal
-gev.ll.optim <- function(par, dat){
-  tpar = par; tpar[2] = exp(par[2])
-  #parameters with log-scale
-  nll = -gev.ll(tpar,dat)
-  return(nll)
-}
-
-#' Score vector for the generalized extreme value distribution
-#'
-#' @inheritParams gev
-#' @export
-#' @keywords internal
-gev.score <- function(par, dat){
-  mu = par[1]; sigma = par[2]; xi = par[3]
-  c(sum(-(-(mu - dat)*xi/sigma + 1)^(-1/xi - 1)/sigma - xi*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1))),
-    sum(-(dat - mu)*((dat - mu)*xi/sigma + 1)^(-1/xi - 1)/sigma^2 + (dat - mu)*xi*(1/xi + 1)/(sigma^2*((dat - mu)*xi/sigma + 1)) - 1/sigma),
-    sum(-(mu - dat)*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1)) - (log(-(mu - dat)*xi/sigma + 1)/xi^2 - (mu - dat)/(sigma*((mu - dat)*xi/sigma - 1)*xi))/(-(mu - dat)*xi/sigma + 1)^(1/xi) + log(-(mu - dat)*xi/sigma + 1)/xi^2)
-  )
-}
-
-#' Information matrix for the generalized extreme value distribution
-#'
-#' The function returns the expected or observed information matrix.
-#' @inheritParams gev
-#' @param nobs number of observations
-#' @export
-#' @keywords internal
-gev.infomat <- function(par, dat, method=c("obs","exp"), nobs=length(dat)){
-  method <- match.arg(method,c("obs","exp"))
-  if(missing(method)){
-    method="obs"
-  }
-  if(method=="exp"){
-    #(Expected) Fisher information does not depend on location parameter
-    if(length(par)==3){sigma = par[2]; xi = par[3];
-    } else{	sigma=par[1]; xi=par[2];
-    if(isTRUE(all.equal(xi,0))){
-      stop("Fisher information not implemented for the Gumbel submodel")
-    }
-    }
-    p = (1+xi)^2*gamma(1+2*xi)
-    q = gamma(2+xi)*(digamma(1+xi)+(1+xi)/xi)
-    return(nobs*cbind(
-      c(p/sigma^2, -(p-gamma(2+xi))/(sigma^2*xi), (p/xi-q)/(sigma*xi)),
-      c(-(p-gamma(2+xi))/(sigma^2*xi), (1-2*gamma(2+xi)+p)/(sigma^2*xi^2), -(1+digamma(1)+(1-gamma(2+xi))/xi-q+p/xi)/(sigma*xi^2)),
-      c((p/xi-q)/(sigma*xi), -(1+digamma(1)+(1-gamma(2+xi))/xi-q+p/xi)/(sigma*xi^2), (pi^2/6+(1+digamma(1)+1/xi)^2-2*q/xi+p/xi^2)/xi^2)
-    ))
-  } else if(method=="obs"){
-    if(length(par)!=3){
-      stop("Invalid parameter vector")
-    }
-    mu = par[1]; sigma = par[2]; xi = par[3];
-    #Bug fixed 21-10-2016 (parameter were defined after they were used).
-    if(isTRUE(all.equal(xi,0))){
-      stop("Observed information not implemented for the Gumbel submodel")
-    }
-    if(any((1 + xi*(dat-mu)/sigma)<0)){
-      stop("Data outside of range specified by parameter, yielding a zero likelihood")
-    }
-
-    infomat <- matrix(0, ncol=3,nrow=3)
-    infomat[1,1] <- sum(-((dat - mu)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^2 + xi^2*(1/xi + 1)/(sigma^2*((dat - mu)*xi/sigma + 1)^2))
-    infomat[1,2] <- infomat[2,1] <- sum(-(dat - mu)*((dat - mu)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^3 + ((dat - mu)*xi/sigma + 1)^(-1/xi - 1)/sigma^2 - xi*(1/xi + 1)/(sigma^2*((dat - mu)*xi/sigma + 1)) + (dat - mu)*xi^2*(1/xi + 1)/(sigma^3*((dat - mu)*xi/sigma + 1)^2))
-    infomat[1,3] <- infomat[3,1] <- sum((-(mu - dat)*xi/sigma + 1)^(-1/xi - 1)*((mu - dat)*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1)) - log(-(mu - dat)*xi/sigma + 1)/xi^2)/sigma - (1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1)) + (mu - dat)*xi*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1)^2) + 1/(sigma*((mu - dat)*xi/sigma - 1)*xi))
-    infomat[2,3] <- infomat[3,2] <- sum((mu - dat)*(-(mu - dat)*xi/sigma + 1)^(-1/xi - 1)*(log(-(mu - dat)*xi/sigma + 1)/xi^2 - (mu - dat)/(sigma*((mu - dat)*xi/sigma - 1)*xi))/sigma^2 + (mu - dat)*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1)) - (mu - dat)^2*xi*(1/xi + 1)/(sigma^3*((mu - dat)*xi/sigma - 1)^2) - (mu - dat)/(sigma^2*((mu - dat)*xi/sigma - 1)*xi) + (mu - dat)^2/(sigma^3*(-(mu - dat)*xi/sigma + 1)^(1/xi)*((mu - dat)*xi/sigma - 1)^2))
-    infomat[3,3] <- sum(-(log(-(mu - dat)*xi/sigma + 1)/xi^2 - (mu - dat)/(sigma*((mu - dat)*xi/sigma - 1)*xi))^2/(-(mu - dat)*xi/sigma + 1)^(1/xi) + (2*log(-(mu - dat)*xi/sigma + 1)/xi^3 - 2*(mu - dat)/(sigma*((mu - dat)*xi/sigma - 1)*xi^2) - (mu - dat)^2/(sigma^2*((mu - dat)*xi/sigma - 1)^2*xi))/(-(mu - dat)*xi/sigma + 1)^(1/xi) + (mu - dat)^2*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1)^2) - 2*log(-(mu - dat)*xi/sigma + 1)/xi^3 + 2*(mu - dat)/(sigma*((mu - dat)*xi/sigma - 1)*xi^2))
-    infomat[2,2] <- sum(-(mu - dat)^2*(-(mu - dat)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^4 - 2*(mu - dat)*(-(mu - dat)*xi/sigma + 1)^(-1/xi - 1)/sigma^3 - 2*(mu - dat)*xi*(1/xi + 1)/(sigma^3*((mu - dat)*xi/sigma - 1)) + (mu - dat)^2*xi^2*(1/xi + 1)/(sigma^4*((mu - dat)*xi/sigma - 1)^2) + 1/sigma^2)
-
-    return(-infomat)
-  }
-}
-
-
-#' Tangent exponential model statistics for the generalized extreme value distribution
-#'
-#' Matrix of approximate ancillary statistics, sample space derivative of the
-#' log-likelihood and mixed derivative for the generalized extreme value distribution.
-#' @seealso \code{\link{gev}}
-#' @inheritParams gev
-#' @export
-#' @name gev.temstat
-#' @keywords internal
-gev.Vfun <- function(par, dat){
-  cbind(1,
-        (dat-par[1])/par[2],
-        par[2]*(-(par[1] - dat)*par[3]/par[2] + 1)^(-1/par[3])*(log(-(par[1] - dat)*par[3]/par[2] + 1)/par[3]^2 - (par[1] - dat)/(par[2]*((par[1] - dat)*par[3]/par[2] - 1)*par[3]))/(-(par[1] - dat)*par[3]/par[2] + 1)^(-1/par[3] - 1))
-}
-
-#' @rdname gev.temstat
-#' @inheritParams gev
-#' @export
-#' @keywords internal
-gev.phi <- function(par, dat, V){
-  mu = par[1]; sigma = par[2]; xi = par[3]
-  t(((dat - mu)*xi/sigma + 1)^(-1/xi - 1)/sigma + xi*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1)))%*%V
-}
-
-
-#' @rdname gev.temstat
-#' @inheritParams gev
-#' @export
-#' @keywords internal
-gev.dphi <- function(par, dat, V){
-  mu = par[1]; sigma = par[2]; xi = par[3]
-  rbind((-(mu - dat)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^2 - xi^2*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1)^2),
-        -(mu - dat)*(-(mu - dat)*xi/sigma + 1)^(-1/xi - 2)*xi*(1/xi + 1)/sigma^3 - (-(mu - dat)*xi/sigma + 1)^(-1/xi - 1)/sigma^2 - xi*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1)) + (mu - dat)*xi^2*(1/xi + 1)/(sigma^3*((mu - dat)*xi/sigma - 1)^2),
-        -(-(mu - dat)*xi/sigma + 1)^(-1/xi - 1)*((mu - dat)*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1)) - log(-(mu - dat)*xi/sigma + 1)/xi^2)/sigma + (1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1)) - (mu - dat)*xi*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1)^2) - 1/(sigma*((mu - dat)*xi/sigma - 1)*xi))%*%V
-}
-
-
-
-
-
-
 #' Cox-Snell first order bias expression for the GEV distribution
 #'
 #' Bias vector for the GEV distribution based on an \code{n} sample.
@@ -354,11 +6,46 @@ gev.dphi <- function(par, dat, V){
 #' @keywords internal
 #' @seealso \code{\link{gev}}
 gev.bias <- function(par, n){
-	if(length(n)>1){stop("Invalid argument for sample size")}
+	if(length(n)>1){
+	  stop("Invalid argument for sample size")
+	 }
+  if(length(par) != 3){
+    stop("Invalid argument for parameter vector, must be a vector of length 3.")
+  }
 	sigma <- par[2] ; xi <- par[3]
-	if(xi < -1/3){stop("Cox-Snell correction only valid if the shape is greater than -1/3")}
+	if(xi < -1/3){
+	  stop("Cox-Snell correction only valid if the shape is greater than -1/3")
+	  }
 	zeta3 <- 1.20205690315959428539973816151144999076498629234049888179227155
+	zeta5 <- 1.0369277551433699263313654864570341680570809 #gsl::zeta(5)
 	k111 <- ((1 + xi)^2*(1 + 4*xi)*gamma(1 + 3*xi))/sigma^3
+	
+	if(abs(xi) < 1e-3){ #Limiting case when xi=0, some of the calculations break down
+	euler_gamma <- -psigamma(1)
+	k112 <- (euler_gamma-3)/sigma^2
+	k113 <- -1/12*(36*euler_gamma - 6*euler_gamma^2 - pi^2 - 24)/sigma^2  
+	k122 <- -1/6*(36*euler_gamma - 6*euler_gamma^2 - pi^2 - 24)/sigma^3
+  k123 <- 1/12*(60*euler_gamma + 6*euler_gamma^3 - euler_gamma*pi^2 + 4*pi^2*(euler_gamma - 1) - 48*euler_gamma^2 - 4*pi^2 + 12*zeta3 - 12)/sigma^2
+  k133 <- 0.10683192718888033249425142127224548061317544/sigma
+  k222 <- 1/4*(48*euler_gamma + 4*euler_gamma^3 + 9*euler_gamma*pi^2 - 4*pi^2*(2*euler_gamma - 3) + pi^2*(euler_gamma - 1) - 36*euler_gamma^2 - 17*pi^2 + 8*zeta3 - 16)/sigma^2
+  k223 <- 1/40*(20*euler_gamma^4 + 3*pi^4 - 200*euler_gamma^3 + 20*euler_gamma^2*(pi^2 + 18) + 60*pi^2 - 20*euler_gamma*(5*pi^2 - 8*zeta3 + 8) - 400*zeta3)/sigma^2
+  k233 <- 1/48*(12*euler_gamma^5 - 140*euler_gamma^4 - 21*pi^4 + 20*euler_gamma^3*(pi^2 + 16) - 4*euler_gamma^2*(35*pi^2 - 60*zeta3 + 48) + 8*pi^2*(5*zeta3 - 4) + euler_gamma*(9*pi^4 + 160*pi^2 - 1120*zeta3) + 288*zeta5 + 640*zeta3)/sigma
+  k333 <- -20.807671559558883514171052830537917750303231
+  
+  k11.2 <- -2*(xi + 1)^2*gamma(2*xi + 1)/sigma^3
+  k11.3 <- 2*(xi + 1)^2*psigamma(2*xi + 1)*gamma(2*xi + 1)/sigma^2 + 2*(xi + 1)*gamma(2*xi + 1)/sigma^2
+  k12.2 <- -2*(euler_gamma - 1)/sigma^3
+  k12.3 <- (6*euler_gamma - 3*euler_gamma^2 - 1/2*pi^2 - 2)/(2*sigma^2)
+  k13.2 <- 1/12*(12*euler_gamma - 6*euler_gamma^2 - pi^2)/sigma^2
+  k13.3 <- (-6*euler_gamma - 4*euler_gamma^3 - 7/2*euler_gamma*pi^2 + 3/2*pi^2*(euler_gamma - 1) + 12*euler_gamma^2 + 7/2*pi^2 - 8*zeta3)/(6*sigma)
+  k22.2 <- 1/3*(12*euler_gamma - 6*euler_gamma^2 - pi^2 - 6)/sigma^3
+  k22.3 <- -1/6*(12*euler_gamma + 6*euler_gamma^3 + 4*euler_gamma*pi^2 - pi^2*(euler_gamma - 1) - 18*euler_gamma^2 - 4*pi^2 + 12*zeta3)/sigma^2
+  k23.2 <- -1/12*(12*euler_gamma + 6*euler_gamma^3 - euler_gamma*pi^2 + 4*pi^2*(euler_gamma - 1) - 18*euler_gamma^2 + pi^2 + 12*zeta3)/sigma^2
+  k23.3 <- -3.7096580935190566493843882211576614781371729/sigma
+  k33.2 <- 0
+  k33.3 <- -5.4502140978602180294657833995281271927087253
+  
+	} else{
 	k112 <- (xi+1)*(gamma(2*xi+2)-(xi+1)*(4*xi+1)*gamma(3*xi+1))/(sigma^3*xi)
 	k113 <- (1 + xi)*((1 + xi)*(1 + 4*xi)*gamma(1+3*xi)- gamma(1+2*xi)*(1 + 2*xi*(2 + xi) + xi*(1 + 2*xi)*psigamma(2+2*xi,0)))/(sigma^2*xi^2)
 	k122 <- ((1 - xi)*gamma(2 + xi) - gamma(3 + 2*xi) + (1 + xi)^2*(1 + 4*xi)*gamma(1 + 3*xi))/(sigma^3*xi^2)
@@ -381,58 +68,19 @@ gev.bias <- function(par, n){
 	k23.3 <- -((2*(xi + 1)^2*psigamma(2*xi + 1)*gamma(2*xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1))*psigamma(xi + 2)*gamma(xi + 2) + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1,1))*gamma(xi + 2) - (xi + 1)^2*gamma(2*xi + 1)/xi^2 + 2*(xi + 1)*gamma(2*xi + 1)/xi - psigamma(xi + 2)*gamma(xi + 2)/xi + (gamma(xi + 2) - 1)/xi^2)/(sigma*xi^2) - 2*((digamma(1)) + (xi + 1)^2*gamma(2*xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1))*gamma(xi + 2) - (gamma(xi + 2) - 1)/xi + 1)/(sigma*xi^3))
 	k33.2 <- 0
 	k33.3 <- 2*((xi + 1)^2*psigamma(2*xi + 1)*gamma(2*xi + 1)/xi^2 - ((xi + 1)/xi + psigamma(xi + 1))*psigamma(xi + 2)*gamma(xi + 2)/xi + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1,1))*gamma(xi + 2)/xi - (xi + 1)^2*gamma(2*xi + 1)/xi^3 + (xi + 1)*gamma(2*xi + 1)/xi^2 + ((xi + 1)/xi + psigamma(xi + 1))*gamma(xi + 2)/xi^2 - (digamma(1) + 1/xi + 1)/xi^2)/xi^2 - 1/3*(pi^2 + 6*(digamma(1) + 1/xi + 1)^2 + 6*(xi + 1)^2*gamma(2*xi + 1)/xi^2 - 12*((xi + 1)/xi + psigamma(xi + 1))*gamma(xi + 2)/xi)/xi^3
-
+	}
+	
 	#Derivatives of information matrix
 	A1 <- 0.5*cbind(c(k111,k112,k113),c(k112,k122,k123),c(k113,k123,k133))
 	A2 <- -cbind(c(k11.2,k12.2,k13.2),c(k12.2,k22.2,k23.2),c(k13.2,k23.2,k33.2))+0.5*cbind(c(k112,k122,k123),c(k122,k222,k223),c(k123,k223,k233))
 	A3 <- -cbind(c(k11.3,k12.3,k13.3),c(k12.3,k22.3,k23.3),c(k13.3,k23.3,k33.3))+0.5*cbind(c(k113,k123,k133),c(k123,k223,k233),c(k133,k233,k333))
 
 	#Information matrix
-	p = (1+xi)^2*gamma(1+2*xi)
-	q = gamma(2+xi)*(digamma(1+xi)+(1+xi)/xi)
-	infomat <- cbind(
-		c(p/sigma^2, -(p-gamma(2+xi))/(sigma^2*xi), (p/xi-q)/(sigma*xi)),
-		c(-(p-gamma(2+xi))/(sigma^2*xi), (1-2*gamma(2+xi)+p)/(sigma^2*xi^2),
-			-(1+digamma(1)+(1-gamma(2+xi))/xi-q+p/xi)/(sigma*xi^2)),
-		c((p/xi-q)/(sigma*xi), -(1+digamma(1)+(1-gamma(2+xi))/xi-q+p/xi)/(sigma*xi^2),
-			(pi^2/6+(1+digamma(1)+1/xi)^2-2*q/xi+p/xi^2)/xi^2)
-	)
-
+	infomat <- gev.infomat(par=c(0, sigma, xi), dat = 1, method = "exp", nobs = 1)
 	infoinv <- solve(infomat)
 
 	return(infoinv%*%cbind(A1,A2,A3)%*%c(infoinv)/n)
 }
-
-#
-# GPDbias <- function(par=c(2,0.1), n=1){
-#   sigma=par[1]; xi=par[2]
-#
-#   k111 = 24/((1+xi)*(1+2*xi)*(1+3*xi))
-#   k112 = 8/(sigma*(1+xi)*(1+2*xi)*(1+3*xi))
-#   k122 = 4/(sigma^2*(1+2*xi)*(1+3*xi))
-#   k222 = 4/(sigma^3*(1+3*xi))
-#   k11d1 = 2*(3+4*xi)/((1+xi)^2*(1+2*xi)^2)
-#   k11d2 = 0
-#   k22d1 = 2/(sigma^2*(1+2*xi)^2)
-#   k22d2 = 2/(sigma^3*(1+2*xi))
-#   k12d1 = (3+4*xi)/(sigma*(1+xi)^2*(1+2*xi)^2)
-#   k12d2 = 1/(sigma^2*(1+xi)*(1+2*xi))
-#   k11 = -2/((1+xi)*(1+2*xi))
-#   k22 = -1/(sigma^2*(1+2*xi))
-#   k12 = -1/(sigma*(1+xi)*(1+2*xi))
-#   infomat.gpd <- -cbind(c(k11,k12),c(k12,k22))
-#   A1g <- cbind(c(k11d1,k12d1),c(k12d1,k22d1))-0.5*cbind(c(k111,k112),c(k112,k122))
-#   A2g <- cbind(c(k11d2,k12d2),c(k12d2,k22d2))-0.5*cbind(c(k112,k122),c(k122,k222))
-#   invinfomat.gpd <- function(par,n){
-#     sigma = par[1]; xi = par[2]
-#     cbind(c((1+xi)^2, - sigma*(1+xi)),c(-sigma*(1+xi),2*(1+xi)*sigma^2))
-#   }
-#   c(invinfomat.gpd(par,1)%*%cbind(A1g, A2g)%*%c(invinfomat.gpd(par,1))/n)
-# }
-#   invinfomat.gpd <- function(par,n){
-#     sigma = par[1]; xi = par[2]
-#     cbind(c((1+xi)^2, - sigma*(1+xi)),c(-sigma*(1+xi),2*(1+xi)*sigma^2))
-#   }
 
 
 #' Cox-Snell first order bias expression for the generalized Pareto distribution
@@ -478,7 +126,7 @@ gev.Fscore <- function(par, dat, method="obs"){
 	gev.score(par, dat) - gev.infomat(par, dat, method)%*%gev.bias(par, length(dat))
 }
 
-#' Bias correction using Firth's modified score function or bias substraction
+#' Bias correction for GP distribution using Firth's modified score function or bias substraction
 #'
 #' The routine uses the MLE (bias-corrected) as starting values and proceeds
 #' to find the solution using a root finding algorithm.
@@ -497,7 +145,7 @@ gev.Fscore <- function(par, dat, method="obs"){
 #' @examples
 #' set.seed(1)
 #' dat <- evd::rgpd(n=40, scale=1, shape=-0.2)
-#' par <- mev::gp.fit(dat, threshold=0, show=FALSE)$estimate
+#' par <- gp.fit(dat, threshold=0, show=FALSE)$estimate
 #' gpd.bcor(par,dat, "subtract")
 #' gpd.bcor(par,dat, "firth") #observed information
 #' gpd.bcor(par,dat, "firth","exp")
@@ -506,6 +154,9 @@ gpd.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
 #Basic bias correction - substract bias at MLE parbc=par-bias(par)
 #bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
 #Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
+	if(length(par)!=2){
+	  stop("Invalid `par` argument.")
+	}
 bcor <-  function(par, dat){
 		if(par[2]< -1/3){
 			warning("Invalid bias correction for GPD; need shape > -1/3")
@@ -568,4 +219,203 @@ if(corr=="subtract"){
 if(corr=="firth"){
 	return(bcorF(par=par, dat=dat, method=method))
 	}
+}
+
+
+
+#' Bias correction for GEV distribution using Firth's modified score function or bias substraction
+#'
+#' The routine uses the MLE (bias-corrected) as starting values and proceeds
+#' to find the solution using a root finding algorithm.
+#' Since the bias-correction is not valid for \eqn{xi < -1/3}, any solution that is unbounded
+#' will return a vector of \code{NA} - additionally, passing a \code{par} argument with shape less than -1/3
+#' will return an error if \code{method="subtract"} is selected, as the bias correction does not exist then.
+#' For small samples, expected and observed information can return very different estimates.
+#' @importFrom nleqslv nleqslv
+#' @importFrom rootSolve multiroot
+#' @param par parameter vector (\code{scale}, \code{shape})
+#' @param dat sample of observations
+#' @param corr string indicating which correction to employ either \code{subtract} or \code{firth}
+#' @param method string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} --- the default) information matrix. Used only if \code{corr="firth"}
+#' @return vector of bias-corrected parameters
+#' @export
+#' @examples
+#' set.seed(1)
+#' dat <- evd::rgev(n=40, loc = 1, scale=1, shape=-0.2)
+#' par <- evd::fgev(dat)$estimate
+#' gev.bcor(par,dat, "subtract")
+#' gev.bcor(par,dat, "firth") #observed information
+#' gev.bcor(par,dat, "firth","exp")
+gev.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")){
+  corr <- match.arg(corr, c("subtract","firth"))
+  #Basic bias correction - substract bias at MLE parbc=par-bias(par)
+  #bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
+  #Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
+  bcor <-  function(par, dat){
+    if(par[3]< -1/3){
+      warning("Invalid bias correction for GEV; need shape > -1/3")
+      return(rep(NA,3))
+    } else{
+      bcor.rootfind <- nleqslv::nleqslv(x=par, fn=function(parbc, par, dat){
+        parbc-par+gev.bias(parbc, length(dat))}, par=par, dat=dat) #termcd is termination code, 1 or 2 implies successful convergence
+      if(bcor.rootfind$termcd == 1 || (bcor.rootfind$termcd==2 && isTRUE(all.equal(bcor.rootfind$fvec,rep(0,3),tolerance=1.5e-8)))){
+        return(bcor.rootfind$x)
+      } else{
+        return(rep(NA,3))
+      }
+    }
+  }
+  bcorF <-  function(par, dat, method=c("obs","exp")){
+    method <- match.arg(method, c("obs","exp"))
+    firth = try(rootSolve::multiroot(gev.Fscore, start=par,
+                                         dat=dat, method=method, positive=FALSE,
+                                         atol=1e-10, rtol=1e-8, ctol=1e-10), silent=TRUE)
+    #Changed tolerance on 12-10-2016 to ensure that the root passes the all.equal test
+    if(is.character(firth) ||
+       any(c(isTRUE(all.equal(firth$root[2],target=0, check.names=FALSE)),
+             is.nan(c(firth$f.root)),
+             firth$root[3]>3)
+       )){
+      #Can fail if combination rends observation to have a zero likelihood - error message
+      #Or can reach the boundary and not be able to evaluate the root
+      firth <- rep(NA,3)
+    } else{
+      firth <- firth$root
+    }
+    return(firth)
+  }
+  #Return values
+  if(corr=="subtract"){
+    return(bcor(par=par, dat=dat))
+  }
+  if(corr=="firth"){
+    return(bcorF(par=par, dat=dat, method=method))
+  }
+}
+
+#' Posterior predictive distribution and density for the GEV distribution
+#' 
+#' This function calculates the posterior predictive density at points x
+#' based on a matrix of posterior density parameters
+gev.postpred <- function(x, posterior, Nyr = 100, type = c("density","quantile")){
+  rowMeans(cbind(apply(rbind(posterior), 1, function(par){
+    switch(type,
+    density = evd::dgev(x=x,loc=par[1]-par[2]*(1-Nyr^par[3])/par[3], scale=par[2]*Nyr^par[3], shape=par[3]),
+    quantile = evd::qgev(x=x,loc=par[1]-par[2]*(1-Nyr^par[3])/par[3], scale=par[2]*Nyr^par[3], shape=par[3]))
+  })))
+}
+
+
+#' N-year return levels, median and mean estimate
+#' @param par vector of location, scale and shape parameters for the GEV distribution
+#' @param vpar vector of parameters (\code{par}) for the GEV covariance matrix
+#' @param nobs integer number of observation on which the fit is based
+#' @param N integer number of observations for return level. See \strong{Details}
+#' @param type string indicating the statistic to be calculated (can be abbreviated). 
+#' @param p probability indicating the return level, corresponding to the quantile at 1-1/p
+#' 
+#' @details If there are \eqn{n_y} observations per year, the \code{L}-year return level is obtained by taking 
+#' \code{N} equal to \eqn{n_yL}. 
+#' 
+#' @return a list with components 
+#' \itemize{
+#' \item{est} point estimate
+#' \item{var} variance estimate based on delta-method
+#' \item{type} statistic
+#' }
+gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N){
+  #Create copy of parameters  
+  mu <- par[1]; sigma <- par[2]; xi <- par[3]
+  type <- match.arg(type, c("retlev", "median", "mean"))[1]
+  #Check whether arguments are well defined
+  if(type == "retlev"){
+    stopifnot(p >= 0, p < 1)
+    yp <- -log(1-p)
+  } else{
+    stopifnot(N >= 1) 
+  }
+  
+  #Euler-Masc. constant : 
+  emcst <- -psigamma(1)
+  #Return levels, N-year median and mean for GEV
+  estimate <- switch(type, 
+    retlev = ifelse(xi==0, mu - sigma * log(yp), mu - sigma / xi * (1 - yp^(-xi))),
+    median = ifelse(xi==0, mu + sigma * (log(N) - log(log(2))), mu - sigma / xi *(1 - (N / log(2))^xi)),
+    mean = ifelse(xi==0, mu + sigma * (log(N) + emcst), mu - sigma / xi *(1 - N^xi*gamma(1-xi)))
+  )
+  if(type == "retlev"){
+    if(p > 0){
+      if(xi == 0){
+      grad_retlev <- c(1, -log(yp), 0.5*sigma*log(yp)^2)
+      } else{
+      grad_retlev <- c(1, -(1-yp^(-xi))/xi, sigma*(1-yp^(-xi))/xi^2-sigma/xi*yp^(-xi)*log(yp))
+      }
+    }
+    if(p == 0){
+      if(xi < 0){
+        grad_retlev <- c(1, -1/xi, sigma/xi^2)
+      } else{
+        stop("Invalid argument; maximum likelihood estimate of the uptyper endpoint is Inf");
+      }
+    }
+    #Variance estimate based on delta-method
+    var_retlev <- t(grad_retlev) %*% solve(gev.infomat(par = par, dat = 1, method = "exp", nobs = nobs)) %*% grad_retlev 
+  } else if(type == "median"){
+    #Gradient of N-years maxima median
+    if(xi == 0){
+      grad_Nmed <- c(1, log(N/log(2)), 0.5*sigma*log(N/log(2))^2)
+    } else{
+      grad_Nmed <- c(1, ((N/log(2))^xi - 1)/xi, sigma*(N/log(2))^xi*log(N/log(2))/xi - sigma*((N/log(2))^xi - 1)/xi^2)
+    }
+    #Delta-method covariance matrix
+    var_Nmed <- t(grad_Nmed) %*% solve(gev.infomat(par = par, dat = 1, method = "exp", nobs = nobs)) %*% grad_Nmed 
+  } else if(type == "mean"){
+    if(xi == 0){
+      grad_Nmean <- c(1, log(N) + emcst, 0.5*sigma*(emcst^2 + pi^2 / 6 + 2 * emcst*log(N) + log(N)^2))
+    } else{
+      grad_Nmean <- c(1,(N^xi*gamma(-xi + 1) - 1)/xi, (N^xi*log(N)*gamma(-xi + 1) - N^xi*digamma(-xi + 1)*gamma(-xi + 1))*sigma/xi - (N^xi*gamma(-xi + 1) - 1)*sigma/xi^2)
+    }
+    var_Nmean <- t(grad_Nmean) %*% solve(gev.infomat(par = par, dat = 1, method = "exp", nobs = nobs)) %*% grad_Nmean
+  }
+  var_est <- switch(type, retlev = var_retlev, median = var_Nmed, mean = var_Nmean)
+  return(list(est = estimate, var = var_est[1,1], type = type))
+}
+
+
+#' Asymptotic bias of block maxima for fixed sample sizes
+#' @param shape shape parameter
+#' @param rho second-order parameter, non-positive
+#' @return a vector of length three containing the bias for location, scale and shape (in this order)
+gev.abias <- function(shape, rho){
+  stopifnot(rho <= 0, shape > -0.5)
+  if(shape != 0 && rho < 0){
+    bmu <- (1+shape)/(shape*rho*(shape+rho))*(-(shape+rho)*gamma(1+shape)+(1+shape)*rho*gamma(1+2*shape)+shape*(1-rho)*gamma(1+shape-rho))  
+    bsigma <- (-shape-rho+(1+shape)*(shape+2*rho)*gamma(1+shape)-(1+shape)^2*rho*gamma(1+2*shape)+shape*gamma(2-rho)-shape*(1+shape)*(1-rho)*gamma(1+shape-rho))/(shape^2*rho*(shape+rho))
+    bshape <- ((shape+rho)*(1+shape+psigamma(1)*shape)-(shape+shape^2*(1+rho)+2*rho*(1+shape))*gamma(1+shape)+(1+shape)^2*rho*gamma(1+2*shape)+shape^2*gamma(1-rho)-shape*(1+shape)*gamma(2-rho)+shape*(1+shape)*(1-rho)*gamma(1+shape-rho)-shape*rho*psigamma(2+shape)*gamma(2+shape)-shape^2*psigamma(2-rho)*gamma(2-rho))/(shape^3*rho*(shape+rho))
+  } else if(rho == 0 && shape != 0){
+    bmu <- (1+shape)/shape^2*((1+shape)*gamma(1+2*shape)-gamma(2+shape)-shape*psigamma(1+shape)*gamma(1+shape))  
+    bsigma <- (shape^2*gamma(1+shape)*psigamma(1+shape) - (shape + 1)^2*gamma(1+2*shape) + shape^2*gamma(1+shape) + shape*gamma(1+shape)*psigamma(1+shape) - (psigamma(1)+1)*shape + 3*shape*gamma(1+shape) + 2*gamma(1+shape) - 1)/shape^3
+    bshape <- ((1+shape+shape*psigamma(1))^2+shape^2*pi^2/6+(1+shape)^2*gamma(1+2*shape)-2*(1+shape)*((1+shape)*gamma(1+shape)+shape*psigamma(1+shape)*gamma(1+shape)))/shape^4 
+  } else if(rho < 0 && shape == 0){
+    bmu <- (-1 + rho + psigamma(1)* rho + (1-rho)*gamma(1 - rho))/rho^2
+    bsigma <- (6 - 6*rho - 6*psigamma(1)^2*rho - pi^2*rho + 6*psigamma(1)*(1-2*rho)-6*(1-rho)*gamma(1-rho)*(1+psigamma(1-rho)))/(6*rho^2)
+    bshape <- -1/(12*rho^3)*(-12*gamma(2-rho)*psigamma(2-rho) + 6*gamma(1-rho)*(2 + 2*(-1 + rho)^2*psigamma(1-rho)+ (-1 + rho) * rho * psigamma(1 - rho)^2 + (-1 + rho)*rho*psigamma(1 - rho, deriv=1)) +  rho*(psigamma(1)^2*(6 - 18*rho) + pi^2*(1 - 3*rho) + 6*(-psigamma(1)^3)*rho + 3*(-psigamma(1))*(-4 + (4 + pi^2)*rho) + 6*rho*(-2 - 2*psigamma(1, deriv = 2) + psigamma(2,2))))
+  } else if(rho == 0 && shape == 0){
+    #Last row of information matrix with (0, 1, shape)
+    bmu <- 0.41184033042643969478888356141823227689702419
+    bsigma <- 0.3324849071602740614700056376493236520104431
+    bshape <- 2.4236060551770285007097120629947238284701404
+  }
+  c(solve(gev.infomat(c(0, 1, shape), dat = 1, method = "exp", nobs = 1)) %*% c(bmu, bsigma, bshape))
+}
+
+#' Asymptotic bias of threshold exceedances for k order statistics
+#' 
+#' The formula given in de Haan and Ferreira, 2007 (Springer). Note that the latter differs from that found in Drees, Ferreira and de Haan.
+#' @param shape shape parameter
+#' @param rho second-order parameter, non-positive
+#' @return a vector of length containing the bias for scale and shape (in this order)
+gpd.abias <- function(shape, rho){
+  stopifnot(rho <= 0, shape > -0.5)
+  c(-rho/((1-rho)*(1+shape-rho)), (1+shape)/((1-rho)*(1+shape-rho)))
 }

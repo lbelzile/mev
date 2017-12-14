@@ -13,6 +13,14 @@
     .Call('mev_Pickands_emp', PACKAGE = 'mev', s, ang, wts)
 }
 
+ldirfn <- function(param) {
+    .Call('mev_ldirfn', PACKAGE = 'mev', param)
+}
+
+.loocvdens <- function(nu, ang, wts, loowts) {
+    .Call('mev_loocvdens', PACKAGE = 'mev', nu, ang, wts, loowts)
+}
+
 #' Random variate generation for Dirichlet distribution on \eqn{S_{d}}{Sd}
 #'
 #' A function to sample Dirichlet random variables, based on the representation as ratios of Gamma.
@@ -112,7 +120,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' \eqn{P_{x}} is probability of extremal function
 #'
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-#' @param Sigma a positive semi-definite covariance matrix with unit variance
+#' @param Sigma a positive semi-definite correlation matrix
 #' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
 #'
 #' @return a \code{d}-vector from \eqn{P_x}
@@ -393,3 +401,7 @@ Zhang_Stephens <- function(x, init, adapt_sd = 0.1, adapt = TRUE, burnin = 1000L
     .Call('mev_Zhang_Stephens', PACKAGE = 'mev', x, init, adapt_sd, adapt, burnin, niter, thin, method)
 }
 
+# Register entry points for exported C++ functions
+methods::setLoadAction(function(ns) {
+    .Call('mev_RcppExport_registerCCallable', PACKAGE = 'mev')
+})

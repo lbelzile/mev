@@ -349,13 +349,40 @@ rmev <-function(n, d, param, asy, sigma,
 #' rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 #' @export
 rmevspec <-function(n, d, param, sigma,
-                    model=c("log","neglog","bilog","negbilog","hr","br","xstud","ct","dir","negdir","dirmix"),
+                    model= c("log","alog","neglog","aneglog","bilog","negbilog","hr","br",
+                             "xstud","smith","schlather","ct","dir","negdir","dirmix"),
                     weights, vario, loc,...){
+  # if(!missing(loc)){
+  #   if(ncol(loc)==1) grid=FALSE
+  #   if(grid==TRUE){
+  #     if(all(sapply(1:ncol(loc), function(i){length(unique(loc[,i]))==nrow(loc)}))){
+  #       loc <- matrix(unlist(expand.grid(apply(loc, 2, as.list))),ncol=ncol(loc))
+  #     } else{
+  #       stop("Duplicate values in `loc' using `grid=TRUE' not allowed");
+  #     }
+  #   }
+  # }
+  alg <- match.arg(alg)
   model <- match.arg(model)
+  if(!model %in% c("alog","aneglog")){
+    if(!missing(asy)){
+      warning("Asymmetry parameter ignored")
+    } else{
+      asym <- matrix(TRUE, ncol=1,nrow=1)
+    }
+  }
+  if(model == "schlather"){
+    if(!missing(param)) warning("Parameter value (degrees of freedom) set to one for Schlather model")
+    param <- 1;
+    model <- "xstud"
+  }
+  #Define model families
   m1 <- c("log","neglog")
   m2 <- c("bilog","negbilog")
-  m3 <- c("br","xstud")
+  m3 <- c("br","xstud","smith")
   m4 <- c("ct","dir","negdir")
+  
+  #Sanity checks
   if(model %in% c(m1,m2, m4) && (!missing(param) && mode(param) != "numeric")){
     stop("Invalid parameter")
   }

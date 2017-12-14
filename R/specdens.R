@@ -1,4 +1,52 @@
 
+
+.returnAng <- function(ang, R, Rnorm=c("l1","l2","linf"), wgt=c("Empirical","Euclidean"), region=c("sum","min","max")){
+  #Other cases supported
+  ang <- as.matrix(ang)
+  if(region=="sum"){
+    if(wgt=="Euclidean"){
+      if(Rnorm=="l1"){
+        return(list(ang=ang,rad=R,
+                    wts=as.vector(.EuclideanWeights(ang, rep(1/(ncol(ang)+1), ncol(ang))))))
+      } else{
+        return(list(ang=ang,rad=R,
+                    wts=as.vector(.EuclideanWeights(ang-cbind(ang[,-1],ang[,1]),rep(0, ncol(ang))))))
+        #as.vector(.EuclideanWeights(ang,rep(1/(ncol(ang)+1), ncol(ang))))))
+      }
+    } else if(wgt=="Empirical"){
+      if(Rnorm=="l1"){
+        scel.fit <- .emplik(z=ang, mu=rep(1/(ncol(ang)+1), ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
+      } else{
+        scel.fit <- .emplik(z=ang-cbind(ang[,-1],ang[,1]),
+                            mu=rep(0, ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
+      }
+      if(scel.fit$conv){
+        return(list(ang=ang,rad=R, wts=as.vector(scel.fit$wts)))
+      } else{
+        warning("Self-concordant empirical likelihood for the mean did not converge.")
+        return(list(ang=ang,rad=R))
+      }
+    }
+  } else{
+    aw <- switch(region,
+                 "min" = apply(cbind(ang, 1-rowSums(ang)),1,max),
+                 "max" = apply(cbind(ang, 1-rowSums(ang)),1,min),
+                 "sum" = rep(1, nrow(ang))
+    )
+    #b <- (ang-1/(ncol(ang)+1))/aw
+    b <- (ang-cbind(ang[,-1],ang[,1]))/aw
+    scel.fit <- .emplik(z=b,mu=rep(0, ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
+    if(scel.fit$conv){
+      su <- 1/(sum((1/aw)*scel.fit$wts)) #mean of p_ia_i
+      wts <-  su/aw*(scel.fit$wts)
+      return(list(ang=ang,rad=R, wts=wts))
+    } else{
+      return(list(ang=ang, rad=R))
+    }
+  }
+}
+
+
 #' Rank-based transformation to angular measure
 #'
 #' The method uses the pseudo-polar transformation for suitable norms, transforming
@@ -127,51 +175,8 @@ angmeas <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","
     ang <- as.matrix(ang[above,])
     rownames(ang) <- NULL #remove names for time series
     R <- as.vector(R[above])
-
-    #Other cases supported
-    if(region=="sum"){
-      if(wgt=="Euclidean"){
-        if(Rnorm=="l1"){
-          return(list(ang=ang,rad=R,
-                      wts=as.vector(.EuclideanWeights(ang,rep(1/(ncol(ang)+1), ncol(ang))))))
-        } else{
-          return(list(ang=ang,rad=R,
-                      wts=as.vector(.EuclideanWeights(ang-cbind(ang[,-1],ang[,1]),rep(0, ncol(ang))))))
-                        #as.vector(.EuclideanWeights(ang,rep(1/(ncol(ang)+1), ncol(ang))))))
-        }
-        } else if(wgt=="Empirical"){
-          if(Rnorm=="l1"){
-            scel.fit <- .emplik(z=ang, mu=rep(1/(ncol(ang)+1), ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
-          } else{
-        		scel.fit <- .emplik(z=ang-cbind(ang[,-1],ang[,1]),
-        		                    mu=rep(0, ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
-          }
-        		if(scel.fit$conv){
-          return(list(ang=ang,rad=R, wts=as.vector(scel.fit$wts)))
-        		} else{
-        			warning("Self-concordant empirical likelihood for the mean did not converge.")
-        	return(list(ang=ang,rad=R))
-        		}
-        }
-    } else{
-      aw <- switch(region,
-                   "min" = apply(cbind(ang, 1-rowSums(ang)),1,max),
-                   "max" = apply(cbind(ang, 1-rowSums(ang)),1,min),
-                   "sum" = rep(1, nrow(ang))
-      )
-      #b <- (ang-1/(ncol(ang)+1))/aw
-      b <- (ang-cbind(ang[,-1],ang[,1]))/aw
-      scel.fit <- .emplik(z=b,mu=rep(0, ncol(ang)), lam=rep(0,ncol(ang)), eps=1/nrow(ang))
-      if(scel.fit$conv){
-        su <- 1/(sum((1/aw)*scel.fit$wts)) #mean of p_ia_i
-        wts <-  su/aw*(scel.fit$wts)
-        return(list(ang=ang,rad=R, wts=wts))
-      } else{
-        return(list(ang=ang,rad=R))
-      }
-    }
+  .returnAng(ang=ang, R=R, Rnorm=Rnorm,  wgt=wgt, region=region)
 }
-
 
 #' Weighted empirical distribution function
 #' @param x observations
@@ -235,11 +240,6 @@ angmeas <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","
   }
 
 
-
-
-
-
-
 #' Self-concordant empirical likelihood for a vector mean
 #'
 #' @param dat \code{n} by \code{d} matrix of \code{d}-variate observations
@@ -253,7 +253,7 @@ angmeas <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","
 #' @author Art Owen, \code{C++} port by Leo Belzile
 #' @references Owen, A.B. (2013). Self-concordance for empirical likelihood, \emph{Canadian Journal of Statistics}, \bold{41}(3), 387--397.
 #' @return a list with components
-#' #' \itemize{
+#' \itemize{
 #'  \item \code{logelr} log empirical likelihood ratio.
 #'  \item \code{lam} Lagrange multiplier (vector of length \code{d}).
 #'  \item \code{wts} \code{n} vector of observation weights (probabilities).
@@ -263,6 +263,49 @@ angmeas <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","
 #'  \item \code{gradnorm} norm of gradient of log empirical likelihood.
 #' }
 emplik <- function(dat, mu=rep(0, ncol(dat)), lam = rep(0, ncol(dat)), eps = 1/nrow(dat), M=1e30, thresh=1e-30, itermax=100){
-	if(is.infinite(M))		M = 1e30;
+	if(is.infinite(M)){	M = 1e30}
 	.emplik(z=dat, mu=mu, lam, eps=eps, M=M, thresh=thresh, itermax=itermax)
 }
+
+#' Dirichlet mixture model for the spectral density
+#'
+#' This function computes the empirical or Euclidean likelihood
+#' estimates of the spectral measure and uses the points returned from a call to \code{angmeas} to compute the Dirichlet
+#' mixture smoothing of de Carvalho, Warchol and Segers (2012), placing a Dirichlet kernel at each observation. 
+#' 
+#' @details The cross-validation
+#' bandwidth is the solution of 
+#'  \deqn{\argmax_{\nu \in \R} \sum_{i=1}^n \log \left\{ \sum_{\substack{k=1\\k \neq i}}^n p_{k, -i} f(\bs{w}_i; \nu \bs{w}_k)\right\}},
+#' where \eqn{f} is the density of the Dirichlet distribution, \eqn{p_{k, -i}} is the Euclidean weight 
+#' obtained from estimating the Euclidean likelihood problem without observation \eqn{i}.
+#' @return an invisible list with components
+#' \itemize{
+#'  \item \code{nu} bandwidth parameter obtained by cross-validation;
+#'  \item \code{dirparmat} \code{n} by \code{d} matrix of Dirichlet parameters for the mixtures;
+#'  \item \code{wts} mixture weights.
+#' }
+#' @inheritParams angmeas
+#' @examples 
+#' x <- rmev(n=250, d=2, param=0.9, model="log")
+#' angmeasdir(x=x, th=0, Rnorm="l1", Anorm="l1", marg="Frechet", wgt="Empirical")
+angmeasdir <- function(x, th, Rnorm=c("l1","l2","linf"), Anorm=c("l1","l2","linf","arctan"),
+                       marg=c("Frechet","Pareto"), wgt=c("Empirical","Euclidean"), region=c("sum","min","max")){
+  Rnorm <- match.arg(Rnorm, c("l1","l2","linf"))
+  Anorm <- match.arg(Anorm, c("l1","l2","linf","arctan"))
+  marg <- match.arg(marg, c("Frechet","Pareto"))
+  wgt <- match.arg(wgt, c("Empirical","Euclidean"))
+  region <- match.arg(region, c("sum","min","max"))
+  
+  #Obtain angles and weights
+  angmeasure <- angmeas(x=x, th=th, Rnorm=Rnorm, Anorm=Anorm, marg=marg, wgt=wgt, region=region)
+  n <- length(angmeasure$wts); d <- ncol(angmeasure$ang) + 1
+  loowts <- matrix(0, ncol=n, nrow=n)
+  for(i in 1:n){
+   loowts[i,-i] <- .returnAng(angmeasure$ang[-i,], angmeasure$rad[-i], Rnorm=Rnorm[1], wgt=wgt, region=region)$wts
+  }
+  angles <- cbind(angmeasure$ang, 1-rowSums(angmeasure$ang))
+  optnu <- optimize(f=.loocvdens, ang = angles, wts = angmeasure$wts,
+                    loowts = loowts, lower = 1e-8, upper = 2000, maximum = FALSE, tol = 1e-5)
+  return(invisible(list(nu = optnu$minimum, dirparmat = optnu$minimum*angles, wts = angmeasure$wts)))
+}
+

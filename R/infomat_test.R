@@ -1,10 +1,10 @@
 #' Information matrix test statistic and MLE for the extremal index
 #'
-#' The Information Matrix Test (IMT), proposed by Suveges and Davison (2010) based on White (1982), is based
+#' The Information Matrix Test (IMT), proposed by Suveges and Davison (2010), is based
 #' on the difference between the expected quadratic score and the second derivative of
 #' the log-likelihood. The asymptotic distribution for each threshold \code{u} and gap \code{K}
 #' is asymptotically \eqn{\chi^2}{chi-square} with one degree of freedom. The approximation is good for
-#' \eqn{N >80} and conservative for smaller sample sizes. The test assumes independence between gaps.
+#' \eqn{N>80} and conservative for smaller sample sizes. The test assumes independence between gaps.
 #'
 #' The procedure proposed in Suveges & Davison (2010) was corrected for erratas.
 #' The maximum likelihood is based on the limiting mixture distribution of
@@ -14,7 +14,7 @@
 #' Fukutome et al. (2015) propose an ad hoc automated procedure
 #' \enumerate{
 #' \item Calculate the interexceedance times for each K-gap and each threshold, along with the number of clusters
-#' \item  Select the (\code{u}, \code{K}) pairs for which IMT <0.05 (corresponding to a P-value of 0.82)
+#' \item  Select the (\code{u}, \code{K}) pairs for which IMT < 0.05 (corresponding to a P-value of 0.82)
 #' \item Among those, select the pair (\code{u}, \code{K}) for which the number of clusters is the largest
 #' }
 #' @author Leo Belzile
@@ -24,101 +24,153 @@
 #' @param x data vector
 #' @param q vector of thresholds
 #' @param K int specifying the largest K-gap
-#' @param plot boolean: should the graphical diagnostic be plotted?
+#' @param plot logical: should the graphical diagnostic be plotted?
 #'
 #' @return an invisible list of matrices containing
 #' \itemize{
 #' \item \code{IMT} a matrix of test statistics
-#' \item \code{pvals} a matrix of approximate p-values (corresponding to probabilities under a \eqn{\chi^2_1}{chis-square(1)} distribution)
+#' \item \code{pvals} a matrix of approximate p-values (corresponding to probabilities under a \eqn{\chi^2_1}{chi-square(1)} distribution)
 #' \item \code{mle} a matrix of maximum likelihood estimates for each given pair (\code{u}, \code{K})
 #' \item \code{loglik} a matrix of log-likelihood values at MLE for each given pair (\code{u}, \code{K})
 #' \item \code{threshold} a vector of thresholds based on empirical quantiles at supplied levels.
 #' \item \code{q} the vector \code{q} supplied by the user
 #' }
 #' @examples
-#' library(evd)
-#' infomat.test(x <- rgpd(n=1000), q = seq(0.9,0.995,length=10), K<- 3)
+#' infomat.test(x <- evd::rgpd(n = 1000), q = seq(0.9,0.995,length=10), K <- 3)
 #' @export
-infomat.test <- function(x, q, K, plot=TRUE){
-	K <- as.integer(K)
-	if(K<1){stop("Invalid K-gap specification")}
-	if(isTRUE(all(q>0, q<1))){
-		threshold <- quantile(x, q)
-		} else{
-		stop("Invalid vector of probabilities specified")
-		}
-	#Define functions
+infomat.test <- function(x, q, K, plot = TRUE) {
+  K <- as.integer(K)
+  if (K < 1) {
+    stop("Invalid K-gap specification")
+  }
+  if (isTRUE(all(q > 0, q < 1))) {
+    threshold <- quantile(x, q)
+  } else{
+    stop("Invalid vector of probabilities specified")
+  }
+  #Define functions
 
-	ll.gap <- function(par, Ck, N0) {
-		if(missing(N0)){ N0 <- sum(Ck==0) }
-		ifelse(par>=1,0,N0*log(1-par))+2*(length(Ck)-N0)*log(par)-par*sum(Ck)
-	}
-	# ll.gap.score <- function(par, Ck, N0){
-	# 	if(missing(N0)){N0 <- sum(Ck==0)}
-	# 	ifelse(par>=1,0,-N0/(1-par))+2*(length(Ck)-N0)/par - sum(Ck)
-	# }
-	ll.gap.score.i <- function(par, Ck){
-		ifelse(par>=1,0,-I(Ck==0)/(1-par))+2*I(Ck!=0)/par - Ck
-	}
-	Jn <- function(par, Ck, N0) {
-			if(missing(N0)){N0 <- sum(Ck==0)}
-		(ifelse(par>=1,0,N0/(1-par)^2)+4*(length(Ck)-N0)/par^2+sum(Ck^2-4*Ck/par))/length(Ck)
-	}
-	In <- function(par, Ck, N0) {
-			if(missing(N0)){N0 <- sum(Ck==0)}
-		(ifelse(par>=1,0,N0/(1-par)^2)+2*(length(Ck)-N0)/par^2)/length(Ck)
-	}
-	Dpn <- function(par, Ck, N0) {
-		(-4*(length(Ck)-N0)/par^3+4*sum(Ck)/par^2)/length(Ck)
-	}
-	Vn <- function(par, Ck, N0) {
-		mean((2*I(Ck!=0)/par^2+Ck^2-4*Ck/par-Dpn(par, Ck, N0)/In(par, Ck, N0)*ll.gap.score.i(par, Ck))^2)
-		#Typo in Suveges and Davison (2010) and Suveges(2015) - should be squared
-		#Otherwise the second part of the expression vanishes since it equals cst * score equation
-	}
-	Tn <-function(par, Ck, N0){
-		(length(Ck)+1)*(Jn(par, Ck, N0)-In(par, Ck, N0))^2/Vn(par, Ck, N0)
-	}
-
-	#Interexceedance time
-	#Define containers
-	IMT <- llval <- mles <- matrix(0, ncol=K, nrow=length(q))
-	#Exceedance values
-	if(length(threshold)>1){
-	  exceeds <- lapply(sapply(threshold, function(thresh){which(x>thresh)}), diff)
-	} else if(length(threshold)==1){
-	  exceeds <- list(diff(which(x>threshold)))
-	} else{ stop("Invalid threshold")}
-	for(k in 1:K){
-		for(ind in 1:length(q)){
-			#Interexceedance times, scaled by frequency
-		Ck <- (length(exceeds[[ind]])/length(x))*pmax(exceeds[[ind]]-k,0)
-		N0 <- sum(Ck==0) #Interclusters
-		schi <- sum(Ck);
-		N <- length(exceeds[[ind]])+1; Nc = N-1-N0
-		mle <- (schi + N - 1 + Nc - sqrt((schi+N-1+Nc)^2-8*Nc*schi))/(2*schi)
-		#   optimize(f=ll.gap,interval=c(0,1),lower = 0, upper=1, tol = .Machine$double.eps^0.5,
-		# 	maximum=TRUE, Ck=Ck, N0=N0)
-		mles[ind, k] <- mle
-		llval[ind, k] <- ll.gap(mle,Ck,N0)
-		#Information matrix test
-		IMT[ind, k] <- Tn(par=mle, Ck=Ck, N0=N0)
-		}
-	pvals <- pchisq(IMT,df=1)
+  ll.gap <- function(par, Ck, N0) {
+    if (missing(N0)) {
+      N0 <- sum(Ck == 0)
+    }
+    ifelse(par >= 1, 0, N0 * log(1 - par)) + 2 * (length(Ck) - N0) * log(par) -
+      par * sum(Ck)
+  }
+  # ll.gap.score <- function(par, Ck, N0){
+  # 	if(missing(N0)){N0 <- sum(Ck==0)}
+  # 	ifelse(par>=1,0,-N0/(1-par))+2*(length(Ck)-N0)/par - sum(Ck)
+  # }
+  ll.gap.score.i <- function(par, Ck) {
+    -I(par < 1) * I(Ck == 0) / (1 - par) + 2 * I(Ck != 0) / par - Ck
+  }
+  Jn <- function(par, Ck, N0) {
+    if (missing(N0)) {
+      N0 <- sum(Ck == 0)
+    }
+    (ifelse(par >= 1, 0, N0 / (1 - par) ^ 2) + 4 * (length(Ck) - N0) / par ^
+        2 + sum(Ck ^ 2 - 4 * Ck / par)) / length(Ck)
+  }
+  In <- function(par, Ck, N0) {
+    if (missing(N0)) {
+      N0 <- sum(Ck == 0)
+    }
+    (ifelse(par >= 1, 0, N0 / (1 - par) ^ 2) + 2 * (length(Ck) - N0) / par ^
+        2) / length(Ck)
+  }
+  Dpn <- function(par, Ck, N0) {
+    (-4 * (length(Ck) - N0) / par ^ 3 + 4 * sum(Ck) / par ^ 2) / length(Ck)
+  }
+  Vn <- function(par, Ck, N0) {
+    mean((
+      2 * I(Ck != 0) / par ^ 2 + Ck ^ 2 - 4 * Ck / par - Dpn(par, Ck, N0) / In(par, Ck, N0) *
+        ll.gap.score.i(par, Ck)) ^ 2)
+    #Typo in Suveges and Davison (2010) and Suveges(2015) - should be squared
+    #Otherwise the second part of the expression vanishes since it equals cst * score equation
+  }
+  Tn <- function(par, Ck, N0) {
+    length(Ck) * (Jn(par, Ck, N0) - In(par, Ck, N0)) ^ 2 / Vn(par, Ck, N0)
   }
 
-	if(plot==TRUE){
-		cols <- colorRampPalette(colors=c("red","white","blue"), bias=4.5, space="rgb")(100)
-		image(x=q,y=seq(0.5,K+0.5,by=1),z=ceiling(100*(1-pvals)), breaks=1:101,col=cols,ylab="K",
-		      main="Information Matrix Test",xlab="quantile")
-		allpos <- expand.grid(1:length(q), 1:K)
-		text(x=q[allpos[,1]], y=allpos[,2], labels=round(IMT,2),
-		     col=c(rep("black",50),rep("white",50))[ceiling(100*(1-pvals))]) #
-		text(x=q[allpos[,1]], y=allpos[,2], labels=paste0("(",round(pvals,2),")"), cex=0.75, pos=1,
-		     col=c(rep("black",50),rep("white",50))[ceiling(100*(1-pvals))]) #
-		mtext(side=3,line = 0,text="Test statistic (p-value)",adj=1)
-	}
-  invisible(list(IMT = IMT, pvals=pvals, loglik=llval, mle=mles, threshold=threshold, q=q))
+  #Interexceedance time
+  #Define containers
+  IMT <- llval <- mles <- matrix(0, ncol = K, nrow = length(q))
+  #Exceedance values
+  if (length(threshold) > 1) {
+    exceeds <-
+      lapply(sapply(threshold, function(thresh) {
+        which(x > thresh)
+      }), diff)
+  } else if (length(threshold) == 1) {
+    exceeds <- list(diff(which(x > threshold)))
+  } else{
+    stop("Invalid threshold")
+  }
+  for (k in 1:K) {
+    for (ind in 1:length(q)) {
+      #Interexceedance times, scaled by frequency
+      Ck <-
+        ((length(exceeds[[ind]]) + 1) / length(x)) * pmax(exceeds[[ind]] - k, 0)
+      N0 <- sum(Ck == 0) #Interclusters
+      schi <- sum(Ck)
+
+      N <- length(exceeds[[ind]]) + 1
+      Nc = N - 1 - N0
+      mle <-
+        (schi + N - 1 + Nc - sqrt((schi + N - 1 + Nc) ^ 2 - 8 * Nc * schi)) / (2 * schi)
+      #   optimize(f=ll.gap,interval=c(0,1),lower = 0, upper=1, tol = .Machine$double.eps^0.5,
+      # 	maximum=TRUE, Ck=Ck, N0=N0)
+      mles[ind, k] <- mle
+      llval[ind, k] <- ll.gap(mle, Ck, N0)
+      #Information matrix test
+      IMT[ind, k] <- Tn(par = mle, Ck = Ck, N0 = N0)
+    }
+    pvals <- 1 - pchisq(IMT, df = 1)
+  }
+
+  if (plot) {
+    cols <- colorRampPalette(colors = c("red", "white", "blue"), bias = 4.5, space = "rgb")(100)
+    image(
+      x = q,
+      y = seq(0.5, K + 0.5, by = 1),
+      z = ceiling(100 * pvals),
+      breaks = 1:101,
+      col = cols,
+      ylab = "K",
+      main = "Information Matrix Test",
+      xlab = "quantile",
+      lab = c(length(q), K, 3)
+    )
+    allpos <- expand.grid(1:length(q), 1:K)
+    text(
+      x = q[allpos[, 1]],
+      y = allpos[, 2],
+      labels = round(IMT, 2),
+      col = c(rep("black", 50), rep("white", 50))[ceiling(100 * pvals)]
+    ) #
+    text(
+      x = q[allpos[, 1]],
+      y = allpos[, 2],
+      labels = paste0("(", round(pvals, 2), ")"),
+      cex = 0.75,
+      pos = 1,
+      col = c(rep("black", 50), rep("white", 50))[ceiling(100 * pvals)]
+    ) #
+    mtext(
+      side = 3,
+      line = 0,
+      text = "Test statistic (p-value)",
+      adj = 1
+    )
+  }
+  invisible(list(
+    IMT = IMT,
+    pvals = pvals,
+    loglik = llval,
+    mle = mles,
+    threshold = threshold,
+    q = q
+  ))
 }
 
 
@@ -173,66 +225,107 @@ infomat.test <- function(x, q, K, plot=TRUE){
 #' q <- seq(0.9,0.99,by=0.01)
 #' ext.index(x=x,q=q,method=c("wls","mle"))
 #' @export
-ext.index <- function(x, q=0.95, method=c("wls","mle","intervals"), plot=FALSE){
-  method <- match.arg(method, c("wls","mle","intervals"),several.ok = TRUE)
-  stopifnot(all(q < 1), all(q>0))
-  threshold <- quantile(x, q)
-  q <- sort(q)
-  #Main function, to be called recursively
-  extmethods <- function(x=x, threshold=threshold[1], method=method){
-    #The gap of exceedances
-    exceeds <- c(diff(sapply(threshold, function(thresh){which(x>thresh)})))-1
-    if(length(exceeds) < 50){
-      warning("Small sample size - estimates may be unreliable")
-    }
-    N <- length(exceeds)
-    chi <- sort(exceeds[which(exceeds>0)]); #Rescaled interexceedance time
-    chi <- chi*length(exceeds)/length(x)
-    Nc <- length(chi)
-    if(method=="wls"){ #Suveges (2007); see Ferro (2003) for explanations
-      xs <- -log((Nc:1)/(N+1)) #theoretical quantiles
-      w <- cumsum(1/((N-1):(N-Nc))^2) #regression weights
-      coefs <- lm(chi ~ xs, weights=w)$coef #slope is 1/th, intercept log(th)/th,
-      #plot(y=chi, x=xs,xlim=c(0,7),ylim=c(0,11));abline(coefs)
-      theta <- min(exp(coefs[1]/coefs[2]),1)
-      Nc.new <- Nc
-      trials <- 0
-      while(floor(theta*(N-1)) != Nc.new && trials < 30){
-      	trials <- trials +1
-        Nc.new <- floor(theta*(N-1))
-        if(Nc.new > Nc){ #pad estimates from original fit
-          xs.new <- c(-log((Nc.new:(Nc+1))/(N+1)),xs)
-          chi.new <- c(rep(0,Nc.new-Nc),chi)
-          w.new <- c(cumsum( 1/((N-Nc.new):(N-Nc-1))^2),w)
-        } else if(Nc.new < Nc){ #remove observations
-          xs.new <- xs[-(1:(Nc-Nc.new))]
-          chi.new <- chi[-(1:(Nc-Nc.new))]
-          w.new <- w[-(1:(Nc-Nc.new))]
+ext.index <-
+  function(x,
+           q = 0.95,
+           method = c("wls", "mle", "intervals"),
+           plot = FALSE) {
+    method <-
+      match.arg(method, c("wls", "mle", "intervals"), several.ok = TRUE)
+    stopifnot(all(q < 1), all(q > 0))
+    threshold <- quantile(x, q)
+    q <- sort(q)
+    #Main function, to be called recursively
+    extmethods <-
+      function(x = x,
+               threshold = threshold[1],
+               method = method) {
+        #The gap of exceedances
+        exceeds <-
+          c(diff(sapply(threshold, function(thresh) {
+            which(x > thresh)
+          }))) - 1
+        if (length(exceeds) < 50) {
+          warning("Small sample size - estimates may be unreliable")
         }
-        coefs <- lm(chi.new~xs.new, weights=w.new)$coef
-        theta <- min(exp(coefs[1]/coefs[2]),1)
+        N <- length(exceeds)
+        chi <-
+          sort(exceeds[which(exceeds > 0)])
+        #Rescaled interexceedance time
+        chi <- chi * length(exceeds) / length(x)
+        Nc <- length(chi)
+        if (method == "wls") {
+          #Suveges (2007); see Ferro (2003) for explanations
+          xs <- -log((Nc:1) / (N + 1)) #theoretical quantiles
+          w <- cumsum(1 / ((N - 1):(N - Nc)) ^ 2) #regression weights
+          coefs <-
+            lm(chi ~ xs, weights = w)$coef #slope is 1/th, intercept log(th)/th,
+          #plot(y=chi, x=xs,xlim=c(0,7),ylim=c(0,11));abline(coefs)
+          theta <- min(exp(coefs[1] / coefs[2]), 1)
+          Nc.new <- Nc
+          trials <- 0
+          while (floor(theta * (N - 1)) != Nc.new && trials < 30) {
+            trials <- trials + 1
+            Nc.new <- floor(theta * (N - 1))
+            if (Nc.new > Nc) {
+              #pad estimates from original fit
+              xs.new <- c(-log((Nc.new:(Nc + 1)) / (N + 1)), xs)
+              chi.new <- c(rep(0, Nc.new - Nc), chi)
+              w.new <- c(cumsum(1 / ((N - Nc.new):(N - Nc - 1)) ^ 2), w)
+            } else if (Nc.new < Nc) {
+              #remove observations
+              xs.new <- xs[-(1:(Nc - Nc.new))]
+              chi.new <- chi[-(1:(Nc - Nc.new))]
+              w.new <- w[-(1:(Nc - Nc.new))]
+            }
+            coefs <- lm(chi.new ~ xs.new, weights = w.new)$coef
+            theta <- min(exp(coefs[1] / coefs[2]), 1)
+          }
+        } else if (method == "mle") {
+          #Suveges (2007) and Suveges and Davison (2010)
+          schi <- sum(chi)
+          theta <-
+            (schi + N - 1 + Nc - sqrt((schi + N - 1 + Nc) ^ 2 - 8 * Nc * schi)) / (2 *
+                                                                                     schi)
+        } else if (method == "intervals") {
+          #Ferro and Segers (2003)
+          if (max(exceeds - 1) <= 2) {
+            theta <- min(1, 2 * (sum(exceeds + 1) ^ 2) / ((N - 1) * sum((exceeds + 1) ^
+                                                                          2)))
+          } else{
+            theta <-
+              min(1, 2 * ((sum(exceeds)) ^ 2) / ((N - 1) * sum(exceeds * (exceeds - 1))))
+          }
+        }
+        return(theta)
       }
-    } else if(method=="mle"){ #Suveges (2007) and Suveges and Davison (2010)
-      schi <- sum(chi)
-      theta <- (schi+N-1+Nc-sqrt((schi+N-1+Nc)^2-8*Nc*schi))/(2*schi)
-    } else if(method=="intervals"){ #Ferro and Segers (2003)
-      if(max(exceeds-1) <= 2){
-        theta <- min(1,2*(sum(exceeds+1)^2)/((N-1)*sum((exceeds+1)^2)))
-      } else{
-        theta <- min(1,2*((sum(exceeds))^2)/((N-1)*sum(exceeds*(exceeds-1))))
-      }
+    #Provide a vector if multiple thresholds are supplied
+    theta <- sapply(method, function(metho) {
+      sapply(threshold, function(thresh) {
+        extmethods(x = x,
+                   threshold = thresh,
+                   method = metho)
+      })
+    })
+    if (plot) {
+      matplot(
+        q,
+        theta,
+        type = "l",
+        xlab = "q",
+        ylim = c(0, 1),
+        ylab = expression(theta),
+        main = "Extremal index",
+        lwd = 2
+      )
+      legend(
+        x = "bottomright",
+        legend = method,
+        bty = "n",
+        lwd = 2,
+        lty = 1:3,
+        col = 1:3
+      )
     }
-    return(theta)
+    return(t(theta))
   }
-  #Provide a vector if multiple thresholds are supplied
-  theta <- sapply(method, function(metho){
-                  sapply(threshold, function(thresh){
-                    extmethods(x=x, threshold=thresh, method=metho)})})
-  if(plot){
-    matplot(q, theta, type="l", xlab="q",ylim=c(0,1),ylab=expression(theta),
-         main="Extremal index",lwd=2)
-    legend(x="bottomright",legend=method,bty="n",lwd=2,lty=1:3,col=1:3)
-  }
-  return(t(theta))
-}
-

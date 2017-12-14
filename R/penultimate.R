@@ -297,51 +297,66 @@ egp.fitrange <- function(xdat, thresh, model=c("egp1","egp2","egp3"), plots=1:3,
 #'
 #' @param densF density function; for standard statistical family \code{family}, given by \code{dfamily}
 #' @param distF distribution function, for standard statistical family \code{family}, given by \code{pfamily}
+#' @param quantF quantile function, default to \code{NULL}
+#' @param family the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}
 #' @param ddensF derivative of the density function (optional)
 #' @param model either block maxima (\code{"bm"}) or peaks-over-threshold (\code{"pot"}) are supported
 #' @param u vector of thresholds for method \code{"pot"}
 #' @param m vector of block sizes for method \code{"bm"}
+#' @param returnList logical; should the arguments be returned as a list or as a matrix of parameter
 #' @param ... additional arguments passed to \code{densF} and \code{distF}
 #' @author Leo Belzile
 #' @importFrom methods formalArgs
 #' @import stats
-#' @return a matrix containing the penultimate location (if \code{method="bm"}), scale and shape parameters
+#' @return a matrix or a list (if \code{returnList}) containing 
+#' \itemize{
+#' \item{\code{loc}:} {location parameters (\code{method="bm"})}
+#' \item{\code{scale}:} {scale parameters}
+#' \item{\code{shape}:} {shape parameters}
+#' \item{\code{u:}} {thresholds (\code{method="pot"})}
+#' \item{\code{m:}} {block sizes (\code{method="bm"})}
+#' }
 #' @references Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
 #' @examples
 #' #Threshold exceedance for Normal variables
 #' qu <- seq(1,5,by=0.02)
 #' penult <- smith.penult(densF=dnorm, distF=pnorm,
 #'    ddensF=function(x){-x*dnorm(x)}, model="pot", u=qu)
-#' plot(qu, penult[,2], type="l",xlab="Quantile",
+#' plot(qu, penult$shape, type="l",xlab="Quantile",
 #'    ylab="Penultimate shape",ylim=c(-0.5,0))
 #' #Block maxima for Gamma variables -
-#' #Use must provide arguments for shape (or rate)
+#' #User must provide arguments for shape (or rate)
 #' m <- seq(30,3650,by=30)
-#' penult <- smith.penult(densF=dgamma, distF=pgamma,
-#' model="bm", m=m, shape=0.1)
-#' #First column is location
-#' #second is scale (both scaling constants) and
-#' #third is penultimate shape
-#' plot(m, penult[,3], type="l",
+#' penult <- smith.penult(family = "gamma", model="bm", m=m, shape=0.1)
+#' plot(m, penult$shape, type="l",
 #'  xlab="Quantile", ylab="Penultimate shape")
 #' @export
-smith.penult <- function(densF, distF, ddensF=NULL,
-                         model=c("bm","pot"), u,  m, ...){
-  if(class(densF)!= "function" || class(distF)!= "function"){
-    stop("Invalid arguments. Please provide valid functions.")
+smith.penult <- function(densF, distF, family, quantF = NULL, ddensF = NULL,
+                         model = c("bm","pot"), u,  m, returnList = TRUE, ...){
+  #Redefine density, quantile and distribution functions from family
+  if(!missing(family)){
+    densF <- paste0("d", family)
+    distF <- paste0("p", family)
+    quantF <- paste0("q", family)
   }
+  # if(class(densF)!= "function" || class(distF)!= "function"){
+  #   stop("Invalid arguments. Please provide valid functions.")
+  # }
   #Matching extra arguments with additional ones passed via ellipsis
   arguments <- list(...)
   #Which are formals of the function
   indf <- names(arguments) %in% formalArgs(densF)
   indF <- names(arguments) %in% formalArgs(distF)
+  if(!is.null(quantF)){
+    indQ <- names(arguments) %in% formalArgs(quantF)
+  }
   fn.arg <- arguments[which(indf*(indf==indF)==1)]
   if(!(length(model)==1  && model %in% c("bm","pot"))){
     stop("Invalid model selected");
   }
   #Distribution function, density and density derivative
-  densFn <- function(x){do.call(densF,c(x, fn.arg))}
-  distFn <- function(x){do.call(distF,c(x, fn.arg))}
+  densFn <- function(x){do.call(densF,c(x = x, fn.arg))}
+  distFn <- function(x){do.call(distF,c(q = x, fn.arg))}
   if(is.null(ddensF)){
     ddensFn <- function(x){numDeriv::grad(densFn, x=x, method="Richardson")}
   } else{
@@ -356,14 +371,18 @@ smith.penult <- function(densF, distF, ddensF=NULL,
     if(missing(m)){stop("Sequence of block size must be provided.")}
     #Normalizing sequence
     bm <- sapply(m, function(n){
-      bmroot <- uniroot(f=function(bn){do.call(distF,c(bn,fn.arg))-exp(-1/n)},
-                        lower=-1e15, upper=1e15,f.lower=-exp(-1/n), f.upper=1-exp(-1/n),
-                        tol=1e-8, check.conv=TRUE)
-      if(abs(bmroot$f.root)<1e-5){
-        return(bmroot$root)
+      if(!is.null(quantF)){
+      bmroot <- do.call(quantF, c(p = exp(-1/n), fn.arg))
       } else{
-        warning("Could not find bm using numerical root finder.")
-        return(NA)
+        bmroot <- uniroot(f=function(bn){do.call(distF,c(bn,fn.arg))-exp(-1/n)},
+                          lower=-1e15, upper=1e15,f.lower=-exp(-1/n), f.upper=1-exp(-1/n),
+                          tol=1e-8, check.conv=TRUE)
+        if(abs(bmroot$f.root)<1e-5){
+          return(bmroot$root)
+        } else{
+          warning("Could not find bm using numerical root finder.")
+          return(NA)
+        }
       }
     })
     #Penultimate scale and shape functions
@@ -374,8 +393,13 @@ smith.penult <- function(densF, distF, ddensF=NULL,
       sapply(x, function(xval){-(1+log(distFn(xval)))+
           distFn(xval)*log(distFn(xval))*ddensFn(xval)/(densFn(xval)^2)})
     }
-    cbind(bm, phi(bm), dphi(bm))
-
+    if(returnList){
+     params <- list(loc = bm, scale = phi(bm), shape = dphi(bm), m = m)
+    } else{
+     params <- cbind(loc = bm, scale = phi(bm), shape = dphi(bm), m = m)
+    }
+    return(params)
+           
   } else if(model=="pot"){
     if(missing(u)){stop("Sequence of thresholds must be provided.")}
     phi <- function(x){
@@ -384,7 +408,12 @@ smith.penult <- function(densF, distF, ddensF=NULL,
     dphi <-  function(x){
       sapply(x, function(xval){-1-(1-distFn(xval))*ddensFn(xval)/(densFn(xval)^2)})
     }
-    cbind(phi(u), dphi(u))
+    if(returnList){
+      params <- list(scale = phi(u), shape = dphi(u), u = u)
+    } else{
+      params <- cbind(scale = phi(u), shape = dphi(u), u = u)
+    }
+    return(params)
   }
   ## The approximations are for \eqn{F^m(x)} for the GEV distribution
   ## and for \eqn{1-F(u+x)}{1-F(u)} for the GP distribution.
@@ -430,8 +459,8 @@ smith.penult <- function(densF, distF, ddensF=NULL,
 #' @examples
 #' #Normal maxima example from Smith (1987)
 #' m <- 100 #block of size 100
-#' p <- c(smith.penult(densF=dnorm, distF=pnorm,
-#'    ddensF=function(x){-x*dnorm(x)},model="bm",m=m))
+#' p <- smith.penult(family="norm",
+#'    ddensF=function(x){-x*dnorm(x)}, model="bm", m=m, returnList=FALSE)
 #' approx <- smith.penult.fn(loc=p[1], scale=p[2], shape=p[3],
 #'    eps=p[3]^2+p[3]+p[2]^2, mdaGumbel=TRUE, model="bm")
 #' x <- seq(0.5,6,by=0.001)
@@ -453,7 +482,7 @@ smith.penult <- function(densF, distF, ddensF=NULL,
 #'
 #' #Threshold exceedances
 #' p <- c(4,smith.penult(densF=dnorm, distF=pnorm,
-#'  ddensF=function(x){-x*dnorm(x)},model="pot",u=4))
+#'  ddensF=function(x){-x*dnorm(x)},model="pot", u=4, returnList=FALSE))
 #' approx <- smith.penult.fn(loc=p[1], scale=p[2], shape=p[3],
 #'  eps=p[3]^2+p[3]+p[2]^2, mdaGumbel=TRUE, model="pot")
 #' x <- seq(4.01,7,by=0.01)

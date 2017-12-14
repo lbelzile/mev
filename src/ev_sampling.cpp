@@ -250,7 +250,7 @@ NumericVector rPbilog(int d, int index, NumericVector alpha){
 //' \eqn{P_{x}} is probability of extremal function
 //'
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-//' @param Sigma a positive semi-definite covariance matrix with unit variance
+//' @param Sigma a positive semi-definite correlation matrix
 //' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
 //'
 //' @return a \code{d}-vector from \eqn{P_x}
@@ -419,7 +419,7 @@ NumericVector rPdir(int d, int index, NumericVector alpha, bool irv = false){
   }
 }
 
-// SPECTRAL DISTRIBUTIONS
+// SPECTRAL DISTRIBUTIONS ON L1-SPHERE (unit simplex)
 
 //' Generates from \eqn{Q_i}{Qi}, the spectral measure of the logistic model
 //'
@@ -655,7 +655,7 @@ NumericMatrix rbrspec (int n, NumericMatrix Sigma){
   for(int r=0; r<n; r++){
     j = sampleone(d);
     for(int i=0; i < d; i++){
-      samp(r,i) = exp(mvnormsamp(0,i)-mvnormsamp(0,j)-0.5*(Sigma(i,i)+
+      samp(r,i) = exp(mvnormsamp(r,i)-mvnormsamp(r,j)-0.5*(Sigma(i,i)+
         Sigma(j,j)-2*Sigma(i,j)));
     }
     samp(r,_) = samp(r,_)/sum(samp(r,_));
@@ -1104,7 +1104,7 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
 
 
 
-//' Random number generator from asymmetric logistic distribution
+//' Random number generator from asymetric logistic distribution
 //'
 //' Simulation algorithm of Stephenson (2003), using exact-samples from the logistic
 //'
