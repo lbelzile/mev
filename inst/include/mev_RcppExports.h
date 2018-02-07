@@ -101,55 +101,17 @@ namespace mev {
         return Rcpp::as<double >(rcpp_result_gen);
     }
 
-    inline NumericVector _gloocv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts) {
-        typedef SEXP(*Ptr__gloocv)(SEXP,SEXP,SEXP,SEXP);
-        static Ptr__gloocv p__gloocv = NULL;
-        if (p__gloocv == NULL) {
-            validateSignature("NumericVector(*_gloocv)(double,NumericMatrix,NumericVector,NumericMatrix)");
-            p__gloocv = (Ptr__gloocv)R_GetCCallable("mev", "mev__gloocv");
+    inline NumericVector _loocvdens(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts) {
+        typedef SEXP(*Ptr__loocvdens)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr__loocvdens p__loocvdens = NULL;
+        if (p__loocvdens == NULL) {
+            validateSignature("NumericVector(*_loocvdens)(double,NumericMatrix,NumericVector,NumericMatrix)");
+            p__loocvdens = (Ptr__loocvdens)R_GetCCallable("mev", "mev__loocvdens");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__gloocv(Rcpp::wrap(nu), Rcpp::wrap(ang), Rcpp::wrap(wts), Rcpp::wrap(loowts));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<NumericVector >(rcpp_result_gen);
-    }
-
-    inline NumericVector _gloo2cv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts) {
-        typedef SEXP(*Ptr__gloo2cv)(SEXP,SEXP,SEXP,SEXP);
-        static Ptr__gloo2cv p__gloo2cv = NULL;
-        if (p__gloo2cv == NULL) {
-            validateSignature("NumericVector(*_gloo2cv)(double,NumericMatrix,NumericVector,NumericMatrix)");
-            p__gloo2cv = (Ptr__gloo2cv)R_GetCCallable("mev", "mev__gloo2cv");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__gloo2cv(Rcpp::wrap(nu), Rcpp::wrap(ang), Rcpp::wrap(wts), Rcpp::wrap(loowts));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<NumericVector >(rcpp_result_gen);
-    }
-
-    inline NumericVector _gloo3cv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts) {
-        typedef SEXP(*Ptr__gloo3cv)(SEXP,SEXP,SEXP,SEXP);
-        static Ptr__gloo3cv p__gloo3cv = NULL;
-        if (p__gloo3cv == NULL) {
-            validateSignature("NumericVector(*_gloo3cv)(double,NumericMatrix,NumericVector,NumericMatrix)");
-            p__gloo3cv = (Ptr__gloo3cv)R_GetCCallable("mev", "mev__gloo3cv");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__gloo3cv(Rcpp::wrap(nu), Rcpp::wrap(ang), Rcpp::wrap(wts), Rcpp::wrap(loowts));
+            rcpp_result_gen = p__loocvdens(Rcpp::wrap(nu), Rcpp::wrap(ang), Rcpp::wrap(wts), Rcpp::wrap(loowts));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

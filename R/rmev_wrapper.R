@@ -52,8 +52,8 @@
 #'  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
 #' }
 #'
-#' Stephenson points out that the multivariate asymmetric negative logistic model is not a valid distribution function.
-#' The implementation in \code{mev} uses the same construction as the asymmetric logistic distribution,
+#' Stephenson points out that the multivariate asymmetric negative logistic model given in e.g. Coles and Tawn (1991) is not a valid distribution function in dimension d>3.
+#' The implementation in \code{mev} uses the same construction as the asymmetric logistic distribution (see the vignette),
 #' and as such it does not match the bivariate implementation of \link[evd]{rbvevd}.
 #'
 #' The dependence parameter of the \code{evd} package for the Husler-Reiss distribution can be recovered taking
@@ -308,7 +308,7 @@ rmev <-function(n, d, param, asy, sigma,
 #' Generate from \eqn{Q_i}{Qi}, the spectral measure of a given multivariate extreme value model based on the L1 norm.
 #'
 #' @section Note:
-#'  This functionality can be useful to generate for example Pareto processes (by multiplying by a standard Pareto variable the output). Other functionals are not currently implemented.
+#'  This functionality can be useful to generate for example Pareto processes with marginal exceedances.
 #'
 #' @inheritParams rmev
 #'
@@ -381,7 +381,7 @@ rmevspec <-function(n, d, param, sigma,
   m2 <- c("bilog","negbilog")
   m3 <- c("br","xstud","smith")
   m4 <- c("ct","dir","negdir")
-  
+
   #Sanity checks
   if(model %in% c(m1,m2, m4) && (!missing(param) && mode(param) != "numeric")){
     stop("Invalid parameter")

@@ -138,90 +138,24 @@ RcppExport SEXP mev_ldirfn(SEXP paramSEXP) {
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// gloocv
-NumericVector gloocv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts);
-static SEXP mev_gloocv_try(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loowtsSEXP) {
+// loocvdens
+NumericVector loocvdens(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts);
+static SEXP mev_loocvdens_try(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loowtsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< double >::type nu(nuSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type ang(angSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type wts(wtsSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type loowts(loowtsSEXP);
-    rcpp_result_gen = Rcpp::wrap(gloocv(nu, ang, wts, loowts));
+    rcpp_result_gen = Rcpp::wrap(loocvdens(nu, ang, wts, loowts));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP mev_gloocv(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loowtsSEXP) {
+RcppExport SEXP mev_loocvdens(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loowtsSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(mev_gloocv_try(nuSEXP, angSEXP, wtsSEXP, loowtsSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// gloo2cv
-NumericVector gloo2cv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts);
-static SEXP mev_gloo2cv_try(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loowtsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< double >::type nu(nuSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type ang(angSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type wts(wtsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type loowts(loowtsSEXP);
-    rcpp_result_gen = Rcpp::wrap(gloo2cv(nu, ang, wts, loowts));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP mev_gloo2cv(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loowtsSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(mev_gloo2cv_try(nuSEXP, angSEXP, wtsSEXP, loowtsSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// gloo3cv
-NumericVector gloo3cv(double nu, NumericMatrix ang, NumericVector wts, NumericMatrix loowts);
-static SEXP mev_gloo3cv_try(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loowtsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< double >::type nu(nuSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type ang(angSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type wts(wtsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type loowts(loowtsSEXP);
-    rcpp_result_gen = Rcpp::wrap(gloo3cv(nu, ang, wts, loowts));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP mev_gloo3cv(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loowtsSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(mev_gloo3cv_try(nuSEXP, angSEXP, wtsSEXP, loowtsSEXP));
+        rcpp_result_gen = PROTECT(mev_loocvdens_try(nuSEXP, angSEXP, wtsSEXP, loowtsSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -1095,9 +1029,7 @@ static int mev_RcppExport_validate(const char* sig) {
         signatures.insert("List(*.emplik)(arma::mat,arma::colvec,arma::vec,double,double,double,int)");
         signatures.insert("NumericVector(*.Pickands_emp)(NumericVector,NumericVector,NumericVector)");
         signatures.insert("double(*ldirfn)(NumericVector)");
-        signatures.insert("NumericVector(*.gloocv)(double,NumericMatrix,NumericVector,NumericMatrix)");
-        signatures.insert("NumericVector(*.gloo2cv)(double,NumericMatrix,NumericVector,NumericMatrix)");
-        signatures.insert("NumericVector(*.gloo3cv)(double,NumericMatrix,NumericVector,NumericMatrix)");
+        signatures.insert("NumericVector(*.loocvdens)(double,NumericMatrix,NumericVector,NumericMatrix)");
         signatures.insert("NumericMatrix(*rdir)(int,NumericVector,bool)");
         signatures.insert("NumericMatrix(*mvrnorm)(int,NumericVector,NumericMatrix)");
         signatures.insert("arma::mat(*.mvrnorm_arma)(int,arma::colvec,arma::mat)");
@@ -1134,9 +1066,7 @@ RcppExport SEXP mev_RcppExport_registerCCallable() {
     R_RegisterCCallable("mev", "mev_.emplik", (DL_FUNC)mev_emplik_try);
     R_RegisterCCallable("mev", "mev_.Pickands_emp", (DL_FUNC)mev_Pickands_emp_try);
     R_RegisterCCallable("mev", "mev_ldirfn", (DL_FUNC)mev_ldirfn_try);
-    R_RegisterCCallable("mev", "mev_.gloocv", (DL_FUNC)mev_gloocv_try);
-    R_RegisterCCallable("mev", "mev_.gloo2cv", (DL_FUNC)mev_gloo2cv_try);
-    R_RegisterCCallable("mev", "mev_.gloo3cv", (DL_FUNC)mev_gloo3cv_try);
+    R_RegisterCCallable("mev", "mev_.loocvdens", (DL_FUNC)mev_loocvdens_try);
     R_RegisterCCallable("mev", "mev_rdir", (DL_FUNC)mev_rdir_try);
     R_RegisterCCallable("mev", "mev_mvrnorm", (DL_FUNC)mev_mvrnorm_try);
     R_RegisterCCallable("mev", "mev_.mvrnorm_arma", (DL_FUNC)mev_mvrnorm_arma_try);
