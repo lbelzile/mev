@@ -2,7 +2,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amssymb, amsfonts}
-\usepackage{mathpazo}
+\usepackage{fourier}
 \usepackage{geometry}
 \usepackage{natbib}
 \usepackage{hyperref}
@@ -45,7 +45,7 @@ EPFL-SB-MATH-STAT \\ Station 8, Bâtiment MA \\CH-1015, Switzerland,\\ \href{leo
 }
 \end{center}
 
-Originally, the `\code{mev}' package was introduced to implement the exact unconditional sampling algorithms in \cite{Dombry:2016} to simulate simple max-stable random vectors. The implementation will work efficiently for moderate dimensions and does not currently take improvements for large spatial domains.
+The `\code{mev}' package was originally introduced to implement the exact unconditional sampling algorithms in \cite{Dombry:2016}. Thetwo algorithms therein allow one to simulate simple max-stable random vectors. The implementation will work efficiently for moderate dimensions and do not currently take approximate schemes for large spatial domains.
 
 \section{Functions and use}
 
@@ -87,50 +87,57 @@ w_j\right)^{-(\alpha+1)}\left(\sum_{j=1}^d
 \end{align*}
 
 \item \textbf{asymmetric logistic distribution} (\code{alog})
-This model proposed by  \cite{Tawn:1990} uses the parametrization of the \code{evd} package, merely replacing the algorithm for
+This model was proposed by  \cite{Tawn:1990}. It shares the same parametrization as the \code{evd} package, merely replacing the algorithm for
 the generation of logistic
-variates. The distribution function is
+variates. Let $\mathbb{B}_d$ be the collection of all nonempty subsets of $\{1, \ldots, d\}$. The distribution function of the $d$-variate asymmetric logistic distribution is
 \begin{align*}
-   \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}}\left(\sum_{i \in b} \pfrac{\theta_{i,
-b}}{x_i}^{\alpha_b}\right)^{\frac{1}{\alpha_b}}\right]
+   \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}_d}\left(\sum_{i \in b} \pfrac{\theta_{i,
+b}}{x_i}^{\alpha_b}\right)^{\frac{1}{\alpha_b}},\right]
 \end{align*}
-while the spectral density corresponds to
+while the spectral density is
 \begin{align*}
    h_{\bs{W}}(\bs{w})=\frac{1}{d}\frac{\prod_{j=1}^{d-1} (j\alpha_b-1)}{\prod_{i\in b} w_i} \left(\prod_{i \in
 b}\frac{\theta_{i,b}}{w_i}\right)^{\alpha_b} \left(\sum_{i \in b} \pfrac{\theta_{i, b}}{w_i}^{\alpha_b}\right)^{1/\alpha_b-d}
 \end{align*}
 
-The parameters $\theta_{i, b}$ must be provided in a list and represents the asymmetry parameter.
-In the $d$-variate
-case, where $\mathbb{B}$ is the power set of the collection $\{1, \ldots, d\}$, without the empty set. This corresponds to
-generating samples $\bs{Z}_b$ from a logistic distribution of dimension $|b|$ (or Fréchet variates if $|b|=1)$ with parameter
-$\alpha_b$ (possibly recycled). Then, each marginal value corresponds to the maximum of the weighted corresponding entry. That
+The parameters $\theta_{i, b}$ must be provided in a list and represent the asymmetry parameter.
+The sampling algorithm, from \cite{Stephenson:2003} gives some insight on the construction mechanism as a max-mixture of logistic distributions. Consider sampling $\bs{Z}_b$ from a logistic distribution of dimension $|b|$ (or Fréchet variates if $|b|=1)$ with parameter
+$\alpha_b$ (possibly recycled). Each marginal value corresponds to the maximum of the weighted corresponding entry. That
 is, $X_{i}=\max_{b \in \mathbb{B}}\theta_{i, b}Z_{i,b}$ for all $i=1, \ldots, d$. The max-mixture is valid provided that $\sum_{b
-\in \mathbb{B}} \theta_{i,b}=1$ for $i=1, \ldots, d.$ As such, empirical estimates of the spectral measure will almost surely
+\in \mathbb{B}_d} \theta_{i,b}=1$ for $i=1, \ldots, d.$ As such, empirical estimates of the spectral measure will almost surely
 place mass on the inside of the simplex rather than on subfaces.
+
 \item \textbf{negative logistic distribution} (\code{neglog})
 The distribution function of the min-stable distribution due to \cite{Galambos:1975}  is
 \begin{align*}
    \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}} (-1)^{|b|}\left(\sum_{i \in b}
 {x_i}^{-\alpha}\right)^{\frac{1}{\alpha}}\right]
 \end{align*}
-for $\alpha_b\leq 0$ and corresponds to the model in \cite{Dombry:2016}.
-
+for $\alpha \leq 0$ and corresponds to the model in \cite{Dombry:2016}.
+The density is (\citealp{Kotz:2000})
 \begin{align*}
-   h_{\bs{W}}(\bs{w}) = \frac{1}{d} \sum_{b \in B: c \subset b} (-1)^{|b|}
+   h_{\bs{W}}(\bs{w}) = \frac{1}{d} \sum_{\substack{b \in B \\c \subset b}} (-1)^{|b|}
 \left(\prod_{j=1}^{d-1}(1-j\alpha)\right)\left(\prod_{i \in c}w_j\right)^{-(\alpha+1)}\left(\sum_{i \in c}
 w_i^{-\alpha}\right)^{1/\alpha-d}
 \end{align*}
 
 \item \textbf{asymmetric negative logistic distribution} (\code{aneglog})
-The construction of this distribution is exactly the same as for the asymmetric logistic distribution, with distribution function
+The asymmetric negative logistic model is alluded to in \cite{Joe:1990} as a generalization of the Galambos model. It is constructed in the same way as the asymmetric logistic distribution; see Theorem~1 in \cite{Stephenson:2003}. Let $\alpha_b \leq 0$ for all $b \in \mathbb{B}_d$ and $\theta_{i, b} \geq 0$ with $\sum_{b \in \mathbb{B}_d} \theta_{i, b} =1$; the distribution function is then
 \begin{align*}
       \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}}\sum_{c \in b} (-1)^{|c|}
 \left(\sum_{i \in c}
-\pfrac{x_i}{\theta_{i, b}}^{\alpha_b}\right)^{-\frac{1}{\alpha_b}}\right].
+\pfrac{\theta_{i, b}}{x_i}^{\alpha_b}\right)^{\frac{1}{\alpha_b}}\right].
 \end{align*}
-In particular, it does not correspond to the ``negative logistic distribution'' given in \cite{Joe:1990}, which is not a valid
-distribution function according to Stephenson.
+The density is (\citealp{Kotz:2000})
+\begin{align*}
+   h_{\bs{W}}(\bs{w}) = \frac{1}{d} \sum_{\substack{b \in B \\c \subset b}} (-1)^{|b|}
+\left(\prod_{j=1}^{d-1}(1-j\alpha)\right)\left(\prod_{i \in c}w_j\right)^{-(\alpha+1)}\left( \prod_{j \in b} \theta_{j, b}\right)^{\alpha_b}\left(\sum_{i \in c}
+\pfrac{\theta_{i, b}}{w_i}^{\alpha_b}\right)^{1/\alpha_b-d}
+\end{align*}
+In particular, it does not correspond to the ``negative logistic distribution'' given in e.g. \S 4.2 of \cite{Coles:1991}  or \S 3.5.3 of \cite{Kotz:2000}. The latter is not a valid
+distribution function in dimension $d \geq 3$ as the constraints therein on the parameters $\theta_{i, b}$ are necessary, but not sufficient.
+
+\cite{Joe:1990} mentions generalizations of the distribution as given above but the constraints were not enforced elsewhere in the literature. The proof that the distribution is valid follows from Theorem~1 of \cite{Stephenson:2003} as it is a max-mixture.  Note that the parametrization of the asymmetric negative logistic distribution  does not match the bivariate implementation of \code{rbvevd}.
 \item \textbf{multilogistic distribution} (\code{bilog})
 This multivariate extension of the logistic, proposed by \cite{Boldi:2009}, places mass on the interior of the simplex. Let $\bs{W} \in \mathbb{S}_d$ be the solution of
 \begin{align*}
@@ -205,8 +212,9 @@ non-negativity of the parameter. For inference in dimension $d>2$, one needs to 
 \begin{multline*}
    \mathcal{D}=\Biggl\{\mathbf{A}\in [0, \infty)^{d\times d}: \bs{x}^\top\!\!\mathbf{A}\bs{x} <0, \all \bs{x} \in \R^{d}
 \setminus\{\bs{0}\} \\ \qquad
-\text{ with } \sum_{i=1}^d x_i=0, a_{ij}=a_{ji}, a_{ii}=0 \all i, j \in \{1,\ldots, d\}\Biggr\}.
+\text{ with } \sum_{i=1}^d x_i=0, a_{ij}=a_{ji}, a_{ii}=0 \all i, j \in \{1,\ldots, d\}\Biggr\}
 \end{multline*}
+denotes the set of symmetric conditionally negative definite matrices with zero diagonal entries.
 An avenue to automatically satisfy these requirements is to optimize over a symmetric  positive definite  matrix parameter
 $\bs{\varSigma}=\mathbf{L}^\top\mathbf{L}$, where $\mathbf{L}$ is an upper triangular matrix whose diagonal element are on the
 log-scale to ensure uniqueness of the Cholesky factorization; see \cite{Pinheiro:1996}. By taking
