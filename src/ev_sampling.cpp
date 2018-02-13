@@ -66,10 +66,6 @@ NumericMatrix mvrnorm(int n, NumericVector mu, NumericMatrix Sigma){
   int length = Sigma.nrow();
   arma::rowvec Mu(mu.begin(), length, false);
   arma::mat Xmat(Sigma.begin(), length, length, false);
- 	//Cholesky decomposition fix
-// arma::mat Y = arma::randn(n, Sigma.ncol());
-//	arma::mat sample = Y * arma::chol(Xmat);
-//	sample.each_row() += Mu;
   arma::mat q = arma::randn(arma::as_scalar(n),length);
   arma::colvec eigval;
   arma::mat eigvec;
@@ -78,15 +74,24 @@ NumericMatrix mvrnorm(int n, NumericVector mu, NumericMatrix Sigma){
   arma::mat samplemat(n,length);
   samplemat = q*arma::diagmat(arma::sqrt(eigval))*trans(eigvec);
   samplemat.each_row() += Mu;
-// arma::colvec intermed(length);
-// for(int t=0;t<n;t++){
-//     intermed = eigvec*arma::diagmat(arma::sqrt(eigval))*q.col(t)+Mu;
-//     for(int i=0;i<length;i++){
-//       sample(t,i)=intermed(i);
-//     }
-//   }
   return Rcpp::as<Rcpp::NumericMatrix>(wrap(samplemat));
 }
+
+// [[Rcpp::export(.mvrnorm_chol)]]
+NumericMatrix mvrnorm_chol(int n, NumericVector mu, arma::mat Sigma_chol){
+  if (Sigma_chol.n_rows!=Sigma_chol.n_cols || mu.size()!=Sigma_chol.n_cols){
+    Rcpp::stop("Incompatible arguments - mvrnorm");
+  }
+  int length = Sigma_chol.n_rows;
+  arma::rowvec Mu(mu.begin(), length, false);
+  //Copy to Armadillo matrix format the Cholesky root (upper triangular, same as arma)
+  arma::mat Y = arma::randn(n, Sigma_chol.n_cols);
+  arma::mat sample = Y * Sigma_chol;
+  sample.each_row() += Mu;
+  return Rcpp::as<Rcpp::NumericMatrix>(wrap(sample));
+}
+
+
 //' Multivariate Normal distribution sampler (Rcpp version), derived using the eigendecomposition
 //' of the covariance matrix Sigma. The function utilizes the arma random normal generator
 //'
@@ -98,35 +103,41 @@ NumericMatrix mvrnorm(int n, NumericVector mu, NumericMatrix Sigma){
 //' @return an n sample from a multivariate Normal distribution
 //'
 // [[Rcpp::export(.mvrnorm_arma)]]
-arma::mat mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat){
+arma::mat mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat, bool eigen = true){
 	// Cholesky decomposition -
-	// arma::mat Y = arma::randn(n, Xmat.n_cols);
-	// arma::mat samp = Y * arma::chol(Xmat);
-	// samp.each_row() += Mu.t();
-	// 	return samp;
-  int length = Xmat.n_rows;
-  //Covariance matrix must be symmetric - otherwise eig_sym throws error
-  arma::mat q = arma::randn(arma::as_scalar(n),length);
-  arma::colvec eigval;
-  arma::mat eigvec;
-  //Covariance matrix must be symmetric - otherwise eig_sym throws error
-  arma::eig_sym(eigval, eigvec, Xmat);
-  arma::mat samplemat(n,length);
-  samplemat = q*arma::diagmat(arma::sqrt(eigval))*trans(eigvec);
-  samplemat.each_row() += Mu.t();
-//   arma::colvec intermed(length);
-//   for(int t=0;t<n;t++){
-//     intermed= eigvec*arma::diagmat(arma::sqrt(eigval))*q.col(t)+Mu;
-//     for(int i=0;i<length;i++){
-//       sample(t,i)=intermed(i);
-//     }
-//   }
-  return samplemat;
+	if(eigen){
+  	int length = Xmat.n_rows;
+    //Covariance matrix must be symmetric - otherwise eig_sym throws error
+    arma::mat q = arma::randn(arma::as_scalar(n),length);
+    arma::colvec eigval;
+    arma::mat eigvec;
+    //Covariance matrix must be symmetric - otherwise eig_sym throws error
+    arma::eig_sym(eigval, eigvec, Xmat);
+    arma::mat samplemat(n,length);
+    samplemat = q*arma::diagmat(arma::sqrt(eigval))*trans(eigvec);
+    samplemat.each_row() += Mu.t();
+    return samplemat;
+	} else{
+  	arma::mat Y = arma::randn(n, Xmat.n_cols);
+    arma::mat samp = Y * arma::chol(Xmat);
+    samp.each_row() += Mu.t();
+    return samp;
+	}
+}
+
+// [[Rcpp::export(.mvrnorm_chol_arma)]]
+arma::mat mvrnorm_chol_arma(int n, arma::colvec Mu, arma::mat Chol_Cov){
+    arma::mat Y = arma::randn(n, Chol_Cov.n_cols);
+    arma::mat samp = Y * Chol_Cov;
+    samp.each_row() += Mu.t();
+    return samp;
 }
 
 
-// Functions from Rcpp Gallery for calculation of multivariate Normal density
 
+// Functions from Rcpp Gallery for calculation of multivariate Normal density
+// http://gallery.rcpp.org/articles/dmvnorm_arma/
+// Under GNU GPL-2 licence, post by Nino Hardt, Dicko Ahmadou
 arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov){
   int n = x.n_rows;
   arma::mat x_cen;
@@ -136,7 +147,7 @@ arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov){
   }
   return sum((x_cen * cov.i()) % x_cen, 1);
 }
-
+//[[Rcpp::export(.dmvnorm_arma)]]
 arma::vec dmvnorm_arma(arma::mat x,  arma::rowvec mean,  arma::mat sigma, bool log = false) {
   arma::vec distval = Mahalanobis(x,  mean, sigma);
   double logdet = sum(arma::log(arma::eig_sym(sigma)));
@@ -145,10 +156,30 @@ arma::vec dmvnorm_arma(arma::mat x,  arma::rowvec mean,  arma::mat sigma, bool l
 
   if (log){
     return(logretval);
-  }else {
+  } else {
     return(exp(logretval));
   }
 }
+//[[Rcpp::export(.dmvnorm_chol_arma)]]
+arma::vec dmvnorm_chol_arma(arma::mat x,  arma::rowvec mean,  arma::mat chol_sigma, bool logv = false) {
+    int n = x.n_rows;
+    const double log2pi = std::log(2.0 * M_PI);
+    int d = x.n_cols;
+    arma::vec logretval(n);
+    arma::mat rooti = arma::trans(arma::inv(arma::trimatu(chol_sigma)));
+    double rootisum = arma::sum(log(rooti.diag()));
+    double constants = -(static_cast<double>(d)/2.0) *  std::log(2.0 * M_PI);
+
+    for (int i = 0; i < n; i ++) {
+      arma::vec z = rooti * arma::trans( x.row(i) - mean) ;
+      logretval(i)      = constants - 0.5 * arma::sum(z%z) + rootisum;
+    }
+    if (logv == false) {
+      logretval = exp(logretval);
+    }
+    return(logretval);
+  }
+
 // DISTRIBUTIONS OF EXTREMAL FUNCTION
 
 //' Generate from logistic \eqn{Y \sim {P_x}}, where
@@ -246,16 +277,9 @@ NumericVector rPbilog(int d, int index, NumericVector alpha){
   return sample;
 }
 
-//' Generate from extremal Student-t \eqn{Y \sim {P_x}}, where
-//' \eqn{P_{x}} is probability of extremal function
-//'
-//' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-//' @param Sigma a positive semi-definite correlation matrix
-//' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
-//'
-//' @return a \code{d}-vector from \eqn{P_x}
-// [[Rcpp::export(.rPexstud)]]
-NumericVector rPexstud (int index, arma::mat sigma, NumericVector al){
+
+// [[Rcpp::export(.rPexstud_old)]]
+NumericVector rPexstud_old (int index, arma::mat sigma, NumericVector al){
   if(al[0]<0 || index<0 || (unsigned) index >= sigma.n_cols) Rcpp::stop("Invalid argument in rPexstud");
   arma::vec zeromean = arma::vec(sigma.n_cols-1);// b/c need constructor, then setter
   zeromean.zeros(); // set elements of vector to zero
@@ -271,12 +295,45 @@ NumericVector rPexstud (int index, arma::mat sigma, NumericVector al){
   double nu = Rcpp::rchisq(1,al[0])[0];
   arma::vec studsamp = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.col(index);
   //Note: this is the shifted Student as gamma mixture,
-  // i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
+  //i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
   NumericVector samp = Rcpp::as<Rcpp::NumericVector>(wrap(studsamp));
-  samp = pow(pmax(samp,0),al[0]);
+  samp = pow(pmax(samp,0), al[0]);
   samp[index] = 1.0; //Sometimes off due to rounding
   return samp;
 }
+
+
+//' Generate from extremal Student-t \eqn{Y \sim {P_x}}, where
+//' \eqn{P_{x}} is probability of extremal function
+//'
+//' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
+//' @param Sigma a positive semi-definite correlation matrix
+//' @param cholesky Cholesky root of transformed correlation matrix
+//' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
+//'
+//' @return a \code{d}-vector from \eqn{P_x}
+// [[Rcpp::export(.rPexstud)]]
+NumericVector rPexstud (int index, arma::mat cholesky, arma::mat sigma, NumericVector al){
+  if(al[0]<0 || index<0 || (unsigned) index >= sigma.n_cols) Rcpp::stop("Invalid argument in rPexstud");
+  arma::vec zeromean = arma::vec(sigma.n_cols-1);// b/c need constructor, then setter
+  zeromean.zeros(); // set elements of vector to zero
+  //Sample from d-1 dimensional normal
+  arma::vec normalsamp = mvrnorm_chol_arma(1, zeromean, cholesky).row(0).t();
+  //Add the missing zero entry back
+  arma::vec indexentry = arma::vec(1);
+  indexentry.zeros();
+  normalsamp.insert_rows(index, indexentry);
+  double nu = Rcpp::rchisq(1,al[0])[0];
+  arma::vec studsamp = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.col(index);
+  //Note: this is the shifted Student as gamma mixture,
+  //i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
+  NumericVector samp = Rcpp::as<Rcpp::NumericVector>(wrap(studsamp));
+  samp = pow(pmax(samp,0), al[0]);
+  samp[index] = 1.0; //Sometimes off due to rounding
+  return samp;
+}
+
+
 
 //' Generate from extremal Husler-Reiss distribution \eqn{Y \sim {P_x}}, where
 //' \eqn{P_{x}} is probability of extremal function
@@ -286,7 +343,26 @@ NumericVector rPexstud (int index, arma::mat sigma, NumericVector al){
 //'
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPHuslerReiss)]]
-NumericVector rPHuslerReiss (int index, arma::mat Lambda){
+NumericVector rPHuslerReiss (int index, arma::mat cholesky, arma::mat Lambda){
+  if(index < 0 || index >= Lambda.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
+  arma::vec mu = arma::vec(Lambda.n_cols);// b/c need constructor, then setter
+  mu = -2.0*Lambda.col(index);
+  mu.shed_row(index);
+  //Sample from d-1 dimensional normal
+  arma::vec normalsamp = mvrnorm_chol_arma(1, mu, cholesky).row(0).t();
+  //Add the missing zero entry back
+  arma::vec indexentry = arma::vec(1);
+  indexentry.zeros();
+  normalsamp.insert_rows(index, indexentry);
+  mu.insert_rows(index, indexentry);
+  NumericVector samp = Rcpp::as<Rcpp::NumericVector>(wrap(exp(normalsamp)));
+  samp[index] = 1.0; //Sometimes off due to rounding
+  return samp;
+}
+
+
+//[[Rcpp::export(.rPHuslerReiss_old)]]
+NumericVector rPHuslerReiss_old (int index, arma::mat Lambda){
   if(index < 0 || index >= Lambda.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
 
   arma::vec mu = arma::vec(Lambda.n_cols);// b/c need constructor, then setter
@@ -306,36 +382,31 @@ NumericVector rPHuslerReiss (int index, arma::mat Lambda){
   NumericVector samp = Rcpp::as<Rcpp::NumericVector>(wrap(exp(normalsamp)));
   samp[index] = 1.0; //Sometimes off due to rounding
   return samp;
-
-
-  // NumericVector mu(Lambda.ncol()-1);
-  // NumericMatrix GammaM(Lambda.nrow()-1, Lambda.ncol()-1);
-  // for(int k=0; k<Lambda.ncol(); k++){
-  //   if(k==index){break;}
-  //   mu[k] = 2*Lambda(k+(k>index), index);
-  //   for(int i=0; i<k(); i++){
-  //     if(i==index){break;}
-  //     GammaM(i,k) = 2.0*(Lambda(i+(i>index), index) + Lambda(k+(k>index), index) + (i!=k)*Lambda(i, k));
-  //     GammaM(k,i) = GammaM(i,k);
-  //   }
-  // }
-  // NumericMatrix mvnormsamp = mvrnorm(1, mu, GammaM);
-  // NumericVector samp(Lambda.ncol());
-  // for(int j=0; j < Lambda.ncol(); j++){
-  //   samp[j] = exp(mvnormsamp(0,j)-mu(j));
-  // }
-  // return samp;
 }
+
 
 //' Generate from Brown-Resnick process \eqn{Y \sim {P_x}}, where
 //' \eqn{P_{x}} is probability of extremal function
 //'
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-//' @param Sigma a positive semi-definite covariance matrix
+//' @param Sigma a positive definite covariance matrix
 //'
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPBrownResnick)]]
-NumericVector rPBrownResnick (int index, NumericMatrix Sigma){
+NumericVector rPBrownResnick (int index, arma::mat Sigma_chol, NumericMatrix Sigma){
+  if(index<0 || index >= Sigma.ncol()) Rcpp::stop("Invalid argument in rPBrownResnick");
+  NumericVector mu(Sigma.ncol());
+  NumericMatrix mvnormsamp = mvrnorm_chol(1, mu, Sigma_chol);
+  NumericVector samp(Sigma.ncol());
+  for(int i=0; i < Sigma.ncol(); i++){
+    samp[i] = exp(mvnormsamp(0,i)-mvnormsamp(0,index)-0.5*(Sigma(i,i)+
+      Sigma(index,index)-2*Sigma(i,index)));
+  }
+  return samp;
+}
+
+//[[Rcpp::export(.rPBrownResnick_old)]]
+NumericVector rPBrownResnick_old (int index, NumericMatrix Sigma){
   if(index<0 || index >= Sigma.ncol()) Rcpp::stop("Invalid argument in rPBrownResnick");
   NumericVector mu(Sigma.ncol());
   NumericMatrix mvnormsamp = mvrnorm(1, mu, Sigma);
@@ -347,8 +418,6 @@ NumericVector rPBrownResnick (int index, NumericMatrix Sigma){
   return samp;
 }
 
-
-
 //' Generate from Smith model (moving maxima) \eqn{Y \sim {P_x}}, where
 //' \eqn{P_{x}} is probability of extremal function
 //'
@@ -357,8 +426,8 @@ NumericVector rPBrownResnick (int index, NumericMatrix Sigma){
 //' @param loc location matrix
 //'
 //' @return a \code{d}-vector from \eqn{P_x}
-//[[Rcpp::export(.rPSmith)]]
-NumericVector rPSmith (int index, arma::mat Sigma, arma::mat loc){
+//[[Rcpp::export(.rPSmith_old)]]
+NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
   int d = loc.n_rows;
   if(index < 0 || index >= d) Rcpp::stop("Invalid index in rPSmith");
   arma::vec mu = arma::vec(Sigma.n_cols);
@@ -375,6 +444,35 @@ NumericVector rPSmith (int index, arma::mat Sigma, arma::mat loc){
   }
   return samp/constant[0];
 }
+
+
+//' Generate from Smith model (moving maxima) \eqn{Y \sim {P_x}}, where
+//' \eqn{P_{x}} is probability of extremal function
+//'
+//' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
+//' @param Sigma_chol the Cholesky root of the covariance matrix
+//' @param loc location matrix
+//'
+//' @return a \code{d}-vector from \eqn{P_x}
+//[[Rcpp::export(.rPSmith)]]
+NumericVector rPSmith (int index, arma::mat Sigma_chol, arma::mat loc){
+  int d = loc.n_rows;
+  if(index < 0 || index >= d) Rcpp::stop("Invalid index in rPSmith");
+  arma::vec mu = arma::vec(Sigma_chol.n_cols);
+  //arma::rowvec mut = arma::rowvec(d);
+  mu.zeros(); //mut.zeros();
+  arma::mat mvnormsamp = mvrnorm_chol_arma(1, mu, Sigma_chol);
+  NumericVector samp(d);
+  NumericVector constant(1);
+  constant[0] = dmvnorm_chol_arma(mvnormsamp, mu.t(), Sigma_chol)(0);
+  arma::mat dist(1, Sigma_chol.n_cols);
+  for(int i = 0; i < d; i++){
+    dist.row(0) = mvnormsamp.row(0) + loc.row(i) - loc.row(index);
+    samp[i] = dmvnorm_chol_arma(dist, mu.t(), Sigma_chol)(0);
+  }
+  return samp/constant[0];
+}
+
 
 //' Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
 //' \eqn{P_{x}} is probability of extremal functions from the Dirichlet model of
@@ -839,7 +937,7 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
 	} else if(model == 8){
 	  d = loc.n_rows;
 	  //Model 10: Scaled negative extremal Dirichlet model
-	} else if(model == 10){ 
+	} else if(model == 10){
 	  irv = true;
 	  if(param.size() != d+1){
 	    Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model");
@@ -849,8 +947,6 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
 	  }
 	  param[d] = -param[d];
 	}
-
-
   NumericMatrix samp = NumericMatrix(n, d); //Initialized to zero
   NumericVector zeta_I(1);
   NumericVector Y(d);
@@ -915,6 +1011,7 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
 NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
   // Transform parameters to different format
   arma::mat sigma(Sigma.begin(), Sigma.nrow(), Sigma.ncol(), false);
+  arma::mat cholesky = arma::mat(Sigma.nrow(), Sigma.ncol()); //unitialized memory
   bool irv = false;
   NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
   //Sanity checks
@@ -925,6 +1022,8 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
     arma::mat stdevmat = inv(diagmat(stdev));
     sigma = stdevmat * sigma * stdevmat;
     //Model 7: Coles and Tawn (Dirichlet extremal distribution)
+  } else if(model == 6){
+    cholesky = arma::chol(sigma);
   } else if(model == 7){
     if(param.size() == d+1){
     //if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
@@ -933,8 +1032,9 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
     //Model 8: Smith model (moving maxima with multivariate Gaussian)
   } else if(model == 8){
     d = loc.n_rows;
+    cholesky = arma::chol(sigma);
     //Model 10: scaled negative extremal Dirichlet model
-  } else if(model == 10){ 
+  } else if(model == 10){
     irv = true;
     if(param.size() != d+1){
       Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model");
@@ -951,7 +1051,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
   NumericVector zeta_I(1);
   NumericVector Y(d);
   for(int i = 0; i < n; i ++){
-  	if(i%100==0){
+  	if(i%10==0){
   		Rcpp::checkUserInterrupt();
   	}
     //For each sample of the max-stable distribution
@@ -965,15 +1065,24 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
     } else if(model == 4){
       Y = rPbilog(d, 0, param);
     } else if(model == 5){
-      Y = rPexstud(0, sigma, param);
+      arma::mat Covar = (sigma - sigma.col(0) * sigma.row(0))/(param[0]+1.0);
+      //Covar matrix is not positive definite; shed it
+      Covar.shed_row(0); Covar.shed_col(0);
+      cholesky = arma::chol(Covar);
+      Y = rPexstud(0, cholesky, sigma, param);
     } else if(model == 6){
-      Y = rPBrownResnick(0, Sigma);
+      Y = rPBrownResnick(0, cholesky, Sigma);
     } else if(model == 7 || model == 10){
       Y = rPdir(d, 0, param, irv);
     } else if(model == 8){
-      Y = rPSmith(0, sigma, loc);
+       Y = rPSmith(0, cholesky, loc);
     } else if(model == 9){
-      Y = rPHuslerReiss(0, sigma);
+      arma::mat Covar = 2.0*(repmat(sigma.col(0),1,sigma.n_rows) +
+        repmat(sigma.row(0),sigma.n_cols,1) - sigma);
+      //Covar matrix is not positive definite; shed it
+      Covar.shed_row(0); Covar.shed_col(0);
+      cholesky = arma::chol(Covar);
+      Y = rPHuslerReiss(0, cholesky, sigma);
     } else{
       Rcpp::stop("Sampler not yet implemented with extremal functions");
     }
@@ -982,6 +1091,16 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
     for(int j = 1; j < d; j++){//(3) per coordinate
       zeta_I[0] = rexp(1, 1.0)[0]; //(4) Poisson process generation
       //Rcpp::Rcout << "Extremal path until " << j << "has been generated" << std::endl;
+      if(model == 5){
+        arma::mat Covar = (sigma - sigma.col(j) * sigma.row(j))/(param[0]+1.0);
+        Covar.shed_row(j); Covar.shed_col(j);
+        cholesky = arma::chol(Covar);
+      } else if(model == 9){
+        arma::mat Covar = 2.0*(repmat(sigma.col(j),1,sigma.n_rows) +
+          repmat(sigma.row(j),sigma.n_cols,1) - sigma);
+        Covar.shed_row(j); Covar.shed_col(j);
+        cholesky = arma::chol(Covar);
+      }
       while(1.0/zeta_I[0] > samp( i, j )){ //(5) Check stopping rule
         //(6)  Simulate from Pxn
         if(model == 1){
@@ -993,15 +1112,15 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
         } else if(model == 4){
           Y = rPbilog(d, j, param);
         } else if(model == 5){
-          Y = rPexstud(j, sigma, param);
+          Y = rPexstud(j, cholesky, sigma, param);
         } else if(model == 6){
-          Y = rPBrownResnick(j, Sigma);
+          Y = rPBrownResnick(j, cholesky, Sigma);
         } else if(model == 7 || model == 10){
           Y = rPdir(d, j, param, irv);
         }  else if(model == 8){
-          Y = rPSmith(j, sigma, loc);
+          Y = rPSmith(j, cholesky, loc);
         } else if(model == 9){
-          Y = rPHuslerReiss(j, sigma);
+          Y = rPHuslerReiss(j, cholesky, sigma);
         }
         bool res = true;
         for(int k = 0; k < j; k++){ //(7) Check previous extremal functions
@@ -1022,7 +1141,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
 }
 
 
-//' Random number generator from spectral distribution
+//' Random sampling from spectral distribution on l1 sphere
 //'
 //' Generate from \eqn{Q_i}{Qi}, the spectral measure of a given multivariate extreme value model
 //'
@@ -1031,7 +1150,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
 //' @param param a vector of parameters
 //' @param model integer, currently ranging from 1 to 7, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct}, 
+//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct},
 //' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
 //' @param Sigma covariance matrix for Brown-Resnick and extremal student, symmetric matrix
 //' of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility
@@ -1064,7 +1183,7 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
     //Model 8: Smith model (moving maxima with multivariate Gaussian)
   } else if(model == 8){
     d = loc.n_rows;
-  } else if(model == 10){ 
+  } else if(model == 10){
     irv = true;
     if(param.size() != d+1){
       Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model.");
@@ -1104,7 +1223,7 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
 
 
 
-//' Random number generator from asymetric logistic distribution
+//' Random samples from asymetric logistic distribution
 //'
 //' Simulation algorithm of Stephenson (2003), using exact-samples from the logistic
 //'
