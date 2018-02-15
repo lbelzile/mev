@@ -32,7 +32,7 @@
 #' @param alg algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.
 #' @param model for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
 #' the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.
-#' @param vario function specifying the variogram. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing
+#' @param vario variogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing
 #' @param loc \code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.
 #' @param weights vector of length \code{m} for the \code{m} mixture components. Must sum to one
 #' @param grid Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).
@@ -46,21 +46,27 @@
 #'  \item \code{aneglog}: \eqn{2^d-d-1} dimensional parameter for \code{dep}. Values are recycled if needed.
 #'  \item \code{bilog}: \code{d}-dimensional vector of parameters in \eqn{[0,1]}
 #'  \item \code{negbilog}: \code{d}-dimensional vector of negative parameters
-#'  \item \code{ct, dir, negdir}: \code{d}-dimensional vector of positive (a)symmetry parameters. For \code{dir} and \code{negdir}, a \eqn{d+1}
-#'  vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as shape parameter
+#'  \item \code{ct, dir, negdir, sdir}: \code{d}-dimensional vector of positive (a)symmetry parameters. For \code{dir} and \code{negdir}, a \eqn{d+1}
+#'  vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(-\min(\alpha_1, \ldots, \alpha_d), 1]} treated as shape parameter
 #'  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
 #'  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
 #' }
 #'
 #' Stephenson points out that the multivariate asymmetric negative logistic model given in e.g. Coles and Tawn (1991) is not a valid distribution function in dimension d>3.
-#' The implementation in \code{mev} uses the same construction as the asymmetric logistic distribution (see the vignette),
-#' and as such it does not match the bivariate implementation of \link[evd]{rbvevd}.
+#' The implementation in \code{mev} uses the same construction as the asymmetric logistic distribution (see the vignette). As such it does not match the bivariate implementation of \link[evd]{rbvevd}.
 #'
 #' The dependence parameter of the \code{evd} package for the Husler-Reiss distribution can be recovered taking
 #' for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the lag vector between sites and \eqn{r=1/\lambda} for the Husler--Reiss.
 #'
 #' @section Warning:
 #'As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
+#'
+#'The former implementation of \code{mev} assumed that the Brown-Resnick process was stationary (NOT intrinsically stationary).
+#'To obtain this, one must provide a covariance matrix \code{sigma}. Passing a variogram (which must now be parameterized by distance and not location)
+#'will give the intrinsically stationary Brown-Resnick process.
+#'
+#'The family of scaled Dirichlet is now parametrized by a parameter in \eqn{-\min(\alpha)} appended to the the \code{d} vector \code{param} containing the parameter \code{alpha}
+#'of the Dirichlet model. Arguments \code{model="dir"} and \code{model="negdir"} are still supported internally, but not listed in the options.
 #'
 #' @return an \code{n} by \code{d} exact sample from the corresponding multivariate extreme value model
 #'
@@ -72,13 +78,19 @@
 #'set.seed(1)
 #'rmev(n=100, d=3, param=2.5, model="log", alg="ef")
 #'rmev(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog", alg="sm")
-#'## Spatial example using variogram, from Clement Dombry
-#'#Variogram gamma(h) = scale*||h||^alpha
-#'scale <- 0.5; alpha <- 1
-#'vario <- function(x) scale*sqrt(sum(x^2))^alpha
+#'## Spatial example using power variogram
+#'#NEW: Variogram must take distance as argument
+#'vario <- function(x, scale, alpha){ scale*x^alpha }
 #'#grid specification
 #'grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#'rmev(n=100, vario=vario,loc=grid.loc, model="br")
+#'rmev(n=100, vario=vario,loc=grid.loc, model="br", scale = 0.5, alpha = 1)
+#'vario2cov <- function(loc, ...){
+#'  sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
+#'   vario(sqrt(sum((loc[i,])^2)), ...) +
+#'   vario(sqrt(sum((loc[j,])^2)), ...) -
+#'   vario(sqrt(sum((loc[i,]-loc[j,])^2)), ...)))
+#' }
+#'rmev(n=100, sigma=vario2cov(grid.loc, scale = 0.5, alpha = 1), model="br")
 #'#Example with a grid (generating an array)
 #'rmev(n=10, sigma=cbind(c(2,1),c(1,3)), loc=cbind(runif(4),runif(4)),model="smith", grid=TRUE)
 #'## Example with Dirichlet mixture
@@ -86,10 +98,11 @@
 #'rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 rmev <-function(n, d, param, asy, sigma,
                 model= c("log","alog","neglog","aneglog","bilog","negbilog","hr","br",
-                         "xstud","smith","schlather","ct","dir","negdir","dirmix"),
+                         "xstud","smith","schlather","ct","sdir","dirmix"),
                 alg=c("ef","sm"), weights, vario, loc, grid=FALSE, ...){
   #Create gridded values if specification is for random field discretization
   if(!missing(loc)){
+    loc <- as.matrix(loc)
     if(ncol(loc)==1) grid=FALSE
     if(grid==TRUE){
       if(all(sapply(1:ncol(loc), function(i){length(unique(loc[,i]))==nrow(loc)}))){
@@ -99,8 +112,10 @@ rmev <-function(n, d, param, asy, sigma,
       }
     }
   }
+  models <- c("log","alog","neglog","aneglog","bilog","negbilog","hr","br",
+              "xstud","smith","schlather","ct","sdir","dirmix","negdir","dir")
   alg <- match.arg(alg)
-  model <- match.arg(model)
+  model <- match.arg(model, models)[1]
   if(!model %in% c("alog","aneglog")){
     if(!missing(asy)){
       warning("Asymmetry parameter ignored")
@@ -117,7 +132,7 @@ rmev <-function(n, d, param, asy, sigma,
   m1 <- c("log","neglog")
   m2 <- c("bilog","negbilog")
   m3 <- c("br","xstud","smith")
-  m4 <- c("ct","dir","negdir")
+  m4 <- c("ct","dir","negdir","sdir")
   #Check that parameters are provided
   if(model %in% c(m1,m2, m4) && (!missing(param) && mode(param) != "numeric")){
     stop("Invalid parameter")
@@ -158,50 +173,82 @@ rmev <-function(n, d, param, asy, sigma,
       if(any(param>1.0)) stop("Invalid param vector for bilogistic or negative bilogistic")
       if(any(param<0) && model=="bilog") warning("Negative parameter values in bilogistic");
       if(any(param>0) && model=="negbilog") warning("Positive parameter values in negative bilogistic");
+    #Scaled dirichlet family
     } else if(model %in% m4){
       sigma = cbind(0)
       if(missing(param)){
         stop("Invalid parameter value")
       }
-      if(model=="ct"){
+      if(model == "ct"){
         if(length(param)!=d){
           if(length(param)==(d+1)){
-            warning("Use `dir' model for the scaled extremal Dirichlet model.");
+            warning("Use `sdir' model for the scaled extremal Dirichlet model.");
+            model = "sdir"
           } else{
            stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
           }
         }
-      } else{
+        if(isTRUE(any(param<0))){
+          stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
+          }
+      }
+      if(model != "ct"){
         if(length(param)!=(d+1)){
-          warning("Use `dir' model for the scaled extremal Dirichlet");
+          stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
+        }
+        if(model == "negdir" && param[d+1] > 0){
+          param[d+1] <- -param[d+1]
+        }
+         if(param[d+1] < 0 && param[d+1] > -min(param[-(d+1)])){
+          stop("Invalid parameters for the scaled Dirichlet. rho must be greater than min(alpha)")
+         }
+        if(isTRUE(any(param[-(d+1)]<0))){
+          stop("Invalid arguments for the scaled Dirichlet model - alpha must be positive.")
+          }
+        }
+      model = "sdir"
+    } else if(model %in% m3){ #Smith, Brown-Resnick, extremal student
+    if(missing(sigma) && !missing(vario) && !missing(loc)){
+      if(!is.matrix(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
+      stopifnot(is.function(vario))
+      if(model == "br"){
+        model = "isbr"
+        if(vario(0, ...) > 1e-15){
+          stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
+        }
+        vario2mat <- function(loc, ...){
+          di <- as.matrix(dist(loc)) #fields::rdist(loc) is faster...
+          covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
+          covmat[lower.tri(covmat)] <- vario(di[lower.tri(di)], ...)
+          covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
+          return(covmat)
+        }
+        sigma <- vario2mat(loc, ...)
         }
       }
-    } else if(model %in% m3){
-    if(missing(sigma) && !missing(vario) && !missing(loc)){
-      if(!is.matrix(loc)) loc <- matrix(loc, ncol=1)
-      stopifnot(is.function(vario))
-      sigma <- sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
-        vario(loc[i,], ...) + vario(loc[j,], ...) - vario(loc[i,]-loc[j,], ...)))
-    }
-		if(model=="xstud"){
+  	if(model=="xstud"){
 			sigma <- cov2cor(sigma)
 		}
-    if(missing(sigma) || ncol(sigma)!=nrow(sigma)) stop("Invalid covariance matrix")
-    if(any(diag(sigma)<=0)) stop("Degenerate covariance matrix; negative or zero entries found")
+    if(model != "isbr"){
+      if(missing(sigma) || ncol(sigma)!=nrow(sigma)) stop("Invalid covariance matrix")
+      if(any(diag(sigma)<=0)) stop("Degenerate covariance matrix; negative or zero entries found")
+    }
     if(model=="xstud" && any(diag(sigma)!=1)) warning("Extremal student requires correlation matrix")
-    if(model=="xstud" && (missing(param) || length(param)!=1)) stop("Degrees of freedom argument missing or invalid")
+    if(model=="xstud" && (missing(param) || length(param)!=1)){
+      stop("Degrees of freedom argument missing or invalid")
+    }
     if(model=="smith" && missing(loc)) stop("Location should be provided for the Smith model")
     if(model=="smith" && ncol(as.matrix(loc))!=ncol(sigma)){
-      stop("Covariance matrix of the Smith model should be of the same dimension as dimension of location vector")
+      stop("Covariance matrix of the Smith model should be
+           of the same dimension as dimension of location vector")
     }
     d <- switch(model,
                 xstud = ncol(sigma),
                 br    = ncol(sigma),
-                smith = nrow(loc)
+                smith = nrow(loc),
+                isbr = ncol(sigma)
     )
-    if(model=="br"){
-      param = 0
-    } else if(model=="smith"){
+    if(model %in% c("smith", "br", "isbr")){
       param <- 0
     }
   } else if(model %in% c("alog","aneglog")){
@@ -224,13 +271,13 @@ rmev <-function(n, d, param, asy, sigma,
     if(d==2){
       param <- c(sigma[1,1]!=0, sigma[2,2]!=0, param) # not a matrix for d=2
     } else{
-    zero_line <- which(rowSums(sigma[-(1:d),])==0)+d #Possibly empty,
-    param <- c(!1:d %in% zero_line, param) #set dummies for point masses on edges
-    if(length(zero_line)>0){
-      sigma <- sigma[-zero_line,]
-      asym <- asym[-zero_line,]
-      param <- param[-zero_line]
-    }
+      zero_line <- which(rowSums(sigma[-(1:d),])==0)+d #Possibly empty,
+      param <- c(!1:d %in% zero_line, param) #set dummies for point masses on edges
+      if(length(zero_line)>0){
+        sigma <- sigma[-zero_line,]
+        asym <- asym[-zero_line,]
+        param <- param[-zero_line]
+      }
     }
     stopifnot(isTRUE(all.equal(nrow(sigma), nrow(asym),length(param))),
               isTRUE(all.equal(colSums(sigma), rep(1, ncol(sigma)))))
@@ -260,6 +307,8 @@ rmev <-function(n, d, param, asy, sigma,
     sigma <- param
     param <- weights
     } else if(model=="hr"){
+      d <- nrow(sigma)
+      param <- 0
       if(any(c(sigma<0,diag(sigma)!=rep(0,ncol(sigma)), ncol(sigma)!=nrow(sigma), ncol(sigma)!=d))){
         stop("Invalid parameter matrix for the Husler-Reiss model.
            Note: for Brown-Resnick model, please use model=`br' instead.");
@@ -267,14 +316,13 @@ rmev <-function(n, d, param, asy, sigma,
       if(!.is.CNSD(sigma)){
        stop("Parameter matrix for the Husler-Reiss model is not conditionally negative definite")
       }
-     param <- 0
     }
   mod <- switch(model, log=1, neglog=2, dirmix=3, bilog=4, negbilog=4, xstud=5, br=6,
-                  ct=7, dir=7, smith=8, hr=9, negdir=10)
+                  sdir=7, smith=8, hr=9, isbr=9)
   if(model %in% c("alog","aneglog")){
     .rmevasy(n=n, d=d, para=param, asym=asym, ncompo=ncompo, Sigma=sigma, model=mod)
   } else{
-    if(model != "smith"){
+    if(model !=  "smith"){
       locat <- cbind(0)
     } else{
       locat <- loc
@@ -339,8 +387,8 @@ rmev <-function(n, d, param, asy, sigma,
 #' rmevspec(n=100, d=2, param=c(0.8,1.2), model="ct") #Dirichlet model
 #' rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="dir") #with additional scale parameter
 #'#Variogram gamma(h) = scale*||h||^alpha
-#' scale <- 0.5; alpha <- 1
-#' vario <- function(x) scale*sqrt(sum(x^2))^alpha
+#'#NEW: Variogram must take distance as argument
+#'vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
 #' #grid specification
 #' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
 #' rmevspec(n=100, vario=vario,loc=grid.loc, model="br")
@@ -349,26 +397,22 @@ rmev <-function(n, d, param, asy, sigma,
 #' rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
 #' @export
 rmevspec <-function(n, d, param, sigma,
-                    model= c("log","alog","neglog","aneglog","bilog","negbilog","hr","br",
-                             "xstud","smith","schlather","ct","dir","negdir","dirmix"),
+                    model= c("log","neglog","bilog","negbilog","hr","br",
+                             "xstud","smith","schlather","ct","sdir", "dirmix"),
                     weights, vario, loc,...){
-  # if(!missing(loc)){
-  #   if(ncol(loc)==1) grid=FALSE
-  #   if(grid==TRUE){
-  #     if(all(sapply(1:ncol(loc), function(i){length(unique(loc[,i]))==nrow(loc)}))){
-  #       loc <- matrix(unlist(expand.grid(apply(loc, 2, as.list))),ncol=ncol(loc))
-  #     } else{
-  #       stop("Duplicate values in `loc' using `grid=TRUE' not allowed");
-  #     }
-  #   }
-  # }
-  alg <- match.arg(alg)
-  model <- match.arg(model)
-  if(!model %in% c("alog","aneglog")){
-    if(!missing(asy)){
-      warning("Asymmetry parameter ignored")
-    } else{
-      asym <- matrix(TRUE, ncol=1,nrow=1)
+  models <- c("log","neglog","bilog","negbilog","hr","br",
+              "xstud","smith","schlather","ct","sdir","dirmix","negdir","dir")
+  model <- match.arg(model, models)[1]
+  #Create gridded values if specification is for random field discretization
+  if(!missing(loc)){
+    loc <- as.matrix(loc)
+    if(ncol(loc)==1) grid=FALSE
+    if(grid==TRUE){
+      if(all(sapply(1:ncol(loc), function(i){length(unique(loc[,i]))==nrow(loc)}))){
+        loc <- matrix(unlist(expand.grid(apply(loc, 2, as.list))),ncol=ncol(loc))
+      } else{
+        stop("Duplicate values in `loc' using `grid=TRUE' not allowed");
+      }
     }
   }
   if(model == "schlather"){
@@ -380,7 +424,7 @@ rmevspec <-function(n, d, param, sigma,
   m1 <- c("log","neglog")
   m2 <- c("bilog","negbilog")
   m3 <- c("br","xstud","smith")
-  m4 <- c("ct","dir","negdir")
+  m4 <- c("ct","dir","negdir","sdir")
 
   #Sanity checks
   if(model %in% c(m1,m2, m4) && (!missing(param) && mode(param) != "numeric")){
@@ -413,42 +457,80 @@ rmevspec <-function(n, d, param, sigma,
       if(any(param<0) && model=="bilog") warning("Negative parameter values in bilogistic");
       if(any(param>0) && model=="negbilog") warning("Positive parameter values in negative bilogistic");
   } else if(model %in% m4){
-    sigma = cbind(0)
+      sigma = cbind(0)
       if(missing(param)){
         stop("Invalid parameter value")
       }
-      if(model=="ct"){
+      if(model == "ct"){
         if(length(param)!=d){
           if(length(param)==(d+1)){
-            warning("Use `dir' model for the scaled extremal Dirichlet");
+            warning("Use `sdir' model for the scaled extremal Dirichlet model.");
+            model = "sdir"
           } else{
-            stop("Invalid arguments for the Coles and Tawn extremal Dirichlet model")
+            stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
           }
         }
-      } else{ #model 'dir' or 'idir'
+        if(isTRUE(any(param<0))){ stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")}
+      }
+      if(model != "ct"){
         if(length(param)!=(d+1)){
-          warning("Use `dir' model for the scaled extremal Dirichlet");
+          stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
         }
+        if(model == "negdir" && param[d+1] > 0){
+          param[d+1] <- -param[d+1]
+        }
+        if(param[d+1] > -min(param[-(d+1)])){
+          stop("Invalid parameters for the scaled Dirichlet. rho must be greater than -min(alpha)")
+        }
+        if(isTRUE(any(param[-(d+1)]<0))){
+          stop("Invalid arguments for the scaled Dirichlet model - alpha must be positive.")
+          }
       }
-    } else if(model %in% m3){
-      if(missing(sigma) && !missing(vario) && !missing(loc)){
-        if(!is.matrix(loc)) loc <- matrix(loc, ncol=1)
-        stopifnot(is.function(vario))
-        sigma <- sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
-          vario(loc[i,],...) + vario(loc[j,],...) - vario(loc[i,]-loc[j,],...)))
+      model = "sdir"
+  }  else if(model %in% m3){ #Smith, Brown-Resnick, extremal student
+    if(missing(sigma) && !missing(vario) && !missing(loc)){
+      if(!is.matrix(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
+      stopifnot(is.function(vario))
+      if(model == "br"){
+        model = "isbr"
+        if(vario(0, ...) > 1e-15){
+          stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
+        }
+        vario2mat <- function(loc, ...){
+          di <- as.matrix(dist(loc)) #fields::rdist(loc) is faster...
+          covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
+          covmat[lower.tri(covmat)] <- vario(di[lower.tri(di)], ...)
+          covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
+          return(covmat)
+        }
+        sigma <- vario2mat(loc, ...)
       }
-    	if(model=="xstud"){
-  			sigma <- cov2cor(sigma)
-  			if(any(diag(sigma)!=1)){warning("Extremal student requires correlation matrix") }
-  			if(missing(param) || length(param)!=1){stop("Degrees of freedom argument missing or invalid")}
-  		}
-      d <- ncol(sigma)
+    }
+    if(model=="xstud"){
+      sigma <- cov2cor(sigma)
+    }
+    if(model != "isbr"){
       if(missing(sigma) || ncol(sigma)!=nrow(sigma)) stop("Invalid covariance matrix")
       if(any(diag(sigma)<=0)) stop("Degenerate covariance matrix; negative or zero entries found")
-      if(model=="br"){
-        param = 0
-      }
-    } else if(model=="dirmix"){
+    }
+    if(model=="xstud" && (missing(param) || length(param)!=1)){
+      stop("Degrees of freedom argument missing or invalid")
+    }
+    if(model=="smith" && missing(loc)) stop("Location should be provided for the Smith model")
+    if(model=="smith" && ncol(as.matrix(loc))!=ncol(sigma)){
+      stop("Covariance matrix of the Smith model should be
+           of the same dimension as dimension of location vector")
+    }
+    d <- switch(model,
+                xstud = ncol(sigma),
+                br    = ncol(sigma),
+                smith = nrow(loc),
+                isbr = ncol(sigma)
+    )
+    if(model %in% c("smith", "br", "isbr")){
+      param <- 0
+    }
+  } else if(model=="dirmix"){
     if(any(missing(param),
            length(weights)!=ncol(param) && ncol(param)!=1,
            any(param<0))){
@@ -474,13 +556,14 @@ rmevspec <-function(n, d, param, sigma,
     param <- weights
     } else if(model=="hr"){
      param = 0
+     d <- ncol(sigma)
     }
-  if(!model=="smith"){
+  if(model != "smith"){
     loc <- cbind(0)
   }
   #Model
   mod <- switch(model, log=1, neglog=2, dirmix=3, bilog=4, negbilog=4, xstud=5, br=6,
-                ct=7, dir=7, smith=8, hr=9, negdir=10)
+                sdir=7, smith=8, hr=9, isbr=9)
 
   #Generate from spectral measure
   .rmevspec_cpp(n=n, d=d, para=param, model=mod, Sigma=sigma, loc=loc)
@@ -553,10 +636,195 @@ rmevspec <-function(n, d, param, sigma,
     P <- diag(n)
     if(n>2){
       diag(P[,-1]) <- -1
-    } else if(n==2){#error with one dimensional case...
+    } else if(n==2){ #error with one dimensional case...
       P[1,-1]	<- -1
     }
     Xhat <- P %*% X %*% t(P)
     eigs <- eigen(Xhat[-n, -n], TRUE, TRUE)$values
     !eigs[1] > tol
+}
+
+
+rParetoProcess <- function(n, shape = 1, riskf = c("site","sum","max","min"),
+                           siteindex = NULL, d, param, sigma,
+                           model= c("log","neglog","bilog","negbilog","hr","br",
+                                    "xstud","smith","schlather","ct","sdir","dirmix"),
+                           weights, vario, loc,...){
+  riskf <- match.arg(riskf, c("site","sum","max","min"), several.ok = FALSE)[1]
+  if(is.null(siteindex) && riskf == "site"){
+   stop("For exceedances of site, the user needs to provide an index between 1 and d")
+  }
+  #Body of rmevspec
+  models <- c("log","neglog","bilog","negbilog","hr","br",
+              "xstud","smith","schlather","ct","sdir","dirmix","negdir","dir")
+  model <- match.arg(model, models)[1]
+  if(model == "schlather"){
+    if(!missing(param)) warning("Parameter value (degrees of freedom) set to one for Schlather model")
+    param <- 1;
+    model <- "xstud"
+  }
+  #Define model families
+  m1 <- c("log","neglog")
+  m2 <- c("bilog","negbilog")
+  m3 <- c("br","xstud","smith")
+  m4 <- c("ct","dir","negdir","sdir")
+
+  #Sanity checks
+  if(model %in% c(m1, m2, m4) && (!missing(param) && mode(param) != "numeric")){
+    stop("Invalid parameter")
+  }
+
+  if(model %in% m1){
+    d <- as.integer(d)
+    sigma = cbind(0)
+    if(missing(param) || param < 0 || d < 1){
+      stop("Invalid parameter value")
+    }
+    if(length(param)!=1){
+      warning("Only first entry of param vector considered")
+      param <- param[1]
+    }
+    if(model=="log"){
+      if(param < 1.0){
+        param <- 1.0/param
+      }
+    }
+  } else if(model %in% m2){
+    d <- as.integer(d)
+    sigma = cbind(0)
+    if(missing(param) || length(param)!=d) stop("Invalid parameter value")
+    #Check whether arguments are valid
+    if(model=="bilog" && all(param>=1)){ param <- 1/param}
+    if(model=="negbilog" && all(param>=0)){ param <- -param}
+    if(any(param>1.0)) stop("Invalid param vector for bilogistic or negative bilogistic")
+    if(any(param<0) && model=="bilog") warning("Negative parameter values in bilogistic");
+    if(any(param>0) && model=="negbilog") warning("Positive parameter values in negative bilogistic");
+  } else if(model %in% m4){
+    sigma = cbind(0)
+    if(missing(param)){
+      stop("Invalid parameter value")
+    }
+    if(model == "ct"){
+      if(length(param)!=d){
+        if(length(param)==(d+1)){
+          warning("Use `sdir' model for the scaled extremal Dirichlet model.");
+          model = "sdir"
+        } else{
+          stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
+        }
+      }
+      if(isTRUE(any(param<0))){
+        stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
+        }
+    }
+    if(model != "ct"){
+      if(length(param)!=(d+1)){
+        stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
+      }
+      if(model == "negdir" && param[d+1] > 0){
+        param[d+1] <- -param[d+1]
+      }
+      if(param[d+1]< 0 && param[d+1] > -min(param[-(d+1)])){
+        stop("Invalid parameters for the scaled Dirichlet. rho must be greater than -min(alpha)")
+      }
+      if(isTRUE(any(param[-(d+1)]<0))){
+        stop("Invalid arguments for the scaled Dirichlet model - alpha must be positive.")
+        }
+    }
+    model = "sdir"
+  } else if(model %in% m3){ #Smith, Brown-Resnick, extremal student
+    if(missing(sigma) && !missing(vario) && !missing(loc)){
+      if(!is.matrix(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
+      stopifnot(is.function(vario))
+      if(model == "br"){
+        model = "isbr"
+        if(vario(0, ...) > 1e-15){
+          stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
+        }
+        vario2mat <- function(loc, ...){
+          di <- as.matrix(dist(loc)) #fields::rdist(loc) is faster...
+          covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
+          covmat[lower.tri(covmat)] <- vario(di[lower.tri(di)], ...)
+          covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
+          return(covmat)
+        }
+        sigma <- vario2mat(loc, ...)
+      }
+    }
+    if(model=="xstud"){
+      sigma <- cov2cor(sigma)
+    }
+    if(model != "isbr"){
+      if(missing(sigma) || ncol(sigma)!=nrow(sigma)) stop("Invalid covariance matrix")
+      if(any(diag(sigma)<=0)) stop("Degenerate covariance matrix; negative or zero entries found")
+    }
+    if(model=="xstud" && any(diag(sigma)!=1)) warning("Extremal student requires correlation matrix")
+    if(model=="xstud" && (missing(param) || length(param)!=1)){
+      stop("Degrees of freedom argument missing or invalid")
+    }
+    if(model=="smith" && missing(loc)) stop("Location should be provided for the Smith model")
+    if(model=="smith" && ncol(as.matrix(loc))!=ncol(sigma)){
+      stop("Covariance matrix of the Smith model should be
+           of the same dimension as dimension of location vector")
+    }
+    d <- switch(model,
+                xstud = ncol(sigma),
+                br    = ncol(sigma),
+                smith = nrow(loc),
+                isbr = ncol(sigma)
+    )
+    if(model %in% c("smith", "br", "isbr")){
+      param <- 0
+    }
+  } else if(model=="dirmix"){
+    if(any(missing(param),
+           length(weights)!=ncol(param) && ncol(param)!=1,
+           any(param<0))){
+      stop("Invalid arguments for the Dirichlet mixture")
+    }
+    if(!missing(weights)){
+      if(any(weights<0))stop("Negative weights provided")
+      if(sum(weights)!=1) warning("weights do not sum to one")
+      weights <- weights/sum(weights)
+    }
+    if(missing(d)){ d <- nrow(param)
+    } else if(d != nrow(param)){
+      stop("Dimension of d and provided param do not match")
+    }
+    #Checking for the mean constraints
+    mar_mean <- colSums(t(param)/ colSums(param)*weights)
+    if(! isTRUE(all.equal(mar_mean, rep(1/d,d),
+                          tolerance = .Machine$double.eps ^ 0.5))){
+      stop("Invalid mixture components")
+    }
+    #Switching parameters around to pass them to Rcpp function
+    sigma <- param
+    param <- weights
+  } else if(model=="hr"){
+    param = 0
+    d <- ncol(sigma)
+  }
+  if(!model=="smith"){
+    loc <- cbind(0)
+  }
+  #Model
+  mod <- switch(model, log=1, neglog=2, dirmix=3, bilog=4, negbilog=4, xstud=5, br=6,
+                sdir=7, smith=8, hr=9, isbr=9)
+
+  if(riskf == "sum"){
+  #Generate from spectral measure
+  return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) *
+           .rmevspec_cpp(n=n, d=d, para=param, model=mod, Sigma=sigma, loc=loc))
+  } else if(riskf == "site"){
+    #Check now that siteindex corresponds to a particular site
+    #Dimension d could have been modified earlier for spatial models
+    siteindex <- as.integer(siteindex)
+    if(siteindex < 1 || siteindex >d){
+      stop("Invalid site index");
+    }
+    return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) *
+             .rPsite(n = n, j = siteindex, d = d, para=param, model=mod, Sigma=sigma, loc=loc))
+  } else {
+    stop("Model not implemented")
+  }
 }
