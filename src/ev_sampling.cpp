@@ -11,10 +11,21 @@ using namespace Rcpp;
 // @return an integer between 0 and \eqn{d-1}
 int sampleone(int d){
   NumericVector index(1);
-  index[0] = (double)d *runif(1)[0];
+  index[0] = (double)d *Rcpp::runif(1,0,1)[0];
   index[0] = floor(index)[0];
   return (int)index[0];
 }
+
+IntegerVector sample_qty(int n, int d){
+  IntegerVector sampinds(d); // floor(Rcpp::runif(n, 0, n));
+  int index;
+  for(int i = 0; i < n; i ++){
+    index = floor(Rcpp::runif(1, 0, d))[0];
+    sampinds[index] = sampinds[index] + 1;
+  }
+  return sampinds;
+}
+
 
 
 //' Random variate generation for Dirichlet distribution on \eqn{S_{d}}{Sd}
@@ -339,14 +350,14 @@ NumericVector rPexstud (int index, arma::mat cholesky, arma::mat sigma, NumericV
 //' \eqn{P_{x}} is probability of extremal function
 //'
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-//' @param Lambda an symmetric square matrix of coefficients \eqn{\lambda^2}
-//'
+//' @param Sigma a covariance matrix formed from the symmetric square matrix of coefficients \eqn{\lambda^2}
+//' @param cholesky the Cholesky root of \code{Sigma}
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPHuslerReiss)]]
-NumericVector rPHuslerReiss (int index, arma::mat cholesky, arma::mat Lambda){
-  if(index < 0 || index >= Lambda.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
-  arma::vec mu = arma::vec(Lambda.n_cols);// b/c need constructor, then setter
-  mu = -2.0*Lambda.col(index);
+NumericVector rPHuslerReiss (int index, arma::mat cholesky, arma::mat Sigma){
+  if(index < 0 || index >= Sigma.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
+  arma::vec mu = arma::vec(Sigma.n_cols);// b/c need constructor, then setter
+  mu = -2.0*Sigma.col(index);
   mu.shed_row(index);
   //Sample from d-1 dimensional normal
   arma::vec normalsamp = mvrnorm_chol_arma(1, mu, cholesky).row(0).t();
@@ -405,7 +416,6 @@ NumericVector rPBrownResnick (int index, arma::mat Sigma_chol, NumericMatrix Sig
   return samp;
 }
 
-//[[Rcpp::export(.rPBrownResnick_old)]]
 NumericVector rPBrownResnick_old (int index, NumericMatrix Sigma){
   if(index<0 || index >= Sigma.ncol()) Rcpp::stop("Invalid argument in rPBrownResnick");
   NumericVector mu(Sigma.ncol());
@@ -426,7 +436,6 @@ NumericVector rPBrownResnick_old (int index, NumericMatrix Sigma){
 //' @param loc location matrix
 //'
 //' @return a \code{d}-vector from \eqn{P_x}
-//[[Rcpp::export(.rPSmith_old)]]
 NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
   int d = loc.n_rows;
   if(index < 0 || index >= d) Rcpp::stop("Invalid index in rPSmith");
@@ -652,42 +661,56 @@ NumericMatrix rbilogspec(int n, NumericVector alpha){
 //'
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rexstudspec)]]
-NumericMatrix rexstudspec (int n, arma::mat sigma, NumericVector al){
-  if(al[0]<0) Rcpp::stop("Invalid dof argument in rexstudspec");
+NumericMatrix rexstudspec(int n, arma::mat sigma, NumericVector al){
+  if(al[0] < 0){
+    Rcpp::stop("Invalid dof argument in rexstudspec");
+  }
   //Define containers and auxiliary variables
-  arma::vec zeromean = arma::vec(sigma.n_cols-1);// b/c need constructor, then setter
+  arma::vec zeromean = arma::vec(sigma.n_cols-1);
   zeromean.zeros(); // set elements of vector to zero
   int d = sigma.n_cols;
-  NumericMatrix samp(n,d);
-  int j;
+  arma::mat samp(n,d);
+  IntegerVector intsamps = sample_qty(n, d);
   arma::mat Covar = arma::mat(sigma.n_rows,sigma.n_cols);
+  arma::mat cholesky = arma::mat(sigma.n_rows-1,sigma.n_cols-1);
   //Need to adjust the size of Covar because it was shed
-  arma::vec normalsamp = arma::vec(d-1);
+  arma::rowvec normalsamp = arma::rowvec(d-1);
   arma::vec indexentry = arma::vec(1);
-  arma::vec studsamp = arma::vec(d);
   indexentry.zeros();
   double nu;
-  for(int r=0; r<n; r++){
-    j = sampleone(d);
-    //Redefine values
-    Covar = arma::mat(sigma.n_rows,sigma.n_cols);
-    normalsamp = arma::vec(d-1);
-    Covar = (sigma - sigma.col(j) * sigma.row(j))/(al[0]+1.0);
-    //Covar matrix is not positive definite; shed it
-    Covar.shed_row(j); Covar.shed_col(j);
-    //Sample from d-1 dimensional normal
-    normalsamp = mvrnorm_arma(1, zeromean, Covar).row(0).t();
-    normalsamp.insert_rows(j, indexentry);
-    nu = Rcpp::rchisq(1,al[0])[0];
-    studsamp = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.col(j);
-    //Note: this is the shifted Student as gamma mixture,
-    // i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
-    samp(r,_) = Rcpp::as<Rcpp::NumericVector>(wrap(studsamp));
-    samp(r,_) = pow(pmax(samp(r,_),0),al[0]);
-    samp(r,j) = 1.0; //Sometimes off due to rounding
-    samp(r,_) = samp(r,_)/sum(samp(r,_));
+  int r = 0;
+    for(int j = 0; j < d; j++){
+      if(intsamps[j] > 0){
+        //Redefine values
+        Covar = arma::mat(sigma.n_rows,sigma.n_cols);
+        normalsamp = arma::rowvec(d-1);
+        Covar = (sigma - sigma.col(j) * sigma.row(j))/(al[0]+1.0);
+        //Covar matrix is not positive definite; shed it
+        Covar.shed_row(j); Covar.shed_col(j);
+        cholesky = arma::chol(Covar);
+      for(int i = 0; i < intsamps[j]; i++){
+        //Sample from d-1 dimensional normal
+        normalsamp = mvrnorm_chol_arma(1, zeromean, cholesky).row(0);
+        normalsamp.insert_cols(j, indexentry);
+        nu = Rcpp::rchisq(1,al[0])[0];
+        samp.row(r) = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.row(j);
+        for(int k = 0; k < d; k++){
+          //Note: this is the shifted Student as gamma mixture,
+          // i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
+          if(samp(r,k) <= 0){
+            samp(r,k) = 0;
+          }  else{
+            samp(r,k) = exp(al[0]*log(samp(r,k)));
+          }
+        }
+        samp(r,j) = 1.0; //Sometimes off due to rounding
+        samp.row(r) = samp.row(r)/sum(samp.row(r));
+        r++;
+      }
+      }
   }
-  return samp;
+    arma::mat shuffledSamp = shuffle(samp, 0);
+  return Rcpp::as<Rcpp::NumericMatrix>(wrap(shuffledSamp));
 }
 
 //' Generates from \eqn{Q_i}{Qi}, the spectral measure of the Husler-Reiss model
@@ -697,38 +720,45 @@ NumericMatrix rexstudspec (int n, arma::mat sigma, NumericVector al){
 //'
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rhrspec)]]
-NumericMatrix rhrspec (int n, arma::mat Lambda){
-   //Define containers and auxiliary variables
+NumericMatrix rhrspec(int n, arma::mat Lambda){
+  //Define containers and auxiliary variables
   arma::vec mu = arma::vec(Lambda.n_cols);// b/c need constructor, then setter
   int d = Lambda.n_cols;
-  NumericMatrix samp(n,d);
-  int j;
+  arma::mat samp(n,d);
   arma::mat Covar = arma::mat(Lambda.n_rows,Lambda.n_cols);
+  arma::mat cholesky = arma::mat(Lambda.n_rows-1,Lambda.n_cols-1);
   //Need to adjust the size of Covar because it was shed
-  arma::vec normalsamp = arma::vec(d-1);
+  arma::rowvec normalsamp = arma::rowvec(d-1);
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
-  for(int r=0; r<n; r++){
-    j = sampleone(d);
+  IntegerVector intsamps = sample_qty(n, d);
+  int r = 0;
+  for(int j = 0; j < d; j++){
+    if(intsamps[j] > 0){
+      mu = arma::vec(Lambda.n_cols);
+      mu = -2.0*Lambda.col(j);
+      mu.shed_row(j);
+      Covar = arma::mat(Lambda.n_rows,Lambda.n_cols);
+      Covar = 2.0*(repmat(Lambda.col(j),1,Lambda.n_rows) +
+        repmat(Lambda.row(j),Lambda.n_cols,1) - Lambda);
+      //Covar matrix is not positive definite; shed it
+      Covar.shed_row(j); Covar.shed_col(j);
+      cholesky = arma::chol(Covar);
+      for(int i = 0; i < intsamps[j]; i++){
     //Redefine values
-    Covar = arma::mat(Lambda.n_rows,Lambda.n_cols);
-    normalsamp = arma::vec(d-1);
-    mu = arma::vec(Lambda.n_cols-1);// b/c need constructor, then setter
-    mu = -2.0*Lambda.col(j);
-    mu.shed_row(j);
-    Covar = 2.0*(repmat(Lambda.col(j),1,Lambda.n_rows) +
-      repmat(Lambda.row(j),Lambda.n_cols,1) - Lambda);
-    //Covar matrix is not positive definite; shed it
-    Covar.shed_row(j); Covar.shed_col(j);
     //Sample from d-1 dimensional normal
-    normalsamp = mvrnorm_arma(1, mu, Covar).row(0).t();
-    normalsamp.insert_rows(j, indexentry);
-    mu.insert_rows(j, indexentry);
-    samp(r,_) = Rcpp::as<Rcpp::NumericVector>(wrap(exp(normalsamp)));
+    normalsamp = arma::rowvec(d-1);
+    normalsamp = mvrnorm_chol_arma(1, mu, cholesky).row(0);
+    normalsamp.insert_cols(j, indexentry);
+    samp.row(r) = exp(normalsamp);
     samp(r,j) = 1.0; //Sometimes off due to rounding
-    samp(r,_) = samp(r,_)/sum(samp(r,_));
+    samp.row(r) = samp.row(r)/sum(samp.row(r));
+    r++;
   }
-  return samp;
+    }
+  }
+  arma::mat shuffledSamp = shuffle(samp, 0);
+  return Rcpp::as<Rcpp::NumericMatrix>(wrap(shuffledSamp));
 }
 
 
@@ -737,6 +767,7 @@ NumericMatrix rhrspec (int n, arma::mat Lambda){
 //' Simulation algorithm of Dombry et al. (2015)
 //'
 //' @param n sample size
+//' @param Sigma_chol Cholesky root of \code{Sigma}
 //' @param Sigma \code{d}-dimensional covariance matrix
 //'
 //'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
@@ -744,10 +775,10 @@ NumericMatrix rhrspec (int n, arma::mat Lambda){
 //'
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rbrspec)]]
-NumericMatrix rbrspec (int n, NumericMatrix Sigma){
+NumericMatrix rbrspec (int n, arma::mat Sigma_chol, NumericMatrix Sigma){
   int d = Sigma.ncol();
   NumericVector mu(d);
-  NumericMatrix mvnormsamp = mvrnorm(n, mu, Sigma);
+  NumericMatrix mvnormsamp = mvrnorm_chol(n, mu, Sigma_chol);
   NumericMatrix samp(n, d);
   int j;
   for(int r=0; r<n; r++){
@@ -768,7 +799,7 @@ NumericMatrix rbrspec (int n, NumericMatrix Sigma){
 //' Simulation algorithm of Dombry et al. (2015)
 //'
 //' @param n sample size
-//' @param Sigma \code{d}-dimensional covariance matrix
+//' @param Sigma_chol Cholesky decomposition of the \code{d}-dimensional covariance matrix (upper triangular)
 //' @param loc location matrix
 //'
 //'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
@@ -776,19 +807,19 @@ NumericMatrix rbrspec (int n, NumericMatrix Sigma){
 //'
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rsmithspec)]]
-NumericMatrix rsmithspec(int n, arma::mat Sigma, arma::mat loc){
+NumericMatrix rsmithspec(int n, arma::mat Sigma_chol, arma::mat loc){
   int d = loc.n_rows;
-  arma::vec mu = arma::vec(Sigma.n_cols);// b/c need constructor, then setter
+  arma::vec mu = arma::vec(Sigma_chol.n_cols);// b/c need constructor, then setter
   mu.zeros();
   NumericMatrix samp(n, d);
   int j;
-  arma::mat mvnormsamp = mvrnorm_arma(n, mu, Sigma);
-  arma::mat dist(1, Sigma.n_cols);
+  arma::mat mvnormsamp = mvrnorm_chol_arma(n, mu, Sigma_chol);
+  arma::mat dist(1, Sigma_chol.n_cols);
   for(int r=0; r<n; r++){
     j = sampleone(d);
     for(int i = 0; i < d; i++){
       dist.row(0) = mvnormsamp.row(r) + loc.row(i) - loc.row(j);
-      samp(r,i) = dmvnorm_arma(dist, mu.t(), Sigma)(0);
+      samp(r,i) = dmvnorm_chol_arma(dist, mu.t(), Sigma_chol)(0);
     }
     samp(r,_) = samp(r,_)/sum(samp(r,_));
   }
@@ -849,13 +880,12 @@ NumericMatrix rdirspec(int n, int d, NumericVector alpha, bool irv = false){
 }
 
 // Internal function to verify confirmity for rmevA1, rmevA2, rmevspec
-
-void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc) {
+void check_args(int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc) {
     //Model 1: logistic
     if(model==1 && param.size()!=1){
       Rcpp::warning("Logistic model currently only implemented for one argument");
       //Model 2: negative logistic
-    } else  if(model==2 && param.size()!=1){
+    } else  if(model == 2 && param.size()!=1){
       Rcpp::warning("Negative logistic model currently only implemented for one argument");
       //Model 3: Dirichlet mixture
       //Checks are performed in rmev wrapper function
@@ -875,11 +905,23 @@ void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigm
     } else if(model == 6){
       if(Sigma.ncol()!=Sigma.nrow()) Rcpp::stop("Provided covariance matrix is not square");
 
-      //Model 7 and 10: Coles and Tawn, scaled extremal Dirichlet model and scaled negative Dirichlet model
-    } else if(model == 7 || model == 10){
-      if(is_true(any(param < 0.0))){
-        Rcpp::stop("Invalid input for Dirichlet models");
-      }
+      //Model 7: Coles and Tawn, scaled extremal Dirichlet model
+    } else if(model == 7){
+     //Everything moved to wrapper
+     if(param.size()==(d+1)){
+         if(is_true(any(param[seq(0, d-1)] < 0))){
+           Rcpp::stop("Negative parameters for alpha vector in scaled Dirichlet model");
+         }
+         if( (param[d] < 0) && (param[d] <= -min(param[seq(0, d-1)]))){
+             Rcpp::stop("Index of regular variation should be larger than alpha in scaled Dirichlet model");
+         }
+       } else if(param.size()==d){
+         if(is_true(any(param < 0))){
+           Rcpp::stop("Negative parameters for alpha vector in scaled Dirichlet model");
+        }
+       } else{
+         Rcpp::stop("Invalid parameter for the scaled Dirichlet model");
+       }
       //Model 8: Smith model (moving maxima with multivariate Gaussian)
     } else if(model == 8){
       //Copy entries in a vector, to use sugar (otherwise need to cast to &int)
@@ -907,51 +949,47 @@ void check_args(int n, int d, NumericVector param, int model, NumericMatrix Sigm
 //' @param n sample size
 //' @param d dimension of the multivariate distribution
 //' @param param a vector of parameters
-//' @param model integer, currently ranging from 1 to 8, corresponding respectively to
+//' @param model integer, currently ranging from 1 to 9, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-//' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and \code{dir}, (10) \code{negdir} and (8) \code{smith}.
-//' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
+//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
+//' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Conditionally negative definite
+//' matrix of parameters for the Huesler--Reiss model. Default matrix for compatibility
 //' @param loc matrix of location for Smith model.
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevA1)]]
-NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix Sigma,
+                     arma::mat loc) {
   // Transform parameters to different format
   arma::mat sigma(Sigma.begin(), Sigma.nrow(), Sigma.ncol(), false);
+  arma::mat cholesky(Sigma.nrow(), Sigma.ncol());
   NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
 	bool irv = false;
 	//Sanity checks
-	check_args(n, d, param, model, Sigma, loc);
+	check_args(d, param, model, Sigma, loc);
 	if(model == 5){
 	  //Standardize the covariance to correlation matrix (do only once)
 	  arma::vec stdev = exp(0.5*log(sigma.diag()));
 	  arma::mat stdevmat = inv(diagmat(stdev));
 	  sigma = stdevmat * sigma * stdevmat;
-	  //Model 7: Coles and Tawn (extremal Dirichlet distribution)
-	} else if(model == 7){
-	  if(param.size() == d+1){
-	    if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
-	    irv = true;
-	  }
-	  //Model 8: Smith model (moving maxima with multivariate Gaussian)
+	  //Model 6: Brown-Resnick
+	} else if(model == 6){
+	  cholesky = arma::chol(sigma);
+		  //Model 8: Smith model (moving maxima with multivariate Gaussian)
 	} else if(model == 8){
 	  d = loc.n_rows;
-	  //Model 10: Scaled negative extremal Dirichlet model
-	} else if(model == 10){
-	  irv = true;
-	  if(param.size() != d+1){
-	    Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model");
-	  }
-	  if(min(param)!=param[d]){
-	    Rcpp::stop("Invalid index of regular variation");
-	  }
-	  param[d] = -param[d];
+	  cholesky = arma::chol(sigma);
+	  //Model 7: Scaled negative extremal Dirichlet model
+	} else if(model == 7){
+	 if(param.size() == d+1){
+	   irv = true;
+	   }
 	}
   NumericMatrix samp = NumericMatrix(n, d); //Initialized to zero
   NumericVector zeta_I(1);
   NumericVector Y(d);
   for(int i = 0; i < n; i ++){
-  	if(i%100==0){
+  	if(i%10==0){
   		Rcpp::checkUserInterrupt();
   	}
     //For each sample of the max-stable distribution
@@ -969,11 +1007,11 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
       } else if(model == 5){
         Y = rexstudspec(1, sigma, param)(0,_);
       } else if(model == 6){
-        Y = rbrspec(1, Sigma)(0,_);
-      } else if(model == 7 || model == 10){
+        Y = rbrspec(1, cholesky, Sigma)(0,_);
+      } else if(model == 7){
         Y = rdirspec(1, d, param, irv)(0,_);
       } else if(model == 8){
-        Y = rsmithspec(1, sigma, loc)(0,_);
+        Y = rsmithspec(1, cholesky, loc)(0,_);
       }  else if(model == 9){
         Y = rhrspec(1, sigma)(0,_);
       } else {
@@ -999,52 +1037,42 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
 //' @param n sample size
 //' @param d dimension of the multivariate distribution
 //' @param param a vector of parameters
-//' @param model integer, currently ranging from 1 to 8, corresponding respectively to
+//' @param model integer, currently ranging from 1 to 9, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct},
-//' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
+//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
 //' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 //' @param loc matrix of location for Smith model.
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevA2)]]
-NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix Sigma,
+                     arma::mat loc) {
   // Transform parameters to different format
   arma::mat sigma(Sigma.begin(), Sigma.nrow(), Sigma.ncol(), false);
   arma::mat cholesky = arma::mat(Sigma.nrow(), Sigma.ncol()); //unitialized memory
   bool irv = false;
   NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
   //Sanity checks
-  check_args(n, d, param, model, Sigma, loc);
+  check_args(d, param, model, Sigma, loc);
   if(model == 5){
     //Standardize the covariance to correlation matrix (do only once)
     arma::vec stdev = exp(0.5*log(sigma.diag()));
     arma::mat stdevmat = inv(diagmat(stdev));
     sigma = stdevmat * sigma * stdevmat;
-    //Model 7: Coles and Tawn (Dirichlet extremal distribution)
+    //Model 6: Brown--Resnick process
   } else if(model == 6){
     cholesky = arma::chol(sigma);
+    //Model 7: scaled extremal Dirichlet and Coles and Tawn model
   } else if(model == 7){
+    // As of 14.02.2018, checks are done in wrapper function, not in Cpp code
     if(param.size() == d+1){
-    //if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
       irv = true;
     }
     //Model 8: Smith model (moving maxima with multivariate Gaussian)
   } else if(model == 8){
     d = loc.n_rows;
     cholesky = arma::chol(sigma);
-    //Model 10: scaled negative extremal Dirichlet model
-  } else if(model == 10){
-    irv = true;
-    if(param.size() != d+1){
-      Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model");
-    }
-    if(min(param) != param[d]){
-      Rcpp::stop("Invalid index of regular variation");
-    }
-    param[d] = -param[d];
   }
-
 
   //Define the containers
   NumericMatrix samp = NumericMatrix(n, d);
@@ -1072,7 +1100,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
       Y = rPexstud(0, cholesky, sigma, param);
     } else if(model == 6){
       Y = rPBrownResnick(0, cholesky, Sigma);
-    } else if(model == 7 || model == 10){
+    } else if(model == 7){
       Y = rPdir(d, 0, param, irv);
     } else if(model == 8){
        Y = rPSmith(0, cholesky, loc);
@@ -1115,7 +1143,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
           Y = rPexstud(j, cholesky, sigma, param);
         } else if(model == 6){
           Y = rPBrownResnick(j, cholesky, Sigma);
-        } else if(model == 7 || model == 10){
+        } else if(model == 7){
           Y = rPdir(d, j, param, irv);
         }  else if(model == 8){
           Y = rPSmith(j, cholesky, loc);
@@ -1148,10 +1176,9 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
 //' @param n sample size
 //' @param d dimension of the multivariate distribution
 //' @param param a vector of parameters
-//' @param model integer, currently ranging from 1 to 7, corresponding respectively to
+//' @param model integer, currently ranging from 1 to 9, corresponding respectively to
 //' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct},
-//' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
+//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
 //' @param Sigma covariance matrix for Brown-Resnick and extremal student, symmetric matrix
 //' of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility
 //' @param loc matrix of locations for the Smith model
@@ -1162,19 +1189,23 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevspec_cpp)]]
-NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericMatrix Sigma,
+                           arma::mat loc) {
   // Transform parameters to different format
   arma::mat sigma(Sigma.begin(), Sigma.nrow(), Sigma.ncol(), false);
+  arma::mat cholesky(Sigma.nrow(), Sigma.ncol());
   bool irv = false;
   NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
   //Sanity checks
-  check_args(n, d, param, model, Sigma, loc);
+  check_args(d, param, model, Sigma, loc);
   if(model == 5){
     //Standardize the covariance to correlation matrix (do only once)
     arma::vec stdev = exp(0.5*log(sigma.diag()));
     arma::mat stdevmat = inv(diagmat(stdev));
     sigma = stdevmat * sigma * stdevmat;
     //Model 7: Coles and Tawn (extremal Dirichlet distribution)
+  } else if(model == 6){
+    cholesky = arma::chol(sigma);
   } else if(model == 7){
     if(param.size() == d+1){
     //if(param[d]>1.0) Rcpp::stop("Invalid index of regular variation");
@@ -1183,17 +1214,8 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
     //Model 8: Smith model (moving maxima with multivariate Gaussian)
   } else if(model == 8){
     d = loc.n_rows;
-  } else if(model == 10){
-    irv = true;
-    if(param.size() != d+1){
-      Rcpp::stop("Invalid parameter vector for the scaled negative extremal Dirichlet model.");
-    }
-    if(min(param)!=param[d]){
-      Rcpp::stop("Invalid index of regular variation");
-    }
-    param[d] = -param[d];
+    cholesky = arma::chol(sigma);
   }
-
 	//Sampling
 
   NumericMatrix samp = NumericMatrix(n, d); //Initialized to zero
@@ -1208,11 +1230,11 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
   } else if(model == 5){
     samp = rexstudspec(n, sigma, param);
   } else if(model == 6){
-    samp = rbrspec(n, Sigma);
-  } else if(model == 7 || model == 10){
+    samp = rbrspec(n, cholesky, Sigma);
+  } else if(model == 7){
     samp = rdirspec(n, d, param, irv);
   } else if(model == 8){
-    samp = rsmithspec(n, sigma, loc);
+    samp = rsmithspec(n, cholesky, loc);
   }  else if(model == 9){
     samp = rhrspec(n, sigma);
   } else{
@@ -1273,4 +1295,92 @@ for(int r = min(siz); r<Sigma.nrow(); r++){
 return samp;
 }
 
+//' Samples from exceedances at site (scaled extremal function definition)
+//'
+//' Models currently implemented include logistic and negative logistic, sampling
+//' from the extremal functions. This requires derivation of \eqn{P_x}
+//'
+//' @param n sample size
+//' @param index index of the site or variable
+//' @param d dimension of the multivariate distribution
+//' @param param a vector of parameters
+//' @param model integer, currently ranging from 1 to 9, corresponding respectively to
+//' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
+//' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
+//' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
+//' @param loc matrix of location for Smith model.
+//'
+//' @return a \code{n} by \code{d} matrix containing the sample
+// [[Rcpp::export(.rPsite)]]
+NumericMatrix rPsite(int n, int j, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+  // Transform parameters to different format
+  arma::mat sigma(Sigma.begin(), Sigma.nrow(), Sigma.ncol(), false);
+  arma::mat cholesky = arma::mat(Sigma.nrow(), Sigma.ncol()); //unitialized memory
+  bool irv = false;
+  //Increment j to convert from R convention to C (zero indexing)
+  j--;
+  NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
+  //Sanity checks
+  check_args(d, param, model, Sigma, loc);
+  if(model == 5){
+    //Standardize the covariance to correlation matrix (do only once)
+    arma::vec stdev = exp(0.5*log(sigma.diag()));
+    arma::mat stdevmat = inv(diagmat(stdev));
+    sigma = stdevmat * sigma * stdevmat;
+    arma::mat Covar = (sigma - sigma.col(0) * sigma.row(0)) / (param[0] + 1.0);
+    //Covar matrix is not positive definite; shed it
+    Covar.shed_row(0); Covar.shed_col(0);
+    cholesky = arma::chol(Covar);
+    //Model 6: Brown--Resnick process
+  } else if(model == 6){
+    cholesky = arma::chol(sigma);
+    //Model 7: scaled extremal Dirichlet and Coles and Tawn model
+  } else if(model == 7){
+    // As of 14.02.2018, checks are done in wrapper function, not in Cpp code
+    if(param.size() == d+1){
+      irv = true;
+    }
+    //Model 8: Smith model (moving maxima with multivariate Gaussian)
+  } else if(model == 8){
+    d = loc.n_rows;
+    cholesky = arma::chol(sigma);
+  }
+  if(model == 5){
+    arma::mat Covar = (sigma - sigma.col(j) * sigma.row(j))/(param[0]+1.0);
+    Covar.shed_row(j); Covar.shed_col(j);
+    cholesky = arma::chol(Covar);
+  } else if(model == 9){
+    arma::mat Covar = 2.0*(repmat(sigma.col(j),1,sigma.n_rows) +
+      repmat(sigma.row(j),sigma.n_cols,1) - sigma);
+    Covar.shed_row(j); Covar.shed_col(j);
+    cholesky = arma::chol(Covar);
+  }
+  //Define the containers
+  NumericMatrix samp = NumericMatrix(n, d);
+  for(int i = 0; i < n; i ++){
+    if(i%100==0){
+      Rcpp::checkUserInterrupt();
+    }
+      if(model == 1){
+          samp(i, _) = rPlog(d, j, param);
+        } else if(model == 2){
+          samp(i, _) = rPneglog(d, j, param);
+        } else if(model == 3){
+          samp(i, _) = rPdirmix(d, j, Sigma, param);
+        } else if(model == 4){
+          samp(i, _) = rPbilog(d, j, param);
+        } else if(model == 5){
+          samp(i, _) = rPexstud(j, cholesky, sigma, param);
+        } else if(model == 6){
+          samp(i, _) = rPBrownResnick(j, cholesky, Sigma);
+        } else if(model == 7){
+          samp(i, _) = rPdir(d, j, param, irv);
+        }  else if(model == 8){
+          samp(i, _) = rPSmith(j, cholesky, loc);
+        } else if(model == 9){
+          samp(i, _) = rPHuslerReiss(j, cholesky, sigma);
+        }
+   }
+  return samp;
+}
 
