@@ -103,8 +103,8 @@ rmev <-function(n, d, param, asy, sigma,
   #Create gridded values if specification is for random field discretization
   if(!missing(loc)){
     loc <- as.matrix(loc)
-    if(ncol(loc)==1) grid=FALSE
-    if(grid==TRUE){
+    if(ncol(loc)==1) grid <- FALSE
+    if(grid){
       if(all(sapply(1:ncol(loc), function(i){length(unique(loc[,i]))==nrow(loc)}))){
       loc <- matrix(unlist(expand.grid(apply(loc, 2, as.list))),ncol=ncol(loc))
       } else{
@@ -131,7 +131,7 @@ rmev <-function(n, d, param, asy, sigma,
   #Define model families
   m1 <- c("log","neglog")
   m2 <- c("bilog","negbilog")
-  m3 <- c("br","xstud","smith")
+  m3 <- c("br","xstud","smith","isbr")
   m4 <- c("ct","dir","negdir","sdir")
   #Check that parameters are provided
   if(model %in% c(m1,m2, m4) && (!missing(param) && mode(param) != "numeric")){
@@ -213,6 +213,7 @@ rmev <-function(n, d, param, asy, sigma,
       stopifnot(is.function(vario))
       if(model == "br"){
         model = "isbr"
+        m3 <- c(m3, model)
         if(vario(0, ...) > 1e-15){
           stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
         }
@@ -385,7 +386,7 @@ rmev <-function(n, d, param, asy, sigma,
 #' rmevspec(n=100, d=3, param=2.5, model="neglog")
 #' rmevspec(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog")
 #' rmevspec(n=100, d=2, param=c(0.8,1.2), model="ct") #Dirichlet model
-#' rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="dir") #with additional scale parameter
+#' rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model="sdir") #with additional scale parameter
 #'#Variogram gamma(h) = scale*||h||^alpha
 #'#NEW: Variogram must take distance as argument
 #'vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
@@ -423,7 +424,7 @@ rmevspec <-function(n, d, param, sigma,
   #Define model families
   m1 <- c("log","neglog")
   m2 <- c("bilog","negbilog")
-  m3 <- c("br","xstud","smith")
+  m3 <- c("br","xstud","smith","isbr")
   m4 <- c("ct","dir","negdir","sdir")
 
   #Sanity checks
@@ -644,13 +645,29 @@ rmevspec <-function(n, d, param, sigma,
     !eigs[1] > tol
 }
 
-
-rParetoProcess <- function(n, shape = 1, riskf = c("site","sum","max","min"),
+#' Simulation from R-Pareto processes
+#'
+#' @details For \code{riskf=max} and \code{riskf=min}, the procedure uses rejection sampling based on Pareto variates
+#' sampled from \code{sum} and may be slow if \code{d} is large.
+#'
+#' @inheritParams rmev
+#' @param shape shape index of Pareto variable
+#' @param riskf string indicating risk functional.
+#' @param siteindex integer between 1 and d specifying the index of the site or variable
+#' @examples
+#' rParetoProcess(n=100, riskf = "site", siteindex=2, d=3, param=2.5, model="log")
+#' rParetoProcess(n=100, riskf = "min", d=3, param=2.5, model="neglog")
+#' rParetoProcess(n=100, riskf = "max", d=4, param=c(0.2,0.1,0.9,0.5), model="bilog")
+#' rParetoProcess(n=100, riskf = "sum", d=6, param=c(0.8,1.2,0.1,0.2,0.4,0.5,0.5), model="sdir") #with additional scale parameter
+#' vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
+#' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
+#' rParetoProcess(n=100, riskf = "max", vario=vario,loc=grid.loc, model="br")
+rParetoProcess <- function(n, shape = 1, riskf = c("sum", "site","max"),
                            siteindex = NULL, d, param, sigma,
                            model= c("log","neglog","bilog","negbilog","hr","br",
                                     "xstud","smith","schlather","ct","sdir","dirmix"),
                            weights, vario, loc,...){
-  riskf <- match.arg(riskf, c("site","sum","max","min"), several.ok = FALSE)[1]
+  riskf <- match.arg(riskf, c("site","sum","max","min"), several.ok = TRUE)[1]
   if(is.null(siteindex) && riskf == "site"){
    stop("For exceedances of site, the user needs to provide an index between 1 and d")
   }
@@ -666,7 +683,7 @@ rParetoProcess <- function(n, shape = 1, riskf = c("site","sum","max","min"),
   #Define model families
   m1 <- c("log","neglog")
   m2 <- c("bilog","negbilog")
-  m3 <- c("br","xstud","smith")
+  m3 <- c("br","xstud","smith","isbr")
   m4 <- c("ct","dir","negdir","sdir")
 
   #Sanity checks
@@ -824,7 +841,31 @@ rParetoProcess <- function(n, shape = 1, riskf = c("site","sum","max","min"),
     }
     return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) *
              .rPsite(n = n, j = siteindex, d = d, para=param, model=mod, Sigma=sigma, loc=loc))
-  } else {
+  } else if(riskf %in% c("max", "min")){
+    ustar <- ifelse(riskf=="max", 1, d)
+    ind <- 0L
+    nsim <- ceiling(ifelse(n < 100, 4 * n, n))
+    samp <- matrix(0, nrow = n, ncol = d)
+    while(ind < n){
+    candidate <- evd::rgpd(n = nsim, loc = 1, scale = 1, shape = shape) *
+      .rmevspec_cpp(n = nsim, d=d, para=param, model=mod, Sigma=sigma, loc=loc) / ustar
+    accept <- apply(candidate, 1, function(x){switch(riskf, max = max(x)>1, min = min(x)>1)})
+    sum_accept <- sum(accept)
+    if(sum_accept > 0){
+      if(sum_accept < (n - ind)){
+        samp[(ind+1L):(ind+sum_accept),] <- candidate[accept,]
+        ind <- ind + sum_accept
+        nsim <- ceiling(1.25 * (nsim/sum_accept) * (n - ind))
+      } else {
+        samp[(ind+1L):n,] <- candidate[accept,][1:(n-ind),]
+        ind <- n
+      }
+    } else{
+      nsim <- ceiling(1.25 * nsim)
+    }
+    }
+    return(samp)
+   } else {
     stop("Model not implemented")
   }
 }
