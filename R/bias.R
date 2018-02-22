@@ -19,11 +19,11 @@ gev.bias <- function(par, n){
 	zeta3 <- 1.20205690315959428539973816151144999076498629234049888179227155
 	zeta5 <- 1.0369277551433699263313654864570341680570809 #gsl::zeta(5)
 	k111 <- ((1 + xi)^2*(1 + 4*xi)*gamma(1 + 3*xi))/sigma^3
-	
+
 	if(abs(xi) < 1e-3){ #Limiting case when xi=0, some of the calculations break down
 	euler_gamma <- -psigamma(1)
 	k112 <- (euler_gamma-3)/sigma^2
-	k113 <- -1/12*(36*euler_gamma - 6*euler_gamma^2 - pi^2 - 24)/sigma^2  
+	k113 <- -1/12*(36*euler_gamma - 6*euler_gamma^2 - pi^2 - 24)/sigma^2
 	k122 <- -1/6*(36*euler_gamma - 6*euler_gamma^2 - pi^2 - 24)/sigma^3
   k123 <- 1/12*(60*euler_gamma + 6*euler_gamma^3 - euler_gamma*pi^2 + 4*pi^2*(euler_gamma - 1) - 48*euler_gamma^2 - 4*pi^2 + 12*zeta3 - 12)/sigma^2
   k133 <- 0.10683192718888033249425142127224548061317544/sigma
@@ -31,7 +31,7 @@ gev.bias <- function(par, n){
   k223 <- 1/40*(20*euler_gamma^4 + 3*pi^4 - 200*euler_gamma^3 + 20*euler_gamma^2*(pi^2 + 18) + 60*pi^2 - 20*euler_gamma*(5*pi^2 - 8*zeta3 + 8) - 400*zeta3)/sigma^2
   k233 <- 1/48*(12*euler_gamma^5 - 140*euler_gamma^4 - 21*pi^4 + 20*euler_gamma^3*(pi^2 + 16) - 4*euler_gamma^2*(35*pi^2 - 60*zeta3 + 48) + 8*pi^2*(5*zeta3 - 4) + euler_gamma*(9*pi^4 + 160*pi^2 - 1120*zeta3) + 288*zeta5 + 640*zeta3)/sigma
   k333 <- -20.807671559558883514171052830537917750303231
-  
+
   k11.2 <- -2*(xi + 1)^2*gamma(2*xi + 1)/sigma^3
   k11.3 <- 2*(xi + 1)^2*psigamma(2*xi + 1)*gamma(2*xi + 1)/sigma^2 + 2*(xi + 1)*gamma(2*xi + 1)/sigma^2
   k12.2 <- -2*(euler_gamma - 1)/sigma^3
@@ -44,7 +44,7 @@ gev.bias <- function(par, n){
   k23.3 <- -3.7096580935190566493843882211576614781371729/sigma
   k33.2 <- 0
   k33.3 <- -5.4502140978602180294657833995281271927087253
-  
+
 	} else{
 	k112 <- (xi+1)*(gamma(2*xi+2)-(xi+1)*(4*xi+1)*gamma(3*xi+1))/(sigma^3*xi)
 	k113 <- (1 + xi)*((1 + xi)*(1 + 4*xi)*gamma(1+3*xi)- gamma(1+2*xi)*(1 + 2*xi*(2 + xi) + xi*(1 + 2*xi)*psigamma(2+2*xi,0)))/(sigma^2*xi^2)
@@ -69,7 +69,7 @@ gev.bias <- function(par, n){
 	k33.2 <- 0
 	k33.3 <- 2*((xi + 1)^2*psigamma(2*xi + 1)*gamma(2*xi + 1)/xi^2 - ((xi + 1)/xi + psigamma(xi + 1))*psigamma(xi + 2)*gamma(xi + 2)/xi + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1,1))*gamma(xi + 2)/xi - (xi + 1)^2*gamma(2*xi + 1)/xi^3 + (xi + 1)*gamma(2*xi + 1)/xi^2 + ((xi + 1)/xi + psigamma(xi + 1))*gamma(xi + 2)/xi^2 - (digamma(1) + 1/xi + 1)/xi^2)/xi^2 - 1/3*(pi^2 + 6*(digamma(1) + 1/xi + 1)^2 + 6*(xi + 1)^2*gamma(2*xi + 1)/xi^2 - 12*((xi + 1)/xi + psigamma(xi + 1))*gamma(xi + 2)/xi)/xi^3
 	}
-	
+
 	#Derivatives of information matrix
 	A1 <- 0.5*cbind(c(k111,k112,k113),c(k112,k122,k123),c(k113,k123,k133))
 	A2 <- -cbind(c(k11.2,k12.2,k13.2),c(k12.2,k22.2,k23.2),c(k13.2,k23.2,k33.2))+0.5*cbind(c(k112,k122,k123),c(k122,k222,k223),c(k123,k223,k233))
@@ -294,10 +294,10 @@ gev.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
 }
 
 #' Posterior predictive distribution and density for the GEV distribution
-#' 
+#'
 #' This function calculates the posterior predictive density at points x
 #' based on a matrix of posterior density parameters
-gev.postpred <- function(x, posterior, Nyr = 100, type = c("density","quantile")){
+.gev.postpred <- function(x, posterior, Nyr = 100, type = c("density","quantile")){
   rowMeans(cbind(apply(rbind(posterior), 1, function(par){
     switch(type,
     density = evd::dgev(x=x,loc=par[1]-par[2]*(1-Nyr^par[3])/par[3], scale=par[2]*Nyr^par[3], shape=par[3]),
@@ -307,24 +307,24 @@ gev.postpred <- function(x, posterior, Nyr = 100, type = c("density","quantile")
 
 
 #' N-year return levels, median and mean estimate
+#'
 #' @param par vector of location, scale and shape parameters for the GEV distribution
-#' @param vpar vector of parameters (\code{par}) for the GEV covariance matrix
 #' @param nobs integer number of observation on which the fit is based
 #' @param N integer number of observations for return level. See \strong{Details}
-#' @param type string indicating the statistic to be calculated (can be abbreviated). 
+#' @param type string indicating the statistic to be calculated (can be abbreviated).
 #' @param p probability indicating the return level, corresponding to the quantile at 1-1/p
-#' 
-#' @details If there are \eqn{n_y} observations per year, the \code{L}-year return level is obtained by taking 
-#' \code{N} equal to \eqn{n_yL}. 
-#' 
-#' @return a list with components 
+#'
+#' @details If there are \eqn{n_y} observations per year, the \code{L}-year return level is obtained by taking
+#' \code{N} equal to \eqn{n_yL}.
+#' @export
+#' @return a list with components
 #' \itemize{
 #' \item{est} point estimate
 #' \item{var} variance estimate based on delta-method
 #' \item{type} statistic
 #' }
 gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N){
-  #Create copy of parameters  
+  #Create copy of parameters
   mu <- par[1]; sigma <- par[2]; xi <- par[3]
   type <- match.arg(type, c("retlev", "median", "mean"))[1]
   #Check whether arguments are well defined
@@ -332,13 +332,13 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
     stopifnot(p >= 0, p < 1)
     yp <- -log(1-p)
   } else{
-    stopifnot(N >= 1) 
+    stopifnot(N >= 1)
   }
-  
-  #Euler-Masc. constant : 
+
+  #Euler-Masc. constant :
   emcst <- -psigamma(1)
   #Return levels, N-year median and mean for GEV
-  estimate <- switch(type, 
+  estimate <- switch(type,
     retlev = ifelse(xi==0, mu - sigma * log(yp), mu - sigma / xi * (1 - yp^(-xi))),
     median = ifelse(xi==0, mu + sigma * (log(N) - log(log(2))), mu - sigma / xi *(1 - (N / log(2))^xi)),
     mean = ifelse(xi==0, mu + sigma * (log(N) + emcst), mu - sigma / xi *(1 - N^xi*gamma(1-xi)))
@@ -359,7 +359,7 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
       }
     }
     #Variance estimate based on delta-method
-    var_retlev <- t(grad_retlev) %*% solve(gev.infomat(par = par, dat = 1, method = "exp", nobs = nobs)) %*% grad_retlev 
+    var_retlev <- t(grad_retlev) %*% solve(gev.infomat(par = par, dat = 1, method = "exp", nobs = nobs)) %*% grad_retlev
   } else if(type == "median"){
     #Gradient of N-years maxima median
     if(xi == 0){
@@ -368,7 +368,7 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
       grad_Nmed <- c(1, ((N/log(2))^xi - 1)/xi, sigma*(N/log(2))^xi*log(N/log(2))/xi - sigma*((N/log(2))^xi - 1)/xi^2)
     }
     #Delta-method covariance matrix
-    var_Nmed <- t(grad_Nmed) %*% solve(gev.infomat(par = par, dat = 1, method = "exp", nobs = nobs)) %*% grad_Nmed 
+    var_Nmed <- t(grad_Nmed) %*% solve(gev.infomat(par = par, dat = 1, method = "exp", nobs = nobs)) %*% grad_Nmed
   } else if(type == "mean"){
     if(xi == 0){
       grad_Nmean <- c(1, log(N) + emcst, 0.5*sigma*(emcst^2 + pi^2 / 6 + 2 * emcst*log(N) + log(N)^2))
@@ -383,19 +383,22 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
 
 
 #' Asymptotic bias of block maxima for fixed sample sizes
+#'
 #' @param shape shape parameter
 #' @param rho second-order parameter, non-positive
+#' @references Dombry, C. and A. Ferreira (2017). Maximum likelihood estimators based on the block maxima method. \code{https://arxiv.org/abs/1705.00465}
+#' @export
 #' @return a vector of length three containing the bias for location, scale and shape (in this order)
 gev.abias <- function(shape, rho){
   stopifnot(rho <= 0, shape > -0.5)
   if(shape != 0 && rho < 0){
-    bmu <- (1+shape)/(shape*rho*(shape+rho))*(-(shape+rho)*gamma(1+shape)+(1+shape)*rho*gamma(1+2*shape)+shape*(1-rho)*gamma(1+shape-rho))  
+    bmu <- (1+shape)/(shape*rho*(shape+rho))*(-(shape+rho)*gamma(1+shape)+(1+shape)*rho*gamma(1+2*shape)+shape*(1-rho)*gamma(1+shape-rho))
     bsigma <- (-shape-rho+(1+shape)*(shape+2*rho)*gamma(1+shape)-(1+shape)^2*rho*gamma(1+2*shape)+shape*gamma(2-rho)-shape*(1+shape)*(1-rho)*gamma(1+shape-rho))/(shape^2*rho*(shape+rho))
     bshape <- ((shape+rho)*(1+shape+psigamma(1)*shape)-(shape+shape^2*(1+rho)+2*rho*(1+shape))*gamma(1+shape)+(1+shape)^2*rho*gamma(1+2*shape)+shape^2*gamma(1-rho)-shape*(1+shape)*gamma(2-rho)+shape*(1+shape)*(1-rho)*gamma(1+shape-rho)-shape*rho*psigamma(2+shape)*gamma(2+shape)-shape^2*psigamma(2-rho)*gamma(2-rho))/(shape^3*rho*(shape+rho))
   } else if(rho == 0 && shape != 0){
-    bmu <- (1+shape)/shape^2*((1+shape)*gamma(1+2*shape)-gamma(2+shape)-shape*psigamma(1+shape)*gamma(1+shape))  
+    bmu <- (1+shape)/shape^2*((1+shape)*gamma(1+2*shape)-gamma(2+shape)-shape*psigamma(1+shape)*gamma(1+shape))
     bsigma <- (shape^2*gamma(1+shape)*psigamma(1+shape) - (shape + 1)^2*gamma(1+2*shape) + shape^2*gamma(1+shape) + shape*gamma(1+shape)*psigamma(1+shape) - (psigamma(1)+1)*shape + 3*shape*gamma(1+shape) + 2*gamma(1+shape) - 1)/shape^3
-    bshape <- ((1+shape+shape*psigamma(1))^2+shape^2*pi^2/6+(1+shape)^2*gamma(1+2*shape)-2*(1+shape)*((1+shape)*gamma(1+shape)+shape*psigamma(1+shape)*gamma(1+shape)))/shape^4 
+    bshape <- ((1+shape+shape*psigamma(1))^2+shape^2*pi^2/6+(1+shape)^2*gamma(1+2*shape)-2*(1+shape)*((1+shape)*gamma(1+shape)+shape*psigamma(1+shape)*gamma(1+shape)))/shape^4
   } else if(rho < 0 && shape == 0){
     bmu <- (-1 + rho + psigamma(1)* rho + (1-rho)*gamma(1 - rho))/rho^2
     bsigma <- (6 - 6*rho - 6*psigamma(1)^2*rho - pi^2*rho + 6*psigamma(1)*(1-2*rho)-6*(1-rho)*gamma(1-rho)*(1+psigamma(1-rho)))/(6*rho^2)
@@ -410,10 +413,12 @@ gev.abias <- function(shape, rho){
 }
 
 #' Asymptotic bias of threshold exceedances for k order statistics
-#' 
+#'
 #' The formula given in de Haan and Ferreira, 2007 (Springer). Note that the latter differs from that found in Drees, Ferreira and de Haan.
+#' @references Dombry, C. and A. Ferreira (2017). Maximum likelihood estimators based on the block maxima method. \code{https://arxiv.org/abs/1705.00465}
 #' @param shape shape parameter
 #' @param rho second-order parameter, non-positive
+#' @export
 #' @return a vector of length containing the bias for scale and shape (in this order)
 gpd.abias <- function(shape, rho){
   stopifnot(rho <= 0, shape > -0.5)

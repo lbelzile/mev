@@ -2,23 +2,23 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 .EuclideanWeights <- function(x, mu) {
-    .Call('mev_EuclideanWeights', PACKAGE = 'mev', x, mu)
+    .Call('_mev_EuclideanWeights', PACKAGE = 'mev', x, mu)
 }
 
-.emplik <- function(z, mu, lam, eps, M = 1e30, thresh = 1e-30, itermax = 100L) {
-    .Call('mev_emplik', PACKAGE = 'mev', z, mu, lam, eps, M, thresh, itermax)
+.emplik_intern <- function(z, mu, lam, eps, M = 1e30, thresh = 1e-12, itermax = 1000L) {
+    .Call('_mev_emplik_intern', PACKAGE = 'mev', z, mu, lam, eps, M, thresh, itermax)
 }
 
 .Pickands_emp <- function(s, ang, wts) {
-    .Call('mev_Pickands_emp', PACKAGE = 'mev', s, ang, wts)
+    .Call('_mev_Pickands_emp', PACKAGE = 'mev', s, ang, wts)
 }
 
 ldirfn <- function(param) {
-    .Call('mev_ldirfn', PACKAGE = 'mev', param)
+    .Call('_mev_ldirfn', PACKAGE = 'mev', param)
 }
 
 .loocvdens <- function(nu, ang, wts, loowts) {
-    .Call('mev_loocvdens', PACKAGE = 'mev', nu, ang, wts, loowts)
+    .Call('_mev_loocvdens', PACKAGE = 'mev', nu, ang, wts, loowts)
 }
 
 #' Random variate generation for Dirichlet distribution on \eqn{S_{d}}{Sd}
@@ -35,7 +35,7 @@ ldirfn <- function(param) {
 #' @examples rdir(n=100, alpha=c(0.5,0.5,2),TRUE)
 #' rdir(n=100, alpha=c(3,1,2),FALSE)
 rdir <- function(n, alpha, normalize = TRUE) {
-    .Call('mev_rdir', PACKAGE = 'mev', n, alpha, normalize)
+    .Call('_mev_rdir', PACKAGE = 'mev', n, alpha, normalize)
 }
 
 #' Multivariate Normal distribution sampler
@@ -52,7 +52,11 @@ rdir <- function(n, alpha, normalize = TRUE) {
 #' @examples
 #' mvrnorm(n=10, mu=c(0,2), Sigma=diag(2))
 mvrnorm <- function(n, mu, Sigma) {
-    .Call('mev_mvrnorm', PACKAGE = 'mev', n, mu, Sigma)
+    .Call('_mev_mvrnorm', PACKAGE = 'mev', n, mu, Sigma)
+}
+
+.mvrnorm_chol <- function(n, mu, Sigma_chol) {
+    .Call('_mev_mvrnorm_chol', PACKAGE = 'mev', n, mu, Sigma_chol)
 }
 
 #' Multivariate Normal distribution sampler (Rcpp version), derived using the eigendecomposition
@@ -65,8 +69,20 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return an n sample from a multivariate Normal distribution
 #'
-.mvrnorm_arma <- function(n, Mu, Xmat) {
-    .Call('mev_mvrnorm_arma', PACKAGE = 'mev', n, Mu, Xmat)
+.mvrnorm_arma <- function(n, Mu, Xmat, eigen = TRUE) {
+    .Call('_mev_mvrnorm_arma', PACKAGE = 'mev', n, Mu, Xmat, eigen)
+}
+
+.mvrnorm_chol_arma <- function(n, Mu, Chol_Cov) {
+    .Call('_mev_mvrnorm_chol_arma', PACKAGE = 'mev', n, Mu, Chol_Cov)
+}
+
+.dmvnorm_arma <- function(x, mean, sigma, log = FALSE) {
+    .Call('_mev_dmvnorm_arma', PACKAGE = 'mev', x, mean, sigma, log)
+}
+
+.dmvnorm_chol_arma <- function(x, mean, chol_sigma, logv = FALSE) {
+    .Call('_mev_dmvnorm_chol_arma', PACKAGE = 'mev', x, mean, chol_sigma, logv)
 }
 
 #' Generate from logistic \eqn{Y \sim {P_x}}, where
@@ -78,7 +94,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPlog <- function(d, index, theta) {
-    .Call('mev_rPlog', PACKAGE = 'mev', d, index, theta)
+    .Call('_mev_rPlog', PACKAGE = 'mev', d, index, theta)
 }
 
 #' Generate from negative logistic \eqn{Y \sim {P_x}}, where
@@ -90,7 +106,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPneglog <- function(d, index, theta) {
-    .Call('mev_rPneglog', PACKAGE = 'mev', d, index, theta)
+    .Call('_mev_rPneglog', PACKAGE = 'mev', d, index, theta)
 }
 
 #' Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
@@ -102,7 +118,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param weight a \code{m} vector of mixture weights, which sum to 1
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPdirmix <- function(d, index, alpha, weight) {
-    .Call('mev_rPdirmix', PACKAGE = 'mev', d, index, alpha, weight)
+    .Call('_mev_rPdirmix', PACKAGE = 'mev', d, index, alpha, weight)
 }
 
 #' Generate from bilogistic \eqn{Y \sim {P_x}}, where
@@ -113,7 +129,11 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param alpha a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPbilog <- function(d, index, alpha) {
-    .Call('mev_rPbilog', PACKAGE = 'mev', d, index, alpha)
+    .Call('_mev_rPbilog', PACKAGE = 'mev', d, index, alpha)
+}
+
+.rPexstud_old <- function(index, sigma, al) {
+    .Call('_mev_rPexstud_old', PACKAGE = 'mev', index, sigma, al)
 }
 
 #' Generate from extremal Student-t \eqn{Y \sim {P_x}}, where
@@ -121,45 +141,50 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param Sigma a positive semi-definite correlation matrix
+#' @param cholesky Cholesky root of transformed correlation matrix
 #' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
 #'
 #' @return a \code{d}-vector from \eqn{P_x}
-.rPexstud <- function(index, sigma, al) {
-    .Call('mev_rPexstud', PACKAGE = 'mev', index, sigma, al)
+.rPexstud <- function(index, cholesky, sigma, al) {
+    .Call('_mev_rPexstud', PACKAGE = 'mev', index, cholesky, sigma, al)
 }
 
 #' Generate from extremal Husler-Reiss distribution \eqn{Y \sim {P_x}}, where
 #' \eqn{P_{x}} is probability of extremal function
 #'
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-#' @param Lambda an symmetric square matrix of coefficients \eqn{\lambda^2}
-#'
+#' @param Sigma a covariance matrix formed from the symmetric square matrix of coefficients \eqn{\lambda^2}
+#' @param cholesky the Cholesky root of \code{Sigma}
 #' @return a \code{d}-vector from \eqn{P_x}
-.rPHuslerReiss <- function(index, Lambda) {
-    .Call('mev_rPHuslerReiss', PACKAGE = 'mev', index, Lambda)
+.rPHuslerReiss <- function(index, cholesky, Sigma) {
+    .Call('_mev_rPHuslerReiss', PACKAGE = 'mev', index, cholesky, Sigma)
+}
+
+.rPHuslerReiss_old <- function(index, Lambda) {
+    .Call('_mev_rPHuslerReiss_old', PACKAGE = 'mev', index, Lambda)
 }
 
 #' Generate from Brown-Resnick process \eqn{Y \sim {P_x}}, where
 #' \eqn{P_{x}} is probability of extremal function
 #'
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-#' @param Sigma a positive semi-definite covariance matrix
+#' @param Sigma a positive definite covariance matrix
 #'
 #' @return a \code{d}-vector from \eqn{P_x}
-.rPBrownResnick <- function(index, Sigma) {
-    .Call('mev_rPBrownResnick', PACKAGE = 'mev', index, Sigma)
+.rPBrownResnick <- function(index, Sigma_chol, Sigma) {
+    .Call('_mev_rPBrownResnick', PACKAGE = 'mev', index, Sigma_chol, Sigma)
 }
 
 #' Generate from Smith model (moving maxima) \eqn{Y \sim {P_x}}, where
 #' \eqn{P_{x}} is probability of extremal function
 #'
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-#' @param Sigma a positive semi-definite covariance matrix
+#' @param Sigma_chol the Cholesky root of the covariance matrix
 #' @param loc location matrix
 #'
 #' @return a \code{d}-vector from \eqn{P_x}
-.rPSmith <- function(index, Sigma, loc) {
-    .Call('mev_rPSmith', PACKAGE = 'mev', index, Sigma, loc)
+.rPSmith <- function(index, Sigma_chol, loc) {
+    .Call('_mev_rPSmith', PACKAGE = 'mev', index, Sigma_chol, loc)
 }
 
 #' Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
@@ -176,7 +201,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPdir <- function(d, index, alpha, irv = FALSE) {
-    .Call('mev_rPdir', PACKAGE = 'mev', d, index, alpha, irv)
+    .Call('_mev_rPdir', PACKAGE = 'mev', d, index, alpha, irv)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the logistic model
@@ -191,7 +216,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rlogspec <- function(n, d, theta) {
-    .Call('mev_rlogspec', PACKAGE = 'mev', n, d, theta)
+    .Call('_mev_rlogspec', PACKAGE = 'mev', n, d, theta)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the negative logistic model
@@ -206,7 +231,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rneglogspec <- function(n, d, theta) {
-    .Call('mev_rneglogspec', PACKAGE = 'mev', n, d, theta)
+    .Call('_mev_rneglogspec', PACKAGE = 'mev', n, d, theta)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the Dirichlet mixture model
@@ -220,7 +245,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rdirmixspec <- function(n, d, alpha, weight) {
-    .Call('mev_rdirmixspec', PACKAGE = 'mev', n, d, alpha, weight)
+    .Call('_mev_rdirmixspec', PACKAGE = 'mev', n, d, alpha, weight)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the bilogistic model
@@ -235,7 +260,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rbilogspec <- function(n, alpha) {
-    .Call('mev_rbilogspec', PACKAGE = 'mev', n, alpha)
+    .Call('_mev_rbilogspec', PACKAGE = 'mev', n, alpha)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the extremal Student model
@@ -246,7 +271,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rexstudspec <- function(n, sigma, al) {
-    .Call('mev_rexstudspec', PACKAGE = 'mev', n, sigma, al)
+    .Call('_mev_rexstudspec', PACKAGE = 'mev', n, sigma, al)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the Husler-Reiss model
@@ -256,7 +281,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rhrspec <- function(n, Lambda) {
-    .Call('mev_rhrspec', PACKAGE = 'mev', n, Lambda)
+    .Call('_mev_rhrspec', PACKAGE = 'mev', n, Lambda)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the Brown-Resnick model
@@ -264,14 +289,15 @@ mvrnorm <- function(n, mu, Sigma) {
 #' Simulation algorithm of Dombry et al. (2015)
 #'
 #' @param n sample size
+#' @param Sigma_chol Cholesky root of \code{Sigma}
 #' @param Sigma \code{d}-dimensional covariance matrix
 #'
 #'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
 #'\emph{Biometrika}, \bold{103}(2), 303--317.
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
-.rbrspec <- function(n, Sigma) {
-    .Call('mev_rbrspec', PACKAGE = 'mev', n, Sigma)
+.rbrspec <- function(n, Sigma_chol, Sigma) {
+    .Call('_mev_rbrspec', PACKAGE = 'mev', n, Sigma_chol, Sigma)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the Smith model (moving maxima)
@@ -279,15 +305,15 @@ mvrnorm <- function(n, mu, Sigma) {
 #' Simulation algorithm of Dombry et al. (2015)
 #'
 #' @param n sample size
-#' @param Sigma \code{d}-dimensional covariance matrix
+#' @param Sigma_chol Cholesky decomposition of the \code{d}-dimensional covariance matrix (upper triangular)
 #' @param loc location matrix
 #'
 #'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
 #'\emph{Biometrika}, \bold{103}(2), 303--317.
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
-.rsmithspec <- function(n, Sigma, loc) {
-    .Call('mev_rsmithspec', PACKAGE = 'mev', n, Sigma, loc)
+.rsmithspec <- function(n, Sigma_chol, loc) {
+    .Call('_mev_rsmithspec', PACKAGE = 'mev', n, Sigma_chol, loc)
 }
 
 #' Generates from \eqn{Q_i}{Qi}, the spectral measure of the extremal Dirichlet
@@ -307,7 +333,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rdirspec <- function(n, d, alpha, irv = FALSE) {
-    .Call('mev_rdirspec', PACKAGE = 'mev', n, d, alpha, irv)
+    .Call('_mev_rdirspec', PACKAGE = 'mev', n, d, alpha, irv)
 }
 
 #' Multivariate extreme value distribution sampling algorithm
@@ -320,15 +346,16 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param n sample size
 #' @param d dimension of the multivariate distribution
 #' @param param a vector of parameters
-#' @param model integer, currently ranging from 1 to 8, corresponding respectively to
+#' @param model integer, currently ranging from 1 to 9, corresponding respectively to
 #' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-#' (5) \code{extstud}, (6) \code{hr}, (7) \code{ct} and \code{dir}, (10) \code{negdir} and (8) \code{smith}.
-#' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
+#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
+#' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Conditionally negative definite
+#' matrix of parameters for the Huesler--Reiss model. Default matrix for compatibility
 #' @param loc matrix of location for Smith model.
 #'
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rmevA1 <- function(n, d, para, model, Sigma, loc) {
-    .Call('mev_rmevA1', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
+    .Call('_mev_rmevA1', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
 }
 
 #' Multivariate extreme value distribution sampling algorithm
@@ -340,29 +367,27 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param n sample size
 #' @param d dimension of the multivariate distribution
 #' @param param a vector of parameters
-#' @param model integer, currently ranging from 1 to 8, corresponding respectively to
+#' @param model integer, currently ranging from 1 to 9, corresponding respectively to
 #' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct},
-#' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
+#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
 #' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 #' @param loc matrix of location for Smith model.
 #'
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rmevA2 <- function(n, d, para, model, Sigma, loc) {
-    .Call('mev_rmevA2', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
+    .Call('_mev_rmevA2', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
 }
 
-#' Random number generator from spectral distribution
+#' Random sampling from spectral distribution on l1 sphere
 #'
 #' Generate from \eqn{Q_i}{Qi}, the spectral measure of a given multivariate extreme value model
 #'
 #' @param n sample size
 #' @param d dimension of the multivariate distribution
 #' @param param a vector of parameters
-#' @param model integer, currently ranging from 1 to 7, corresponding respectively to
+#' @param model integer, currently ranging from 1 to 9, corresponding respectively to
 #' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
-#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct}, 
-#' (8) \code{smith}, (9) \code{hr} and (10) \code{negdir}.
+#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
 #' @param Sigma covariance matrix for Brown-Resnick and extremal student, symmetric matrix
 #' of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility
 #' @param loc matrix of locations for the Smith model
@@ -373,10 +398,10 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rmevspec_cpp <- function(n, d, para, model, Sigma, loc) {
-    .Call('mev_rmevspec_cpp', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
+    .Call('_mev_rmevspec_cpp', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
 }
 
-#' Random number generator from asymmetric logistic distribution
+#' Random samples from asymetric logistic distribution
 #'
 #' Simulation algorithm of Stephenson (2003), using exact-samples from the logistic
 #'
@@ -394,14 +419,34 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rmevasy <- function(n, d, para, asym, ncompo, Sigma, model) {
-    .Call('mev_rmevasy', PACKAGE = 'mev', n, d, para, asym, ncompo, Sigma, model)
+    .Call('_mev_rmevasy', PACKAGE = 'mev', n, d, para, asym, ncompo, Sigma, model)
+}
+
+#' Samples from exceedances at site (scaled extremal function definition)
+#'
+#' Models currently implemented include logistic and negative logistic, sampling
+#' from the extremal functions. This requires derivation of \eqn{P_x}
+#'
+#' @param n sample size
+#' @param index index of the site or variable
+#' @param d dimension of the multivariate distribution
+#' @param param a vector of parameters
+#' @param model integer, currently ranging from 1 to 9, corresponding respectively to
+#' (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
+#' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
+#' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
+#' @param loc matrix of location for Smith model.
+#'
+#' @return a \code{n} by \code{d} matrix containing the sample
+.rPsite <- function(n, j, d, para, model, Sigma, loc) {
+    .Call('_mev_rPsite', PACKAGE = 'mev', n, j, d, para, model, Sigma, loc)
 }
 
 Zhang_Stephens <- function(x, init, adapt_sd = 0.1, adapt = TRUE, burnin = 1000L, niter = 10000L, thin = 1L, method = 1L) {
-    .Call('mev_Zhang_Stephens', PACKAGE = 'mev', x, init, adapt_sd, adapt, burnin, niter, thin, method)
+    .Call('_mev_Zhang_Stephens', PACKAGE = 'mev', x, init, adapt_sd, adapt, burnin, niter, thin, method)
 }
 
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
-    .Call('mev_RcppExport_registerCCallable', PACKAGE = 'mev')
+    .Call('_mev_RcppExport_registerCCallable', PACKAGE = 'mev')
 })

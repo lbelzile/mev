@@ -6,7 +6,7 @@
 \usage{
 angmeas(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf",
   "arctan"), marg = c("Frechet", "Pareto"), wgt = c("Empirical",
-  "Euclidean"), region = c("sum", "min", "max"))
+  "Euclidean"), region = c("sum", "min", "max"), is.angle = FALSE)
 }
 \arguments{
 \item{x}{an \code{n} by \code{d} sample matrix}
@@ -23,6 +23,8 @@ angmeas(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf",
 
 \item{region}{character string specifying which observations to consider (and weight). \code{"sum"} corresponds to a radial threshold
 \eqn{\sum x_i > }\code{th}, \code{"min"} to \eqn{\min x_i >}\code{th} and \code{"max"} to \eqn{\max x_i >}\code{th}.}
+
+\item{is.angle}{logical indicating whether observations are already angle with respect to \code{region}. Default to \code{FALSE}.}
 }
 \value{
 a list with arguments \code{ang} for the \eqn{d-1} pseudo-angular sample, \code{rad} with the radial component

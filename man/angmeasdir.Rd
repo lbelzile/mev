@@ -6,8 +6,48 @@
 \usage{
 angmeasdir(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2",
   "linf", "arctan"), marg = c("Frechet", "Pareto"), wgt = c("Empirical",
-  "Euclidean"), region = c("sum", "min", "max"), which.method = 1)
+  "Euclidean"), region = c("sum", "min", "max"), is.angle = FALSE)
+}
+\arguments{
+\item{x}{an \code{n} by \code{d} sample matrix}
+
+\item{th}{threshold of length 1 for \code{"sum"}, or \code{d} marginal thresholds otherwise.}
+
+\item{Rnorm}{character string indicating the norm for the radial component.}
+
+\item{Anorm}{character string indicating the norm for the angular component. \code{arctan} is only implemented for \eqn{d=2}}
+
+\item{marg}{character string indicating choice of marginal transformation, either to Frechet or Pareto scale}
+
+\item{wgt}{character string indicating weighting function for the equation. Can be based on Euclidean or empirical likelihood for the mean}
+
+\item{region}{character string specifying which observations to consider (and weight). \code{"sum"} corresponds to a radial threshold
+\eqn{\sum x_i > }\code{th}, \code{"min"} to \eqn{\min x_i >}\code{th} and \code{"max"} to \eqn{\max x_i >}\code{th}.}
+
+\item{is.angle}{logical indicating whether observations are already angle with respect to \code{region}. Default to \code{FALSE}.}
+}
+\value{
+an invisible list with components
+\itemize{
+ \item \code{nu} bandwidth parameter obtained by cross-validation;
+ \item \code{dirparmat} \code{n} by \code{d} matrix of Dirichlet parameters for the mixtures;
+ \item \code{wts} mixture weights.
+}
 }
 \description{
-This function uses the points returned from a call to \code{angmeas}
+This function computes the empirical or Euclidean likelihood
+estimates of the spectral measure and uses the points returned from a call to \code{angmeas} to compute the Dirichlet
+mixture smoothing of de Carvalho, Warchol and Segers (2012), placing a Dirichlet kernel at each observation.
+}
+\details{
+The cross-validation
+bandwidth is the solution of
+ \deqn{\max_{\nu} \sum_{i=1}^n \log \left\{ \sum_{k=1,k \neq i}^n p_{k, -i} f(\mathbf{w}_i; \nu \mathbf{w}_k)\right\},}
+where \eqn{f} is the density of the Dirichlet distribution, \eqn{p_{k, -i}} is the Euclidean weight
+obtained from estimating the Euclidean likelihood problem without observation \eqn{i}.
+}
+\examples{
+set.seed(123)
+x <- rmev(n=250, d=2, param=0.5, model="log")
+out <- angmeasdir(x=x, th=0, Rnorm="l1", Anorm="l1", marg="Frechet", wgt="Empirical")
 }

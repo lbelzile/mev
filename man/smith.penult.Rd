@@ -4,7 +4,8 @@
 \alias{smith.penult}
 \title{Smith (1987) penultimate approximations}
 \usage{
-smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m, ...)
+smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m,
+  family, quantF = NULL, returnList = TRUE, ...)
 }
 \arguments{
 \item{densF}{density function; for standard statistical family \code{family}, given by \code{dfamily}}
@@ -19,10 +20,23 @@ smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m, ...)
 
 \item{m}{vector of block sizes for method \code{"bm"}}
 
+\item{family}{the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}}
+
+\item{quantF}{quantile function, default to \code{NULL}}
+
+\item{returnList}{logical; should the arguments be returned as a list or as a matrix of parameter}
+
 \item{...}{additional arguments passed to \code{densF} and \code{distF}}
 }
 \value{
-a matrix containing the penultimate location (if \code{method="bm"}), scale and shape parameters
+a matrix or a list (if \code{returnList}) containing
+\itemize{
+\item{\code{loc}:} {location parameters (\code{method="bm"})}
+\item{\code{scale}:} {scale parameters}
+\item{\code{shape}:} {shape parameters}
+\item{\code{u:}} {thresholds (\code{method="pot"})}
+\item{\code{m:}} {block sizes (\code{method="bm"})}
+}
 }
 \description{
 The function takes as arguments the distribution and density functions. There are two options:
@@ -35,17 +49,13 @@ provided. The other argument (\code{u} or \code{m} depending on the method) is i
 qu <- seq(1,5,by=0.02)
 penult <- smith.penult(densF=dnorm, distF=pnorm,
    ddensF=function(x){-x*dnorm(x)}, model="pot", u=qu)
-plot(qu, penult[,2], type="l",xlab="Quantile",
+plot(qu, penult$shape, type="l",xlab="Quantile",
    ylab="Penultimate shape",ylim=c(-0.5,0))
 #Block maxima for Gamma variables -
-#Use must provide arguments for shape (or rate)
+#User must provide arguments for shape (or rate)
 m <- seq(30,3650,by=30)
-penult <- smith.penult(densF=dgamma, distF=pgamma,
-model="bm", m=m, shape=0.1)
-#First column is location
-#second is scale (both scaling constants) and
-#third is penultimate shape
-plot(m, penult[,3], type="l",
+penult <- smith.penult(family = "gamma", model="bm", m=m, shape=0.1)
+plot(m, penult$shape, type="l",
  xlab="Quantile", ylab="Penultimate shape")
 }
 \references{

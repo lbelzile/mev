@@ -1,4 +1,25 @@
-mev v.1.10
+mev v.1.11 (Release date: 2018-02-23)
+==============
+New:
+* Function 'rparp' for simulation from R-Pareto Processes via rejection sampling
+* Function 'gev.pll' and 'gpd.pll' for penalized profile likelihood and tangent exponential model approximations
+* New functions 'chibar', 'angextrapo' and 'lambdadep' for bivariate and multivariate model estimation, based on work of Tawn et al.
+* Dirichlet mixture smoothing for empirical angular distribution of de Carvalho et al. (2013)
+* Functions 'gev.mle' and 'gpd.mle' for maximum likelihood estimates of transformed parameters
+* Functions 'gev.abias' and 'gpd.abias' for asymptotic bias of block maxima for fixed sample sizes or fixed thresholds
+Changes:
+* Functions 'rmev', 'rmevspec', etc. now only accept variogram functions `vario` that have distance as argument
+* Simulation from 'rmev' and 'rmevspec' faster to refactoring of code
+* Function 'smith.penult' now has a 'family' as argument for specifying distributions via a string
+* Function 'gev.tem' and 'gpd.tem' are now a wrapper for 'gev.pll' and 'gpd.pll', respectively. Routine should be more robust
+* TEM corrections now handle more options
+* Clarifications in the vignette about the asymmetric negative logistic model following a discussion with A. Stephenson.
+Fixes:
+* Fixed incorrect scaling in 'infomat.test' (thanks to P. Northrop for pointing the latter)
+* Model "br" now simulates from stationary version only if argument 'sigma' is provided, and otherwise samples intrinsically Gaussian processes
+* Display of p-value matrix for 'infomat.test'
+
+mev v.1.10 (Release date: 2017-02-01)
 ==============
 New:
 * Added 'negdir' model to rmev
@@ -25,27 +46,27 @@ Changes:
 mev v1.7 (Release date: 2016-06-07)
 ==============
 * fixed an error in the acceptance rate for the gp.fit MCMC
-New: 
+New:
 * ext.index Extremal index estimates based on interexceedance and gap times
 * infomat.test Information matrix test of Suveges and Davison (2010)
 
 mev v1.6.1 (Release date: 2016-03-15)
 ==============
 * fixed an error in the normal sampler (affecting version 1.5 and 1.6)
-All simulations of Brown-Resnick or extremal-Student were affected by the mistake 
+All simulations of Brown-Resnick or extremal-Student were affected by the mistake
 
 mev v1.6 (Release date: 2016-03-08)
 ==============
 
 New:
 *Empirical and Euclidean likelihood estimation of spectral measure
-Changes: 
+Changes:
 *gp.fit ample changes to the function, in particular a fix for the printing method, handling of errors and inclusion of the Zhang (2010) method and MCMC algorithm for the latter. This function is still preliminary and may updated in the nearby future to include further possibilities.
 
 mev v1.5 (Release date: 2016-02-16)
 ==============
 
-New: 
+New:
 * Wadsworth (2015) Technometrics's proposal for threshold selection based on NHPP superposition
 * Northrop & Coleman diagnostic (2014) Extremes for shape equality and p-value path
 
@@ -85,4 +106,3 @@ Changes:
 
 mev v1.0 (Release date: 2014-08-16)
 ==============
-

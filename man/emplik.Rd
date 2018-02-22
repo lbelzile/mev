@@ -24,7 +24,7 @@ emplik(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)),
 }
 \value{
 a list with components
-#' \itemize{
+\itemize{
  \item \code{logelr} log empirical likelihood ratio.
  \item \code{lam} Lagrange multiplier (vector of length \code{d}).
  \item \code{wts} \code{n} vector of observation weights (probabilities).

@@ -13,13 +13,13 @@ infomat.test(x, q, K, plot = TRUE)
 
 \item{K}{int specifying the largest K-gap}
 
-\item{plot}{boolean: should the graphical diagnostic be plotted?}
+\item{plot}{logical: should the graphical diagnostic be plotted?}
 }
 \value{
 an invisible list of matrices containing
 \itemize{
 \item \code{IMT} a matrix of test statistics
-\item \code{pvals} a matrix of approximate p-values (corresponding to probabilities under a \eqn{\chi^2_1}{chis-square(1)} distribution)
+\item \code{pvals} a matrix of approximate p-values (corresponding to probabilities under a \eqn{\chi^2_1}{chi-square(1)} distribution)
 \item \code{mle} a matrix of maximum likelihood estimates for each given pair (\code{u}, \code{K})
 \item \code{loglik} a matrix of log-likelihood values at MLE for each given pair (\code{u}, \code{K})
 \item \code{threshold} a vector of thresholds based on empirical quantiles at supplied levels.
@@ -27,11 +27,11 @@ an invisible list of matrices containing
 }
 }
 \description{
-The Information Matrix Test (IMT), proposed by Suveges and Davison (2010) based on White (1982), is based
+The Information Matrix Test (IMT), proposed by Suveges and Davison (2010), is based
 on the difference between the expected quadratic score and the second derivative of
 the log-likelihood. The asymptotic distribution for each threshold \code{u} and gap \code{K}
 is asymptotically \eqn{\chi^2}{chi-square} with one degree of freedom. The approximation is good for
-\eqn{N >80} and conservative for smaller sample sizes. The test assumes independence between gaps.
+\eqn{N>80} and conservative for smaller sample sizes. The test assumes independence between gaps.
 }
 \details{
 The procedure proposed in Suveges & Davison (2010) was corrected for erratas.
@@ -42,13 +42,12 @@ The condition \eqn{D^{(K)}(u_n)}{D^K(u)} should be checked by the user.
 Fukutome et al. (2015) propose an ad hoc automated procedure
 \enumerate{
 \item Calculate the interexceedance times for each K-gap and each threshold, along with the number of clusters
-\item  Select the (\code{u}, \code{K}) pairs for which IMT <0.05 (corresponding to a P-value of 0.82)
+\item  Select the (\code{u}, \code{K}) pairs for which IMT < 0.05 (corresponding to a P-value of 0.82)
 \item Among those, select the pair (\code{u}, \code{K}) for which the number of clusters is the largest
 }
 }
 \examples{
-library(evd)
-infomat.test(x <- rgpd(n=1000), q = seq(0.9,0.995,length=10), K<- 3)
+infomat.test(x <- evd::rgpd(n = 1000), q = seq(0.9,0.995,length=10), K <- 3)
 }
 \references{
 Fukutome, Liniger and Suveges (2015), Automatic threshold and run parameter selection: a climatology for extreme hourly precipitation in Switzerland. \emph{Theoretical and Applied Climatology}, \strong{120}(3), 403-416.

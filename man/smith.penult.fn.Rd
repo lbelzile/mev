@@ -40,10 +40,10 @@ take instead \eqn{\phi(x)} to be the reciprocal hazard function \eqn{\phi(x)=(1-
 
 In cases where the distribution function is in the maximum domain of
 attraction of the Gumbel distribution, \eqn{\rho} is possibly undetermined and
-\eqn{\epsilon} can taken to be \eqn{\phi(b_n)\phi''(b_n)}.
+\eqn{\epsilon} can be equal to \eqn{\phi(b_n)\phi''(b_n)}.
 
 For distributions in the maximum domain of
-attraction of the Gumbel distribution, it is also possible to abstract from the \eqn{\rho} parameter by substituting the function \eqn{H_{\rho}}{H(x;\rho)} by \eqn{x^3/6} without affecting the rate of convergence. This can be done by setting \code{mdaGumbel=TRUE} in the function call.
+attraction of the Gumbel distribution and that are class N, it is also possible to abstract from the \eqn{\rho} parameter by substituting the function \eqn{H_{\rho}}{H(x;\rho)} by \eqn{x^3/6} without affecting the rate of convergence. This can be done by setting \code{mdaGumbel=TRUE} in the function call.
 }
 \section{Warning}{
 
@@ -55,8 +55,8 @@ This is inherent to the method and can be resolved by `not' evaluating the funct
 \examples{
 #Normal maxima example from Smith (1987)
 m <- 100 #block of size 100
-p <- c(smith.penult(densF=dnorm, distF=pnorm,
-   ddensF=function(x){-x*dnorm(x)},model="bm",m=m))
+p <- smith.penult(family="norm",
+   ddensF=function(x){-x*dnorm(x)}, model="bm", m=m, returnList=FALSE)
 approx <- smith.penult.fn(loc=p[1], scale=p[2], shape=p[3],
    eps=p[3]^2+p[3]+p[2]^2, mdaGumbel=TRUE, model="bm")
 x <- seq(0.5,6,by=0.001)
@@ -78,7 +78,7 @@ legend(x="topright",lty=c(1,1,1,1),col=c(1,2,3,4),
 
 #Threshold exceedances
 p <- c(4,smith.penult(densF=dnorm, distF=pnorm,
- ddensF=function(x){-x*dnorm(x)},model="pot",u=4))
+ ddensF=function(x){-x*dnorm(x)},model="pot", u=4, returnList=FALSE))
 approx <- smith.penult.fn(loc=p[1], scale=p[2], shape=p[3],
  eps=p[3]^2+p[3]+p[2]^2, mdaGumbel=TRUE, model="pot")
 x <- seq(4.01,7,by=0.01)

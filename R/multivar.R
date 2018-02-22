@@ -1,18 +1,18 @@
 #' Parametric estimates of \eqn{\bar{\chi}}
-#' 
-#' The function fits a generalized Pareto distribution to minima of Pareto variates, 
+#'
+#' The function fits a generalized Pareto distribution to minima of Pareto variates,
 #' using the representation \deqn{\Pr(\min(X) > x) = \frac{L(x)}{x^{1/\eta}}},
-#' where \eqn{\bar{\chi}=2\eta-1}. The data is transformed to the unit Pareto scale and 
+#' where \eqn{\bar{\chi}=2\eta-1}. The data is transformed to the unit Pareto scale and
 #' a generalized Pareto variable is fitted to the minimum. The parameter \eqn{eta} corresponds to the shape of the latter.
 #' The confidence intervals can be based either on the delta-method, a profile likelihood or a tangent exponential model approximation.
-#' 
+#' @export
 #' @param dat an \eqn{n} by \eqn{d} matrix of multivariate observations
 #' @param qu percentile level at which to threshold. Default to all observations.
 #' @param confint string indicating the type of confidence interval.
 #' @param level the confidence level required
 #' @return a named vector of length 3 containing the point estimate, the lower and the upper confidence intervals
 #' @seealso \code{\link[evd]{chiplot}} for empirical estimates of \eqn{chi} and \eqn{\bar{\chi}}.
-#' @examples 
+#' @examples
 #' \dontrun{
 #' set.seed(765)
 #' # Max-stable model, chibar = 1
@@ -42,8 +42,8 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
   if("delta" == confint){
     gpfit_min_par <- gp.fit(sp, threshold = 0)
     chibar_est <- as.vector((2 * gpfit_min_par$est[2] - 1))
-    return( c("Estimate" = chibar_est, 
-              "Lower CI" = chibar_est - qnorm(1-(1-level)/2) * 2 * as.vector(gpfit_min_par$std.err[2]), 
+    return( c("Estimate" = chibar_est,
+              "Lower CI" = chibar_est - qnorm(1-(1-level)/2) * 2 * as.vector(gpfit_min_par$std.err[2]),
               "Upper CI" = chibar_est + qnorm(1-(1-level)/2) * 2 * as.vector(gpfit_min_par$std.err[2]))
     )
   } else{
@@ -54,22 +54,36 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
 }
 
 #' Bivariate angular function for extrapolation based on rays
-#' 
-#' This scale parameter in the Ledford and Tawn approach is estimated empirically for
-#' \eqn{x} large as
-#' \deqn{\frac{\Pr(X_P>xw, Y_P>x(1-w))}{\Pr(X_P>x, Y_P>x)}}
-#' where the sample (\eqn{X_P, Y_P}) are observations on a common unit Pareto scale
+#'
+#' The scale parameter \eqn{g(w)} in the Ledford and Tawn approach is estimated empirically for
+#' \eqn{x} large as \deqn{\frac{\Pr(X_P>xw, Y_P>x(1-w))}{\Pr(X_P>x, Y_P>x)}}
+#' where the sample (\eqn{X_P, Y_P}) are observations on a common unit Pareto scale.
+#'  The coefficient \eqn{\eta} is estimated using maximum likelihood as the
+#'  shape parameter of a generalized Pareto distribution on \eqn{\min(X_P, Y_P)}.
+#'
 #' @param dat an \eqn{n} by \eqn{2} matrix of multivariate observations
 #' @param qu quantile level on uniform scale at which to threshold data. Default to 0.95
-#' @return a list with coefficient 
-angextrapo <- function(dat, qu = 0.95){
+#' @param w vector of unique angles between 0 and 1 at which to evaluate scale empirically.
+#' @return a list with elements
+#' \itemize{
+#' \item{\code{w}: }{angles between zero and one}
+#' \item{\code{g}: }{scale function at a given value of \code{w}}
+#' \item{\code{eta}: }{Ledford and Tawn coefficient}
+#' }
+#' @export
+#' @references Ledford, A.W. and J. A. Tawn (1996), Statistics for near independence in multivariate extreme values. \emph{Biometrika}, \bold{83}(1), 169--187.
+#' @examples
+#' angextrapo(rmev(n = 1000, model = "log", d = 2, param = 0.5))
+angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)){
   if(ncol(dat) != 2){stop("Only implemented in the bivariate case")}
   sp <- apply(dat, 2, function(x){ 1 / (1 - rank(x, na.last = "keep", ties.method = "average")/(length(x) + 1))})
   #Estimate of eta at w = 1/2
   x <- 1 / (1 - qu)
   eta <- gp.fit(apply(sp, 1, min), threshold = x)$est['shape']
   # Angles
-  w <- seq(0.05, 0.95, length = 20)
+  if(any(c(w < 0, w > 1,  length(unique(w))!=length(w)))){
+    stop("Invalid argument `w` to angextrapo")
+  }
   g <- sapply(w, function(wi){sum((sp[,1] > wi*x) + (sp[,2] > (1-wi)*x))}) / sum(rowSums(sp>x)==2)
   #Return angles, empirical estimates of g(w) and eta coefficient
   return(list( w = w, g = g, eta = eta))
@@ -77,27 +91,32 @@ angextrapo <- function(dat, qu = 0.95){
 
 ##################
 #' Estimation of the bivariate lambda function of Wadsworth and Tawn (2013)
-#' 
+#'
 #' @param dat an \eqn{n} by \eqn{2} matrix of multivariate observations
 #' @param qu quantile level on uniform scale at which to threshold data. Default to 0.95
 #' @param method string indicating the estimation method
 #' @param plot logical indicating whether to return the graph of \code{lambda}
-#' 
-#' 
-#' The confidence intervals are based on normal quantiles. The standard errors for the \code{hill} 
+#'
+#'
+#' The confidence intervals are based on normal quantiles. The standard errors for the \code{hill}
 #' are based on the asymptotic covariance and that of the \code{mle} derived using the delta-method.
 #' Bayesian posterior predictive interval estimates are obtained using ratio-of-uniform sampling with flat priors:
-#' the shape parameters are constrained to lie within the triangle, as are frequentist point estimates 
+#' the shape parameters are constrained to lie within the triangle, as are frequentist point estimates
 #' which are adjusted post-inference.
-#' 
+#'
+#' @importFrom utils capture.output
+#' @importFrom revdbayes rpost
+#' @importFrom revdbayes set_prior
+#' @importFrom evd fpot
+#' @importFrom graphics segments
 #' @return a plot of the lambda function if \code{plot=TRUE}, plus an invisible list with components
 #' \itemize{
 #' \item \code{w} the sequence of angles in (0,1) at which the \code{lambda} values are evaluated
 #' \item \code{lambda} point estimates of lambda
 #' \item \code{lower.confint} 95% confidence interval for lambda (lower bound)
-#' \item \code{lower.confint} 95% confidence interval for lambda (upper bound) 
+#' \item \code{lower.confint} 95% confidence interval for lambda (upper bound)
 #' }
-#' @examples 
+#' @examples
 #' set.seed(12)
 #' dat <- evd::rbvevd(n=1000, dep = 0.1)
 #' lambdadep(dat, method = "hill")
@@ -107,15 +126,16 @@ angextrapo <- function(dat, qu = 0.95){
 #' dat <- matrix(runif(n = 2000), ncol = 2)
 #' lambdadep(dat, method = "hill")
 #' }
+#' @export
 lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot = TRUE){
-  #' Hill estimator for fixed kth order statistic
+  ## Hill estimator for fixed kth order statistic
   hill_thresh <- function(dat, qu = 0.95, thresh = quantile(dat, qu)){
     dat <- as.numeric(dat)
     excess <- dat[dat>thresh]
     1/(mean(log(dat[dat>thresh]))-log(thresh))
   }
   if(method == "bayes"){
-    if(!require(revdbayes)){
+    if(!requireNamespace("revdbayes")){
       stop("Package `revdbayes` is not installed.")
     }
   }
@@ -126,7 +146,7 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
   lambda_seq <- sapply(w_seq <- seq(0, 1, by=0.02), function(w){
     ang_weighted_dat <- exp(apply(Xexp/(c(w,1-w)), 2, min))
     if(method == "mle"){
-           fit <- mev::gp.fit(ang_weighted_dat, thresh=quantile(ang_weighted_dat, qu)) 
+           fit <- mev::gp.fit(ang_weighted_dat, thresh=quantile(ang_weighted_dat, qu))
            return(c(1/fit$estimate['shape'], fit$std.err['shape']/(fit$estimate['shape']^2)))
     } else if (method == "hill"){
       hillest <- hill_thresh(dat = ang_weighted_dat, qu = qu)
@@ -138,10 +158,10 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
       } else{
         #Try fitting a GP model, mode of posterior should not be too far
         pot_stval0 <- mev::gp.fit(ang_weighted_dat, thresh=quantile(ang_weighted_dat, qu))$estimate
-        if(pot_stval0[2] < 1 || pot_stval0[2] > 1/max(c(1-w, w))){ 
+        if(pot_stval0[2] < 1 || pot_stval0[2] > 1/max(c(1-w, w))){
           #If values are not within the allowed interval, fit GP fixing the shape to a legit value
-        pot_stval <- try(fpot(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu), 
-                  shape = (xi <- max(1+1e-3,min(v[2],1/max(c(1-w, w))-1e-3, na.rm = TRUE))), 
+        pot_stval <- try(evd::fpot(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu),
+                  shape = (xi <- max(1+1e-3,min(v[2],1/max(c(1-w, w))-1e-3, na.rm = TRUE))),
                   std.err=FALSE, method = "Brent", lower = pot_stval0[1]/5, upper = pot_stval0[1]*10))
         #Make sure that the result is valid and optim converged
         if(!is.character(pot_stval)){
@@ -152,11 +172,11 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
         }
         #Generate independent samples from the posterior
         #Catch and sink error messages, print statements and warnings - invalid input is removed anyway and cast to NA if needs be
-      invisible(capture.output(postsamp <- try(suppressWarnings(rpost(n = 300, model = "gp",  data = ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu),
-             prior = set_prior(prior = "flat", model = "gp", min_xi = 1, max_xi = 1/max(c(1-w, w))), init_ests = start, trans = "BC")), silent=TRUE)))
+      invisible(utils::capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp",  data = ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu),
+             prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1, max_xi = 1/max(c(1-w, w))), init_ests = start, trans = "BC")), silent=TRUE)))
       if(is.character(postsamp)){
-        invisible(capture.output(postsamp <- try(suppressWarnings(rpost(n = 300, model = "gp",  data = ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu),
-                         prior = set_prior(prior = "flat", model = "gp", min_xi = 1, max_xi = 1/max(c(1-w, w))), init_ests = start)), silent=TRUE)))
+        invisible(capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp",  data = ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu),
+                         prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1, max_xi = 1/max(c(1-w, w))), init_ests = start)), silent=TRUE)))
       }
       if(is.character(postsamp)){
         return(rep(NA, 3))
@@ -170,7 +190,7 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
     lower <- pmax(c(1-w_seq[w_seq<0.5], w_seq[w_seq<=0.5]+0.5), pmin(1,lambda_seq[1,]-qnorm(0.975)*lambda_seq[2,]))
     upper <- pmax(c(1-w_seq[w_seq<0.5], w_seq[w_seq<=0.5]+0.5), pmin(1,lambda_seq[1,]+qnorm(0.975)*lambda_seq[2,]))
     pe <- pmax(c(1-w_seq[w_seq<0.5], w_seq[w_seq<=0.5]+0.5), pmin(1,lambda_seq[1,]))
-  } else if(method == "bayes"){ 
+  } else if(method == "bayes"){
     lower <- lambda_seq[1,]
     upper <- lambda_seq[3,]
     pe <- lambda_seq[2,]
@@ -186,4 +206,3 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
   }
    invisible(list(w = w_seq, lambda = pe, lower.confint = lower, upper.confint = upper))
 }
-

@@ -428,14 +428,6 @@ NumericVector rPBrownResnick_old (int index, NumericMatrix Sigma){
   return samp;
 }
 
-//' Generate from Smith model (moving maxima) \eqn{Y \sim {P_x}}, where
-//' \eqn{P_{x}} is probability of extremal function
-//'
-//' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
-//' @param Sigma a positive semi-definite covariance matrix
-//' @param loc location matrix
-//'
-//' @return a \code{d}-vector from \eqn{P_x}
 NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
   int d = loc.n_rows;
   if(index < 0 || index >= d) Rcpp::stop("Invalid index in rPSmith");

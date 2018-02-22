@@ -163,23 +163,14 @@ The Dirichlet model of \cite{Coles:1991}
 \alpha_kw_k}\right)^{\alpha_j-1}
 \end{align*}
 for $\alpha_j>0.$
-\item \textbf{scaled extremal Dirichlet} (\code{dir})
-The angular density of the scaled extremal Dirichlet model with parameters $\rho >0$ and $\bs{\alpha} \in \R^{d}_{+}$ is given, for all $\bs{w} \in \mathbb{S}_d$, by
+\item \textbf{scaled extremal Dirichlet} (\code{sdir})
+The angular density of the scaled extremal Dirichlet model with parameters $\rho > -\min(\bs{\alpha})$ and $\bs{\alpha} \in \R^{d}_{+}$ is given, for all $\bs{w} \in \mathbb{S}_d$, by
 \begin{align*}
 	h_{\bs{W}}(\bs{w})=\frac{\Gamma(\bar{\alpha}+\rho)}{d\rho^{d-1}\prod_{i=1}^d\Gamma(\alpha_i)}
 \bigl\langle\{\bs{c}(\bs{\alpha},\rho)\}^{1/\rho},\bs{w}^{1/\rho}\bigr\rangle^{-\rho-\bar{\alpha}}\prod_{i=1}^{d}
 \{c(\alpha_i,\rho)\}^{\alpha_i/\rho}w_i^{\alpha_i/\rho-1}.
 \end{align*}
 where $\bs{c}(\bs{\alpha},\rho)$ is the $d$-vector with entries  $\Gamma(\alpha_i+\rho)/\Gamma(\alpha_i)$ for $i=1, \ldots, d.$
-\item \textbf{scaled negative extremal Dirichlet} (\code{negdir})
-The angular density of the scaled negative extremal Dirichlet model with parameters $0< \rho < \min(\alpha_1,\dots, \alpha_d)$ and $\bs{\alpha}$ is given, for all $\bs{w} \in \mathbb{R}_+^d$, by
-\begin{align*}
-h_{\bs{W}}(\bs{w}) =
-\frac{\Gamma(\bar \alpha - \rho)}{d\rho^{d-1}\prod_{i=1}^d \Gamma(\alpha_i)}
-\bigl\langle\{\bs{c}(\bs{\alpha},-\rho)\}^{-1/\rho},\bs{w}^{-1/\rho}\bigr\rangle^{\rho-\bar \alpha}
-\prod_{i=1}^d\{c(\alpha_i,-\rho)\}^{-\alpha_i/\rho}w_i^{-\alpha_i/\rho -1}.
-\end{align*}
-
 
 \item \textbf{H\"usler--Reiss} (\code{hr}), due to \cite{Husler:1989}. It is a special case of the Brown--Resnick process.
 While \cite{Engelke:2015} state that H\"usler--Reiss variates can be sampled following the same scheme, the spatial analog is
@@ -238,6 +229,8 @@ is an $d \times d$ matrix with ones on the diagonal, $-1$ on the $(i, i+1)$ entr
 If the matrix $\bs{\Lambda} \in \mathcal{D}$, then the eigenvalues of the leading $(d-1) \times (d-1)$ submatrix of $\tilde{\bs{\Lambda}}$
 will all be negative.
 
+For a set of $d$ locations, one can supply the  variogram matrix as valid input to the method.
+
 % using a variogram or if specifying a
 % correlation matrix $\bs{\Sigma}$ with entries $\varrho_{ij}$, by taking $2/r_{ij}=\sqrt(2-2\varrho_{ij}).$
 \item \textbf{Brown--Resnick} (\code{br})
@@ -251,7 +244,7 @@ log-Gaussian distribution.
 % almost surely.
 
 It is often in the spatial setting conditioned on a location (typically the origin). Users can provide
-a variogram function or the resulting covariance function. See \cite{Engelke:2015} or \cite{Dombry:2016} for
+a variogram function that takes distance as argument and is vectorized. If \code{vario} is provided, the model will simulate from an intrinsically stationary Gaussian process. The user can alternatively provide a covariance matrix \code{sigma} obtained by conditioning on a site, in which case simulations are from a stationary Gaussian process. See \cite{Engelke:2015} or \cite{Dombry:2016} for
 more information.
 \item \textbf{Extremal Student} (\code{extstud}) of \cite{Nikoloulopoulos:2009}, eq. 2.8, with unit Fréchet margins is
 \begin{align*}
@@ -283,9 +276,9 @@ where $\{\zeta_i, \eta_i\}_{i \in \mathbb{N}}$ is a Poisson point process on $\R
 
 \end{enumerate}
 
-
-\bibliographystyle{apalike2}
-\bibliography{bib}
+\clearpage
+\bibliographystyle{apalike}
+\bibliography{mev_vignette}
 
 
 \end{document}

@@ -5,9 +5,8 @@
 \title{Exact simulations of multivariate extreme value distributions}
 \usage{
 rmev(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "aneglog",
-  "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "dir",
-  "negdir", "dirmix"), alg = c("ef", "sm"), weights, vario, loc,
-  grid = FALSE, ...)
+  "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir",
+  "dirmix"), alg = c("ef", "sm"), weights, vario, loc, grid = FALSE, ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -28,7 +27,7 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 
 \item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
 
-\item{vario}{function specifying the variogram. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing}
+\item{vario}{variogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing}
 
 \item{loc}{\code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
@@ -53,15 +52,14 @@ The vector param differs depending on the model
  \item \code{aneglog}: \eqn{2^d-d-1} dimensional parameter for \code{dep}. Values are recycled if needed.
  \item \code{bilog}: \code{d}-dimensional vector of parameters in \eqn{[0,1]}
  \item \code{negbilog}: \code{d}-dimensional vector of negative parameters
- \item \code{ct, dir, negdir}: \code{d}-dimensional vector of positive (a)symmetry parameters. For \code{dir} and \code{negdir}, a \eqn{d+1}
- vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as shape parameter
+ \item \code{ct, dir, negdir, sdir}: \code{d}-dimensional vector of positive (a)symmetry parameters. For \code{dir} and \code{negdir}, a \eqn{d+1}
+ vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(-\min(\alpha_1, \ldots, \alpha_d), 1]} treated as shape parameter
  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
 }
 
-Stephenson points out that the multivariate asymmetric negative logistic model is not a valid distribution function.
-The implementation in \code{mev} uses the same construction as the asymmetric logistic distribution,
-and as such it does not match the bivariate implementation of \link[evd]{rbvevd}.
+Stephenson points out that the multivariate asymmetric negative logistic model given in e.g. Coles and Tawn (1991) is not a valid distribution function in dimension \eqn{d>3}.
+The implementation in \code{mev} uses the same construction as the asymmetric logistic distribution (see the vignette). As such it does not match the bivariate implementation of \link[evd]{rbvevd}.
 
 The dependence parameter of the \code{evd} package for the Husler-Reiss distribution can be recovered taking
 for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the lag vector between sites and \eqn{r=1/\lambda} for the Husler--Reiss.
@@ -69,19 +67,32 @@ for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the l
 \section{Warning}{
 
 As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
+
+The former implementation of \code{mev} assumed that the Brown-Resnick process was stationary (NOT intrinsically stationary).
+To obtain this, one must provide a covariance matrix \code{sigma}. Passing a variogram (which must now be parameterized by distance and not location)
+will give the intrinsically stationary Brown-Resnick process.
+
+The family of scaled Dirichlet is now parametrized by a parameter in \eqn{-\min(\alpha)} appended to the the \code{d} vector \code{param} containing the parameter \code{alpha}
+of the Dirichlet model. Arguments \code{model="dir"} and \code{model="negdir"} are still supported internally, but not listed in the options.
 }
 
 \examples{
 set.seed(1)
 rmev(n=100, d=3, param=2.5, model="log", alg="ef")
 rmev(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog", alg="sm")
-## Spatial example using variogram, from Clement Dombry
-#Variogram gamma(h) = scale*||h||^alpha
-scale <- 0.5; alpha <- 1
-vario <- function(x) scale*sqrt(sum(x^2))^alpha
+## Spatial example using power variogram
+#NEW: Variogram must take distance as argument
+vario <- function(x, scale, alpha){ scale*x^alpha }
 #grid specification
 grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-rmev(n=100, vario=vario,loc=grid.loc, model="br")
+rmev(n=100, vario=vario,loc=grid.loc, model="br", scale = 0.5, alpha = 1)
+vario2cov <- function(loc, ...){
+ sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
+  vario(sqrt(sum((loc[i,])^2)), ...) +
+  vario(sqrt(sum((loc[j,])^2)), ...) -
+  vario(sqrt(sum((loc[i,]-loc[j,])^2)), ...)))
+}
+rmev(n=100, sigma=vario2cov(grid.loc, scale = 0.5, alpha = 1), model="br")
 #Example with a grid (generating an array)
 rmev(n=10, sigma=cbind(c(2,1),c(1,3)), loc=cbind(runif(4),runif(4)),model="smith", grid=TRUE)
 ## Example with Dirichlet mixture

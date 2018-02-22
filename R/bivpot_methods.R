@@ -1,4 +1,3 @@
-
 #' Interpret bivariate threshold exceedance models
 #'
 #' This is an adaptation of the \pkg{evir} package \code{\link[evir]{interpret.gpdbiv}} function.

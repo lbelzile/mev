@@ -130,9 +130,9 @@ arma::vec svdlm (arma::mat X, arma::colvec y){
   }
   return V * diagmat(d) * U.t()  * y;
 }
-//[[Rcpp::export(.emplik)]]
-List emplik(arma::mat z, arma::colvec mu, arma::vec lam, double eps,
-	double M = 1e30, double thresh = 1e-30, int itermax = 1000){
+//[[Rcpp::export(.emplik_intern)]]
+List emplik_intern(arma::mat z, arma::colvec mu, arma::vec lam, double eps,
+	double M = 1e30, double thresh = 1e-12, int itermax = 1000){
 //(arma::mat z, arma::vec mu  = vec(z.n_cols,fill::zeros), double eps = 1/z.nrows, double M = datum::inf);
 // # Backtracking line search parameters [Tweak only with extreme caution.]
 // # See Boyd and Vandenberghe, pp 464-466.

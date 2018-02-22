@@ -17,7 +17,7 @@ namespace mev {
             require("mev", Rcpp::Named("quietly") = true);
             typedef int(*Ptr_validate)(const char*);
             static Ptr_validate p_validate = (Ptr_validate)
-                R_GetCCallable("mev", "mev_RcppExport_validate");
+                R_GetCCallable("mev", "_mev_RcppExport_validate");
             if (!p_validate(sig)) {
                 throw Rcpp::function_not_exported(
                     "C++ function with signature '" + std::string(sig) + "' not found in mev");
@@ -30,36 +30,36 @@ namespace mev {
         static Ptr__EuclideanWeights p__EuclideanWeights = NULL;
         if (p__EuclideanWeights == NULL) {
             validateSignature("arma::vec(*_EuclideanWeights)(arma::mat,arma::rowvec)");
-            p__EuclideanWeights = (Ptr__EuclideanWeights)R_GetCCallable("mev", "mev__EuclideanWeights");
+            p__EuclideanWeights = (Ptr__EuclideanWeights)R_GetCCallable("mev", "_mev__EuclideanWeights");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__EuclideanWeights(Rcpp::wrap(x), Rcpp::wrap(mu));
+            rcpp_result_gen = p__EuclideanWeights(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(mu)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<arma::vec >(rcpp_result_gen);
     }
 
-    inline List _emplik(arma::mat z, arma::colvec mu, arma::vec lam, double eps, double M = 1e30, double thresh = 1e-30, int itermax = 100) {
-        typedef SEXP(*Ptr__emplik)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr__emplik p__emplik = NULL;
-        if (p__emplik == NULL) {
-            validateSignature("List(*_emplik)(arma::mat,arma::colvec,arma::vec,double,double,double,int)");
-            p__emplik = (Ptr__emplik)R_GetCCallable("mev", "mev__emplik");
+    inline List _emplik_intern(arma::mat z, arma::colvec mu, arma::vec lam, double eps, double M = 1e30, double thresh = 1e-12, int itermax = 1000) {
+        typedef SEXP(*Ptr__emplik_intern)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr__emplik_intern p__emplik_intern = NULL;
+        if (p__emplik_intern == NULL) {
+            validateSignature("List(*_emplik_intern)(arma::mat,arma::colvec,arma::vec,double,double,double,int)");
+            p__emplik_intern = (Ptr__emplik_intern)R_GetCCallable("mev", "_mev__emplik_intern");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__emplik(Rcpp::wrap(z), Rcpp::wrap(mu), Rcpp::wrap(lam), Rcpp::wrap(eps), Rcpp::wrap(M), Rcpp::wrap(thresh), Rcpp::wrap(itermax));
+            rcpp_result_gen = p__emplik_intern(Shield<SEXP>(Rcpp::wrap(z)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(lam)), Shield<SEXP>(Rcpp::wrap(eps)), Shield<SEXP>(Rcpp::wrap(M)), Shield<SEXP>(Rcpp::wrap(thresh)), Shield<SEXP>(Rcpp::wrap(itermax)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<List >(rcpp_result_gen);
     }
 
@@ -68,17 +68,17 @@ namespace mev {
         static Ptr__Pickands_emp p__Pickands_emp = NULL;
         if (p__Pickands_emp == NULL) {
             validateSignature("NumericVector(*_Pickands_emp)(NumericVector,NumericVector,NumericVector)");
-            p__Pickands_emp = (Ptr__Pickands_emp)R_GetCCallable("mev", "mev__Pickands_emp");
+            p__Pickands_emp = (Ptr__Pickands_emp)R_GetCCallable("mev", "_mev__Pickands_emp");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__Pickands_emp(Rcpp::wrap(s), Rcpp::wrap(ang), Rcpp::wrap(wts));
+            rcpp_result_gen = p__Pickands_emp(Shield<SEXP>(Rcpp::wrap(s)), Shield<SEXP>(Rcpp::wrap(ang)), Shield<SEXP>(Rcpp::wrap(wts)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
@@ -87,17 +87,17 @@ namespace mev {
         static Ptr_ldirfn p_ldirfn = NULL;
         if (p_ldirfn == NULL) {
             validateSignature("double(*ldirfn)(NumericVector)");
-            p_ldirfn = (Ptr_ldirfn)R_GetCCallable("mev", "mev_ldirfn");
+            p_ldirfn = (Ptr_ldirfn)R_GetCCallable("mev", "_mev_ldirfn");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_ldirfn(Rcpp::wrap(param));
+            rcpp_result_gen = p_ldirfn(Shield<SEXP>(Rcpp::wrap(param)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<double >(rcpp_result_gen);
     }
 
@@ -106,17 +106,17 @@ namespace mev {
         static Ptr__loocvdens p__loocvdens = NULL;
         if (p__loocvdens == NULL) {
             validateSignature("NumericVector(*_loocvdens)(double,NumericMatrix,NumericVector,NumericMatrix)");
-            p__loocvdens = (Ptr__loocvdens)R_GetCCallable("mev", "mev__loocvdens");
+            p__loocvdens = (Ptr__loocvdens)R_GetCCallable("mev", "_mev__loocvdens");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__loocvdens(Rcpp::wrap(nu), Rcpp::wrap(ang), Rcpp::wrap(wts), Rcpp::wrap(loowts));
+            rcpp_result_gen = p__loocvdens(Shield<SEXP>(Rcpp::wrap(nu)), Shield<SEXP>(Rcpp::wrap(ang)), Shield<SEXP>(Rcpp::wrap(wts)), Shield<SEXP>(Rcpp::wrap(loowts)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
@@ -125,17 +125,17 @@ namespace mev {
         static Ptr_rdir p_rdir = NULL;
         if (p_rdir == NULL) {
             validateSignature("NumericMatrix(*rdir)(int,NumericVector,bool)");
-            p_rdir = (Ptr_rdir)R_GetCCallable("mev", "mev_rdir");
+            p_rdir = (Ptr_rdir)R_GetCCallable("mev", "_mev_rdir");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_rdir(Rcpp::wrap(n), Rcpp::wrap(alpha), Rcpp::wrap(normalize));
+            rcpp_result_gen = p_rdir(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(normalize)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -144,37 +144,113 @@ namespace mev {
         static Ptr_mvrnorm p_mvrnorm = NULL;
         if (p_mvrnorm == NULL) {
             validateSignature("NumericMatrix(*mvrnorm)(int,NumericVector,NumericMatrix)");
-            p_mvrnorm = (Ptr_mvrnorm)R_GetCCallable("mev", "mev_mvrnorm");
+            p_mvrnorm = (Ptr_mvrnorm)R_GetCCallable("mev", "_mev_mvrnorm");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_mvrnorm(Rcpp::wrap(n), Rcpp::wrap(mu), Rcpp::wrap(Sigma));
+            rcpp_result_gen = p_mvrnorm(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(Sigma)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline arma::mat _mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat) {
-        typedef SEXP(*Ptr__mvrnorm_arma)(SEXP,SEXP,SEXP);
-        static Ptr__mvrnorm_arma p__mvrnorm_arma = NULL;
-        if (p__mvrnorm_arma == NULL) {
-            validateSignature("arma::mat(*_mvrnorm_arma)(int,arma::colvec,arma::mat)");
-            p__mvrnorm_arma = (Ptr__mvrnorm_arma)R_GetCCallable("mev", "mev__mvrnorm_arma");
+    inline NumericMatrix _mvrnorm_chol(int n, NumericVector mu, arma::mat Sigma_chol) {
+        typedef SEXP(*Ptr__mvrnorm_chol)(SEXP,SEXP,SEXP);
+        static Ptr__mvrnorm_chol p__mvrnorm_chol = NULL;
+        if (p__mvrnorm_chol == NULL) {
+            validateSignature("NumericMatrix(*_mvrnorm_chol)(int,NumericVector,arma::mat)");
+            p__mvrnorm_chol = (Ptr__mvrnorm_chol)R_GetCCallable("mev", "_mev__mvrnorm_chol");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__mvrnorm_arma(Rcpp::wrap(n), Rcpp::wrap(Mu), Rcpp::wrap(Xmat));
+            rcpp_result_gen = p__mvrnorm_chol(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(Sigma_chol)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<NumericMatrix >(rcpp_result_gen);
+    }
+
+    inline arma::mat _mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat, bool eigen = true) {
+        typedef SEXP(*Ptr__mvrnorm_arma)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr__mvrnorm_arma p__mvrnorm_arma = NULL;
+        if (p__mvrnorm_arma == NULL) {
+            validateSignature("arma::mat(*_mvrnorm_arma)(int,arma::colvec,arma::mat,bool)");
+            p__mvrnorm_arma = (Ptr__mvrnorm_arma)R_GetCCallable("mev", "_mev__mvrnorm_arma");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__mvrnorm_arma(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Mu)), Shield<SEXP>(Rcpp::wrap(Xmat)), Shield<SEXP>(Rcpp::wrap(eigen)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::mat _mvrnorm_chol_arma(int n, arma::colvec Mu, arma::mat Chol_Cov) {
+        typedef SEXP(*Ptr__mvrnorm_chol_arma)(SEXP,SEXP,SEXP);
+        static Ptr__mvrnorm_chol_arma p__mvrnorm_chol_arma = NULL;
+        if (p__mvrnorm_chol_arma == NULL) {
+            validateSignature("arma::mat(*_mvrnorm_chol_arma)(int,arma::colvec,arma::mat)");
+            p__mvrnorm_chol_arma = (Ptr__mvrnorm_chol_arma)R_GetCCallable("mev", "_mev__mvrnorm_chol_arma");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__mvrnorm_chol_arma(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Mu)), Shield<SEXP>(Rcpp::wrap(Chol_Cov)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::vec _dmvnorm_arma(arma::mat x, arma::rowvec mean, arma::mat sigma, bool log = false) {
+        typedef SEXP(*Ptr__dmvnorm_arma)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr__dmvnorm_arma p__dmvnorm_arma = NULL;
+        if (p__dmvnorm_arma == NULL) {
+            validateSignature("arma::vec(*_dmvnorm_arma)(arma::mat,arma::rowvec,arma::mat,bool)");
+            p__dmvnorm_arma = (Ptr__dmvnorm_arma)R_GetCCallable("mev", "_mev__dmvnorm_arma");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__dmvnorm_arma(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(mean)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(log)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::vec >(rcpp_result_gen);
+    }
+
+    inline arma::vec _dmvnorm_chol_arma(arma::mat x, arma::rowvec mean, arma::mat chol_sigma, bool logv = false) {
+        typedef SEXP(*Ptr__dmvnorm_chol_arma)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr__dmvnorm_chol_arma p__dmvnorm_chol_arma = NULL;
+        if (p__dmvnorm_chol_arma == NULL) {
+            validateSignature("arma::vec(*_dmvnorm_chol_arma)(arma::mat,arma::rowvec,arma::mat,bool)");
+            p__dmvnorm_chol_arma = (Ptr__dmvnorm_chol_arma)R_GetCCallable("mev", "_mev__dmvnorm_chol_arma");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__dmvnorm_chol_arma(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(mean)), Shield<SEXP>(Rcpp::wrap(chol_sigma)), Shield<SEXP>(Rcpp::wrap(logv)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::vec >(rcpp_result_gen);
     }
 
     inline NumericVector _rPlog(int d, int index, NumericVector theta) {
@@ -182,17 +258,17 @@ namespace mev {
         static Ptr__rPlog p__rPlog = NULL;
         if (p__rPlog == NULL) {
             validateSignature("NumericVector(*_rPlog)(int,int,NumericVector)");
-            p__rPlog = (Ptr__rPlog)R_GetCCallable("mev", "mev__rPlog");
+            p__rPlog = (Ptr__rPlog)R_GetCCallable("mev", "_mev__rPlog");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPlog(Rcpp::wrap(d), Rcpp::wrap(index), Rcpp::wrap(theta));
+            rcpp_result_gen = p__rPlog(Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(theta)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
@@ -201,17 +277,17 @@ namespace mev {
         static Ptr__rPneglog p__rPneglog = NULL;
         if (p__rPneglog == NULL) {
             validateSignature("NumericVector(*_rPneglog)(int,int,NumericVector)");
-            p__rPneglog = (Ptr__rPneglog)R_GetCCallable("mev", "mev__rPneglog");
+            p__rPneglog = (Ptr__rPneglog)R_GetCCallable("mev", "_mev__rPneglog");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPneglog(Rcpp::wrap(d), Rcpp::wrap(index), Rcpp::wrap(theta));
+            rcpp_result_gen = p__rPneglog(Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(theta)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
@@ -220,17 +296,17 @@ namespace mev {
         static Ptr__rPdirmix p__rPdirmix = NULL;
         if (p__rPdirmix == NULL) {
             validateSignature("NumericVector(*_rPdirmix)(int,int,NumericMatrix,NumericVector)");
-            p__rPdirmix = (Ptr__rPdirmix)R_GetCCallable("mev", "mev__rPdirmix");
+            p__rPdirmix = (Ptr__rPdirmix)R_GetCCallable("mev", "_mev__rPdirmix");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPdirmix(Rcpp::wrap(d), Rcpp::wrap(index), Rcpp::wrap(alpha), Rcpp::wrap(weight));
+            rcpp_result_gen = p__rPdirmix(Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(weight)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
@@ -239,93 +315,131 @@ namespace mev {
         static Ptr__rPbilog p__rPbilog = NULL;
         if (p__rPbilog == NULL) {
             validateSignature("NumericVector(*_rPbilog)(int,int,NumericVector)");
-            p__rPbilog = (Ptr__rPbilog)R_GetCCallable("mev", "mev__rPbilog");
+            p__rPbilog = (Ptr__rPbilog)R_GetCCallable("mev", "_mev__rPbilog");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPbilog(Rcpp::wrap(d), Rcpp::wrap(index), Rcpp::wrap(alpha));
+            rcpp_result_gen = p__rPbilog(Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(alpha)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
-    inline NumericVector _rPexstud(int index, arma::mat sigma, NumericVector al) {
-        typedef SEXP(*Ptr__rPexstud)(SEXP,SEXP,SEXP);
+    inline NumericVector _rPexstud_old(int index, arma::mat sigma, NumericVector al) {
+        typedef SEXP(*Ptr__rPexstud_old)(SEXP,SEXP,SEXP);
+        static Ptr__rPexstud_old p__rPexstud_old = NULL;
+        if (p__rPexstud_old == NULL) {
+            validateSignature("NumericVector(*_rPexstud_old)(int,arma::mat,NumericVector)");
+            p__rPexstud_old = (Ptr__rPexstud_old)R_GetCCallable("mev", "_mev__rPexstud_old");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__rPexstud_old(Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(al)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<NumericVector >(rcpp_result_gen);
+    }
+
+    inline NumericVector _rPexstud(int index, arma::mat cholesky, arma::mat sigma, NumericVector al) {
+        typedef SEXP(*Ptr__rPexstud)(SEXP,SEXP,SEXP,SEXP);
         static Ptr__rPexstud p__rPexstud = NULL;
         if (p__rPexstud == NULL) {
-            validateSignature("NumericVector(*_rPexstud)(int,arma::mat,NumericVector)");
-            p__rPexstud = (Ptr__rPexstud)R_GetCCallable("mev", "mev__rPexstud");
+            validateSignature("NumericVector(*_rPexstud)(int,arma::mat,arma::mat,NumericVector)");
+            p__rPexstud = (Ptr__rPexstud)R_GetCCallable("mev", "_mev__rPexstud");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPexstud(Rcpp::wrap(index), Rcpp::wrap(sigma), Rcpp::wrap(al));
+            rcpp_result_gen = p__rPexstud(Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(cholesky)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(al)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
-    inline NumericVector _rPHuslerReiss(int index, arma::mat Lambda) {
-        typedef SEXP(*Ptr__rPHuslerReiss)(SEXP,SEXP);
+    inline NumericVector _rPHuslerReiss(int index, arma::mat cholesky, arma::mat Sigma) {
+        typedef SEXP(*Ptr__rPHuslerReiss)(SEXP,SEXP,SEXP);
         static Ptr__rPHuslerReiss p__rPHuslerReiss = NULL;
         if (p__rPHuslerReiss == NULL) {
-            validateSignature("NumericVector(*_rPHuslerReiss)(int,arma::mat)");
-            p__rPHuslerReiss = (Ptr__rPHuslerReiss)R_GetCCallable("mev", "mev__rPHuslerReiss");
+            validateSignature("NumericVector(*_rPHuslerReiss)(int,arma::mat,arma::mat)");
+            p__rPHuslerReiss = (Ptr__rPHuslerReiss)R_GetCCallable("mev", "_mev__rPHuslerReiss");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPHuslerReiss(Rcpp::wrap(index), Rcpp::wrap(Lambda));
+            rcpp_result_gen = p__rPHuslerReiss(Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(cholesky)), Shield<SEXP>(Rcpp::wrap(Sigma)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
-    inline NumericVector _rPBrownResnick(int index, NumericMatrix Sigma) {
-        typedef SEXP(*Ptr__rPBrownResnick)(SEXP,SEXP);
+    inline NumericVector _rPHuslerReiss_old(int index, arma::mat Lambda) {
+        typedef SEXP(*Ptr__rPHuslerReiss_old)(SEXP,SEXP);
+        static Ptr__rPHuslerReiss_old p__rPHuslerReiss_old = NULL;
+        if (p__rPHuslerReiss_old == NULL) {
+            validateSignature("NumericVector(*_rPHuslerReiss_old)(int,arma::mat)");
+            p__rPHuslerReiss_old = (Ptr__rPHuslerReiss_old)R_GetCCallable("mev", "_mev__rPHuslerReiss_old");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__rPHuslerReiss_old(Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(Lambda)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<NumericVector >(rcpp_result_gen);
+    }
+
+    inline NumericVector _rPBrownResnick(int index, arma::mat Sigma_chol, NumericMatrix Sigma) {
+        typedef SEXP(*Ptr__rPBrownResnick)(SEXP,SEXP,SEXP);
         static Ptr__rPBrownResnick p__rPBrownResnick = NULL;
         if (p__rPBrownResnick == NULL) {
-            validateSignature("NumericVector(*_rPBrownResnick)(int,NumericMatrix)");
-            p__rPBrownResnick = (Ptr__rPBrownResnick)R_GetCCallable("mev", "mev__rPBrownResnick");
+            validateSignature("NumericVector(*_rPBrownResnick)(int,arma::mat,NumericMatrix)");
+            p__rPBrownResnick = (Ptr__rPBrownResnick)R_GetCCallable("mev", "_mev__rPBrownResnick");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPBrownResnick(Rcpp::wrap(index), Rcpp::wrap(Sigma));
+            rcpp_result_gen = p__rPBrownResnick(Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(Sigma_chol)), Shield<SEXP>(Rcpp::wrap(Sigma)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
-    inline NumericVector _rPSmith(int index, arma::mat Sigma, arma::mat loc) {
+    inline NumericVector _rPSmith(int index, arma::mat Sigma_chol, arma::mat loc) {
         typedef SEXP(*Ptr__rPSmith)(SEXP,SEXP,SEXP);
         static Ptr__rPSmith p__rPSmith = NULL;
         if (p__rPSmith == NULL) {
             validateSignature("NumericVector(*_rPSmith)(int,arma::mat,arma::mat)");
-            p__rPSmith = (Ptr__rPSmith)R_GetCCallable("mev", "mev__rPSmith");
+            p__rPSmith = (Ptr__rPSmith)R_GetCCallable("mev", "_mev__rPSmith");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPSmith(Rcpp::wrap(index), Rcpp::wrap(Sigma), Rcpp::wrap(loc));
+            rcpp_result_gen = p__rPSmith(Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(Sigma_chol)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
@@ -334,17 +448,17 @@ namespace mev {
         static Ptr__rPdir p__rPdir = NULL;
         if (p__rPdir == NULL) {
             validateSignature("NumericVector(*_rPdir)(int,int,NumericVector,bool)");
-            p__rPdir = (Ptr__rPdir)R_GetCCallable("mev", "mev__rPdir");
+            p__rPdir = (Ptr__rPdir)R_GetCCallable("mev", "_mev__rPdir");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPdir(Rcpp::wrap(d), Rcpp::wrap(index), Rcpp::wrap(alpha), Rcpp::wrap(irv));
+            rcpp_result_gen = p__rPdir(Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(index)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(irv)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
@@ -353,17 +467,17 @@ namespace mev {
         static Ptr__rlogspec p__rlogspec = NULL;
         if (p__rlogspec == NULL) {
             validateSignature("NumericMatrix(*_rlogspec)(int,int,NumericVector)");
-            p__rlogspec = (Ptr__rlogspec)R_GetCCallable("mev", "mev__rlogspec");
+            p__rlogspec = (Ptr__rlogspec)R_GetCCallable("mev", "_mev__rlogspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rlogspec(Rcpp::wrap(n), Rcpp::wrap(d), Rcpp::wrap(theta));
+            rcpp_result_gen = p__rlogspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(theta)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -372,17 +486,17 @@ namespace mev {
         static Ptr__rneglogspec p__rneglogspec = NULL;
         if (p__rneglogspec == NULL) {
             validateSignature("NumericMatrix(*_rneglogspec)(int,int,NumericVector)");
-            p__rneglogspec = (Ptr__rneglogspec)R_GetCCallable("mev", "mev__rneglogspec");
+            p__rneglogspec = (Ptr__rneglogspec)R_GetCCallable("mev", "_mev__rneglogspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rneglogspec(Rcpp::wrap(n), Rcpp::wrap(d), Rcpp::wrap(theta));
+            rcpp_result_gen = p__rneglogspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(theta)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -391,17 +505,17 @@ namespace mev {
         static Ptr__rdirmixspec p__rdirmixspec = NULL;
         if (p__rdirmixspec == NULL) {
             validateSignature("NumericMatrix(*_rdirmixspec)(int,int,NumericMatrix,NumericVector)");
-            p__rdirmixspec = (Ptr__rdirmixspec)R_GetCCallable("mev", "mev__rdirmixspec");
+            p__rdirmixspec = (Ptr__rdirmixspec)R_GetCCallable("mev", "_mev__rdirmixspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rdirmixspec(Rcpp::wrap(n), Rcpp::wrap(d), Rcpp::wrap(alpha), Rcpp::wrap(weight));
+            rcpp_result_gen = p__rdirmixspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(weight)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -410,17 +524,17 @@ namespace mev {
         static Ptr__rbilogspec p__rbilogspec = NULL;
         if (p__rbilogspec == NULL) {
             validateSignature("NumericMatrix(*_rbilogspec)(int,NumericVector)");
-            p__rbilogspec = (Ptr__rbilogspec)R_GetCCallable("mev", "mev__rbilogspec");
+            p__rbilogspec = (Ptr__rbilogspec)R_GetCCallable("mev", "_mev__rbilogspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rbilogspec(Rcpp::wrap(n), Rcpp::wrap(alpha));
+            rcpp_result_gen = p__rbilogspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(alpha)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -429,17 +543,17 @@ namespace mev {
         static Ptr__rexstudspec p__rexstudspec = NULL;
         if (p__rexstudspec == NULL) {
             validateSignature("NumericMatrix(*_rexstudspec)(int,arma::mat,NumericVector)");
-            p__rexstudspec = (Ptr__rexstudspec)R_GetCCallable("mev", "mev__rexstudspec");
+            p__rexstudspec = (Ptr__rexstudspec)R_GetCCallable("mev", "_mev__rexstudspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rexstudspec(Rcpp::wrap(n), Rcpp::wrap(sigma), Rcpp::wrap(al));
+            rcpp_result_gen = p__rexstudspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(al)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -448,55 +562,55 @@ namespace mev {
         static Ptr__rhrspec p__rhrspec = NULL;
         if (p__rhrspec == NULL) {
             validateSignature("NumericMatrix(*_rhrspec)(int,arma::mat)");
-            p__rhrspec = (Ptr__rhrspec)R_GetCCallable("mev", "mev__rhrspec");
+            p__rhrspec = (Ptr__rhrspec)R_GetCCallable("mev", "_mev__rhrspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rhrspec(Rcpp::wrap(n), Rcpp::wrap(Lambda));
+            rcpp_result_gen = p__rhrspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Lambda)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix _rbrspec(int n, NumericMatrix Sigma) {
-        typedef SEXP(*Ptr__rbrspec)(SEXP,SEXP);
+    inline NumericMatrix _rbrspec(int n, arma::mat Sigma_chol, NumericMatrix Sigma) {
+        typedef SEXP(*Ptr__rbrspec)(SEXP,SEXP,SEXP);
         static Ptr__rbrspec p__rbrspec = NULL;
         if (p__rbrspec == NULL) {
-            validateSignature("NumericMatrix(*_rbrspec)(int,NumericMatrix)");
-            p__rbrspec = (Ptr__rbrspec)R_GetCCallable("mev", "mev__rbrspec");
+            validateSignature("NumericMatrix(*_rbrspec)(int,arma::mat,NumericMatrix)");
+            p__rbrspec = (Ptr__rbrspec)R_GetCCallable("mev", "_mev__rbrspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rbrspec(Rcpp::wrap(n), Rcpp::wrap(Sigma));
+            rcpp_result_gen = p__rbrspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Sigma_chol)), Shield<SEXP>(Rcpp::wrap(Sigma)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix _rsmithspec(int n, arma::mat Sigma, arma::mat loc) {
+    inline NumericMatrix _rsmithspec(int n, arma::mat Sigma_chol, arma::mat loc) {
         typedef SEXP(*Ptr__rsmithspec)(SEXP,SEXP,SEXP);
         static Ptr__rsmithspec p__rsmithspec = NULL;
         if (p__rsmithspec == NULL) {
             validateSignature("NumericMatrix(*_rsmithspec)(int,arma::mat,arma::mat)");
-            p__rsmithspec = (Ptr__rsmithspec)R_GetCCallable("mev", "mev__rsmithspec");
+            p__rsmithspec = (Ptr__rsmithspec)R_GetCCallable("mev", "_mev__rsmithspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rsmithspec(Rcpp::wrap(n), Rcpp::wrap(Sigma), Rcpp::wrap(loc));
+            rcpp_result_gen = p__rsmithspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Sigma_chol)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -505,17 +619,17 @@ namespace mev {
         static Ptr__rdirspec p__rdirspec = NULL;
         if (p__rdirspec == NULL) {
             validateSignature("NumericMatrix(*_rdirspec)(int,int,NumericVector,bool)");
-            p__rdirspec = (Ptr__rdirspec)R_GetCCallable("mev", "mev__rdirspec");
+            p__rdirspec = (Ptr__rdirspec)R_GetCCallable("mev", "_mev__rdirspec");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rdirspec(Rcpp::wrap(n), Rcpp::wrap(d), Rcpp::wrap(alpha), Rcpp::wrap(irv));
+            rcpp_result_gen = p__rdirspec(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(irv)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -524,17 +638,17 @@ namespace mev {
         static Ptr__rmevA1 p__rmevA1 = NULL;
         if (p__rmevA1 == NULL) {
             validateSignature("NumericMatrix(*_rmevA1)(int,int,NumericVector,int,NumericMatrix,arma::mat)");
-            p__rmevA1 = (Ptr__rmevA1)R_GetCCallable("mev", "mev__rmevA1");
+            p__rmevA1 = (Ptr__rmevA1)R_GetCCallable("mev", "_mev__rmevA1");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rmevA1(Rcpp::wrap(n), Rcpp::wrap(d), Rcpp::wrap(para), Rcpp::wrap(model), Rcpp::wrap(Sigma), Rcpp::wrap(loc));
+            rcpp_result_gen = p__rmevA1(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -543,17 +657,17 @@ namespace mev {
         static Ptr__rmevA2 p__rmevA2 = NULL;
         if (p__rmevA2 == NULL) {
             validateSignature("NumericMatrix(*_rmevA2)(int,int,NumericVector,int,NumericMatrix,arma::mat)");
-            p__rmevA2 = (Ptr__rmevA2)R_GetCCallable("mev", "mev__rmevA2");
+            p__rmevA2 = (Ptr__rmevA2)R_GetCCallable("mev", "_mev__rmevA2");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rmevA2(Rcpp::wrap(n), Rcpp::wrap(d), Rcpp::wrap(para), Rcpp::wrap(model), Rcpp::wrap(Sigma), Rcpp::wrap(loc));
+            rcpp_result_gen = p__rmevA2(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -562,17 +676,17 @@ namespace mev {
         static Ptr__rmevspec_cpp p__rmevspec_cpp = NULL;
         if (p__rmevspec_cpp == NULL) {
             validateSignature("NumericMatrix(*_rmevspec_cpp)(int,int,NumericVector,int,NumericMatrix,arma::mat)");
-            p__rmevspec_cpp = (Ptr__rmevspec_cpp)R_GetCCallable("mev", "mev__rmevspec_cpp");
+            p__rmevspec_cpp = (Ptr__rmevspec_cpp)R_GetCCallable("mev", "_mev__rmevspec_cpp");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rmevspec_cpp(Rcpp::wrap(n), Rcpp::wrap(d), Rcpp::wrap(para), Rcpp::wrap(model), Rcpp::wrap(Sigma), Rcpp::wrap(loc));
+            rcpp_result_gen = p__rmevspec_cpp(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -581,17 +695,36 @@ namespace mev {
         static Ptr__rmevasy p__rmevasy = NULL;
         if (p__rmevasy == NULL) {
             validateSignature("NumericMatrix(*_rmevasy)(int,int,NumericVector,LogicalMatrix,IntegerVector,NumericMatrix,int)");
-            p__rmevasy = (Ptr__rmevasy)R_GetCCallable("mev", "mev__rmevasy");
+            p__rmevasy = (Ptr__rmevasy)R_GetCCallable("mev", "_mev__rmevasy");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rmevasy(Rcpp::wrap(n), Rcpp::wrap(d), Rcpp::wrap(para), Rcpp::wrap(asym), Rcpp::wrap(ncompo), Rcpp::wrap(Sigma), Rcpp::wrap(model));
+            rcpp_result_gen = p__rmevasy(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(asym)), Shield<SEXP>(Rcpp::wrap(ncompo)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(model)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<NumericMatrix >(rcpp_result_gen);
+    }
+
+    inline NumericMatrix _rPsite(int n, int j, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+        typedef SEXP(*Ptr__rPsite)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr__rPsite p__rPsite = NULL;
+        if (p__rPsite == NULL) {
+            validateSignature("NumericMatrix(*_rPsite)(int,int,int,NumericVector,int,NumericMatrix,arma::mat)");
+            p__rPsite = (Ptr__rPsite)R_GetCCallable("mev", "_mev__rPsite");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__rPsite(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(j)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
@@ -600,17 +733,17 @@ namespace mev {
         static Ptr_Zhang_Stephens p_Zhang_Stephens = NULL;
         if (p_Zhang_Stephens == NULL) {
             validateSignature("List(*Zhang_Stephens)(NumericVector,NumericVector,NumericVector,bool,int,int,int,int)");
-            p_Zhang_Stephens = (Ptr_Zhang_Stephens)R_GetCCallable("mev", "mev_Zhang_Stephens");
+            p_Zhang_Stephens = (Ptr_Zhang_Stephens)R_GetCCallable("mev", "_mev_Zhang_Stephens");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_Zhang_Stephens(Rcpp::wrap(x), Rcpp::wrap(init), Rcpp::wrap(adapt_sd), Rcpp::wrap(adapt), Rcpp::wrap(burnin), Rcpp::wrap(niter), Rcpp::wrap(thin), Rcpp::wrap(method));
+            rcpp_result_gen = p_Zhang_Stephens(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(init)), Shield<SEXP>(Rcpp::wrap(adapt_sd)), Shield<SEXP>(Rcpp::wrap(adapt)), Shield<SEXP>(Rcpp::wrap(burnin)), Shield<SEXP>(Rcpp::wrap(niter)), Shield<SEXP>(Rcpp::wrap(thin)), Shield<SEXP>(Rcpp::wrap(method)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<List >(rcpp_result_gen);
     }
 

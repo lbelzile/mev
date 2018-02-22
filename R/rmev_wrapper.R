@@ -1,4 +1,4 @@
-##  Copyright (C) 2015-2017 Leo Belzile
+##  Copyright (C) 2015-2018 Leo Belzile
 ##
 ##  This file is part of the "mev" package for R.  This program
 ##  is free software; you can redistribute it and/or modify it under the
@@ -52,7 +52,7 @@
 #'  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
 #' }
 #'
-#' Stephenson points out that the multivariate asymmetric negative logistic model given in e.g. Coles and Tawn (1991) is not a valid distribution function in dimension d>3.
+#' Stephenson points out that the multivariate asymmetric negative logistic model given in e.g. Coles and Tawn (1991) is not a valid distribution function in dimension \eqn{d>3}.
 #' The implementation in \code{mev} uses the same construction as the asymmetric logistic distribution (see the vignette). As such it does not match the bivariate implementation of \link[evd]{rbvevd}.
 #'
 #' The dependence parameter of the \code{evd} package for the Husler-Reiss distribution can be recovered taking
@@ -199,7 +199,7 @@ rmev <-function(n, d, param, asy, sigma,
         if(model == "negdir" && param[d+1] > 0){
           param[d+1] <- -param[d+1]
         }
-         if(param[d+1] < 0 && param[d+1] > -min(param[-(d+1)])){
+         if(param[d+1] < 0 && param[d+1] <= -min(param[-(d+1)])){
           stop("Invalid parameters for the scaled Dirichlet. rho must be greater than min(alpha)")
          }
         if(isTRUE(any(param[-(d+1)]<0))){
@@ -400,7 +400,7 @@ rmev <-function(n, d, param, asy, sigma,
 rmevspec <-function(n, d, param, sigma,
                     model= c("log","neglog","bilog","negbilog","hr","br",
                              "xstud","smith","schlather","ct","sdir", "dirmix"),
-                    weights, vario, loc,...){
+                    weights, vario, loc, grid = FALSE, ...){
   models <- c("log","neglog","bilog","negbilog","hr","br",
               "xstud","smith","schlather","ct","sdir","dirmix","negdir","dir")
   model <- match.arg(model, models)[1]
@@ -480,7 +480,7 @@ rmevspec <-function(n, d, param, sigma,
         if(model == "negdir" && param[d+1] > 0){
           param[d+1] <- -param[d+1]
         }
-        if(param[d+1] > -min(param[-(d+1)])){
+        if(param[d+1] <= -min(param[-(d+1)])){
           stop("Invalid parameters for the scaled Dirichlet. rho must be greater than -min(alpha)")
         }
         if(isTRUE(any(param[-(d+1)]<0))){
@@ -654,15 +654,16 @@ rmevspec <-function(n, d, param, sigma,
 #' @param shape shape index of Pareto variable
 #' @param riskf string indicating risk functional.
 #' @param siteindex integer between 1 and d specifying the index of the site or variable
+#' @export
 #' @examples
-#' rParetoProcess(n=100, riskf = "site", siteindex=2, d=3, param=2.5, model="log")
-#' rParetoProcess(n=100, riskf = "min", d=3, param=2.5, model="neglog")
-#' rParetoProcess(n=100, riskf = "max", d=4, param=c(0.2,0.1,0.9,0.5), model="bilog")
-#' rParetoProcess(n=100, riskf = "sum", d=6, param=c(0.8,1.2,0.1,0.2,0.4,0.5,0.5), model="sdir") #with additional scale parameter
+#' rparp(n=10, riskf = "site", siteindex=2, d=3, param=2.5, model="log")
+#' rparp(n=10, riskf = "min", d=3, param=2.5, model="neglog")
+#' rparp(n=10, riskf = "max", d=4, param=c(0.2,0.1,0.9,0.5), model="bilog")
+#' rparp(n=10, riskf = "sum", d=3, param=c(0.8,1.2,0.6, -0.5), model="sdir")
 #' vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
 #' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#' rParetoProcess(n=100, riskf = "max", vario=vario,loc=grid.loc, model="br")
-rParetoProcess <- function(n, shape = 1, riskf = c("sum", "site","max"),
+#' rparp(n=10, riskf = "max", vario=vario,loc=grid.loc, model="br")
+rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
                            siteindex = NULL, d, param, sigma,
                            model= c("log","neglog","bilog","negbilog","hr","br",
                                     "xstud","smith","schlather","ct","sdir","dirmix"),
@@ -741,7 +742,7 @@ rParetoProcess <- function(n, shape = 1, riskf = c("sum", "site","max"),
       if(model == "negdir" && param[d+1] > 0){
         param[d+1] <- -param[d+1]
       }
-      if(param[d+1]< 0 && param[d+1] > -min(param[-(d+1)])){
+      if(param[d+1]< 0 && param[d+1] <= -min(param[-(d+1)])){
         stop("Invalid parameters for the scaled Dirichlet. rho must be greater than -min(alpha)")
       }
       if(isTRUE(any(param[-(d+1)]<0))){

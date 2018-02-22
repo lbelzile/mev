@@ -3,7 +3,7 @@
 ## (2) the penultimate approximations of Smith (1987)
 
 
-#' @title Extended generalised Pareto families
+#' Extended generalised Pareto families
 #'
 #' @description This function provides the log-likelihood and quantiles for the three different families presented
 #' in Papastathopoulos and Tawn (2013). The latter include an additional parameter, \eqn{\kappa}.
@@ -50,8 +50,9 @@
 NULL
 
 
-#' @title Extended generalised Pareto families of Papastathopoulos and Tawn (functions)
-#' @description This function provides the log-likelihood and quantiles for the three different families presented
+#' Extended generalised Pareto families of Papastathopoulos and Tawn (functions)
+#'
+#' This function provides the log-likelihood and quantiles for the three different families presented
 #' in Papastathopoulos and Tawn (2013). The latter include an additional parameter, \eqn{\kappa}.
 #' All three families share the same tail index than the GP model, while allowing for lower thresholds.
 #' @export
@@ -308,7 +309,7 @@ egp.fitrange <- function(xdat, thresh, model=c("egp1","egp2","egp3"), plots=1:3,
 #' @author Leo Belzile
 #' @importFrom methods formalArgs
 #' @import stats
-#' @return a matrix or a list (if \code{returnList}) containing 
+#' @return a matrix or a list (if \code{returnList}) containing
 #' \itemize{
 #' \item{\code{loc}:} {location parameters (\code{method="bm"})}
 #' \item{\code{scale}:} {scale parameters}
@@ -331,8 +332,8 @@ egp.fitrange <- function(xdat, thresh, model=c("egp1","egp2","egp3"), plots=1:3,
 #' plot(m, penult$shape, type="l",
 #'  xlab="Quantile", ylab="Penultimate shape")
 #' @export
-smith.penult <- function(densF, distF, family, quantF = NULL, ddensF = NULL,
-                         model = c("bm","pot"), u,  m, returnList = TRUE, ...){
+smith.penult <- function(densF, distF, ddensF = NULL,
+                         model = c("bm","pot"), u,  m, family, quantF = NULL, returnList = TRUE, ...){
   #Redefine density, quantile and distribution functions from family
   if(!missing(family)){
     densF <- paste0("d", family)
@@ -399,7 +400,7 @@ smith.penult <- function(densF, distF, family, quantF = NULL, ddensF = NULL,
      params <- cbind(loc = bm, scale = phi(bm), shape = dphi(bm), m = m)
     }
     return(params)
-           
+
   } else if(model=="pot"){
     if(missing(u)){stop("Sequence of thresholds must be provided.")}
     phi <- function(x){
@@ -439,10 +440,10 @@ smith.penult <- function(densF, distF, family, quantF = NULL, ddensF = NULL,
 #'
 #' In cases where the distribution function is in the maximum domain of
 #' attraction of the Gumbel distribution, \eqn{\rho} is possibly undetermined and
-#' \eqn{\epsilon} can taken to be \eqn{\phi(b_n)\phi''(b_n)}.
+#' \eqn{\epsilon} can be equal to \eqn{\phi(b_n)\phi''(b_n)}.
 #'
 #' For distributions in the maximum domain of
-#' attraction of the Gumbel distribution, it is also possible to abstract from the \eqn{\rho} parameter by substituting the function \eqn{H_{\rho}}{H(x;\rho)} by \eqn{x^3/6} without affecting the rate of convergence. This can be done by setting \code{mdaGumbel=TRUE} in the function call.
+#' attraction of the Gumbel distribution and that are class N, it is also possible to abstract from the \eqn{\rho} parameter by substituting the function \eqn{H_{\rho}}{H(x;\rho)} by \eqn{x^3/6} without affecting the rate of convergence. This can be done by setting \code{mdaGumbel=TRUE} in the function call.
 #'
 #' @section Warning:
 #' The third penultimate approximation does not yield a valid distribution function over the whole range of the original distribution, but is rather valid in a neighborhood of the true support of the distribution of maxima/threshold exceedance.

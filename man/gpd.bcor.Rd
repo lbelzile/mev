@@ -2,7 +2,7 @@
 % Please edit documentation in R/bias.R
 \name{gpd.bcor}
 \alias{gpd.bcor}
-\title{Bias correction using Firth's modified score function or bias substraction}
+\title{Bias correction for GP distribution using Firth's modified score function or bias substraction}
 \usage{
 gpd.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp"))
 }
@@ -29,7 +29,7 @@ For small samples, expected and observed information can return very different e
 \examples{
 set.seed(1)
 dat <- evd::rgpd(n=40, scale=1, shape=-0.2)
-par <- mev::gp.fit(dat, threshold=0, show=FALSE)$estimate
+par <- gp.fit(dat, threshold=0, show=FALSE)$estimate
 gpd.bcor(par,dat, "subtract")
 gpd.bcor(par,dat, "firth") #observed information
 gpd.bcor(par,dat, "firth","exp")
