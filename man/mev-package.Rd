@@ -28,12 +28,6 @@ Leo Belzile
 
 Maintainer: <leo.belzile@epfl.ch>
 }
-\references{
-Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes, \emph{Biometrika}, \bold{103}(2), 303--317.
-
-Boldi (2009). A note on the representation of parametric
-models for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
-}
 \concept{multivariate extreme value}
 \concept{exact simulation}
 \concept{max-stable process}

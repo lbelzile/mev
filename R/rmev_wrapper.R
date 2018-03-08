@@ -32,7 +32,7 @@
 #' @param alg algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.
 #' @param model for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
 #' the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.
-#' @param vario variogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing
+#' @param vario semivariogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing
 #' @param loc \code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.
 #' @param weights vector of length \code{m} for the \code{m} mixture components. Must sum to one
 #' @param grid Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).
@@ -80,19 +80,19 @@
 #'rmev(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog", alg="sm")
 #'## Spatial example using power variogram
 #'#NEW: Variogram must take distance as argument
-#'vario <- function(x, scale, alpha){ scale*x^alpha }
+#'semivario <- function(x, scale, alpha){ scale*x^alpha }
 #'#grid specification
 #'grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#'rmev(n=100, vario=vario,loc=grid.loc, model="br", scale = 0.5, alpha = 1)
-#'vario2cov <- function(loc, ...){
+#'rmev(n=100, vario=semivario,loc=grid.loc, model="br", scale = 0.5, alpha = 1)
+#'vario2cov <- function(loc, semivario,...){
 #'  sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
-#'   vario(sqrt(sum((loc[i,])^2)), ...) +
-#'   vario(sqrt(sum((loc[j,])^2)), ...) -
-#'   vario(sqrt(sum((loc[i,]-loc[j,])^2)), ...)))
+#'   semivario(sqrt(sum((loc[i,])^2)), ...) +
+#'   semivario(sqrt(sum((loc[j,])^2)), ...) -
+#'   semivario(sqrt(sum((loc[i,]-loc[j,])^2)), ...)))
 #' }
-#'rmev(n=100, sigma=vario2cov(grid.loc, scale = 0.5, alpha = 1), model="br")
+#'rmev(n=100, sigma=vario2cov(grid.loc, vario = semivario, scale = 0.5, alpha = 1), model="br")
 #'#Example with a grid (generating an array)
-#'rmev(n=10, sigma=cbind(c(2,1),c(1,3)), loc=cbind(runif(4),runif(4)),model="smith", grid=TRUE)
+#'rmev(n=10, sigma=cbind(c(2,1), c(1,3)), loc=cbind(runif(4), runif(4)),model="smith", grid=TRUE)
 #'## Example with Dirichlet mixture
 #'alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 #'rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model="dirmix")
@@ -217,14 +217,14 @@ rmev <-function(n, d, param, asy, sigma,
         if(vario(0, ...) > 1e-15){
           stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
         }
-        vario2mat <- function(loc, ...){
+        semivario2mat <- function(loc, semivario ...){
           di <- as.matrix(dist(loc)) #fields::rdist(loc) is faster...
           covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
-          covmat[lower.tri(covmat)] <- vario(di[lower.tri(di)], ...)
+          covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
           covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
           return(covmat)
         }
-        sigma <- vario2mat(loc, ...)
+        sigma <- semivario2mat(loc, vario, ...)/2 #change 08-03-2018
         }
       }
   	if(model=="xstud"){
