@@ -1500,7 +1500,7 @@ gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","z
 		method="Grimshaw"
 	}
 				if (method == "nlm") {
-				temp <- .Zhang_Stephens_posterior(xdat)
+				temp <- .Zhang_Stephens_posterior(xdat[xdat > threshold] - threshold)
 # 				temp <-	.gpd_1D_fit(xdat, threshold, show = F, xi.tol = xi.tol, calc.se = FALSE)
 				# threshold 1D max, algebraic Hessian
 # 				#If algorithm failed to converge with initial values, switch to Grimshaw
@@ -1539,10 +1539,10 @@ gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","z
 				temp <-	.gpd_1D_fit(xdat, threshold, show = FALSE, xi.tol = xi.tol, phi.input = temp$mle[2] / temp$mle[1],
 				                    reltol = 1e-30, abstol = 1e-30) #1D max, algebraic Hessian
 			} else if (method=="zs" || method=="zhang") {
-			  xdat = xdat[xdat > threshold]-threshold
+			  xdat_ab = xdat[xdat > threshold]-threshold
 				temp <- switch(method,
-				            zs = .Zhang_Stephens_posterior(xdat),
-				            zhang = .Zhang_posterior(xdat)
+				            zs = .Zhang_Stephens_posterior(xdat_ab),
+				            zhang = .Zhang_posterior(xdat_ab)
 				)
 				if(!is.null(MCMC) && MCMC!=FALSE){
 				if(is.logical(MCMC) && !is.na(MCMC) && MCMC){ #if TRUE
@@ -1553,9 +1553,9 @@ gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","z
 						niter <- ifelse(is.null(MCMC$niter),10000,MCMC$niter)
 					}
 				bayespost <- switch(method,
-				                  zs = Zhang_Stephens(xdat, init=-temp$mle[2]/temp$mle[1], burnin=burn, thin=thin,
+				                  zs = Zhang_Stephens(xdat_ab, init=-temp$mle[2]/temp$mle[1], burnin=burn, thin=thin,
 				                  										niter=niter, method=1),
-				                  zhang = Zhang_Stephens(xdat, init=-temp$mle[2]/temp$mle[1], burnin=burn,
+				                  zhang = Zhang_Stephens(xdat_ab, init=-temp$mle[2]/temp$mle[1], burnin=burn,
 				                  											 thin=thin, niter=niter, method=2)
 				)
 				#Copying output for formatting and printing
@@ -1602,8 +1602,7 @@ gp.fit <- function(xdat, threshold, method=c("Grimshaw","nlm","optim","ismev","z
 		#Collecting observations from temp and formatting the output
 	invobsinfomat <- tryCatch(solve(.gpd_obs_info(data=xdat[xdat>threshold], scale=temp$mle[1],
 																shape=temp$mle[2], loc=threshold)), error= function(e){"notinvert"}, warning= function(w) w)
-
-		if(invobsinfomat =="notinvert" || all(is.nan(invobsinfomat))){
+		if(any(c(isTRUE(invobsinfomat == "notinvert"), all(is.nan(invobsinfomat)), all(is.na(invobsinfomat))))){
 			warning("Cannot calculate standard error based on observed information")
 			if(!is.null(temp$se)){std.errors <- diag(temp$se)} else{std.errors <- diag(rep(NA,2))}
 		} else if(!is.null(temp$mle) && temp$mle[2] > -0.5 && temp$conv==0){#If the MLE was returned
