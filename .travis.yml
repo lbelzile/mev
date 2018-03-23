@@ -3,7 +3,7 @@ cache: packages
 os:
   - linux
 before_install:
-  - tlmgr install fourier geometry  
+  - tlmgr install fourier geometry  natbib hyperref
 r:
  # - oldrel
   - release
