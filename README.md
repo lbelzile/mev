@@ -1,4 +1,8 @@
 # mev
+
+[![Travis-CI Build Status](https://travis-ci.org/lbelzile/mev.svg?branch=master)](https://travis-ci.org/lbelzile/mev) 
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/mev)](https://cran.r-project.org/package=mev)
+
 ## Multivariate Extreme Value distributions
 
 R-package to perform simulations from multivariate extreme value models. The package also includes
