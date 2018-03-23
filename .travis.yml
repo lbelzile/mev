@@ -1,2 +1,10 @@
 language: r
 cache: packages
+os:
+  - linux
+before_install:
+  - tlmgr install fourier geometry  
+r:
+ # - oldrel
+  - release
+ # - devel
