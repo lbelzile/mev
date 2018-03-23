@@ -1,7 +1,8 @@
 # mev
 
-[![Travis-CI Build Status](https://travis-ci.org/lbelzile/mev.svg?branch=master)](https://travis-ci.org/lbelzile/mev) 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/mev)](https://cran.r-project.org/package=mev)
+[![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-blue.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) 
+[![Downloads](http://cranlogs.r-pkg.org/badges/mev?color=brightgreen)](http://www.r-pkg.org/pkg/mev)
 
 ## Multivariate Extreme Value distributions
 
