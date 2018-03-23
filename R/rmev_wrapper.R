@@ -217,7 +217,7 @@ rmev <-function(n, d, param, asy, sigma,
         if(vario(0, ...) > 1e-15){
           stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
         }
-        semivario2mat <- function(loc, semivario ...){
+        semivario2mat <- function(loc, semivario, ...){
           di <- as.matrix(dist(loc)) #fields::rdist(loc) is faster...
           covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
           covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
