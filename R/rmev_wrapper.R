@@ -651,7 +651,7 @@ rmevspec <-function(n, d, param, sigma,
 #' sampled from \code{sum} and may be slow if \code{d} is large.
 #'
 #' @inheritParams rmev
-#' @param shape shape index of Pareto variable
+#' @param shape shape tail index of Pareto variable
 #' @param riskf string indicating risk functional.
 #' @param siteindex integer between 1 and d specifying the index of the site or variable
 #' @export
@@ -751,6 +751,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
     }
     model = "sdir"
   } else if(model %in% m3){ #Smith, Brown-Resnick, extremal student
+    if(model == "br"){
     if(missing(sigma) && !missing(vario) && !missing(loc)){
       if(is.vector(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
       stopifnot(is.function(vario))
@@ -769,14 +770,15 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
         sigma <- vario2mat(loc, ...)
       }
     }
-    if(model=="xstud"){
-      sigma <- cov2cor(sigma)
     }
     if(model != "isbr"){
       if(missing(sigma) || ncol(sigma)!=nrow(sigma)) stop("Invalid covariance matrix")
       if(any(diag(sigma)<=0)) stop("Degenerate covariance matrix; negative or zero entries found")
     }
-    if(model=="xstud" && any(diag(sigma)!=1)) warning("Extremal student requires correlation matrix")
+    if(model=="xstud" && any(diag(sigma)!=1)){
+      warning("Extremal student requires correlation matrix")
+      sigma <- cov2cor(sigma)
+    }
     if(model=="xstud" && (missing(param) || length(param)!=1)){
       stop("Degrees of freedom argument missing or invalid")
     }
@@ -845,12 +847,14 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
   } else if(riskf %in% c("max", "min")){
     ustar <- ifelse(riskf=="max", 1, d)
     ind <- 0L
-    nsim <- ceiling(ifelse(n < 100, 4 * n, n))
+    nsim <- ceiling(ifelse(n < 10, 4 * n, n))
     samp <- matrix(0, nrow = n, ncol = d)
     while(ind < n){
     candidate <- evd::rgpd(n = nsim, loc = 1, scale = 1, shape = shape) *
       .rmevspec_cpp(n = nsim, d=d, para=param, model=mod, Sigma=sigma, loc=loc) / ustar
-    accept <- apply(candidate, 1, function(x){switch(riskf, max = max(x)>1, min = min(x)>1)})
+    accept <- switch(riskf,
+                     max = apply(candidate, 1, function(x){max(x)>1}),
+                     min = apply(candidate, 1, function(x){min(x)>1}))
     sum_accept <- sum(accept)
     if(sum_accept > 0){
       if(sum_accept < (n - ind)){

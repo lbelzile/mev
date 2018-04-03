@@ -144,7 +144,45 @@ arma::mat mvrnorm_chol_arma(int n, arma::colvec Mu, arma::mat Chol_Cov){
     return samp;
 }
 
+// [[Rcpp::export(.mvrt)]]
+arma::mat mvrt(int n, arma::mat scaleMat, double dof, arma::rowvec loc){
+  arma::mat cholesky = chol(scaleMat);
+  arma::colvec zerovec = arma::colvec(scaleMat.n_cols);
+  zerovec.zeros();
+  double ldof = log(dof);
+  arma::mat samp = mvrnorm_chol_arma(n, zerovec, cholesky);
+  NumericVector nuV = Rcpp::rchisq(n, dof);
+  for(int i=0; i<n; i++){
+   samp.row(i) = samp.row(i) * exp(0.5 * (ldof - log(nuV[i]))) + loc;
+  }
+  return samp;
+}
 
+// [[Rcpp::export(.mvrtXstud)]]
+arma::mat mvrtXstud(int n, arma::mat sigma, double alpha, int index){
+  double dof = alpha + 1.0;
+  arma::mat Covar = (sigma - sigma.col(index) * sigma.row(index))/dof;
+  //Covar matrix is not positive definite; shed it
+  Covar.shed_row(index); Covar.shed_col(index);
+  arma::rowvec locvec = sigma.row(index);
+  locvec.shed_col(index);
+  arma::vec onevec = arma::ones<arma::vec>(n);
+  arma::mat samp = mvrt(n, Covar, dof, locvec);
+  for(unsigned int i = 0; i < samp.n_rows ; i ++){
+    for(unsigned int j = 0; j < samp.n_cols; j++){
+      if(samp(i,j) < 0){
+       samp(i,j) = 0;
+      } else{
+       samp(i,j) = pow(samp(i,j), alpha);
+      }
+    }
+  }
+  samp.insert_cols(index, onevec);
+  for(unsigned int i = 0; i < samp.n_rows ; i ++){
+   samp.row(i) = samp.row(i)/sum(samp.row(i));
+  }
+  return samp;
+}
 
 // Functions from Rcpp Gallery for calculation of multivariate Normal density
 // http://gallery.rcpp.org/articles/dmvnorm_arma/
@@ -645,6 +683,9 @@ NumericMatrix rbilogspec(int n, NumericVector alpha){
   return sample;
 }
 
+
+
+
 //' Generates from \eqn{Q_i}{Qi}, the spectral measure of the extremal Student model
 //'
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
@@ -657,51 +698,19 @@ NumericMatrix rexstudspec(int n, arma::mat sigma, NumericVector al){
   if(al[0] < 0){
     Rcpp::stop("Invalid dof argument in rexstudspec");
   }
+  double alpha = al[0];
   //Define containers and auxiliary variables
-  arma::vec zeromean = arma::vec(sigma.n_cols-1);
-  zeromean.zeros(); // set elements of vector to zero
   int d = sigma.n_cols;
-  arma::mat samp(n,d);
+  arma::mat samp(n, d);
   IntegerVector intsamps = sample_qty(n, d);
-  arma::mat Covar = arma::mat(sigma.n_rows,sigma.n_cols);
-  arma::mat cholesky = arma::mat(sigma.n_rows-1,sigma.n_cols-1);
-  //Need to adjust the size of Covar because it was shed
-  arma::rowvec normalsamp = arma::rowvec(d-1);
-  arma::vec indexentry = arma::vec(1);
-  indexentry.zeros();
-  double nu;
   int r = 0;
-    for(int j = 0; j < d; j++){
-      if(intsamps[j] > 0){
-        //Redefine values
-        Covar = arma::mat(sigma.n_rows,sigma.n_cols);
-        normalsamp = arma::rowvec(d-1);
-        Covar = (sigma - sigma.col(j) * sigma.row(j))/(al[0]+1.0);
-        //Covar matrix is not positive definite; shed it
-        Covar.shed_row(j); Covar.shed_col(j);
-        cholesky = arma::chol(Covar);
-      for(int i = 0; i < intsamps[j]; i++){
-        //Sample from d-1 dimensional normal
-        normalsamp = mvrnorm_chol_arma(1, zeromean, cholesky).row(0);
-        normalsamp.insert_cols(j, indexentry);
-        nu = Rcpp::rchisq(1,al[0]+1.0)[0];
-        samp.row(r) = exp(0.5*(log(al[0]+1.0)-log(nu)))*normalsamp+sigma.row(j);
-        for(int k = 0; k < d; k++){
-          //Note: this is the shifted Student as gamma mixture,
-          // i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
-          if(samp(r,k) <= 0){
-            samp(r,k) = 0;
-          }  else{
-            samp(r,k) = exp(al[0]*log(samp(r,k)));
-          }
-        }
-        samp(r,j) = 1.0; //Sometimes off due to rounding
-        samp.row(r) = samp.row(r)/sum(samp.row(r));
-        r++;
-      }
-      }
+  for(unsigned int j = 0; j < d; j++){
+    if(intsamps[j] > 0){
+      samp.rows(r, r+intsamps[j]-1) = mvrtXstud(intsamps[j], sigma, alpha, j);
+      r += intsamps[j];
+    }
   }
-    arma::mat shuffledSamp = shuffle(samp, 0);
+  arma::mat shuffledSamp = shuffle(samp, 0);
   return Rcpp::as<Rcpp::NumericMatrix>(wrap(shuffledSamp));
 }
 
