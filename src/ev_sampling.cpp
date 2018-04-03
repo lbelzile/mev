@@ -303,7 +303,7 @@ NumericVector rPexstud_old (int index, arma::mat sigma, NumericVector al){
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
   normalsamp.insert_rows(index, indexentry);
-  double nu = Rcpp::rchisq(1,al[0])[0];
+  double nu = Rcpp::rchisq(1,al[0]+1.0)[0];
   arma::vec studsamp = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.col(index);
   //Note: this is the shifted Student as gamma mixture,
   //i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
@@ -334,7 +334,7 @@ NumericVector rPexstud (int index, arma::mat cholesky, arma::mat sigma, NumericV
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
   normalsamp.insert_rows(index, indexentry);
-  double nu = Rcpp::rchisq(1,al[0])[0];
+  double nu = Rcpp::rchisq(1,al[0]+1.0)[0];
   arma::vec studsamp = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.col(index);
   //Note: this is the shifted Student as gamma mixture,
   //i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
