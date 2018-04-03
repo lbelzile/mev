@@ -303,8 +303,8 @@ NumericVector rPexstud_old (int index, arma::mat sigma, NumericVector al){
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
   normalsamp.insert_rows(index, indexentry);
-  double nu = Rcpp::rchisq(1,al[0])[0];
-  arma::vec studsamp = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.col(index);
+  double nu = Rcpp::rchisq(1,al[0]+1.0)[0];
+  arma::vec studsamp = exp(0.5*(log(al[0]+1.0)-log(nu)))*normalsamp+sigma.col(index);
   //Note: this is the shifted Student as gamma mixture,
   //i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
   NumericVector samp = Rcpp::as<Rcpp::NumericVector>(wrap(studsamp));
@@ -334,8 +334,8 @@ NumericVector rPexstud (int index, arma::mat cholesky, arma::mat sigma, NumericV
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
   normalsamp.insert_rows(index, indexentry);
-  double nu = Rcpp::rchisq(1,al[0])[0];
-  arma::vec studsamp = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.col(index);
+  double nu = Rcpp::rchisq(1,al[0]+1.0)[0];
+  arma::vec studsamp = exp(0.5*(log(al[0]+1.0)-log(nu)))*normalsamp+sigma.col(index);
   //Note: this is the shifted Student as gamma mixture,
   //i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
   NumericVector samp = Rcpp::as<Rcpp::NumericVector>(wrap(studsamp));
@@ -684,8 +684,8 @@ NumericMatrix rexstudspec(int n, arma::mat sigma, NumericVector al){
         //Sample from d-1 dimensional normal
         normalsamp = mvrnorm_chol_arma(1, zeromean, cholesky).row(0);
         normalsamp.insert_cols(j, indexentry);
-        nu = Rcpp::rchisq(1,al[0])[0];
-        samp.row(r) = exp(0.5*(log(al[0])-log(nu)))*normalsamp+sigma.row(j);
+        nu = Rcpp::rchisq(1,al[0]+1.0)[0];
+        samp.row(r) = exp(0.5*(log(al[0]+1.0)-log(nu)))*normalsamp+sigma.row(j);
         for(int k = 0; k < d; k++){
           //Note: this is the shifted Student as gamma mixture,
           // i.e. adding the noncentrality parameter after multiplication by sqrt(dof)
@@ -960,6 +960,7 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
 	//Sanity checks
 	check_args(d, param, model, Sigma, loc);
 	if(model == 5){
+	  //Model 5: Extremal Student
 	  //Standardize the covariance to correlation matrix (do only once)
 	  arma::vec stdev = exp(0.5*log(sigma.diag()));
 	  arma::mat stdevmat = inv(diagmat(stdev));

@@ -209,7 +209,7 @@ rmev <-function(n, d, param, asy, sigma,
       model = "sdir"
     } else if(model %in% m3){ #Smith, Brown-Resnick, extremal student
     if(missing(sigma) && !missing(vario) && !missing(loc)){
-      if(!is.matrix(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
+      if(is.vector(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
       stopifnot(is.function(vario))
       if(model == "br"){
         model = "isbr"
@@ -490,7 +490,7 @@ rmevspec <-function(n, d, param, sigma,
       model = "sdir"
   }  else if(model %in% m3){ #Smith, Brown-Resnick, extremal student
     if(missing(sigma) && !missing(vario) && !missing(loc)){
-      if(!is.matrix(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
+      if(is.vector(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
       stopifnot(is.function(vario))
       if(model == "br"){
         model = "isbr"
@@ -752,7 +752,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
     model = "sdir"
   } else if(model %in% m3){ #Smith, Brown-Resnick, extremal student
     if(missing(sigma) && !missing(vario) && !missing(loc)){
-      if(!is.matrix(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
+      if(is.vector(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
       stopifnot(is.function(vario))
       if(model == "br"){
         model = "isbr"
