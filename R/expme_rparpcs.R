@@ -7,6 +7,7 @@
 #'
 #' Only extreme value models based on elliptical processes are handled.
 #'
+#'
 #' @author Leo Belzile
 #' @param n sample size
 #' @param Lambda parameter matrix for the Brown--Resnick model
@@ -14,8 +15,7 @@
 #' the covariance matrix formed from the stationary Brown-Resnick process.
 #' @param df degrees of freedom for extremal Student process
 #' @param model string indicating the model family
-#' @param xi tail index (shape parameter) of the Pareto variate. Must be strictly positive.
-#'
+#' @param xi tail index (shape parameter) of the Pareto variates. Must be strictly positive.
 #'
 #' @details The argument \code{Sigma} is ignored for the Brown-Resnick model
 #' if \code{Lambda} is provided by the user.
@@ -46,7 +46,8 @@
 #'  N*weights + 1.96* sqrt(N*weights*1-weights)), col = rep(2,3),
 #'    type = "p", pch = c(20,1,1), add = TRUE)
 #' }
-rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "xstud"), xi = 1){
+rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL,
+                    model = c("br", "xstud"), xi = 1){
   stopifnot(xi > 0)
   if(model == "xstud"){
     if(is.null(df)){stop("Invalid degree of freedom argument")}
@@ -100,11 +101,12 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
     #return(list(R=R, ang= ang, X = R*t(ang)))
     return(R*t(ang))
 }
-#' Generalized Huesler-Reiss Pareto process simulation via composition sampling
+#' Simulation of generalized Huesler-Reiss Pareto vectors via composition sampling
 #'
 #' Sample from the generalized Pareto process associated to Huesler-Reiss spectral profiles.
-#' The matrix \code{Sigma} is utilized to build \eqn{Q} viz.
-#' \deqn{Q = \Sigma^{-1} - \frac{\Sigma^{-1}\mathbf{1}_d\mathbf{1}_d^\top\Sigma^{-1}}{\mathbf{1}_d^\top\Sigma^{-1}\mathbf{1}_d}}
+#' For the Huesler-Reiss Pareto vectors, the matrix \code{Sigma} is utilized to build \eqn{Q} viz.
+#' \deqn{Q = \Sigma^{-1} - \frac{\Sigma^{-1}\mathbf{1}_d\mathbf{1}_d^\top\Sigma^{-1}}{\mathbf{1}_d^\top\Sigma^{-1}\mathbf{1}_d}.}
+#' The location vector \code{m} and \code{Sigma} are the parameters of the underlying log-Gaussian process.
 #'
 #' @param n sample size
 #' @param u vector of marginal location parameters (must be strictly positive)
@@ -113,7 +115,7 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
 #' @param m location vector of Gaussian distribution.
 #' @return \code{n} by d matrix of observations
 #' @references Ho, Z. W. O and C. Dombry (2017), Simple models for multivariate regular variations and the
-#'  Huesler-Reiss Pareto distribution, \url{http://arxiv.org/abs/1712.09225v1}
+#'   Huesler-Reiss Pareto distribution, \url{http://arxiv.org/abs/1712.09225v1}
 #' @export
 #' @examples
 #' D <- 20L
@@ -123,9 +125,9 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
 #' Vmat <- semivario(di)
 #' Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], "+") - Vmat[-1, -1]
 #' m <- Vmat[-1,1]
-#' samp <- rparpcsHR(n = 100, u = c(rep(1, 10), rep(2, 10)),
+#' samp <- rparpcshr(n = 100, u = c(rep(1, 10), rep(2, 10)),
 #'           alpha = seq(0.1, 1, length = 20), Sigma = Sigma, m = m)
-rparpcsHR <- function(n, u, alpha, Sigma, m){
+rparpcshr <- function(n, u, alpha, Sigma, m){
   D <- ncol(Sigma)
   Sigmainv <- solve(Sigma)
   q <- Sigmainv %*% rep(1, D)
@@ -139,8 +141,8 @@ rparpcsHR <- function(n, u, alpha, Sigma, m){
   }
   alpha <- rep(alpha, length = D)
   u <- rep(u, length = D)
-  L <- l - Q %*% diag(alpha) %*% log(u)
-  weights <- weightsHR(z = rep(1, D), L = L, Q = Q)
+  Lst <- l - Q %*% diag(alpha) %*% log(u) #prop 4.2 b/c u \neq 1
+  weights <- weightsHR(z = rep(1, D), L = Lst, Q = Q)
   weights <- weights / sum(weights)
   id <- sample.int(n = D, size = n, replace = TRUE, prob = weights)
   tabu <- table(id)
@@ -154,13 +156,13 @@ rparpcsHR <- function(n, u, alpha, Sigma, m){
     Qjinv <- solve(Q[-j,-j])
     ang[-j, (accu+1L):(accu+tabu[i])] <- exp(TruncatedNormal::mvrandn(
       n = tabu[i], l = rep(-Inf, D - 1),
-      u =  c(-Qjinv %*% L[-j,]), Sig = Qjinv) + c(Qjinv %*% L[-j,]))
+      u =  c(-Qjinv %*% Lst[-j,]), Sig = Qjinv) + c(Qjinv %*% Lst[-j,]))
     accu <- accu+tabu[i]
   }
   R <- evd::rgpd(n = n, loc = 1, scale = 1, shape = 1)
   samp <- R*t(ang[, sample.int(n, n, replace = FALSE)])
   for(j in 1:ncol(samp)){
-    samp[,j] <- u[j] * (samp[,j]^(alpha[j]))
+    samp[,j] <- u[j] * (samp[,j]^(alpha[j])) #coro 4.3
   }
   return(samp)
 }
@@ -217,11 +219,12 @@ expme <- function(z, Sigma = NULL, Lambda = NULL, m = NULL, df = NULL, model = c
    if(any(c(is.null(m), is.null(Sigma),  ncol(Sigma) != nrow(Sigma)))){
      stop("Invalid or missing arguments for the Huesler-Reiss model")
    }
+     D <- ncol(Sigma)
      Sigmainv <- solve(Sigma)
      q <- Sigmainv %*% rep(1, D)
      Q <- (Sigmainv - q %*% t(q) / sum(q))
      l <- c(Sigmainv %*% (((m %*% q - 1)/sum(q))[1] * rep(1, D) - m))
-     return(expmeHR(z = z, L = l, Q = Q, method = method))
+    return(expmeHR(z = z, L = l, Q = Q, method = method))
   } else if(model == "xstud"){
     if(any(c(is.null(Sigma), is.null(df), ncol(Sigma) != nrow(Sigma)))){
       stop("Invalid or missing arguments for the extremal Student model")
