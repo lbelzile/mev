@@ -215,6 +215,44 @@ namespace mev {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
+    inline arma::mat _mvrt(int n, arma::mat scaleMat, double dof, arma::rowvec loc) {
+        typedef SEXP(*Ptr__mvrt)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr__mvrt p__mvrt = NULL;
+        if (p__mvrt == NULL) {
+            validateSignature("arma::mat(*_mvrt)(int,arma::mat,double,arma::rowvec)");
+            p__mvrt = (Ptr__mvrt)R_GetCCallable("mev", "_mev__mvrt");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__mvrt(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(scaleMat)), Shield<SEXP>(Rcpp::wrap(dof)), Shield<SEXP>(Rcpp::wrap(loc)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::mat _mvrtXstud(int n, arma::mat sigma, double alpha, int index) {
+        typedef SEXP(*Ptr__mvrtXstud)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr__mvrtXstud p__mvrtXstud = NULL;
+        if (p__mvrtXstud == NULL) {
+            validateSignature("arma::mat(*_mvrtXstud)(int,arma::mat,double,int)");
+            p__mvrtXstud = (Ptr__mvrtXstud)R_GetCCallable("mev", "_mev__mvrtXstud");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__mvrtXstud(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(index)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
     inline arma::vec _dmvnorm_arma(arma::mat x, arma::rowvec mean, arma::mat sigma, bool log = false) {
         typedef SEXP(*Ptr__dmvnorm_arma)(SEXP,SEXP,SEXP,SEXP);
         static Ptr__dmvnorm_arma p__dmvnorm_arma = NULL;

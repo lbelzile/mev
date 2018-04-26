@@ -1864,9 +1864,12 @@ plot.fr <- function(x, ...)
 #' @importFrom stats smooth.spline
 spline.corr <- function(fr){
   #Step 1: fit a smoothing spline to rstar
-
   #If fit failed for some values (for example when shape forced to be < 1)
   #Remove those values
+  if(all(is.nan(fr$q)) || all (is.nan(fr$rstar))){
+    #If could not compute Fraser-Reid correction, abort
+   return(fr)
+  }
   fitfailed <- which(is.na(fr$r))
   if(length(fitfailed)>0){
     fr$r <- fr$r[-fitfailed]
@@ -1888,7 +1891,8 @@ spline.corr <- function(fr){
     regr <- fr$r
   }
   if(requireNamespace("cobs", quietly = TRUE)){
-    spline <- cobs::cobs(y = resp, x = regr, w = w, constraint = "none", lambda = 1, print.mesg = FALSE, print.warn = FALSE)$fitted
+    spline <- cobs::cobs(y = resp, x = regr, w = w, constraint = "none", lambda = 1, nknots = 20,
+                         print.mesg = FALSE, print.warn = FALSE)$fitted
   } else{
     spline <- rev(stats::smooth.spline(y = resp, x = regr, w = w, spar = 0.9, cv = TRUE)$y)
   }

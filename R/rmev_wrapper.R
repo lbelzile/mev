@@ -79,7 +79,7 @@
 #'rmev(n=100, d=3, param=2.5, model="log", alg="ef")
 #'rmev(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model="bilog", alg="sm")
 #'## Spatial example using power variogram
-#'#NEW: Variogram must take distance as argument
+#'#NEW: Semi-variogram must take distance as argument
 #'semivario <- function(x, scale, alpha){ scale*x^alpha }
 #'#grid specification
 #'grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
@@ -90,7 +90,7 @@
 #'   semivario(sqrt(sum((loc[j,])^2)), ...) -
 #'   semivario(sqrt(sum((loc[i,]-loc[j,])^2)), ...)))
 #' }
-#'rmev(n=100, sigma=vario2cov(grid.loc, vario = semivario, scale = 0.5, alpha = 1), model="br")
+#'rmev(n=100, sigma=vario2cov(grid.loc, semivario = semivario, scale = 0.5, alpha = 1), model="br")
 #'#Example with a grid (generating an array)
 #'rmev(n=10, sigma=cbind(c(2,1), c(1,3)), loc=cbind(runif(4), runif(4)),model="smith", grid=TRUE)
 #'## Example with Dirichlet mixture
@@ -224,7 +224,8 @@ rmev <-function(n, d, param, asy, sigma,
           covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
           return(covmat)
         }
-        sigma <- semivario2mat(loc, vario, ...)/2 #change 08-03-2018
+        sigma <- semivario2mat(loc, vario, ...)/2
+        #changed  08-03-2018 Matrix is half of Semivariogram, quarter of variogram
         }
       }
   	if(model=="xstud"){

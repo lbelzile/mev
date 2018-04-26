@@ -332,6 +332,72 @@ RcppExport SEXP _mev_mvrnorm_chol_arma(SEXP nSEXP, SEXP MuSEXP, SEXP Chol_CovSEX
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// mvrt
+arma::mat mvrt(int n, arma::mat scaleMat, double dof, arma::rowvec loc);
+static SEXP _mev_mvrt_try(SEXP nSEXP, SEXP scaleMatSEXP, SEXP dofSEXP, SEXP locSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type scaleMat(scaleMatSEXP);
+    Rcpp::traits::input_parameter< double >::type dof(dofSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type loc(locSEXP);
+    rcpp_result_gen = Rcpp::wrap(mvrt(n, scaleMat, dof, loc));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _mev_mvrt(SEXP nSEXP, SEXP scaleMatSEXP, SEXP dofSEXP, SEXP locSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_mev_mvrt_try(nSEXP, scaleMatSEXP, dofSEXP, locSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
+// mvrtXstud
+arma::mat mvrtXstud(int n, arma::mat sigma, double alpha, int index);
+static SEXP _mev_mvrtXstud_try(SEXP nSEXP, SEXP sigmaSEXP, SEXP alphaSEXP, SEXP indexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< int >::type index(indexSEXP);
+    rcpp_result_gen = Rcpp::wrap(mvrtXstud(n, sigma, alpha, index));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _mev_mvrtXstud(SEXP nSEXP, SEXP sigmaSEXP, SEXP alphaSEXP, SEXP indexSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_mev_mvrtXstud_try(nSEXP, sigmaSEXP, alphaSEXP, indexSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // dmvnorm_arma
 arma::vec dmvnorm_arma(arma::mat x, arma::rowvec mean, arma::mat sigma, bool log);
 static SEXP _mev_dmvnorm_arma_try(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP logSEXP) {
@@ -1269,6 +1335,8 @@ static int _mev_RcppExport_validate(const char* sig) {
         signatures.insert("NumericMatrix(*.mvrnorm_chol)(int,NumericVector,arma::mat)");
         signatures.insert("arma::mat(*.mvrnorm_arma)(int,arma::colvec,arma::mat,bool)");
         signatures.insert("arma::mat(*.mvrnorm_chol_arma)(int,arma::colvec,arma::mat)");
+        signatures.insert("arma::mat(*.mvrt)(int,arma::mat,double,arma::rowvec)");
+        signatures.insert("arma::mat(*.mvrtXstud)(int,arma::mat,double,int)");
         signatures.insert("arma::vec(*.dmvnorm_arma)(arma::mat,arma::rowvec,arma::mat,bool)");
         signatures.insert("arma::vec(*.dmvnorm_chol_arma)(arma::mat,arma::rowvec,arma::mat,bool)");
         signatures.insert("NumericVector(*.rPlog)(int,int,NumericVector)");
@@ -1313,6 +1381,8 @@ RcppExport SEXP _mev_RcppExport_registerCCallable() {
     R_RegisterCCallable("mev", "_mev_.mvrnorm_chol", (DL_FUNC)_mev_mvrnorm_chol_try);
     R_RegisterCCallable("mev", "_mev_.mvrnorm_arma", (DL_FUNC)_mev_mvrnorm_arma_try);
     R_RegisterCCallable("mev", "_mev_.mvrnorm_chol_arma", (DL_FUNC)_mev_mvrnorm_chol_arma_try);
+    R_RegisterCCallable("mev", "_mev_.mvrt", (DL_FUNC)_mev_mvrt_try);
+    R_RegisterCCallable("mev", "_mev_.mvrtXstud", (DL_FUNC)_mev_mvrtXstud_try);
     R_RegisterCCallable("mev", "_mev_.dmvnorm_arma", (DL_FUNC)_mev_dmvnorm_arma_try);
     R_RegisterCCallable("mev", "_mev_.dmvnorm_chol_arma", (DL_FUNC)_mev_dmvnorm_chol_arma_try);
     R_RegisterCCallable("mev", "_mev_.rPlog", (DL_FUNC)_mev_rPlog_try);
@@ -1356,6 +1426,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mev_mvrnorm_chol", (DL_FUNC) &_mev_mvrnorm_chol, 3},
     {"_mev_mvrnorm_arma", (DL_FUNC) &_mev_mvrnorm_arma, 4},
     {"_mev_mvrnorm_chol_arma", (DL_FUNC) &_mev_mvrnorm_chol_arma, 3},
+    {"_mev_mvrt", (DL_FUNC) &_mev_mvrt, 4},
+    {"_mev_mvrtXstud", (DL_FUNC) &_mev_mvrtXstud, 4},
     {"_mev_dmvnorm_arma", (DL_FUNC) &_mev_dmvnorm_arma, 4},
     {"_mev_dmvnorm_chol_arma", (DL_FUNC) &_mev_dmvnorm_chol_arma, 4},
     {"_mev_rPlog", (DL_FUNC) &_mev_rPlog, 3},

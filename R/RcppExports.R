@@ -77,6 +77,14 @@ mvrnorm <- function(n, mu, Sigma) {
     .Call('_mev_mvrnorm_chol_arma', PACKAGE = 'mev', n, Mu, Chol_Cov)
 }
 
+.mvrt <- function(n, scaleMat, dof, loc) {
+    .Call('_mev_mvrt', PACKAGE = 'mev', n, scaleMat, dof, loc)
+}
+
+.mvrtXstud <- function(n, sigma, alpha, index) {
+    .Call('_mev_mvrtXstud', PACKAGE = 'mev', n, sigma, alpha, index)
+}
+
 .dmvnorm_arma <- function(x, mean, sigma, log = FALSE) {
     .Call('_mev_dmvnorm_arma', PACKAGE = 'mev', x, mean, sigma, log)
 }

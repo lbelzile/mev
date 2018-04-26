@@ -12,7 +12,7 @@ rparp(n, shape = 1, riskf = c("sum", "site", "max"), siteindex = NULL, d,
 \arguments{
 \item{n}{number of observations}
 
-\item{shape}{shape index of Pareto variable}
+\item{shape}{shape tail index of Pareto variable}
 
 \item{riskf}{string indicating risk functional.}
 
