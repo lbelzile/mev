@@ -19,7 +19,7 @@ the covariance matrix formed from the stationary Brown-Resnick process.}
 
 \item{model}{string indicating the model family}
 
-\item{xi}{tail index (shape parameter) of the Pareto variate. Must be strictly positive.}
+\item{xi}{tail index (shape parameter) of the Pareto variates. Must be strictly positive.}
 }
 \value{
 an \code{n} by \code{d} matrix, where \code{d=ncol(Sigma)}
