@@ -62,8 +62,7 @@
 #'As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
 #'
 #'The former implementation of \code{mev} assumed that the Brown-Resnick process was stationary (NOT intrinsically stationary).
-#'To obtain this, one must provide a covariance matrix \code{sigma}. Passing a variogram (which must now be parameterized by distance and not location)
-#'will give the intrinsically stationary Brown-Resnick process.
+#'To obtain this, one must provide a covariance matrix \code{sigma}. Passing a semivariogram (which must now be parameterized by distance and not location) will give intrinsically stationary Brown-Resnick processes.
 #'
 #'The family of scaled Dirichlet is now parametrized by a parameter in \eqn{-\min(\alpha)} appended to the the \code{d} vector \code{param} containing the parameter \code{alpha}
 #'of the Dirichlet model. Arguments \code{model="dir"} and \code{model="negdir"} are still supported internally, but not listed in the options.
@@ -495,17 +494,19 @@ rmevspec <-function(n, d, param, sigma,
       stopifnot(is.function(vario))
       if(model == "br"){
         model = "isbr"
+        m3 <- c(m3, model)
         if(vario(0, ...) > 1e-15){
           stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
         }
-        vario2mat <- function(loc, ...){
+        semivario2mat <- function(loc, semivario, ...){
           di <- as.matrix(dist(loc)) #fields::rdist(loc) is faster...
           covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
-          covmat[lower.tri(covmat)] <- vario(di[lower.tri(di)], ...)
+          covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
           covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
           return(covmat)
         }
-        sigma <- vario2mat(loc, ...)
+        sigma <- semivario2mat(loc, vario, ...)/2
+        #changed  08-03-2018 Matrix is half of Semivariogram, quarter of variogram
       }
     }
     if(model=="xstud"){
@@ -753,24 +754,26 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
     model = "sdir"
   } else if(model %in% m3){ #Smith, Brown-Resnick, extremal student
     if(model == "br"){
-    if(missing(sigma) && !missing(vario) && !missing(loc)){
-      if(is.vector(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
-      stopifnot(is.function(vario))
-      if(model == "br"){
-        model = "isbr"
-        if(vario(0, ...) > 1e-15){
-          stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
+      if(missing(sigma) && !missing(vario) && !missing(loc)){
+        if(is.vector(loc)) loc <- matrix(loc, ncol=1) #1 dimensional process
+        stopifnot(is.function(vario))
+        if(model == "br"){
+          model = "isbr"
+          m3 <- c(m3, model)
+          if(vario(0, ...) > 1e-15){
+            stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
+          }
+          semivario2mat <- function(loc, semivario, ...){
+            di <- as.matrix(dist(loc)) #fields::rdist(loc) is faster...
+            covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
+            covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
+            covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
+            return(covmat)
+          }
+          sigma <- semivario2mat(loc, vario, ...)/2
+          #changed  14-05-2018 Matrix is half of Semivariogram, quarter of variogram
         }
-        vario2mat <- function(loc, ...){
-          di <- as.matrix(dist(loc)) #fields::rdist(loc) is faster...
-          covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
-          covmat[lower.tri(covmat)] <- vario(di[lower.tri(di)], ...)
-          covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
-          return(covmat)
-        }
-        sigma <- vario2mat(loc, ...)
       }
-    }
     }
     if(model != "isbr"){
       if(missing(sigma) || ncol(sigma)!=nrow(sigma)) stop("Invalid covariance matrix")
