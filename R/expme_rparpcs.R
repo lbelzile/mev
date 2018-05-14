@@ -74,8 +74,8 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL,
     } else if(model == "br"){
       if(!is.null(Lambda)){
         ang[-j, (accu+1L):(accu+tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], l = rep(-Inf, D - 1),
-                                                                          u = -2 * Lambda[j,-j],
-                                                                          Sig = 2 * (outer(Lambda[-j,j], Lambda[j,-j], FUN = "+") - Lambda[-j,-j])) + 2*Lambda[j,-j])
+                                                                          u = 2 * Lambda[j,-j],
+                                                                          Sig = 2 * (outer(Lambda[-j,j], Lambda[j,-j], FUN = "+") - Lambda[-j,-j])) - 2*Lambda[j,-j])
       } else if (!is.null(Sigma)){
         me <- diag(Sigma)[-j]/2 + Sigma[j,j]/2 - Sigma[j,-j]
         Ti <- T1; Ti[, c(1L, j)] <- T1[, c(j, 1L)]
