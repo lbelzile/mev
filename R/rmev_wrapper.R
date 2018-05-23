@@ -656,6 +656,8 @@ rmevspec <-function(n, d, param, sigma,
 #' @param shape shape tail index of Pareto variable
 #' @param riskf string indicating risk functional.
 #' @param siteindex integer between 1 and d specifying the index of the site or variable
+#' @return an \code{n} by \code{d} sample from the R-Pareto process, with \code{attributes}
+#' \code{accept.rate} if the procedure uses rejection sampling.
 #' @export
 #' @examples
 #' rparp(n=10, riskf = "site", siteindex=2, d=3, param=2.5, model="log")
@@ -665,7 +667,7 @@ rmevspec <-function(n, d, param, sigma,
 #' vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
 #' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
 #' rparp(n=10, riskf = "max", vario=vario,loc=grid.loc, model="br")
-rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
+rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min"),
                            siteindex = NULL, d, param, sigma,
                            model= c("log","neglog","bilog","negbilog","hr","br",
                                     "xstud","smith","schlather","ct","sdir","dirmix"),
@@ -834,7 +836,6 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
   #Model
   mod <- switch(model, log=1, neglog=2, dirmix=3, bilog=4, negbilog=4, xstud=5, br=6,
                 sdir=7, smith=8, hr=9, isbr=9)
-
   if(riskf == "sum"){
   #Generate from spectral measure
   return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) *
@@ -851,6 +852,8 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
   } else if(riskf %in% c("max", "min")){
     ustar <- ifelse(riskf=="max", 1, d)
     ind <- 0L
+    ntotsim <- 0L
+    ntotacc <- 0L
     nsim <- ceiling(ifelse(n < 10, 4 * n, n))
     samp <- matrix(0, nrow = n, ncol = d)
     while(ind < n){
@@ -860,19 +863,22 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site","max"),
                      max = apply(candidate, 1, function(x){max(x)>1}),
                      min = apply(candidate, 1, function(x){min(x)>1}))
     sum_accept <- sum(accept)
+    ntotacc <- ntotacc + sum_accept
+    ntotsim <- ntotsim + nsim
     if(sum_accept > 0){
       if(sum_accept < (n - ind)){
         samp[(ind+1L):(ind+sum_accept),] <- candidate[accept,]
         ind <- ind + sum_accept
-        nsim <- ceiling(1.25 * (nsim/sum_accept) * (n - ind))
+        nsim <- min(1e6, ceiling(1.25 * (nsim/sum_accept) * (n - ind)))
       } else {
         samp[(ind+1L):n,] <- candidate[accept,][1:(n-ind),]
         ind <- n
       }
     } else{
-      nsim <- ceiling(1.25 * nsim)
+      nsim <- min(1e6, ceiling(1.25 * nsim))
     }
     }
+    attr(samp, "accept.rate") <- ntotacc/ntotsim
     return(samp)
    } else {
     stop("Model not implemented")

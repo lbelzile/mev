@@ -1,3 +1,15 @@
+mev v.1.12 (Release date: )
+==============
+New:
+* Function 'rparpcs' for simulating from elliptical Pareto processes associated with max
+* Exponent measure for Brown-Resnick and extremal Student model
+* 'spunif' for semi-parametric transform to uniform (tail modelled using GP)
+* 'rparp' now has attributes to give acceptance rate of accept/reject procedure.
+Fixes:
+* scaling of Brown-Resnick is now consistent with literature (half of semivariogram)
+* Incorrect degrees of freedom argument in C++ code for 'rmev' with extremal Student family
+* rparp now has a hard bound to ensure the vector of simulated vectors fits in memory.
+
 mev v.1.11 (Release date: 2018-02-23)
 ==============
 New:
