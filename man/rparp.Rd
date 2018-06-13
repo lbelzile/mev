@@ -4,10 +4,10 @@
 \alias{rparp}
 \title{Simulation from R-Pareto processes}
 \usage{
-rparp(n, shape = 1, riskf = c("sum", "site", "max"), siteindex = NULL, d,
-  param, sigma, model = c("log", "neglog", "bilog", "negbilog", "hr", "br",
-  "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc,
-  ...)
+rparp(n, shape = 1, riskf = c("sum", "site", "max", "min"),
+  siteindex = NULL, d, param, sigma, model = c("log", "neglog", "bilog",
+  "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir",
+  "dirmix"), weights, vario, loc, ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -35,6 +35,10 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 \item{loc}{\code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
 \item{...}{additional arguments for the \code{vario} function}
+}
+\value{
+an \code{n} by \code{d} sample from the R-Pareto process, with \code{attributes}
+\code{accept.rate} if the procedure uses rejection sampling.
 }
 \description{
 Simulation from R-Pareto processes

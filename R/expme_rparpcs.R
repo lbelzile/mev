@@ -3,7 +3,7 @@
 #' The algorithm performs forward sampling by simulating first from a
 #' mixture, then sample angles conditional on them being less than one.
 #' The resulting sample from the angular distribution is then multiplied by
-#' \eqn{xi}-Frechet variates.
+#' Pareto variates with tail index \code{shape}.
 #'
 #' Only extreme value models based on elliptical processes are handled. The \code{Lambda} matrix
 #' is formed by evaluating the semivariogram \eqn{\gamma} at sites \eqn{s_i, s_j}, meaning that
@@ -21,7 +21,7 @@
 #' @details The argument \code{Sigma} is ignored for the Brown-Resnick model
 #' if \code{Lambda} is provided by the user.
 #' @export
-#' @return an \code{n} by \code{d} matrix of samples, where \code{d=ncol(Sigma)}, with \code{attributes} \code{mixt.weights}.
+#' @return an \code{n} by \code{d} matrix of samples, where \code{d = ncol(Sigma)}, with \code{attributes} \code{mixt.weights}.
 #' @examples
 #' \dontrun{
 #' #Brown-Resnick, Wadsworth and Tawn (2014) parametrization
@@ -36,8 +36,8 @@
 #' }
 rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL,
                     model = c("br", "xstud"), riskf = c("max", "min"), shape = 1){
-  model <- match.arg(model, choices = c("br", "xstud"))[1]
-  riskf <- match.arg(riskf, choices = c("max", "min"))[1]
+  model <- match.arg(model[1], choices = c("br", "xstud"))
+  riskf <- match.arg(riskf[1], choices = c("max", "min"))
   stopifnot(shape > 0)
   if(model == "xstud"){
     if(is.null(df)){stop("Invalid degree of freedom argument")}
@@ -210,7 +210,7 @@ rparpcshr <- function(n, u, alpha, Sigma, m){
 #' Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], "+") - Vmat[-1, -1]
 #' expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = "br", method = "mvPot")
 expme <- function(z, Sigma = NULL, Lambda = NULL, m = NULL, df = NULL, model = c("hr", "br", "xstud"),
-                  method = c("TruncatedNormal", "mvtnorm", "mvPot")){
+                  method = c("mvPot", "TruncatedNormal", "mvtnorm")){
   model <- match.arg(model[1], choices = c("hr", "br", "xstud"))
   method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
   if(method == "mvtnorm"){
@@ -248,22 +248,22 @@ expme <- function(z, Sigma = NULL, Lambda = NULL, m = NULL, df = NULL, model = c
   }
 }
 
-expmeBR <- function(z, Lambda, method = c("mvtnorm", "mvPot", "TruncatedNormal")){
+expmeBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal")){
   weights <- weightsBR(z = z, Lambda = Lambda, method = method)
   sum(weights/z)
 }
 
-expmeHR <- function(z, Q, L, method = c("mvtnorm", "mvPot", "TruncatedNormal")){
+expmeHR <- function(z, Q, L, method = c("mvPot", "mvtnorm", "TruncatedNormal")){
   weights <- weightsHR(z = z, Q = Q, L = L, method = method)
   sum(weights/z)
 }
 
-expmeBR_WT <- function(z, Sigma, method = c("mvtnorm", "mvPot", "TruncatedNormal")){
+expmeBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNormal")){
   weights <- weightsBR_WT(z = z, Sigma = Sigma, method = method)
   sum(weights/z)
 }
 
-expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNormal")){
+expmeXS <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNormal")){
   D <- length(z)
   stopifnot(ncol(Sigma) == D | nrow(Sigma) == D | df > 0)
   if(!isTRUE(all.equal(as.vector(diag(Sigma)), rep(1, D)))){
@@ -277,8 +277,8 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
   sum(weights/z)
 }
 
-weightsHR <- function(z, L, Q, method = c("mvtnorm", "mvPot", "TruncatedNormal")){
-  method <- match.arg(method, choices = c("mvtnorm", "mvPot", "TruncatedNormal"))[1]
+weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")){
+  method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
   D <- ncol(Q)
   weights <- rep(0, D)
   if (method == "mvPot"){
@@ -299,9 +299,9 @@ weightsHR <- function(z, L, Q, method = c("mvtnorm", "mvPot", "TruncatedNormal")
 }
 
 
-weightsBR <- function(z, Lambda, method = c("mvtnorm", "mvPot", "TruncatedNormal"), riskf = c("max", "min")){
-  method <- match.arg(method, choices = c("mvtnorm", "mvPot", "TruncatedNormal"))[1]
-  riskf <- match.arg(riskf, choices = c("max", "min"))[1]
+weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")){
+  method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+  riskf <- match.arg(riskf[1], choices = c("max", "min"))
   si <- switch(riskf, max = 1, min = -1)
   D <- length(z)
   stopifnot(ncol(Lambda) == D | nrow(Lambda) == D)
@@ -329,9 +329,9 @@ weightsBR <- function(z, Lambda, method = c("mvtnorm", "mvPot", "TruncatedNormal
   return(weights)
 }
 
-weightsBR_WT <- function(z, Sigma, method = c("mvtnorm", "mvPot", "TruncatedNormal"), riskf = c("max", "min")){
-  method <- match.arg(method, choices = c("mvtnorm", "mvPot", "TruncatedNormal"))[1]
-  riskf <- match.arg(riskf, choices = c("max", "min"))[1]
+weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")){
+  method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+  riskf <- match.arg(riskf[1], choices = c("max", "min"))
   si <- switch(riskf, max = 1, min = -1)
   D <- length(z)
   stopifnot(ncol(Sigma) == D | nrow(Sigma) == D)
@@ -362,9 +362,9 @@ weightsBR_WT <- function(z, Sigma, method = c("mvtnorm", "mvPot", "TruncatedNorm
   return(weights)
 }
 
-weightsXstud <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNormal"), riskf = c("max", "min")){
-  method <- match.arg(method, choices = c("mvtnorm", "mvPot", "TruncatedNormal"))[1]
-  riskf <- match.arg(riskf, choices = c("max", "min"))[1]
+weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")){
+  method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+  riskf <- match.arg(riskf[1], choices = c("max", "min"))
   si <- switch(riskf, max = 1, min = -1)
   D <- nrow(Sigma)
   stopifnot(nrow(Sigma) == length(z))

@@ -5,8 +5,8 @@
 \title{Exponent measure for elliptical extreme value processes}
 \usage{
 expme(z, Sigma = NULL, Lambda = NULL, m = NULL, df = NULL,
-  model = c("hr", "br", "xstud"), method = c("TruncatedNormal", "mvtnorm",
-  "mvPot"))
+  model = c("hr", "br", "xstud"), method = c("mvPot", "TruncatedNormal",
+  "mvtnorm"))
 }
 \arguments{
 \item{z}{vector at which to estimate exponent measure}
