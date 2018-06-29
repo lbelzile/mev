@@ -148,4 +148,5 @@ NULL
 # W.diag
 # .NHPP.diag
 # .Expl.diag
-
+### spunif.R
+# spunif

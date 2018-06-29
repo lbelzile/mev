@@ -116,7 +116,7 @@ gpd.mle <- function(dat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmean
 
 #'  Generalized extreme value maximum likelihood estimates for various quantities of interest
 #'
-#' #' This function calls the \code{fgev} routine on the sample of excesses and returns maximum likelihood
+#' This function calls the \code{fgev} routine on the sample of excesses and returns maximum likelihood
 #' estimates for all quantities of interest, including scale and shape parameters, quantiles and value-at-risk,
 #' expected shortfall and mean and quantiles of maxima of \code{N} threshold exceedances
 #' @export
@@ -176,6 +176,9 @@ confint.extprof <- function(object, parm, level = 0.95, ...){
     warn <- args$warn
   } else{
     warn <- TRUE
+  }
+  if(length(level)!=1){
+    stop("Only one level is a time is handled")
   }
   if(missing(parm)){
     parm <- NULL
@@ -902,7 +905,6 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     maxll <- gevN.ll(mle, dat = dat, N = N, q = q, qty = qty)
     std.error <- sqrt(solve(gevN.infomat(par=mle, dat = dat, method="exp", N = N, q = q, qty = qty))[2,2])
     constr.mle.N <- function(zt, dat = dat){
-      #browser();
       st_vals <- c(median(dat), 0.1)
       if(isTRUE(as.vector(mle["shape"]>0))){
         st_vals <- mle[c("loc","shape")]
@@ -1057,6 +1059,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     }
   }
   #Return profile likelihood and quantities of interest (modified likelihoods)
+  colnames(pars) <- names(mle)
   ans <- list(mle = mle, pars = pars, psi.max = as.vector(mle[oldpar]),
               param = oldpar, std.error = std.error, psi = psi, pll = profll, maxpll = maxll)
   if("tem" %in% mod){
@@ -1736,7 +1739,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     }
   }
   #Return profile likelihood and quantities of interest (modified likelihoods)
-
+  colnames(pars) <- names(mle)
   ans <- list(mle = mle, pars = pars, psi.max = as.vector(mle[param]), param = param,
               std.error = std.error, psi = psi, pll = profll, maxpll = maxll)
   if("tem" %in% mod){

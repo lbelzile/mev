@@ -248,16 +248,16 @@ gev.ll.optim <- function(par, dat){
 #' @keywords internal
 gev.score <- function(par, dat){
   mu = par[1]; sigma = par[2]; xi = as.vector(par[3])
-  if(!isTRUE(all.equal(xi, 0))){
-    c(sum(-(-(mu - dat)*xi/sigma + 1)^(-1/xi - 1)/sigma - xi*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1))),
+  if(!isTRUE(all.equal(xi, 0, tolerance = 1e-6))){
+    c(sum(-(pmax(0,-(mu - dat)*xi/sigma + 1))^(-1/xi - 1)/sigma - xi*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1))),
       sum(-(dat - mu)*((dat - mu)*xi/sigma + 1)^(-1/xi - 1)/sigma^2 + (dat - mu)*(xi + 1)/(sigma^2*((dat - mu)*xi/sigma + 1)) - 1/sigma),
       sum(-(mu - dat)*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1)) -
-            (log(-(mu - dat)*xi/sigma + 1)/xi^2 - (mu - dat)/(sigma*((mu - dat)*xi/sigma - 1)*xi))/(-(mu - dat)*xi/sigma + 1)^(1/xi) +
-            log(-(mu - dat)*xi/sigma + 1)/xi^2))
+            (log(pmax(0,-(mu - dat)*xi/sigma + 1))/xi^2 - (mu - dat)/(sigma*((mu - dat)*xi/sigma - 1)*xi))/(-(mu - dat)*xi/sigma + 1)^(1/xi) +
+            log(pmax(0,-(mu - dat)*xi/sigma + 1))/xi^2))
   } else{
     c(sum(-exp(mu/sigma - dat/sigma)/sigma + 1/sigma),
       sum(mu*exp(mu/sigma - dat/sigma)/sigma^2 - dat*exp(mu/sigma - dat/sigma)/sigma^2 - mu/sigma^2 - 1/sigma + dat/sigma^2),
-      0)
+      sum((exp(-(dat/sigma))*(dat-mu)*(exp(mu/sigma)* (mu-dat)+exp(dat/sigma)*(dat-mu-2*sigma)))/(2*sigma^2)))
   }
 
 }
@@ -269,7 +269,7 @@ gev.score <- function(par, dat){
 #' @param nobs number of observations
 #' @export
 #' @keywords internal
-gev.infomat <- function(par, dat, method=c("obs","exp"), nobs=length(dat)){
+gev.infomat <- function(par, dat, method = c("obs","exp"), nobs = length(dat)){
   method <- match.arg(method,c("obs","exp"))
   if(missing(method)){
     method="obs"
@@ -280,7 +280,7 @@ gev.infomat <- function(par, dat, method=c("obs","exp"), nobs=length(dat)){
     } else{	sigma=par[1]; xi=as.vector(par[2]);
     }
     #Limiting case when xi=0
-    if(isTRUE(all.equal(xi,0))){
+    if(abs(xi)< 1e-3){ #Fix to value at zero
       return(nobs*cbind(c(1/sigma^2,
                           -0.42278433509846713939348790991759756895784066/sigma^2,
                           0.41184033042643969478888356141823227689702419/sigma),
