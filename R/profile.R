@@ -132,12 +132,18 @@ gpd.mle <- function(dat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmean
 #' dat <- evd::rgev(n = 100, shape = 0.2)
 #' gev.mle(dat = dat, N = 100, p = 0.01, q = 0.5)
 gev.mle <- function(dat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), N, p, q){
+  stopifnot(is.vector(dat))
   args <- match.arg(args, c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), several.ok = TRUE)
-  fitted <- ismev::gev.fit(dat, method = "Nelder-Mead", show = FALSE)$mle
+  in2 <- sqrt(6 * var(dat))/pi
+  in1 <- mean(dat) - 0.57722 * in2
   xmax <- max(dat); xmin = min(dat)
-  fitted <- nloptr::slsqp(x0 = fitted, fn = function(par){-gev.ll(par, dat = dat)},
-                          gr = function(par){-gev.score(par, dat = dat)},
-                          hin = function(par){ c(par[2] + par[3]*(xmax-par[1]), par[2] + par[3]*(xmin-par[1]))})$par
+  # fitted <- nloptr::slsqp(x0 = c(in1, in2, 0.1), fn = function(par){-gev.ll(par, dat = dat)},
+  #                         gr = function(par){-gev.score(par, dat = dat)},
+  #                         hin = function(par){ c(par[2] + par[3]*(xmax-par[1]), par[2] + par[3]*(xmin-par[1]))})$par
+  fitted <- alabama::constrOptim.nl(par = c(in1, in2, 0.1), fn = function(par){-gev.ll(par, dat = dat)},
+                                    gr = function(par){-gev.score(par, dat = dat)},
+                                    hin = function(par){ c(par[2] + par[3]*(xmax-par[1]), par[2] + par[3]*(xmin-par[1]))},
+                                    control.outer = list(trace= FALSE))$par
   mu <- fitted[1]; sigma <- fitted[2]; xi <- fitted[3]
   #Does not handle the case xi=0 because the optimizer does not return this value!
   a <- sapply(args, switch,

@@ -270,13 +270,14 @@ gpd.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
       return(rep(NA,2))
     }
     #Root finding
-    bcor.rootfind <- nleqslv::nleqslv(x = st, fn = function(parbc, par, dat){
-      parbc - par + gpd.bias(parbc, length(dat))}, par = par, dat = dat)
-    if(bcor.rootfind$termcd == 1 || (bcor.rootfind$termcd==2 && isTRUE(all.equal(bcor.rootfind$fvec, rep(0,2), tolerance=1e-6)))){
-      return(bcor.rootfind$x)
-    } else{
-      return(rep(NA, 2))
+    bcor.rf <- try(nleqslv::nleqslv(x = st, fn = function(parbc, par, dat){
+      parbc - par + gpd.bias(parbc, length(dat))}, par = par, dat = dat), silent = TRUE)
+    if(!is.character(bcor.rf)){
+    if(bcor.rf$termcd == 1 || (bcor.rf$termcd==2 && isTRUE(all.equal(bcor.rf$fvec, rep(0,2), tolerance=1e-6)))){
+      return(bcor.rf$x)
     }
+      }
+      return(rep(NA, 2))
   }
   bcorF <-  function(par, dat, method=c("obs","exp")){
     method <- match.arg(method[1], c("obs","exp"))
@@ -296,11 +297,12 @@ gpd.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
     par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gpd.Fscoren, x = st,
                                                        dat = dat, met = method,
                                                        control=list(maxit = 1000))), silent = TRUE)
-    if(par.firth$termcd == 1 || (par.firth$termcd==2 && isTRUE(all.equal(par.firth$fvec, rep(0,2), tolerance=1e-6)))){
-      return(par.firth$x)
-    } else{
-      return(rep(NA, 2))
+    if(!is.character(par.firth)){
+      if(par.firth$termcd == 1 || (par.firth$termcd==2 && isTRUE(all.equal(par.firth$fvec, rep(0,2), tolerance=1e-6)))){
+        return(par.firth$x)
+      }
     }
+      return(rep(NA, 2))
   }
   #Return values
   if(corr=="subtract"){
@@ -343,14 +345,14 @@ gev.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
   #bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
   #Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
   bcor <-  function(par, dat){
-    if(par[3] < 0){ mdat <- max(dat)} else{ mdat <- min(dat)}
+    maxdat <- max(dat); mindat <- min(dat)
     st.opt <- par; st.opt[3] <- max(-0.25, st.opt[3])
     #Constrained optimization on L2 norm squared to find decent starting value
       bcor.st <- try(alabama::constrOptim.nl(par = st.opt, fn = function(parbc, para, dat){
         sum((parbc - para + gev.bias(parbc, length(dat)))^2)},
         hin = function(x,...){c(x[2], x[3] + 1/3, -x[3]+1,
-           x[3]*(mdat - x[1]) + x[2])}, dat = dat, para = par,
-        control.optim = list(maxit= 1000), control.outer = list(trace = FALSE)), silent=TRUE)
+                                x[3]*(maxdat - x[1]) + x[2], x[3]*(mindat - x[1]) + x[2])},
+        dat = dat, para = par, control.optim = list(maxit= 1000), control.outer = list(trace = FALSE)), silent=TRUE)
       #Check if convergence, use the starting value (otherwise use par)
      if(isTRUE(try(bcor.st$value < 1e-2))){st <- bcor.st$par} else{ st <- par}
       if(st[3] < -1/3 || st[3] > 1){ #If value is the MLE, make sure that it is a sensible starting value
@@ -359,22 +361,39 @@ gev.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
         return(rep(NA,3))
       }
       #Root finding
-      bcor.rootfind <- nleqslv::nleqslv(x = st, fn = function(parbc, par, dat){
-          parbc - par + gev.bias(parbc, length(dat))}, par = par, dat = dat)
-      if(bcor.rootfind$termcd == 1 || (bcor.rootfind$termcd==2 && isTRUE(all.equal(bcor.rootfind$fvec, rep(0,3), tolerance=1e-6)))){
-          return(bcor.rootfind$x)
-        } else{
-          return(rep(NA, 3))
+
+      bcor.rf <- try(nleqslv::nleqslv(x = st, fn = function(parbc, par, dat){
+          parbc - par + gev.bias(parbc, length(dat))}, par = par, dat = dat,
+          control=list(maxit = 1000, xtol = 1e-10)), silent = TRUE)
+      if(!is.character(bcor.rf)){
+      if(bcor.rf$termcd == 1 || (bcor.rf$termcd %in% c(2,3) &&
+                                       isTRUE(all.equal(bcor.rf$fvec, rep(0, 3), tolerance=1e-6)))){
+        return(bcor.rf$x)
       }
-}
-  bcorF <-  function(par, dat, method=c("obs","exp")){
+        bcor.rf <- try(nleqslv::nleqslv(x = st, fn = function(parbc, par, dat){
+          parbc - par + gev.bias(parbc, length(dat))}, global = "none", par = par, dat = dat,
+          control=list(maxit = 1000, xtol = 1e-10)), silent = TRUE)
+        if(!is.character(bcor.rf)){
+        if(bcor.rf$termcd == 1 || (bcor.rf$termcd %in% c(2,3) && isTRUE(all.equal(bcor.rf$fvec, rep(0, 3), tolerance=1e-6)))){
+          return(bcor.rf$x)
+        } else if(abs(bcor.rf$x[3]) < 0.025 &&
+                  bcor.rf$termcd == 2 && isTRUE(all.equal(bcor.rf$fvec, rep(0, 3), tolerance=1e-2))){
+          warning(paste0("Approximate solution for implicit bias correction - the shape is close to zero"))
+          return(bcor.rf$x)
+        }
+        }
+      }
+        return(rep(NA, 3))
+    }
+
+  bcorF <-  function(par, dat, method = c("obs", "exp")){
     method <- match.arg(method[1], c("obs","exp"))
-    if(par[3] < 0){ mdat <- max(dat)} else{ mdat <- min(dat)}
+    maxdat <- max(dat); mindat <- min(dat)
     st.opt <- par; st.opt[3] <- max(-0.25, st.opt[3])
     bcor.st <- try(alabama::constrOptim.nl(par = st.opt, fn = function(par, dat, met){
       sum(gev.Fscore(par = par, dat = dat, method = met)^2)},
-      hin = function(x,...){c(x[2], x[3] + 1/3, -x[3]+1,
-                              x[3]*(mdat - x[1]) + x[2])},
+      hin = function(x,...){c(x[2], x[3] + 0.3, -x[3]+1,
+                              x[3]*(maxdat - x[1]) + x[2], x[3]*(mindat - x[1]) + x[2])},
       dat = dat, met = method, control.optim = list(maxit= 1000), control.outer = list(trace = FALSE)), silent=TRUE)
     if(isTRUE(try(bcor.st$value < 1e-3))){st <- bcor.st$par} else{ st <- st.opt}
     #Starting values for score-based methods, depending on feasibility
@@ -384,12 +403,26 @@ gev.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
     gev.Fscoren <- function(par, met, dat){gev.Fscore(par = par, method = met, dat = dat)}
     par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st,
                                                            dat = dat, met = method,
-                                                           control=list(maxit = 1000))), silent = TRUE)
-    if(par.firth$termcd == 1 || (par.firth$termcd==2 && isTRUE(all.equal(par.firth$fvec, rep(0,3), tolerance=1e-6)))){
+                                                           control=list(maxit = 1000, xtol = 1e-10))), silent = TRUE)
+    if(!is.character(par.firth)){
+    #Try finding the root with default options
+    if(par.firth$termcd == 1 || (par.firth$termcd %in% c(2,3) && isTRUE(all.equal(par.firth$fvec, rep(0, 3), tolerance=1e-6)))){
       return(par.firth$x)
-    } else{
-      return(rep(NA, 3))
     }
+    #Sometimes, method fails for values of xi close to zero - try with a full Broyden or Newton search
+    par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st,  dat = dat, met = method,
+                                                          control=list(maxit = 1000, xtol = 1e-10), global = "none")), silent = TRUE)
+    if(!is.character(par.firth)){
+    if(par.firth$termcd == 1 || (par.firth$termcd %in% c(2,3) && isTRUE(all.equal(par.firth$fvec, rep(0, 3), tolerance=1e-6)))){
+        return(par.firth$x)
+        } else if(abs(par.firth$x[3]) < 0.025 &&
+                  par.firth$termcd == 2 && isTRUE(all.equal(par.firth$fvec, rep(0, 3), tolerance=5e-2))){
+          warning(paste0("Approximate solution for Firth`s score equation with method `", method, "` - the shape is close to zero"))
+                    return(par.firth$x)
+        }
+    }
+    }
+      return(rep(NA, 3))
   }
   #Return values
   if(corr=="subtract"){
