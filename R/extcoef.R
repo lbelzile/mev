@@ -1,11 +1,14 @@
-#' Schlather's estimator of the extremal coefficient
+#' Estimator of the extremal coefficient
 #'
-#' This functions returns a matrix with the Schlather and Tawn estimator of extremal coefficient
+#' This function returns a matrix with the Schlather and Tawn estimator of extremal coefficient
 #' based on the extremal index of pairs of max-stable vectors. The likelihood of the naive estimator for a pair of two sites \eqn{A} is
 #' \deqn{ \mathrm{card}\left\{ j: \max_{i \in A} X_i^{(j)}\bar{X}_i)>z \right\} \log(\theta_A) - \theta_A \sum_{j=1}^n \left[ \max \left\{z, \max_{i \in A} (X_i^{(j)}\bar{X}_i)\right\}\right]^{-1},}
 #'where \eqn{\bar{X}_i = n^{-1} \sum_{j=1}^n 1/X_i^{(j)}} is the harmonic mean and \eqn{z} is a threshold on the unit Frechet scale.
 #' The search for the maximum likelihood estimate for every pair \eqn{A} is restricted to the interval \eqn{[1,2]}.
 #' The Schlather estimator is not self-consistent. A binned version of the extremal coefficient cloud is also reported and superimposed on the graph.
+#'
+#' Additionally, a poor man's version of the F-madogram estimator is returned alongside with the Schlather and Tawn estimates.
+#' If \code{estimator = c("schlather", "fmado")} and \code{plot = TRUE}, both data clouds are plotted alongside one another.
 #'
 #' The F-madogram estimator is
 #' \deqn{\nu(h) = \frac{1}{2} \mathsf{E} |F(Z(x+h))-F(Z(x))|.}
@@ -14,24 +17,52 @@
 #' leading to a non-parametric pairwise estimator. The empirical cloud of estimates is obtained by using a rank-based
 #' approximation to the distribution function \eqn{F}.
 #'
-#' The implementation only uses complete pairs to calculate the relative ranks. Both estimators are coded in plain R and
-#' the estimation time can be significant.
-#'
+#' The implementation only uses complete pairs to calculate the relative ranks. Both estimators are coded in plain R and computations are not optimized. The estimation time can therefore be significant for large data sets.
+#' @importFrom grDevices rgb
 #' @references Schlather, M. and J. Tawn (2003). A dependence measure for multivariate and spatial extremes, \emph{Biometrika}, \bold{90}(1), pp.139--156.
 #' @references Cooley, D., P. Naveau and P. Poncet (2006). Variograms for spatial max-stable random fields,  In: Bertail P., Soulier P., Doukhan P. (eds) \emph{Dependence in Probability and Statistics}. Lecture Notes in Statistics, vol. 187. Springer, New York, NY
-#' @param dat a matrix of unit Fréchet observations
-#' @param thresh threshold parameter
+#' @param dat an \code{n} by \code{D} matrix of unit Frechet observations
+#' @param thresh threshold parameter (dafault is to keep all data if \code{prob = 0}.
+#' @param loc \code{n} by \code{d} matrix of locations
 #' @param prob probability of not exceeding threshold \code{thresh}
 #' @param estimator string indicating which model estimates to compute, one of \code{schlather} or \code{fmado}.
 #' @param which.plot string indicating which model estimates to plot, one of \code{schlather} or \code{fmado}. Can be abbreviated.
 #' @param tikz logical indicating whether output be formatted to use with \code{tikzDevice} package? Default to \code{FALSE}.
-#'
+#' @return an invisible list with components \code{dist}, \code{schlather}, \code{fmado} and \code{binned}. The first three are \code{n} vectors, while \code{binned} is a matrix with 2 columns containing the binned distance \code{h} and the binned extremal coefficient.
 #' @examples
+#' \dontrun{
 #' loc <- 10*cbind(runif(50), runif(50))
 #' di <- as.matrix(dist(loc))
-#' dat <- mev::rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = "xstud")
-#' extcoefschlather(dat = dat, loc = loc)
-extcoefschlather <- function(dat, loc, thresh, estimator = c("schlather","fmado"),
+#' dat <- rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = "xstud")
+#' res <- extcoef(dat = dat, loc = loc)
+#' Extremal Student extremal coefficient function
+#'
+#' XT.extcoeffun <- function(h, nu, corrfun, ...){
+#'   if(!is.function(corrfun)){
+#'     stop("Invalid function `corrfun`.")
+#'   }
+#'   h <- unique(as.vector(h))
+#'   rhoh <- sapply(h, corrfun, ...)
+#'   cbind(h = h, extcoef = 2*pt(sqrt((nu+1)*(1-rhoh)/(1+rhoh)), nu+1))
+#' }
+#' #This time, only one graph with theoretical extremal coef
+#' plot(res$dist, res$schlather, ylim = c(1,2), pch = 20); abline(v = 2, col = "gray")
+#' extcoefxt <- XT.extcoeffun(seq(0, 10, by = 0.1), nu = 3,
+#'                             corrfun = function(x){exp(-x/2)})
+#' lines(extcoefxt[,"h"], extcoefxt[,"extcoef"], type = 'l', col = "blue", lwd = 2)
+#' # Brown--Resnick extremal coefficient function
+#' BR.extcoeffun <- function(h, vario, ...){
+#'   if(!is.function(vario)){
+#'     stop("Invalid function `vario`.")
+#'   }
+#'   h <- unique(as.vector(h))
+#'   gammah <- sapply(h, vario, ...)
+#'   cbind(h = h, extcoef = 2*pnorm(sqrt(gammah/4)))
+#' }
+#' extcoefbr<- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
+#' lines(extcoefbr[,"h"], extcoefbr[,"extcoef"], type = 'l', col = "orange", lwd = 2)
+#' }
+extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"),
                              prob = 0, which.plot = c("schlather","fmado"), tikz = FALSE){
 
   estimator <- match.arg(estimator, c("schlather", "fmado"), several.ok = TRUE)
@@ -99,7 +130,7 @@ extcoefschlather <- function(dat, loc, thresh, estimator = c("schlather","fmado"
   if(1 %in% plotind){
     graphics::plot(theta_mat[,1], theta_mat[,2], xlab = ifelse(tikz, "$h$", "h"),
                    ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
-                   bty = "l", cex = 0.4, col = scales::alpha("black", alpha = 0.5),
+                   bty = "l", cex = 0.4, col = grDevices::rgb(0,0,0, alpha = 0.5),
                    ylim=c(1,2.1), yaxs = "i", xaxs = "i", main = "Schlather")
     abline(h=2, col="grey")
     lines(h[ubin], binned_theta, col = 2, lwd = 2)
@@ -107,7 +138,7 @@ extcoefschlather <- function(dat, loc, thresh, estimator = c("schlather","fmado"
   if(2 %in% plotind){
     graphics::plot(theta_mat[,1], theta_mat[,4], xlab = ifelse(tikz, "$h$", "h"),
                    ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
-                   bty = "l", cex = 0.4, col = scales::alpha("black", alpha = 0.5),
+                   bty = "l", cex = 0.4, col = grDevices::rgb(0,0,0, alpha = 0.5),
                    ylim=c(1,2.1), yaxs = "i", xaxs = "i", main = "F-madogram")
     abline(h=2, col="grey")
   }
@@ -127,36 +158,3 @@ extcoefschlather <- function(dat, loc, thresh, estimator = c("schlather","fmado"
   return(invisible(reslist))
 }
 
-
-#' Extremal coefficient function for the extremal Student process
-#' @param h vector of pairwise distances
-#' @param corrfun correlation function
-#' @param ... additional parameters passed to \code{corrfun}
-#' @examples
-#' extcoef <- Xstud.extcoeffun(seq(0, 10, by = 0.1), nu = 3,
-#'     corrfun = function(x){exp(-x/2)})
-#' plot(extcoef, type = 'l', ylim = c(1,2))
-Xstud.extcoeffun <- function(h, nu, corrfun, ...){
-  if(!is.function(corrfun)){
-    stop("Invalid function `corrfun`.")
-  }
-  h <- unique(as.vector(h))
-  rhoh <- sapply(h, corrfun, ...)
-  cbind(h = h, extcoef = 2*pt(sqrt((nu+1)*(1-rhoh)/(1+rhoh)), nu+1))
-}
-
-#' Extremal coefficient function for the Brown-Resnick process
-#' @param h pairwise distance matrix
-#' @param vario semivariogram function
-#' @param ... additional parameters passed to \code{vario}
-#' @examples
-#' extcoef <- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
-#' plot(extcoef, type = 'l', ylim = c(1,2))
-BR.extcoeffun <- function(h, vario, ...){
-  if(!is.function(vario)){
-    stop("Invalid function `vario`.")
-  }
-  h <- unique(as.vector(h))
-  gammah <- sapply(h, vario, ...)
-  cbind(h = h, extcoef = 2*pnorm(sqrt(gammah/4)))
-}

@@ -17,10 +17,11 @@
 #' @param df degrees of freedom for extremal Student process.
 #' @param model string indicating the model family.
 #' @param shape tail index of the Pareto variates (reciprocal shape parameter). Must be strictly positive.
-#'
+#' @param riskf string indicating the risk functional. Only \code{max} and \code{min} are currently supported.
 #' @details The argument \code{Sigma} is ignored for the Brown-Resnick model
 #' if \code{Lambda} is provided by the user.
 #' @export
+#' @seealso \code{\link{rparp}} for general simulation of Pareto processes based on an accept-reject algorithm.
 #' @return an \code{n} by \code{d} matrix of samples, where \code{d = ncol(Sigma)}, with \code{attributes} \code{mixt.weights}.
 #' @examples
 #' \dontrun{

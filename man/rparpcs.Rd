@@ -19,6 +19,8 @@ the covariance matrix formed from the stationary Brown-Resnick process.}
 
 \item{model}{string indicating the model family.}
 
+\item{riskf}{string indicating the risk functional. Only \code{max} and \code{min} are currently supported.}
+
 \item{shape}{tail index of the Pareto variates (reciprocal shape parameter). Must be strictly positive.}
 }
 \value{
@@ -50,6 +52,9 @@ rparpcs(n = 10, Lambda = Lambda, model = "br", shape = 0.1)
 Sigma <- stats::rWishart(n = 1, df = 20, Sigma = diag(10))[,,1]
 rparpcs(n = 10, Sigma = cov2cor(Sigma), df = 3, model = "xstud")
 }
+}
+\seealso{
+\code{\link{rparp}} for general simulation of Pareto processes based on an accept-reject algorithm.
 }
 \author{
 Leo Belzile
