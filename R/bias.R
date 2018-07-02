@@ -224,9 +224,7 @@ gev.Fscore <- function(par, dat, method="obs"){
 #' The routine uses the MLE (bias-corrected) as starting values and proceeds
 #' to find the solution using a root finding algorithm.
 #' Since the bias-correction is not valid for \eqn{xi < -1/3}, any solution that is unbounded
-#' will return a vector of \code{NA} - additionally, passing a \code{par} argument with shape less than -1/3
-#' will return an error if \code{method="subtract"} is selected, as the bias correction does not exist then.
-#' For small samples, expected and observed information can return very different estimates.
+#' will return a vector of \code{NA} as the bias correction does not exist then.
 #' @importFrom alabama constrOptim.nl
 #' @importFrom nleqslv nleqslv
 #' @param par parameter vector (\code{scale}, \code{shape})
@@ -254,7 +252,7 @@ gpd.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
   #bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
   #Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
   bcor <-  function(par, dat){
-    if(par[2] < 0){ mdat <- max(dat)} else{ mdat <- min(dat)}
+    mdat <- max(dat)
     st.opt <- par; st.opt[2] <- max(-0.25, st.opt[2])
     #Constrained optimization on L2 norm squared to find decent starting value
     bcor.st <- try(alabama::constrOptim.nl(par = st.opt, fn = function(parbc, para, dat){
@@ -321,9 +319,7 @@ gpd.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
 #' The routine uses the MLE (bias-corrected) as starting values and proceeds
 #' to find the solution using a root finding algorithm.
 #' Since the bias-correction is not valid for \eqn{xi < -1/3}, any solution that is unbounded
-#' will return a vector of \code{NA} - additionally, passing a \code{par} argument with shape less than -1/3
-#' will return an error if \code{method="subtract"} is selected, as the bias correction does not exist then.
-#' For small samples, expected and observed information can return very different estimates.
+#' will return a vector of \code{NA} as the solution does not exist then.
 #' @importFrom alabama constrOptim.nl
 #' @importFrom nleqslv nleqslv
 #' @param par parameter vector (\code{scale}, \code{shape})
