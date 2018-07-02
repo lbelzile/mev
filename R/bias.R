@@ -209,8 +209,14 @@ gpd.Fscore <- function(par, dat, method=c("obs","exp")){
 #' @export
 #' @keywords internal
 gev.Fscore <- function(par, dat, method="obs"){
-  if(missing(method) || method!="exp"){	method <- "obs"}
-  gev.score(par, dat) - gev.infomat(par, dat, method)%*%gev.bias(par, length(dat))
+  if(missing(method) || method != "exp"){	method <- "obs"}
+  if(par[3] < 0){ mdat <- max(dat)} else if (par[3] >= 0){ mdat <- min(dat)}
+   if( ((mdat - par[1])*par[3] + par[2]) < 0){
+       # warning("Error in `gev.Fscore`: data outside of range specified by parameter, yielding a zero likelihood")
+     return(rep(1e8, 3))
+   } else{
+      gev.score(par, dat) - gev.infomat(par, dat, method) %*% gev.bias(par, length(dat))
+   }
 }
 
 #' Bias correction for GP distribution using Firth's modified score function or bias substraction
@@ -221,8 +227,8 @@ gev.Fscore <- function(par, dat, method="obs"){
 #' will return a vector of \code{NA} - additionally, passing a \code{par} argument with shape less than -1/3
 #' will return an error if \code{method="subtract"} is selected, as the bias correction does not exist then.
 #' For small samples, expected and observed information can return very different estimates.
+#' @importFrom alabama constrOptim.nl
 #' @importFrom nleqslv nleqslv
-#' @importFrom rootSolve multiroot
 #' @param par parameter vector (\code{scale}, \code{shape})
 #' @param dat sample of observations
 #' @param corr string indicating which correction to employ either \code{subtract} or \code{firth}
@@ -239,65 +245,62 @@ gev.Fscore <- function(par, dat, method="obs"){
 gpd.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")){
   corr <- match.arg(corr, c("subtract","firth"))
   #Basic bias correction - substract bias at MLE parbc=par-bias(par)
-  #bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
   #Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
   if(length(par)!=2){
     stop("Invalid `par` argument.")
   }
+  corr <- match.arg(corr, c("subtract","firth"))
+  #Basic bias correction - substract bias at MLE parbc=par-bias(par)
+  #bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
+  #Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
   bcor <-  function(par, dat){
-    if(par[2]< -1/3){
-      warning("Invalid bias correction for GPD; need shape > -1/3")
+    if(par[2] < 0){ mdat <- max(dat)} else{ mdat <- min(dat)}
+    st.opt <- par; st.opt[2] <- max(-0.25, st.opt[2])
+    #Constrained optimization on L2 norm squared to find decent starting value
+    bcor.st <- try(alabama::constrOptim.nl(par = st.opt, fn = function(parbc, para, dat){
+      sum((parbc - para + gpd.bias(parbc, length(dat)))^2)},
+      hin = function(x,...){c(x[1], x[2] + 1/3, -x[2]+1,
+                              x[2]*mdat + x[1])}, dat = dat, para = par,
+      control.optim = list(maxit= 1000), control.outer = list(trace = FALSE)), silent=TRUE)
+    #Check if convergence, use the starting value (otherwise use par)
+    if(isTRUE(try(bcor.st$value < 1e-2))){st <- bcor.st$par} else{ st <- par}
+    if(st[2] < -1/3 || st[2] > 1){ #If value is the MLE, make sure that it is a sensible starting value
+      #i.e. does not violate the constraints for the moments.
+      warning("Error in gpd.bcor`: invalid starting value for the shape (less than -1/3). Aborting");
       return(rep(NA,2))
+    }
+    #Root finding
+    bcor.rootfind <- nleqslv::nleqslv(x = st, fn = function(parbc, par, dat){
+      parbc - par + gpd.bias(parbc, length(dat))}, par = par, dat = dat)
+    if(bcor.rootfind$termcd == 1 || (bcor.rootfind$termcd==2 && isTRUE(all.equal(bcor.rootfind$fvec, rep(0,2), tolerance=1e-6)))){
+      return(bcor.rootfind$x)
     } else{
-      bcor.rootfind <- nleqslv::nleqslv(x=par, fn=function(parbc, par, dat){
-        parbc-par+gpd.bias(parbc, length(dat))}, par=par, dat=dat)
-      if(bcor.rootfind$termcd == 1 || (bcor.rootfind$termcd==2 && isTRUE(all.equal(bcor.rootfind$fvec,c(0,0),tolerance=1.5e-8)))){
-        return(bcor.rootfind$x)
-      } else{
-        return(rep(NA,2))
-      }
+      return(rep(NA, 2))
     }
   }
-  #Firth correction, shifted shape so as to take advantage of the positive argument of multiroot
-  #It is easier to check the output for failed convergence as it is known not be valid there.
   bcorF <-  function(par, dat, method=c("obs","exp")){
-    # if(! "rootSolve" %in% installed.packages()[,1]){ #TODO check this for package
-    # 	stop("Please install package `rootSolve' to use Firth correction")
-    # } else{
-    method <- match.arg(method, c("obs","exp"))
-    #Score function, location transformed so that failed fit lies on boundary without errors
-    #should in principle return the same numerical estimate
-    gpd.Fscore.plus <- function(par, dat,method=c("obs","exp")){
-      parcopy <- c(par[1], par[2]-0.3)
-      gpd.score(parcopy, dat) - gpd.infomat(parcopy, dat, method)%*%gpd.bias(parcopy, length(dat))
-    }
-
-    firthplus = try(rootSolve::multiroot(gpd.Fscore.plus,start=par+c(0,0.3),
-                                         dat=dat, method=method, positive=TRUE,
-                                         atol=1e-10, rtol=1e-8, ctol=1e-10), silent=TRUE)
-    #Changed tolerance on 12-10-2016 to ensure that the root passes the all.equal test
-    if(is.character(firthplus) ||
-       any(c(isTRUE(all.equal(firthplus$root[2],target=0, check.names=FALSE)),
-             isTRUE(all.equal(firthplus$root[1],target=0, check.names=FALSE)),
-             is.nan(c(firthplus$f.root)),
-             firthplus$root[2]>2,
-             !isTRUE(all.equal(c(firthplus$f.root),target=rep(0,2), check.names=FALSE))
-       ))){
-      #Can fail if sigma+xi*x_max < 0 - error message
-      #Or can reach the boundary and not be able to evaluate the root
-      firthplus <- rep(NA,2)
+    method <- match.arg(method[1], c("obs","exp"))
+    if(par[2] < 0){ mdat <- max(dat)} else{ mdat <- min(dat)}
+    st.opt <- par; st.opt[2] <- max(-0.25, st.opt[2])
+    bcor.st <- try(alabama::constrOptim.nl(par = st.opt, fn = function(par, dat, met){
+      sum(gpd.Fscore(par = par, dat = dat, method = met)^2)},
+      hin = function(x,...){c(x[1], x[2] + 1/3, -x[2]+1,
+                              x[2]*mdat + x[1])},
+      dat = dat, met = method, control.optim = list(maxit= 1000), control.outer = list(trace = FALSE)), silent=TRUE)
+    if(isTRUE(try(bcor.st$value < 1e-3))){st <- bcor.st$par} else{ st <- st.opt}
+    #Starting values for score-based methods, depending on feasibility
+    # par.firth <- try(suppressWarnings(rootSolve::multiroot(gpd.Fscore, start = st,
+    #                                                        dat = dat, method = method,
+    #                                                        positive = FALSE, maxiter = 1000)), silent = TRUE)
+    gpd.Fscoren <- function(par, met, dat){gpd.Fscore(par = par, method = met, dat = dat)}
+    par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gpd.Fscoren, x = st,
+                                                       dat = dat, met = method,
+                                                       control=list(maxit = 1000))), silent = TRUE)
+    if(par.firth$termcd == 1 || (par.firth$termcd==2 && isTRUE(all.equal(par.firth$fvec, rep(0,2), tolerance=1e-6)))){
+      return(par.firth$x)
     } else{
-      firthplus <- firthplus$root-c(0,0.3)
+      return(rep(NA, 2))
     }
-    return(firthplus)
-
-    # st <- get(ifelse(par[2] > -1/3, "parbc", "par0"))
-    # firth = try(rootSolve::multiroot(gpd.Fscore, start=st,dat=dat, method=method)$root, silent=TRUE)
-    # if(is.character(firth)){
-    #   firth <- rep(NA,2)
-    # }
-    # return(firth)
-    # }
   }
   #Return values
   if(corr=="subtract"){
@@ -310,6 +313,7 @@ gpd.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
 
 
 
+
 #' Bias correction for GEV distribution using Firth's modified score function or bias substraction
 #'
 #' The routine uses the MLE (bias-corrected) as starting values and proceeds
@@ -318,8 +322,8 @@ gpd.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
 #' will return a vector of \code{NA} - additionally, passing a \code{par} argument with shape less than -1/3
 #' will return an error if \code{method="subtract"} is selected, as the bias correction does not exist then.
 #' For small samples, expected and observed information can return very different estimates.
+#' @importFrom alabama constrOptim.nl
 #' @importFrom nleqslv nleqslv
-#' @importFrom rootSolve multiroot
 #' @param par parameter vector (\code{scale}, \code{shape})
 #' @param dat sample of observations
 #' @param corr string indicating which correction to employ either \code{subtract} or \code{firth}
@@ -339,39 +343,53 @@ gev.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
   #bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
   #Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
   bcor <-  function(par, dat){
-    if(par[3]< -1/3){
-      warning("Invalid bias correction for GEV; need shape > -1/3")
-      return(rep(NA,3))
-    } else{
-      bcor.rootfind <- nleqslv::nleqslv(x=par, fn=function(parbc, par, dat){
-        parbc-par+gev.bias(parbc, length(dat))}, par=par, dat=dat) #termcd is termination code, 1 or 2 implies successful convergence
-      if(bcor.rootfind$termcd == 1 || (bcor.rootfind$termcd==2 && isTRUE(all.equal(bcor.rootfind$fvec,rep(0,3),tolerance=1.5e-8)))){
-        return(bcor.rootfind$x)
-      } else{
+    if(par[3] < 0){ mdat <- max(dat)} else{ mdat <- min(dat)}
+    st.opt <- par; st.opt[3] <- max(-0.25, st.opt[3])
+    #Constrained optimization on L2 norm squared to find decent starting value
+      bcor.st <- try(alabama::constrOptim.nl(par = st.opt, fn = function(parbc, para, dat){
+        sum((parbc - para + gev.bias(parbc, length(dat)))^2)},
+        hin = function(x,...){c(x[2], x[3] + 1/3, -x[3]+1,
+           x[3]*(mdat - x[1]) + x[2])}, dat = dat, para = par,
+        control.optim = list(maxit= 1000), control.outer = list(trace = FALSE)), silent=TRUE)
+      #Check if convergence, use the starting value (otherwise use par)
+     if(isTRUE(try(bcor.st$value < 1e-2))){st <- bcor.st$par} else{ st <- par}
+      if(st[3] < -1/3 || st[3] > 1){ #If value is the MLE, make sure that it is a sensible starting value
+        #i.e. does not violate the constraints for the moments.
+        warning("Error in gev.bcor`: invalid starting value for the shape (less than -1/3). Aborting");
         return(rep(NA,3))
       }
-    }
-  }
+      #Root finding
+      bcor.rootfind <- nleqslv::nleqslv(x = st, fn = function(parbc, par, dat){
+          parbc - par + gev.bias(parbc, length(dat))}, par = par, dat = dat)
+      if(bcor.rootfind$termcd == 1 || (bcor.rootfind$termcd==2 && isTRUE(all.equal(bcor.rootfind$fvec, rep(0,3), tolerance=1e-6)))){
+          return(bcor.rootfind$x)
+        } else{
+          return(rep(NA, 3))
+      }
+}
   bcorF <-  function(par, dat, method=c("obs","exp")){
-    method <- match.arg(method, c("obs","exp"))
-
-
-    firth = try(rootSolve::multiroot(gev.Fscore, start=par,
-                                     dat=dat, method=method, positive=FALSE,
-                                     atol=1e-10, rtol=1e-8, ctol=1e-10), silent=TRUE)
-    #Changed tolerance on 12-10-2016 to ensure that the root passes the all.equal test
-    if(is.character(firth) ||
-       any(c(isTRUE(all.equal(firth$root[2],target=0, check.names=FALSE)),
-             is.nan(c(firth$f.root)),
-             firth$root[3]>3)
-       )){
-      #Can fail if combination rends observation to have a zero likelihood - error message
-      #Or can reach the boundary and not be able to evaluate the root
-      firth <- rep(NA,3)
+    method <- match.arg(method[1], c("obs","exp"))
+    if(par[3] < 0){ mdat <- max(dat)} else{ mdat <- min(dat)}
+    st.opt <- par; st.opt[3] <- max(-0.25, st.opt[3])
+    bcor.st <- try(alabama::constrOptim.nl(par = st.opt, fn = function(par, dat, met){
+      sum(gev.Fscore(par = par, dat = dat, method = met)^2)},
+      hin = function(x,...){c(x[2], x[3] + 1/3, -x[3]+1,
+                              x[3]*(mdat - x[1]) + x[2])},
+      dat = dat, met = method, control.optim = list(maxit= 1000), control.outer = list(trace = FALSE)), silent=TRUE)
+    if(isTRUE(try(bcor.st$value < 1e-3))){st <- bcor.st$par} else{ st <- st.opt}
+    #Starting values for score-based methods, depending on feasibility
+    # par.firth <- try(suppressWarnings(rootSolve::multiroot(gev.Fscore, start = st,
+    #                                                        dat = dat, method = method,
+    #                                                        positive = FALSE, maxiter = 1000)), silent = TRUE)
+    gev.Fscoren <- function(par, met, dat){gev.Fscore(par = par, method = met, dat = dat)}
+    par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st,
+                                                           dat = dat, met = method,
+                                                           control=list(maxit = 1000))), silent = TRUE)
+    if(par.firth$termcd == 1 || (par.firth$termcd==2 && isTRUE(all.equal(par.firth$fvec, rep(0,3), tolerance=1e-6)))){
+      return(par.firth$x)
     } else{
-      firth <- firth$root
+      return(rep(NA, 3))
     }
-    return(firth)
   }
   #Return values
   if(corr=="subtract"){
@@ -390,7 +408,7 @@ gev.bcor <- function(par, dat, corr=c("subtract","firth"), method=c("obs","exp")
   rowMeans(cbind(apply(rbind(posterior), 1, function(par){
     switch(type,
            density = evd::dgev(x=x,loc=par[1]-par[2]*(1-Nyr^par[3])/par[3], scale=par[2]*Nyr^par[3], shape=par[3]),
-           quantile = evd::qgev(x=x,loc=par[1]-par[2]*(1-Nyr^par[3])/par[3], scale=par[2]*Nyr^par[3], shape=par[3]))
+           quantile = evd::qgev(p=x,loc=par[1]-par[2]*(1-Nyr^par[3])/par[3], scale=par[2]*Nyr^par[3], shape=par[3]))
   })))
 }
 

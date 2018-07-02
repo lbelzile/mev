@@ -22,7 +22,7 @@ gev.mle(dat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), N,
 named vector with maximum likelihood estimated parameter values for arguments \code{args}
 }
 \description{
-#' This function calls the \code{fgev} routine on the sample of excesses and returns maximum likelihood
+This function calls the \code{fgev} routine on the sample of excesses and returns maximum likelihood
 estimates for all quantities of interest, including scale and shape parameters, quantiles and value-at-risk,
 expected shortfall and mean and quantiles of maxima of \code{N} threshold exceedances
 }

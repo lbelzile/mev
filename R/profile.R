@@ -1,3 +1,5 @@
+#This function is addd to ensure that the local solver can be fixed to something different than
+#COBYLA - see https://github.com/jyypma/nloptr/pull/38 and https://github.com/stevengj/nlopt/issues/118
 .auglag <- function (x0, fn, gr = NULL, lower = NULL, upper = NULL, hin = NULL,
             hinjac = NULL, heq = NULL, heqjac = NULL, localsolver = c("COBYLA"),
             localtol = 1e-06, ineq2local = FALSE, nl.info = FALSE, control = list(),
@@ -7,7 +9,7 @@
       stop("Inequalities to local solver: feature not yet implemented.")
     }
     localsolver <- toupper(localsolver)
-    if (localsolver %in% c("COBYLA", "BOBYQA")) {
+    if (localsolver %in% c("COBYLA", "BOBYQA")) { #changed this line to add BOBYQA local solver
       dfree <- TRUE
       gsolver <- "NLOPT_LN_AUGLAG"
       lsolver <- paste("NLOPT_LN_", localsolver, sep = "")

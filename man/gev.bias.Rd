@@ -13,6 +13,8 @@ gev.bias(par, n)
 }
 \description{
 Bias vector for the GEV distribution based on an \code{n} sample.
+Due to numerical instability, values of the information matrix and the bias
+are linearly interpolated when the value of the shape parameter is close to zero.
 }
 \seealso{
 \code{\link{gev}}

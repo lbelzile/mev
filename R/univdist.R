@@ -1139,7 +1139,7 @@ gevN.score <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")){
 gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "quantile"), N, q = 0.5, nobs = length(dat)){
   mu = par[1]; z = par[2]; xi = par[3]
   qty <- match.arg(qty, c("mean", "quantile"))[1]
-  xizero <- isTRUE(all.equal(xi,0))
+  xizero <- isTRUE(all.equal(xi, 0, tolerance = 1e-5))
   if(xizero && method == "obs"){
     stop("Unimplemented for the case xi=0 for observed information")
   }
