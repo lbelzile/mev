@@ -8,7 +8,7 @@
 #' The Schlather estimator is not self-consistent. A binned version of the extremal coefficient cloud is also reported and superimposed on the graph.
 #'
 #' Additionally, a poor man's version of the F-madogram estimator is returned alongside with the Schlather and Tawn estimates.
-#' If \code{estimator = c("schlather", "fmado")} and \code{plot = TRUE}, both data clouds are plotted alongside one another.
+#' If \code{estimator = c('schlather', 'fmado')} and \code{plot = TRUE}, both data clouds are plotted alongside one another.
 #'
 #' The F-madogram estimator is
 #' \deqn{\nu(h) = \frac{1}{2} \mathsf{E} |F(Z(x+h))-F(Z(x))|.}
@@ -33,128 +33,124 @@
 #' \dontrun{
 #' loc <- 10*cbind(runif(50), runif(50))
 #' di <- as.matrix(dist(loc))
-#' dat <- rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = "xstud")
+#' dat <- rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = 'xstud')
 #' res <- extcoef(dat = dat, loc = loc)
 #' Extremal Student extremal coefficient function
 #'
 #' XT.extcoeffun <- function(h, nu, corrfun, ...){
 #'   if(!is.function(corrfun)){
-#'     stop("Invalid function `corrfun`.")
+#'     stop('Invalid function `corrfun`.')
 #'   }
 #'   h <- unique(as.vector(h))
 #'   rhoh <- sapply(h, corrfun, ...)
 #'   cbind(h = h, extcoef = 2*pt(sqrt((nu+1)*(1-rhoh)/(1+rhoh)), nu+1))
 #' }
 #' #This time, only one graph with theoretical extremal coef
-#' plot(res$dist, res$schlather, ylim = c(1,2), pch = 20); abline(v = 2, col = "gray")
+#' plot(res$dist, res$schlather, ylim = c(1,2), pch = 20); abline(v = 2, col = 'gray')
 #' extcoefxt <- XT.extcoeffun(seq(0, 10, by = 0.1), nu = 3,
 #'                             corrfun = function(x){exp(-x/2)})
-#' lines(extcoefxt[,"h"], extcoefxt[,"extcoef"], type = 'l', col = "blue", lwd = 2)
+#' lines(extcoefxt[,'h'], extcoefxt[,'extcoef'], type = 'l', col = 'blue', lwd = 2)
 #' # Brown--Resnick extremal coefficient function
 #' BR.extcoeffun <- function(h, vario, ...){
 #'   if(!is.function(vario)){
-#'     stop("Invalid function `vario`.")
+#'     stop('Invalid function `vario`.')
 #'   }
 #'   h <- unique(as.vector(h))
 #'   gammah <- sapply(h, vario, ...)
 #'   cbind(h = h, extcoef = 2*pnorm(sqrt(gammah/4)))
 #' }
 #' extcoefbr<- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
-#' lines(extcoefbr[,"h"], extcoefbr[,"extcoef"], type = 'l', col = "orange", lwd = 2)
+#' lines(extcoefbr[,'h'], extcoefbr[,'extcoef'], type = 'l', col = 'orange', lwd = 2)
 #' }
-extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"),
-                             prob = 0, which.plot = c("schlather","fmado"), tikz = FALSE){
-
-  estimator <- match.arg(estimator, c("schlather", "fmado"), several.ok = TRUE)
-  which.plot <- match.arg(which.plot, c("schlather", "fmado"), several.ok = TRUE)
-  isSchlather <- "schlather" %in% estimator
-  isFmado <- "fmado" %in% estimator
-  plotind <- c()
-  if("schlather" %in% which.plot && isSchlather){plotind <- c(plotind, 1)}
-  if("fmado" %in% which.plot && isFmado){plotind <- c(plotind, 2)}
-  if(missing(thresh)){
-    thresh <- -1/log(prob) #threshold on unit Frechet scale
-  }
-   fr <- -1/log(apply(dat, 2, rank, ties.method = "random",
-                          na.last = "keep")/(nrow(dat) + 1))
-   #Negative log-likelihood function
-   nll <- function(theta, X, thresh){
-    - sum(X > thresh) * log(theta) + theta * sum(1/pmax(thresh, X))
-  }
-
-  harmo_mean <- apply(1/fr, 2, mean, na.rm = TRUE)
-  transfo_fr <- t(t(fr) * harmo_mean)
-  theta_mat <- matrix(NA, nrow = ncol(dat)*(ncol(dat)-1)/2, ncol = 4)
-  k <- 0L
-  for(i in 1:(ncol(dat)-1)){
-    for(j in (i+1):ncol(dat)){
-      X <- as.vector(apply((na.omit(transfo_fr[,c(i,j)])),1,max))
-      if(length(X) > 1){
-        k <- k + 1L
-        theta_mat[k, 1] <- dist(loc[c(i,j),])
-        if(isSchlather){
-        theta_mat[k, 2] <- optim(par = 1.5, fn = nll, method = "Brent",
-                                 X = X, lower = 1, upper = 3, thresh = thresh)$par
-        theta_mat[k, 3] <- sqrt(length(X)) #sqrt of size of overlapping set
-        }
-        if(isFmado){
-        #F-madogram estimator
-        Y <- apply(na.omit(dat[,c(i,j)]), 2, rank, ties.method = "random")
-        nu <- sum(abs(Y[,1]-Y[,2]))/(2*nrow(Y)^2)
-        theta_mat[k, 4] <- (1+2*nu)/(1-2*nu)
-        }
-      }
+extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"), prob = 0, which.plot = c("schlather", "fmado"), tikz = FALSE) {
+    
+    estimator <- match.arg(estimator, c("schlather", "fmado"), several.ok = TRUE)
+    which.plot <- match.arg(which.plot, c("schlather", "fmado"), several.ok = TRUE)
+    isSchlather <- "schlather" %in% estimator
+    isFmado <- "fmado" %in% estimator
+    plotind <- c()
+    if ("schlather" %in% which.plot && isSchlather) {
+        plotind <- c(plotind, 1)
     }
-  }
-  #Reorder theta observations by distance (sorted)
-  theta_mat <- theta_mat[order(theta_mat[,1]),]
-  #na.omit will strip columns with NA if either method not calculated
-  d_max <- 0.75*theta_mat[nrow(theta_mat),1]
-  #Keep fraction only of data and create bins
-  del <- d_max/sqrt(nrow(theta_mat))
-  h <- seq(del/2, d_max, by = del)
-  if(isSchlather){
-  #Bin thetas by interval, with halfwidth eps = del/2
-  bin <- findInterval(theta_mat[,1], c(0, h+del/2))
-  ubin <- unique(bin)
-  binned_theta <- as.vector(by(data = theta_mat, INDICES = bin,
-                     FUN = function(xmat){
-                       weighted.mean(x = xmat[,2], w = xmat[,3])
-                     }, simplify = TRUE))
-  }
-  #Plot results
-  if(all(c(1,2) %in% plotind)){
-    old.par <- par(no.readonly = TRUE)
-    par(mfrow = c(1,2))
-  }
-  if(1 %in% plotind){
-    graphics::plot(theta_mat[,1], theta_mat[,2], xlab = ifelse(tikz, "$h$", "h"),
-                   ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
-                   bty = "l", cex = 0.4, col = grDevices::rgb(0,0,0, alpha = 0.5),
-                   ylim=c(1,2.1), yaxs = "i", xaxs = "i", main = "Schlather")
-    abline(h=2, col="grey")
-    lines(h[ubin], binned_theta, col = 2, lwd = 2)
-  }
-  if(2 %in% plotind){
-    graphics::plot(theta_mat[,1], theta_mat[,4], xlab = ifelse(tikz, "$h$", "h"),
-                   ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
-                   bty = "l", cex = 0.4, col = grDevices::rgb(0,0,0, alpha = 0.5),
-                   ylim=c(1,2.1), yaxs = "i", xaxs = "i", main = "F-madogram")
-    abline(h=2, col="grey")
-  }
-  if(all(c(1,2) %in% plotind)){
-   par(old.par)
-  }
-  colnames(theta_mat[,1:2]) <- c("dist", "ext.coeff")
-  #Return invisible list with coefs and binned
-  reslist <- list(dist = theta_mat[,1])
-  if(isSchlather){
-    reslist$schlather <- theta_mat[,2]
-    reslist$binned <- cbind(h = h[ubin], binned.ext.coef = binned_theta)
-  }
-  if(isFmado){
-    reslist$fmado <- theta_mat[,4]
-  }
-  return(invisible(reslist))
+    if ("fmado" %in% which.plot && isFmado) {
+        plotind <- c(plotind, 2)
+    }
+    if (missing(thresh)) {
+        thresh <- -1/log(prob)  #threshold on unit Frechet scale
+    }
+    fr <- -1/log(apply(dat, 2, rank, ties.method = "random", na.last = "keep")/(nrow(dat) + 1))
+    # Negative log-likelihood function
+    nll <- function(theta, X, thresh) {
+        -sum(X > thresh) * log(theta) + theta * sum(1/pmax(thresh, X))
+    }
+    
+    harmo_mean <- apply(1/fr, 2, mean, na.rm = TRUE)
+    transfo_fr <- t(t(fr) * harmo_mean)
+    theta_mat <- matrix(NA, nrow = ncol(dat) * (ncol(dat) - 1)/2, ncol = 4)
+    k <- 0L
+    for (i in 1:(ncol(dat) - 1)) {
+        for (j in (i + 1):ncol(dat)) {
+            X <- as.vector(apply((na.omit(transfo_fr[, c(i, j)])), 1, max))
+            if (length(X) > 1) {
+                k <- k + 1L
+                theta_mat[k, 1] <- dist(loc[c(i, j), ])
+                if (isSchlather) {
+                  theta_mat[k, 2] <- optim(par = 1.5, fn = nll, method = "Brent", X = X, lower = 1, upper = 3, thresh = thresh)$par
+                  theta_mat[k, 3] <- sqrt(length(X))  #sqrt of size of overlapping set
+                }
+                if (isFmado) {
+                  # F-madogram estimator
+                  Y <- apply(na.omit(dat[, c(i, j)]), 2, rank, ties.method = "random")
+                  nu <- sum(abs(Y[, 1] - Y[, 2]))/(2 * nrow(Y)^2)
+                  theta_mat[k, 4] <- (1 + 2 * nu)/(1 - 2 * nu)
+                }
+            }
+        }
+    }
+    # Reorder theta observations by distance (sorted)
+    theta_mat <- theta_mat[order(theta_mat[, 1]), ]
+    # na.omit will strip columns with NA if either method not calculated
+    d_max <- 0.75 * theta_mat[nrow(theta_mat), 1]
+    # Keep fraction only of data and create bins
+    del <- d_max/sqrt(nrow(theta_mat))
+    h <- seq(del/2, d_max, by = del)
+    if (isSchlather) {
+        # Bin thetas by interval, with halfwidth eps = del/2
+        bin <- findInterval(theta_mat[, 1], c(0, h + del/2))
+        ubin <- unique(bin)
+        binned_theta <- as.vector(by(data = theta_mat, INDICES = bin, FUN = function(xmat) {
+            weighted.mean(x = xmat[, 2], w = xmat[, 3])
+        }, simplify = TRUE))
+    }
+    # Plot results
+    if (all(c(1, 2) %in% plotind)) {
+        old.par <- par(no.readonly = TRUE)
+        par(mfrow = c(1, 2))
+    }
+    if (1 %in% plotind) {
+        graphics::plot(theta_mat[, 1], theta_mat[, 2], xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))), 
+            bty = "l", cex = 0.4, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, 2.1), yaxs = "i", xaxs = "i", main = "Schlather")
+        abline(h = 2, col = "grey")
+        lines(h[ubin], binned_theta, col = 2, lwd = 2)
+    }
+    if (2 %in% plotind) {
+        graphics::plot(theta_mat[, 1], theta_mat[, 4], xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))), 
+            bty = "l", cex = 0.4, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, 2.1), yaxs = "i", xaxs = "i", main = "F-madogram")
+        abline(h = 2, col = "grey")
+    }
+    if (all(c(1, 2) %in% plotind)) {
+        par(old.par)
+    }
+    colnames(theta_mat[, 1:2]) <- c("dist", "ext.coeff")
+    # Return invisible list with coefs and binned
+    reslist <- list(dist = theta_mat[, 1])
+    if (isSchlather) {
+        reslist$schlather <- theta_mat[, 2]
+        reslist$binned <- cbind(h = h[ubin], binned.ext.coef = binned_theta)
+    }
+    if (isFmado) {
+        reslist$fmado <- theta_mat[, 4]
+    }
+    return(invisible(reslist))
 }
 
