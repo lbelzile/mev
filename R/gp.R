@@ -875,9 +875,10 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
     x1 <- xq[1]
     xn <- xq[n]
     # Find the local maxima/minima of the likelihood.
-    epsilon <- 10^(-6)/xbar  #  Initialize epsilon as the accuracy criterion
-    # The local maxima/minima must be found numerically by finding the zero(s) of h().  Algorithm for finding the zero(s) of h().  Any
-    # roots that exist must be within the interval (lobnd, hibnd).
+    epsilon <- 1e-6/xbar  #  Initialize epsilon as the accuracy criterion
+    # The local maxima/minima must be found numerically by finding the zero(s) of h().
+    #  Algorithm for finding the zero(s) of h().
+    #  Any roots that exist must be within the interval (lobnd, hibnd).
     lobnd <- 2 * (x1 - xbar)/x1^2
     if (lobnd >= 0) {
         lobnd <- -epsilon
@@ -886,7 +887,8 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
     if (hibnd <= 0) {
         hibnd <- epsilon
     }
-    # If h''(0) > 0, look for one negative and one positive zero of h().  If h''(0) < 0, look for two negative and two positive zeros
+    # If h''(0) > 0, look for one negative and one positive zero of h().
+    # If h''(0) < 0, look for two negative and two positive zeros
     # of h().
     secderiv <- sumx2 - 2 * xbar^2  #{ Evaluate h''(0). }
     if (secderiv > 0) {
@@ -913,9 +915,10 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
 
         # Newton-Raphson Algorithm to find the zero of the function h() for a given initial starting point.
         j <- 1
-        maxiter <- 100  #{Maximum number of mod. Newton-Raphson iterations}
+        maxiter <- 400  #{Maximum number of mod. Newton-Raphson iterations}
         while (j <= maxiter) {
-            # Determine whether it is better to use Bisection (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
+            # Determine whether it is better to use Bisection
+            # (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
             c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
             c2 <- (abs(2 * h) > abs(dxold * hprime))
             if (c1 + c2 >= 1) {
@@ -977,9 +980,10 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
 
         # Newton-Raphson Algorithm to find the zero of the function h() for a given initial starting point.
         j <- 1
-        maxiter <- 100  #{Maximum number of mod. Newton-Raphson iterations}
+        maxiter <- 400  #{Maximum number of mod. Newton-Raphson iterations}
         while (j <= maxiter) {
-            # Determine whether it is better to use Bisection (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
+            # Determine whether it is better to use Bisection
+            # (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
             c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
             c2 <- (abs(2 * h) > abs(dxold * hprime))
             if (c1 + c2 >= 1) {
@@ -1021,7 +1025,8 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
             thzeros[2, ] <- cbind(thzero, j)
         }
     } else {
-        # if Look for two negative and two positive zeros of h().
+        # if lim h''(theta)< 0
+        # Look for two negative and two positive zeros of h().
         thzeros <- matrix(rep(0, 8), ncol = 2)
         nzeros <- 4
         # Begin with the initial value at lobnd.
@@ -1044,9 +1049,10 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
 
         ## Newton-Raphson Algorithm to find the zero of the function h() for a given initial starting point.
         j <- 1
-        maxiter <- 100  #{Maximum number of mod. Newton-Raphson iterations}
+        maxiter <- 400  #{Maximum number of mod. Newton-Raphson iterations}
         while (j <= maxiter) {
-            # Determine whether it is better to use Bisection (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
+            # Determine whether it is better to use Bisection
+            # (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
             c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
             c2 <- (abs(2 * h) > abs(dxold * hprime))
             if (c1 + c2 >= 1) {
@@ -1087,20 +1093,23 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
         if (j > maxiter + 1) {
             thzeros[1, ] <- cbind(thzero, j)
         }
-        # Look at the derivative to determine where the second root lies.  If h'(0)>0, second root lies between thzero and -epsilon.  If
-        # h'(0)<0, second root lies between lobnd and thzero.
+        ### if(!all.equal(thzero, -epsilon, tolerance = abs(epsilon))){
+        # Look at the derivative to determine where the second root lies.
+        # If h'(0) > 0, second root lies between thzero and -epsilon.
+        # If h'(0) < 0, second root lies between lobnd and thzero.
         temp1 <- sum(log(1 - thzero * x))/n
         temp2 <- sum(1/(1 - thzero * x))/n
         temp3 <- sum(1/(1 - thzero * x)^2)/n
         hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
         if (hprime > 0) {
-            # h'(0)>0, so the second zero lies between thzero and -epsilon.  Establish Initial Values.
+            # h'(0)>0, so the second zero lies between thzero and -epsilon.
+            # Establish Initial Values.
             thlo <- thzero
             thhi <- -epsilon
             thzero <- thhi
             dx <- thlo - thhi
             j <- 1
-            maxiter <- 100  #{Maximum number of bisection iterations}
+            maxiter <- 400  #{Maximum number of bisection iterations}
             while (j <= maxiter) {
                 dx <- 0.5 * dx
                 thmid <- thzero + dx
@@ -1127,7 +1136,7 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
             thzero <- thlo
             dx <- thhi - thlo
             j <- 1
-            maxiter <- 100  #{Maximum number of bisection iterations}
+            maxiter <- 400  #{Maximum number of bisection iterations}
             while (j <= maxiter) {
                 dx <- 0.5 * dx
                 thmid <- thzero + dx
@@ -1143,7 +1152,7 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
                 }
                 j <- j + 1
             }
-
+          ### }
             if (j > maxiter + 1) {
                 thzeros[2, ] <- cbind(thzero, j)
             }
@@ -1167,9 +1176,10 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
         hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
         # Newton-Raphson Algorithm to find the zero of the function h() for a given initial starting point.
         j <- 1
-        maxiter <- 100  #{Maximum number of mod. Newton-Raphson iterations}
+        maxiter <- 400  #{Maximum number of mod. Newton-Raphson iterations}
         while (j <= maxiter) {
-            # Determine whether it is better to use Bisection (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
+            # Determine whether it is better to use Bisection
+            # (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
             c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
             c2 <- (abs(2 * h) > abs(dxold * hprime))
             if (c1 + c2 >= 1) {
@@ -1211,11 +1221,12 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
         if (j > maxiter + 1) {
             thzeros[3, ] <- cbind(thzero, j)
         }
-        # Look at the derivative to determine where the second root lies.  If h'(0)>0, second root lies between thzero and hibnd.  If
-        # h'(0)<0, second root lies between epsilon and thzero.
-        temp1 <- sum(log(1 - thzero * x))/n
-        temp2 <- sum(1/(1 - thzero * x))/n
-        temp3 <- sum(1/(1 - thzero * x)^2)/n
+        # Look at the derivative to determine where the second root lies.
+        # If h'(0)>0, second root lies between thzero and hibnd.
+        # If h'(0)<0, second root lies between epsilon and thzero.
+        temp1 <- mean(log(1 - thzero * x))
+        temp2 <- mean(1/(1 - thzero * x))
+        temp3 <- mean(1/(1 - thzero * x)^2)
         hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
         if (hprime > 0) {
             # h'(0)>0, so the second zero lies between thzero and hibnd.  Establish Initial Values.
@@ -1275,7 +1286,8 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
             }
         }
     }
-    # Of the candidate zero(s) of h(), determine whether they correspond to a local maximum or minimum of the log-likelihood.
+    # Of the candidate zero(s) of h(),
+    # determine whether they correspond to a local maximum or minimum of the log-likelihood.
     # Eliminate any non-convergent roots}
     thetas <- thzeros[thzeros[, 2] > maxiter + 1, ]
     nzeros <- nrow(thetas)
@@ -1300,10 +1312,15 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
     }
     if (nomle != 0) {
         mles <- mles[ind, ]
+        outside <- which(mles[,1]> 1+1e-10)
+        if(length(outside)>0){ #at most 2 such values
+          mles[outside,3] <- -10e8 #replace by hard bound
+        }
         nmles <- nrow(mles)
         # Add the boundary value where k=1 to the candidates for the maximum of the log-likelihood.
-        mles <- rbind(mles, c(1, xn, -n * log(xn), 999))
-        nmles <- nmles + 1
+        # with numerical tolerance to scale so that evaluates
+        mles <- rbind(mles, c(1-1e-7, xn, -n * log(xn), 999))
+        nmles <- nmles + 1L
         # Choose of the candidate mles whichever has the largest log-likelihood.
         maxlogl <- max(mles[, 3])
         ind <- order(mles[, 3])
@@ -1389,13 +1406,12 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
 #' @param MCMC \code{NULL} for frequentist estimates, otherwise a boolean or a list with parameters passed. If \code{TRUE}, runs a Metropolis-Hastings sampler to get posterior mean estimates. Can be used to pass arguments \code{niter}, \code{burnin} and \code{thin} to the sampler as a list.
 #' @seealso \code{\link[evd]{fpot}} and \code{\link[ismev]{gpd.fit}}
 #'
-#' @details The default method is \code{'Grimshaw'}, consisting in maximization of the profile likelihood for the scale.
-#' Other options for maximization of the profile likelihood are \code{nlm} and \code{optim}, which use respectively \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{'ismev'} is the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
+#' @details The default method is \code{'Grimshaw'}, which maximizes the profile likelihood for the ratio scale/shape.  Other options include vanilla maximization of the log-likelihood using constrained optimization routine \code{copt}, 1-dimensional optimization of the profile likelihood using \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{'ismev'} performs the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
 #' The approximate Bayesian methods (\code{'zs'} and \code{'zhang'}) are extracted respectively from Zhang and Stephens (2009) and Zhang (2010) and consists of a approximate posterior mean calculated via importance
 #' sampling assuming a GPD prior is placed on the parameter of the profile likelihood.
 #' @note Some of the internal functions (which are hidden from the user) allow for modelling of the parameters using covariates. This is not currently implemented within \code{gp.fit}, but users can call internal functions should they wish to use these features.
-#' @author Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the other frequentist functions.
-#' Zhang and Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for the wrapper and MCMC samplers.
+#' @author Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the methods \code{nlm}, \code{nlm} and \code{ismev}.
+#' J. Zhang and Michael A. Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for the wrapper and MCMC samplers.
 #'
 #' @references Davison, A.C. (1984). Modelling excesses over high thresholds, with an application, in
 #' \emph{Statistical extremes and applications}, J. Tiago de Oliveira (editor), D. Reidel Publishing Co., 461--482.
@@ -1404,7 +1420,7 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
 #' @references Northrop, P.J. and C. L. Coleman (2014). Improved threshold diagnostic plots for extreme value
 #' analyses, \emph{Extremes}, \bold{17}(2), 289--303.
 #' @references Zhang, J. (2010). Improving on estimation for the generalized Pareto distribution, \emph{Technometrics} \bold{52}(3), 335--339.
-#' @references Zhang, J.  and M.A. Stephens (2009). A new and efficient estimation method for the generalized Pareto distribution.
+#' @references Zhang, J.  and M. A. Stephens (2009). A new and efficient estimation method for the generalized Pareto distribution.
 #' \emph{Technometrics} \bold{51}(3), 316--325.
 #'
 #'
@@ -1448,7 +1464,7 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
 #' threshold <- quantile(rain,0.9)
 #' gp.fit(rain, threshold, method='Grimshaw')
 #' gp.fit(rain, threshold, method='zs')
-gp.fit <- function(xdat, threshold, method = c("Grimshaw", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL) {
+gp.fit <- function(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL) {
     xi.tol = 1e-04
     xdat <- na.omit(xdat)
     # Optimization of model, depending on routine
@@ -1473,6 +1489,28 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "nlm", "optim", "isme
         }
         temp <- .gpd_2D_fit(xdat, threshold, show = FALSE, siginit = temp$mle[1], shinit = temp$mle[2], method = "BFGS", reltol = 1e-30,
             abstol = 1e-30)
+    } else if (method == "copt") {
+      mdat <- xdat[xdat > threshold] - threshold
+      maxdat <- max(mdat)
+      temp <- try(alabama::constrOptim.nl(c(1,0.1),
+                              fn = gpd.ll,
+                              gr = gpd.score,
+                              hin = function(par, dat){c(par[1], par[2]+1, ifelse(par[2]<0,par[2]*maxdat + par[1],1e-4))},
+                              dat = mdat, control.outer = list(trace = FALSE),
+                              control.optim = list(fnscale = -1, trace = FALSE)))
+      if(!is.character(temp)){
+      if(temp$convergence != 0){
+        warning("Algorithm did not converge.")
+        temp <- .gpd_grimshaw(mdat)
+        temp$mle <- c(temp$a, -temp$k)
+      }
+      } else{
+        temp <- .gpd_grimshaw(mdat)
+        temp$mle <- c(temp$a, -temp$k)
+      }
+      temp$mle <- temp$par
+      temp$nllh <- -temp$value
+      temp$conv <- temp$convergence
     } else if (method == "optim") {
         temp <- .gpd_1D_fit(xdat, threshold, show = FALSE, xi.tol = xi.tol)  # 1D max, algebraic Hessian
         if (temp$conv != 0) {
@@ -1528,10 +1566,14 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "nlm", "optim", "isme
         temp$nllh <- sum(log(sc)) + sum(log(1 + xi * yy/sc) * (1/xi + 1))
         temp$conv <- pjn$conv
     }
-
+    if(temp$mle[2] < -1){
+      #Transform the solution (unbounded) to boundary - with maximum observation for scale and -1 for shape.
+      temp$mle <- c(max( xdat[xdat > threshold] - threshold) + 1e-10, -1)
+    }
 
     # Collecting observations from temp and formatting the output
-    invobsinfomat <- tryCatch(solve(.gpd_obs_info(data = xdat[xdat > threshold], scale = temp$mle[1], shape = temp$mle[2], loc = threshold)),
+    invobsinfomat <- tryCatch(solve(.gpd_obs_info(data = xdat[xdat > threshold],
+                                                  scale = temp$mle[1], shape = temp$mle[2], loc = threshold)),
         error = function(e) {
             "notinvert"
         }, warning = function(w) w)
@@ -1540,21 +1582,23 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "nlm", "optim", "isme
         if (!is.null(temp$se)) {
             std.errors <- diag(temp$se)
         } else {
-            std.errors <- diag(rep(NA, 2))
+            std.errors <- rep(NA, 2)
         }
     } else if (!is.null(temp$mle) && temp$mle[2] > -0.5 && temp$conv == 0) {
         # If the MLE was returned
         std.errors <- sqrt(diag(invobsinfomat))
     } else {
         warning("Cannot calculate standard error based on observed information")
-        std.errors <- rep(NaN, 2)
+        std.errors <- rep(NA, 2)
     }
     if (temp$mle[2] < -1 && temp$conv == 0) {
         warning("The MLE is not a solution to the score equation for `xi < -1'")
     }
     names(temp$mle) <- names(std.errors) <- c("scale", "shape")
-    output <- structure(list(threshold = threshold, estimate = temp$mle, std.err = std.errors, var.cov = invobsinfomat, threshold = threshold,
-        method = method, deviance = 2 * temp$nllh, nat = sum(xdat > threshold), pat = sum(xdat > threshold)/length(xdat), convergence = temp$conv,
+    output <- structure(list(threshold = threshold, estimate = temp$mle,
+                             std.err = std.errors, var.cov = invobsinfomat, threshold = threshold,
+        method = method, deviance = 2 * temp$nllh, nat = sum(xdat > threshold),
+        pat = sum(xdat > threshold)/length(xdat), convergence = temp$conv,
         counts = temp$counts, xdat = xdat), class = "gpd")
     if (show) {
         print(output)
