@@ -35,7 +35,7 @@ The Schlather estimator is not self-consistent. A binned version of the extremal
 }
 \details{
 Additionally, a poor man's version of the F-madogram estimator is returned alongside with the Schlather and Tawn estimates.
-If \code{estimator = c("schlather", "fmado")} and \code{plot = TRUE}, both data clouds are plotted alongside one another.
+If \code{estimator = c('schlather', 'fmado')} and \code{plot = TRUE}, both data clouds are plotted alongside one another.
 
 The F-madogram estimator is
 \deqn{\nu(h) = \frac{1}{2} \mathsf{E} |F(Z(x+h))-F(Z(x))|.}
@@ -50,34 +50,34 @@ The implementation only uses complete pairs to calculate the relative ranks. Bot
 \dontrun{
 loc <- 10*cbind(runif(50), runif(50))
 di <- as.matrix(dist(loc))
-dat <- rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = "xstud")
+dat <- rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = 'xstud')
 res <- extcoef(dat = dat, loc = loc)
 Extremal Student extremal coefficient function
 
 XT.extcoeffun <- function(h, nu, corrfun, ...){
   if(!is.function(corrfun)){
-    stop("Invalid function `corrfun`.")
+    stop('Invalid function `corrfun`.')
   }
   h <- unique(as.vector(h))
   rhoh <- sapply(h, corrfun, ...)
   cbind(h = h, extcoef = 2*pt(sqrt((nu+1)*(1-rhoh)/(1+rhoh)), nu+1))
 }
 #This time, only one graph with theoretical extremal coef
-plot(res$dist, res$schlather, ylim = c(1,2), pch = 20); abline(v = 2, col = "gray")
+plot(res$dist, res$schlather, ylim = c(1,2), pch = 20); abline(v = 2, col = 'gray')
 extcoefxt <- XT.extcoeffun(seq(0, 10, by = 0.1), nu = 3,
                             corrfun = function(x){exp(-x/2)})
-lines(extcoefxt[,"h"], extcoefxt[,"extcoef"], type = 'l', col = "blue", lwd = 2)
+lines(extcoefxt[,'h'], extcoefxt[,'extcoef'], type = 'l', col = 'blue', lwd = 2)
 # Brown--Resnick extremal coefficient function
 BR.extcoeffun <- function(h, vario, ...){
   if(!is.function(vario)){
-    stop("Invalid function `vario`.")
+    stop('Invalid function `vario`.')
   }
   h <- unique(as.vector(h))
   gammah <- sapply(h, vario, ...)
   cbind(h = h, extcoef = 2*pnorm(sqrt(gammah/4)))
 }
 extcoefbr<- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
-lines(extcoefbr[,"h"], extcoefbr[,"extcoef"], type = 'l', col = "orange", lwd = 2)
+lines(extcoefbr[,'h'], extcoefbr[,'extcoef'], type = 'l', col = 'orange', lwd = 2)
 }
 }
 \references{

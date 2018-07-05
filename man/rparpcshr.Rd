@@ -32,7 +32,7 @@ loc <- cbind(runif(D), runif(D))
 di <- as.matrix(dist(rbind(c(0, ncol(loc)), loc)))
 semivario <- function(d, alpha = 1.5, lambda = 1){(d/lambda)^alpha}
 Vmat <- semivario(di)
-Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], "+") - Vmat[-1, -1]
+Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], '+') - Vmat[-1, -1]
 m <- Vmat[-1,1]
 samp <- rparpcshr(n = 100, u = c(rep(1, 10), rep(2, 10)),
           alpha = seq(0.1, 1, length = 20), Sigma = Sigma, m = m)

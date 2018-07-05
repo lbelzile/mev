@@ -37,11 +37,11 @@ Estimation of the bivariate lambda function of Wadsworth and Tawn (2013)
 \examples{
 set.seed(12)
 dat <- evd::rbvevd(n=1000, dep = 0.1)
-lambdadep(dat, method = "hill")
+lambdadep(dat, method = 'hill')
 \dontrun{
-lambdadep(dat, method = "bayes")
-lambdadep(dat, method = "mle")
+lambdadep(dat, method = 'bayes')
+lambdadep(dat, method = 'mle')
 dat <- matrix(runif(n = 2000), ncol = 2)
-lambdadep(dat, method = "hill")
+lambdadep(dat, method = 'hill')
 }
 }

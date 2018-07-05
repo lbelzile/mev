@@ -12,7 +12,7 @@ gpd.mle(dat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
 
 \item{args}{vector of strings indicating which arguments to return the maximum likelihood values for}
 
-\item{m}{number of observations of interest for return levels. Required only for \code{args} values \code{"VaR"} or \code{"ES"}}
+\item{m}{number of observations of interest for return levels. Required only for \code{args} values \code{'VaR'} or \code{'ES'}}
 
 \item{N}{size of block over which to take maxima. Required only for \code{args} \code{Nmean} and \code{Nquant}.}
 

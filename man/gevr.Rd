@@ -10,7 +10,7 @@
 
 \item{p}{tail probability, corresponding to \eqn{(1-p)}th quantile for \eqn{z}}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
 \item{nobs}{number of observations}
 
@@ -25,7 +25,7 @@ for the generalized extreme value distribution  parametrized in terms of the ret
  \preformatted{gevr.ll(par, dat, p)
 gevr.ll.optim(par, dat, p)
 gevr.score(par, dat, p)
-gevr.infomat(par, dat, p, method = c("obs", "exp"), nobs = length(dat))
+gevr.infomat(par, dat, p, method = c('obs', 'exp'), nobs = length(dat))
 gevr.Vfun(par, dat, p)
 gevr.phi(par, dat, p, V)
 gevr.dphi(par, dat, p, V)}

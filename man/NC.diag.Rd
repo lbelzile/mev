@@ -32,7 +32,7 @@ test for equality of the shape parameters over
 multiple thresholds under the generalized Pareto model.
 }
 \details{
-The default method is \code{"Grimshaw"} using the reduction of the parameters to a one-dimensional
+The default method is \code{'Grimshaw'} using the reduction of the parameters to a one-dimensional
 maximization. Other options are one-dimensional maximization of the profile the \code{nlm} function or \code{optim}.
 Two-dimensional optimisation using 2D-optimization \code{\link[ismev]{ismev}} using the routine
 from \code{gpd.fit} from the \code{ismev} library, with the addition of the algebraic gradient.

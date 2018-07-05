@@ -12,7 +12,7 @@
 
 \item{tol}{numerical tolerance for the exponential model}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
 \item{nobs}{number of observations}
 
@@ -34,7 +34,7 @@ The observed information matrix was calculated from the Hessian using symbolic c
  \preformatted{gpde.ll(par, dat, m, tol=1e-5)
 gpde.ll.optim(par, dat, m, tol=1e-5)
 gpde.score(par, dat, m)
-gpde.infomat(par, dat, m, method = c("obs", "exp"), nobs = length(dat))
+gpde.infomat(par, dat, m, method = c('obs', 'exp'), nobs = length(dat))
 gpde.Vfun(par, dat, m)
 gpde.phi(par, dat, V, m)
 gpde.dphi(par, dat, V, m)}

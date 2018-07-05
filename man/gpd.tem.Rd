@@ -15,7 +15,7 @@ gpd.tem(dat, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
 
 \item{psi}{scalar or ordered vector of values for the interest parameter. If \code{NULL} (default), a grid of values centered at the MLE is selected. If \code{psi} is of length 2 and \code{n.psi}>2, it is assumed to be the minimal and maximal values at which to evaluate the profile log likelihood.}
 
-\item{m}{number of observations of interest for return levels. See \strong{Details}. Required only for \code{param = "VaR"} or \code{param = "ES"}.}
+\item{m}{number of observations of interest for return levels. See \strong{Details}. Required only for \code{param = 'VaR'} or \code{param = 'ES'}.}
 
 \item{threshold}{threshold value corresponding to the lower bound of the support or the location parameter of the generalized Pareto distribution.}
 
@@ -63,19 +63,19 @@ The interpretation for \code{m} is as follows: if there are on average \eqn{m_y}
 set.seed(123)
 dat <- evd::rgpd(n = 40, scale = 1, shape = -0.1)
 #with plots
-m1 <- gpd.tem(param = "shape", n.psi = 50, dat = dat, plot = TRUE)
-m2 <- gpd.tem(param = "scale", n.psi = 50, dat = dat)
-m3 <- gpd.tem(param = "VaR", n.psi = 50, dat = dat, m = 100)
+m1 <- gpd.tem(param = 'shape', n.psi = 50, dat = dat, plot = TRUE)
+m2 <- gpd.tem(param = 'scale', n.psi = 50, dat = dat)
+m3 <- gpd.tem(param = 'VaR', n.psi = 50, dat = dat, m = 100)
 #Providing psi
 \dontrun{
 psi <- c(seq(2, 5, length = 15), seq(5, 35, length = 45))
-m4 <- gpd.tem(param = "ES", dat = dat, m = 100, psi = psi, correction = FALSE)
+m4 <- gpd.tem(param = 'ES', dat = dat, m = 100, psi = psi, correction = FALSE)
 plot.fr(m4, which = c(2, 4))
 plot(fr4 <- spline.corr(m4))
 confint(m1)
 confint(m4, parm = 2, warn = FALSE)
-m5 <- gpd.tem(param = "Nmean", dat = dat, N = 100, psi = psi, correction = FALSE)
-m6 <- gpd.tem(param = "Nquant", dat = dat, N = 100, q = 0.7, correction = FALSE)
+m5 <- gpd.tem(param = 'Nmean', dat = dat, N = 100, psi = psi, correction = FALSE)
+m6 <- gpd.tem(param = 'Nquant', dat = dat, N = 100, q = 0.7, correction = FALSE)
 }
 }
 \author{

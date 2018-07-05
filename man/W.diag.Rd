@@ -26,7 +26,7 @@ but rather the uppermost threshold will be at the \eqn{(q_2-1/k)}{q2-1/k} quanti
 
 \item{par}{parameters of the NHPP likelihood. If \code{missing}, the \code{\link[evd]{fpot}} routine will be run to obtain values}
 
-\item{M}{number of superpositions or "blocks" / "years" the process corresponds to (can affect the optimization)}
+\item{M}{number of superpositions or 'blocks' / 'years' the process corresponds to (can affect the optimization)}
 
 \item{nbs}{number of simulations used to assess the null distribution of the LRT, and produce the p-value}
 
@@ -72,22 +72,22 @@ is transformed to exponential margins using the empirical distribution function.
 \examples{
 \dontrun{
 set.seed(123)
-W.diag(rexp(1000), model="nhpp", k=30, q1=0)
+W.diag(rexp(1000), model='nhpp', k=30, q1=0)
 # Parameter Stability only
-W.diag(abs(rnorm(5000)), model="nhpp", k=30, q1=0, plots=c("PS"))
+W.diag(abs(rnorm(5000)), model='nhpp', k=30, q1=0, plots=c('PS'))
 library(mvtnorm)
 xbvn<-rmvnorm(6000, sigma=matrix(c(1,0.7,0.7,1),2,2))
 # Transform margins to exponential manually
 xbvn.exp<- -log(1-pnorm(xbvn))
-W.diag(apply(xbvn.exp,1,min), model="exp", k=30, q1=0) #rate parametrization
-W.diag(xbvn, model="exp", k=30, q1=0)
-W.diag(apply(xbvn.exp,1,min), model="invexp", k=30, q1=0) #inverse rate parametrization
+W.diag(apply(xbvn.exp,1,min), model='exp', k=30, q1=0) #rate parametrization
+W.diag(xbvn, model='exp', k=30, q1=0)
+W.diag(apply(xbvn.exp,1,min), model='invexp', k=30, q1=0) #inverse rate parametrization
 }
 \dontrun{
 library(ismev)
 data(rain)
 u <- quantile(rain, seq(0.85,0.99,by=0.01))
-W.diag(xdat=rain, u=u, plots="PS")
+W.diag(xdat=rain, u=u, plots='PS')
 }
 }
 \references{

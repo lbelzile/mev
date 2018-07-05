@@ -30,19 +30,19 @@ The confidence intervals can be based either on the delta-method, a profile like
 set.seed(765)
 # Max-stable model, chibar = 1
 dat <- evd::rbvevd(n = 1000, dep = 0.5)
-chibar(dat, "profile", qu = 0.5)
+chibar(dat, 'profile', qu = 0.5)
 s <- seq(0.05,1, length = 30)
-chibar_est <- t(sapply(s, function(keep){chibar(dat, "delta", qu = keep)}))
-matplot(s, chibar_est, type = "l", col = c(1, 2, 2),  lty = c(1, 2, 2),
- ylab = expression(bar(chi)), xlab = "p")
-abline(h = 1, lty = 3, col = "grey")
+chibar_est <- t(sapply(s, function(keep){chibar(dat, 'delta', qu = keep)}))
+matplot(s, chibar_est, type = 'l', col = c(1, 2, 2),  lty = c(1, 2, 2),
+ ylab = expression(bar(chi)), xlab = 'p')
+abline(h = 1, lty = 3, col = 'grey')
 # Multivariate normal sample, chibar = 0 - strong asymptotic independence at penultimate level
 dat <- mvrnorm(n = 1000, mu = c(0, 0), Sigma = cbind(c(1, 0.75), c(0.75, 1)))
-chibar(dat, "tem", q = 0.1)
-chibar_est <- t(sapply(s, function(keep){chibar(dat, "profile", qu = keep)}))
-matplot(s, chibar_est, type = "l", col = c(1, 2, 2),  lty = c(1, 2, 2),
- ylab = expression(bar(chi)), xlab = "p")
-abline(h = 1, lty = 3, col = "grey")
+chibar(dat, 'tem', q = 0.1)
+chibar_est <- t(sapply(s, function(keep){chibar(dat, 'profile', qu = keep)}))
+matplot(s, chibar_est, type = 'l', col = c(1, 2, 2),  lty = c(1, 2, 2),
+ ylab = expression(bar(chi)), xlab = 'p')
+abline(h = 1, lty = 3, col = 'grey')
 }
 }
 \seealso{

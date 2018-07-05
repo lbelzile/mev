@@ -12,7 +12,7 @@ rparpcs(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br",
 
 \item{Lambda}{parameter matrix for the Brown--Resnick model. See \bold{Details}.}
 
-\item{Sigma}{correlation matrix if \code{model = "xstud"}, otherwise
+\item{Sigma}{correlation matrix if \code{model = 'xstud'}, otherwise
 the covariance matrix formed from the stationary Brown-Resnick process.}
 
 \item{df}{degrees of freedom for extremal Student process.}
@@ -47,10 +47,10 @@ D <- 20L
 loc <- cbind(runif(D), runif(D))
 semivario <- function(d, alpha = 1.5, lambda = 1){0.5 * (d/lambda)^alpha}
 Lambda <- semivario(as.matrix(dist(loc))) / 2
-rparpcs(n = 10, Lambda = Lambda, model = "br", shape = 0.1)
+rparpcs(n = 10, Lambda = Lambda, model = 'br', shape = 0.1)
 #Extremal Student
 Sigma <- stats::rWishart(n = 1, df = 20, Sigma = diag(10))[,,1]
-rparpcs(n = 10, Sigma = cov2cor(Sigma), df = 3, model = "xstud")
+rparpcs(n = 10, Sigma = cov2cor(Sigma), df = 3, model = 'xstud')
 }
 }
 \seealso{

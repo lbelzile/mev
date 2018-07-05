@@ -2,7 +2,7 @@
 % Please edit documentation in R/bias.R
 \name{gpd.bcor}
 \alias{gpd.bcor}
-\title{Bias correction for GP distribution using Firth's modified score function or bias substraction}
+\title{Bias correction for GP distribution}
 \usage{
 gpd.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp"))
 }
@@ -13,24 +13,32 @@ gpd.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp"))
 
 \item{corr}{string indicating which correction to employ either \code{subtract} or \code{firth}}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} --- the default) information matrix. Used only if \code{corr="firth"}}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} --- the default) information matrix. Used only if \code{corr='firth'}}
 }
 \value{
 vector of bias-corrected parameters
 }
 \description{
-The routine uses the MLE (bias-corrected) as starting values and proceeds
+Bias corrected estimates for the generalized Pareto distribution using
+Firth's modified score function or implicit bias substraction. The latter solves
+\deqn{\tilde{\boldsymbol{\theta}} = \hat{\boldsymbol{\theta}} + b(\tilde{\boldsymbol{\theta}}}
+for \eqn{\tilde{\boldsymbol{\theta}}}, using the first order term in the bias expansion as given by \code{\link{gpd.bias}}.
+}
+\details{
+The alternative is to use Firth's modified score and find the root of
+\deqn{U(\tilde{\boldsymbol{\theta}})-i(\tilde{\boldsymbol{\theta}})b(\tilde{\boldsymbol{\theta}}),}
+where \eqn{U} is the score vector, \eqn{b} is the first order bias and \eqn{i} is either the observed or Fisher information.
+
+The routine uses the MLE as starting value and proceeds
 to find the solution using a root finding algorithm.
-Since the bias-correction is not valid for \eqn{xi < -1/3}, any solution that is unbounded
-will return a vector of \code{NA} - additionally, passing a \code{par} argument with shape less than -1/3
-will return an error if \code{method="subtract"} is selected, as the bias correction does not exist then.
-For small samples, expected and observed information can return very different estimates.
+Since the bias-correction is not valid for \eqn{\xi < -1/3}, any solution that is unbounded
+will return a vector of \code{NA} as the bias correction does not exist then.
 }
 \examples{
 set.seed(1)
 dat <- evd::rgpd(n=40, scale=1, shape=-0.2)
 par <- gp.fit(dat, threshold=0, show=FALSE)$estimate
-gpd.bcor(par,dat, "subtract")
-gpd.bcor(par,dat, "firth") #observed information
-gpd.bcor(par,dat, "firth","exp")
+gpd.bcor(par,dat, 'subtract')
+gpd.bcor(par,dat, 'firth') #observed information
+gpd.bcor(par,dat, 'firth','exp')
 }

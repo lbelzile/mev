@@ -25,7 +25,7 @@ gev.pll(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
 
 \item{correction}{logical indicating whether to use \code{spline.corr} to smooth the tem approximation.}
 
-\item{...}{additional arguments such as output from call to \code{Vfun} if \code{mode="tem"}.}
+\item{...}{additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.}
 }
 \value{
 a list with components
@@ -72,11 +72,11 @@ For the latter, the penalization is based on the TEM or an empirical covariance 
 \examples{
 \dontrun{
 dat <- evd::rgev(n = 100, loc = 0, scale = 2, shape = 0.3)
-gev.pll(psi = seq(-0.5,1, by=0.01), param = "shape", dat = dat)
-gev.pll(psi = seq(-3, 3, length = 50), param = "loc", dat = dat)
-gev.pll(psi = seq(10, 30, by = 0.1), param = "quant", dat = dat, p = 0.01)
-gev.pll(psi = seq(12, 100, by=1), param = "Nmean", N = 100, dat = dat)
-gev.pll(psi = seq(12, 90, by=1), param = "Nquant", N = 100, dat = dat, q = 0.5)
+gev.pll(psi = seq(-0.5,1, by=0.01), param = 'shape', dat = dat)
+gev.pll(psi = seq(-3, 3, length = 50), param = 'loc', dat = dat)
+gev.pll(psi = seq(10, 30, by = 0.1), param = 'quant', dat = dat, p = 0.01)
+gev.pll(psi = seq(12, 100, by=1), param = 'Nmean', N = 100, dat = dat)
+gev.pll(psi = seq(12, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 }
 }
 \references{

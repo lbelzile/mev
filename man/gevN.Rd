@@ -21,13 +21,13 @@ for the generalized extreme value distribution  parametrized in terms of the
 quantiles/mean of N-block maxima parametrization \eqn{z}, scale and shape.
 }
 \section{Usage}{
- \preformatted{gevN.ll(par, dat, N, q, qty = c("mean", "quantile"))
-gevN.ll.optim(par, dat, N, q = 0.5, qty = c("mean", "quantile"))
-gevN.score(par, dat, N, q = 0.5, qty = c("mean", "quantile"))
-gevN.infomat(par, dat, qty = c("mean", "quantile"), method = c("obs", "exp"), N, q = 0.5, nobs = length(dat))
-gevN.Vfun(par, dat, N, q = 0.5, qty = c("mean", "quantile"))
-gevN.phi(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V)
-gevN.dphi(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V)}
+ \preformatted{gevN.ll(par, dat, N, q, qty = c('mean', 'quantile'))
+gevN.ll.optim(par, dat, N, q = 0.5, qty = c('mean', 'quantile'))
+gevN.score(par, dat, N, q = 0.5, qty = c('mean', 'quantile'))
+gevN.infomat(par, dat, qty = c('mean', 'quantile'), method = c('obs', 'exp'), N, q = 0.5, nobs = length(dat))
+gevN.Vfun(par, dat, N, q = 0.5, qty = c('mean', 'quantile'))
+gevN.phi(par, dat, N, q = 0.5, qty = c('mean', 'quantile'), V)
+gevN.dphi(par, dat, N, q = 0.5, qty = c('mean', 'quantile'), V)}
 }
 
 \section{Functions}{

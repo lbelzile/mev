@@ -13,7 +13,7 @@ gpde.infomat(par, dat, m, method = c("obs", "exp"), nobs = length(dat))
 
 \item{m}{number of observations of interest for return levels. See \strong{Details}}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
 \item{nobs}{number of observations}
 }

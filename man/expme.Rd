@@ -11,7 +11,7 @@ expme(z, Sigma = NULL, Lambda = NULL, m = NULL, df = NULL,
 \arguments{
 \item{z}{vector at which to estimate exponent measure}
 
-\item{Sigma}{correlation matrix if \code{model = "xstud"}, otherwise
+\item{Sigma}{correlation matrix if \code{model = 'xstud'}, otherwise
 the covariance matrix formed from the stationary Brown-Resnick process.}
 
 \item{Lambda}{parameter matrix for the Brown--Resnick model}
@@ -34,7 +34,7 @@ The expression appears in likelihood inference
 \examples{
 #Extremal Student
 Sigma <- stats::rWishart(n = 1, df = 20, Sigma = diag(10))[,,1]
-expme(z = rep(1, ncol(Sigma)), Sigma = cov2cor(Sigma), df = 3, model = "xstud")
+expme(z = rep(1, ncol(Sigma)), Sigma = cov2cor(Sigma), df = 3, model = 'xstud')
 #Brown-Resnick model
 D <- 5L
 loc <- cbind(runif(D), runif(D))
@@ -42,7 +42,7 @@ di <- as.matrix(dist(rbind(c(0, ncol(loc)), loc)))
 semivario <- function(d, alpha = 1.5, lambda = 1){(d/lambda)^alpha}
 Vmat <- semivario(di)
 Lambda <- Vmat[-1,-1]/2
-expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = "br", method = "mvPot")
-Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], "+") - Vmat[-1, -1]
-expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = "br", method = "mvPot")
+expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = 'br', method = 'mvPot')
+Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], '+') - Vmat[-1, -1]
+expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = 'br', method = 'mvPot')
 }

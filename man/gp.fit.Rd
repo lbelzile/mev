@@ -19,7 +19,7 @@ gp.fit(xdat, threshold, method = c("Grimshaw", "nlm", "optim", "ismev", "zs",
 \item{MCMC}{\code{NULL} for frequentist estimates, otherwise a boolean or a list with parameters passed. If \code{TRUE}, runs a Metropolis-Hastings sampler to get posterior mean estimates. Can be used to pass arguments \code{niter}, \code{burnin} and \code{thin} to the sampler as a list.}
 }
 \value{
-If \code{method} is neither \code{"zs"} nor \code{"zhang"}, a list containing the following components:
+If \code{method} is neither \code{'zs'} nor \code{'zhang'}, a list containing the following components:
 \itemize{
 \item \code{estimate} a vector containing all parameters (optimized and fixed).
 \item \code{std.err} a vector containing the standard errors.
@@ -56,9 +56,9 @@ Numerical optimization of the Generalized Pareto distribution over a
 high threshold.
 }
 \details{
-The default method is \code{"Grimshaw"}, consisting in maximization of the profile likelihood for the scale.
-Other options for maximization of the profile likelihood are \code{nlm} and \code{optim}, which use respectively \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{"ismev"} is the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
-The approximate Bayesian methods (\code{"zs"} and \code{"zhang"}) are extracted respectively from Zhang and Stephens (2009) and Zhang (2010) and consists of a approximate posterior mean calculated via importance
+The default method is \code{'Grimshaw'}, consisting in maximization of the profile likelihood for the scale.
+Other options for maximization of the profile likelihood are \code{nlm} and \code{optim}, which use respectively \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{'ismev'} is the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
+The approximate Bayesian methods (\code{'zs'} and \code{'zhang'}) are extracted respectively from Zhang and Stephens (2009) and Zhang (2010) and consists of a approximate posterior mean calculated via importance
 sampling assuming a GPD prior is placed on the parameter of the profile likelihood.
 }
 \note{
@@ -68,8 +68,8 @@ Some of the internal functions (which are hidden from the user) allow for modell
 library(ismev)
 data(rain)
 threshold <- quantile(rain,0.9)
-gp.fit(rain, threshold, method="Grimshaw")
-gp.fit(rain, threshold, method="zs")
+gp.fit(rain, threshold, method='Grimshaw')
+gp.fit(rain, threshold, method='zs')
 }
 \references{
 Davison, A.C. (1984). Modelling excesses over high thresholds, with an application, in

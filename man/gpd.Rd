@@ -10,7 +10,7 @@
 
 \item{tol}{numerical tolerance for the exponential model}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
 \item{V}{vector calculated by \code{gpd.Vfun}}
 
@@ -25,9 +25,9 @@ for the generalized Pareto distribution
  \preformatted{gpd.ll(par, dat, tol=1e-5)
 gpd.ll.optim(par, dat, tol=1e-5)
 gpd.score(par, dat)
-gpd.infomat(par, dat, method = c("obs","exp"))
+gpd.infomat(par, dat, method = c('obs','exp'))
 gpd.bias(par, n)
-gpd.Fscore(par, dat, method = c("obs","exp"))
+gpd.Fscore(par, dat, method = c('obs','exp'))
 gpd.Vfun(par, dat)
 gpd.phi(par, dat, V)
 gpd.dphi(par, dat, V)}

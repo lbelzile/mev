@@ -11,7 +11,7 @@ angmeasdir(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2",
 \arguments{
 \item{x}{an \code{n} by \code{d} sample matrix}
 
-\item{th}{threshold of length 1 for \code{"sum"}, or \code{d} marginal thresholds otherwise.}
+\item{th}{threshold of length 1 for \code{'sum'}, or \code{d} marginal thresholds otherwise.}
 
 \item{Rnorm}{character string indicating the norm for the radial component.}
 
@@ -21,8 +21,8 @@ angmeasdir(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2",
 
 \item{wgt}{character string indicating weighting function for the equation. Can be based on Euclidean or empirical likelihood for the mean}
 
-\item{region}{character string specifying which observations to consider (and weight). \code{"sum"} corresponds to a radial threshold
-\eqn{\sum x_i > }\code{th}, \code{"min"} to \eqn{\min x_i >}\code{th} and \code{"max"} to \eqn{\max x_i >}\code{th}.}
+\item{region}{character string specifying which observations to consider (and weight). \code{'sum'} corresponds to a radial threshold
+\eqn{\sum x_i > }\code{th}, \code{'min'} to \eqn{\min x_i >}\code{th} and \code{'max'} to \eqn{\max x_i >}\code{th}.}
 
 \item{is.angle}{logical indicating whether observations are already angle with respect to \code{region}. Default to \code{FALSE}.}
 }
@@ -48,6 +48,6 @@ obtained from estimating the Euclidean likelihood problem without observation \e
 }
 \examples{
 set.seed(123)
-x <- rmev(n=250, d=2, param=0.5, model="log")
-out <- angmeasdir(x=x, th=0, Rnorm="l1", Anorm="l1", marg="Frechet", wgt="Empirical")
+x <- rmev(n=250, d=2, param=0.5, model='log')
+out <- angmeasdir(x=x, th=0, Rnorm='l1', Anorm='l1', marg='Frechet', wgt='Empirical')
 }

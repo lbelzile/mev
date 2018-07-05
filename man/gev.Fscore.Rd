@@ -11,7 +11,7 @@ gev.Fscore(par, dat, method = "obs")
 
 \item{dat}{sample vector}
 
-\item{method}{string indicating whether to use the expected ("exp") or the observed ("obs" - the default) information matrix.}
+\item{method}{string indicating whether to use the expected ('exp') or the observed ('obs' - the default) information matrix.}
 }
 \description{
 Firth's modified score equation for the generalized extreme value distribution

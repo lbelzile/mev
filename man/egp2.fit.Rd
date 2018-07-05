@@ -12,7 +12,7 @@ egp2.fit(data, model = 1, method = c("mle", "pwm"), init, censoring = c(0,
 
 \item{model}{integer ranging from 0 to 4 indicating the model to select (see \code{\link{egp2}}).}
 
-\item{method}{string; either \code{"mle"} for maximum likelihood, or \code{"pwm"} for probability weighted moments, or both.}
+\item{method}{string; either \code{'mle'} for maximum likelihood, or \code{'pwm'} for probability weighted moments, or both.}
 
 \item{init}{vector of initial values, comprising of \eqn{p}, \eqn{\kappa}, \eqn{\delta},\eqn{\sigma},\eqn{\xi} (in that order) for the optimization. All parameters may not appear depending on \code{model}.}
 
@@ -48,7 +48,7 @@ The different models include the following transformations:
 \donttest{
 library(ismev)
 data(rain)
-egp2.fit(rain[rain>0], model=1, method="mle", init=c(0.9, gp.fit(rain,0, show=FALSE)$est),
+egp2.fit(rain[rain>0], model=1, method='mle', init=c(0.9, gp.fit(rain,0, show=FALSE)$est),
  rounded=0.1,CI=TRUE, R=20)
 }
 }

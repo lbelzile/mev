@@ -12,7 +12,7 @@
 
 \item{tol}{numerical tolerance for the exponential model}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
 \item{nobs}{number of observations}
 
@@ -32,7 +32,7 @@ The interpretation for \code{m} is as follows: if there are on average \eqn{m_y}
  \preformatted{gpdr.ll(par, dat, m, tol=1e-5)
 gpdr.ll.optim(par, dat, m, tol=1e-5)
 gpdr.score(par, dat, m)
-gpdr.infomat(par, dat, m, method = c("obs", "exp"), nobs = length(dat))
+gpdr.infomat(par, dat, m, method = c('obs', 'exp'), nobs = length(dat))
 gpdr.Vfun(par, dat, m)
 gpdr.phi(par, V, dat, m)
 gpdr.dphi(par, V, dat, m)}

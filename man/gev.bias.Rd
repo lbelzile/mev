@@ -2,7 +2,7 @@
 % Please edit documentation in R/bias.R
 \name{gev.bias}
 \alias{gev.bias}
-\title{Cox-Snell first order bias expression for the GEV distribution}
+\title{Cox-Snell first order bias for the GEV distribution}
 \usage{
 gev.bias(par, n)
 }

@@ -29,7 +29,7 @@ The observed information matrix was calculated from the Hessian using symbolic c
 \section{Usage}{
  \preformatted{gpdN.ll(par, dat, N, tol=1e-5)
 gpdN.score(par, dat, N)
-gpdN.infomat(par, dat, N, method = c("obs", "exp"), nobs = length(dat))
+gpdN.infomat(par, dat, N, method = c('obs', 'exp'), nobs = length(dat))
 gpdN.Vfun(par, dat, N)
 gpdN.phi(par, dat, N, V)
 gpdN.dphi(par, dat, N, V)}

@@ -11,7 +11,7 @@ gpd.Fscore(par, dat, method = c("obs", "exp"))
 
 \item{dat}{sample vector}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 }
 \description{
 Firth's modified score equation for the generalized Pareto distribution

@@ -36,26 +36,26 @@ to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
 }
 \section{Usage}{
 
-\code{egp.ll(xdat, thresh, par, model=c("egp1","egp2","egp3"))}
+\code{egp.ll(xdat, thresh, par, model=c('egp1','egp2','egp3'))}
 
 
-\code{egp.retlev(xdat, thresh, par, model=c("egp1","egp2","egp3"), p, plot=TRUE)}
+\code{egp.retlev(xdat, thresh, par, model=c('egp1','egp2','egp3'), p, plot=TRUE)}
 }
 
 \examples{
 set.seed(123)
 xdat <- evd::rgpd(1000, loc=0, scale=1, shape=0.5)
-par <- egp.fit(xdat, thresh=0, model="egp3")$par
+par <- egp.fit(xdat, thresh=0, model='egp3')$par
 p <- c(1/1000,1/1500,1/2000)
-egp.retlev(xdat, 0, par, "egp3",p)
+egp.retlev(xdat, 0, par, 'egp3',p)
 #With multiple thresholds
 th <- c(0,0.1,0.2,1)
-opt <- egp.fitrange(xdat, th, model="egp1",plots=NA)
-egp.retlev(xdat, opt$thresh, opt$par, "egp1",p=p)
-opt <- egp.fitrange(xdat, th, model="egp2",plots=NA)
-egp.retlev(xdat, opt$thresh, opt$par, "egp2",p=p)
-opt <- egp.fitrange(xdat, th, model="egp3",plots=NA)
-egp.retlev(xdat, opt$thresh, opt$par, "egp3",p=p)
+opt <- egp.fitrange(xdat, th, model='egp1',plots=NA)
+egp.retlev(xdat, opt$thresh, opt$par, 'egp1',p=p)
+opt <- egp.fitrange(xdat, th, model='egp2',plots=NA)
+egp.retlev(xdat, opt$thresh, opt$par, 'egp2',p=p)
+opt <- egp.fitrange(xdat, th, model='egp3',plots=NA)
+egp.retlev(xdat, opt$thresh, opt$par, 'egp3',p=p)
 }
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.

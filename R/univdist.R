@@ -106,9 +106,16 @@ gpd.ll <- function(par, dat, tol = 1e-05) {
     sigma = par[1]
     xi = par[2]
     if (abs(xi) > tol) {
-        -length(dat) * log(sigma) - (1 + 1/xi) * sum(log(pmax(1 + xi/sigma * dat, 0)))
+      if(xi > -1){
+        #Most scenarios
+        as.vector(-length(dat) * log(sigma) - (1 + 1/xi) * sum(log(pmax(1 + xi/sigma * dat, 0))))
+      } else if(isTRUE(all.equal(xi, -1, check.attributes = FALSE))){
+        -n*log(max(dat))
+      } else{
+       -Inf
+      }
     } else {
-        -length(dat) * log(sigma) - sum(dat)/sigma
+      as.vector(-length(dat) * log(sigma) - sum(dat)/sigma)
     }
 }
 
@@ -136,7 +143,7 @@ gpd.score <- function(par, dat) {
     sigma = par[1]
     xi = as.vector(par[2])
     if (!isTRUE(all.equal(0, xi))) {
-        c(sum(dat * (xi + 1)/(sigma^2 * (dat * xi/sigma + 1)) - 1/sigma), sum(-dat * (1/xi + 1)/(sigma * 
+        c(sum(dat * (xi + 1)/(sigma^2 * (dat * xi/sigma + 1)) - 1/sigma), sum(-dat * (1/xi + 1)/(sigma *
             (dat * xi/sigma + 1)) + log(pmax(dat * xi/sigma + 1, 0))/xi^2))
     } else {
         c(sum((dat - sigma)/sigma^2), sum(1/2 * (dat - 2 * sigma) * dat/sigma^2))
@@ -163,9 +170,9 @@ gpd.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
         }
         c11 <- (length(dat) - (1 + xi) * sum(dat * (2 * sigma + xi * dat)/(sigma + xi * dat)^2))/(sigma^2)
         if (!isTRUE(all.equal(xi, 0))) {
-            c12 <- (1 + xi) * sum(dat/(sigma + xi * dat)^2)/xi - sum(dat/(sigma + xi * dat))/(sigma * 
+            c12 <- (1 + xi) * sum(dat/(sigma + xi * dat)^2)/xi - sum(dat/(sigma + xi * dat))/(sigma *
                 xi)
-            c22 <- (2/xi^2) * sum(dat/(sigma + xi * dat)) - 2 * sum(log(pmax(dat * xi/sigma + 1, 0)))/(xi^3) + 
+            c22 <- (2/xi^2) * sum(dat/(sigma + xi * dat)) - 2 * sum(log(pmax(dat * xi/sigma + 1, 0)))/(xi^3) +
                 (1 + 1/xi) * sum(dat^2/(sigma + xi * dat)^2)
         } else {
             c12 <- sum(-(dat^2 - dat * sigma)/sigma^3)
@@ -191,7 +198,7 @@ gpd.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
 gpd.Vfun <- function(par, dat) {
     sigma = par[1]
     xi = par[2]
-    cbind(dat/sigma, sigma * (dat * xi/sigma + 1)^(-1/xi) * (log(dat * xi/sigma + 1)/xi^2 - dat/(sigma * 
+    cbind(dat/sigma, sigma * (dat * xi/sigma + 1)^(-1/xi) * (log(dat * xi/sigma + 1)/xi^2 - dat/(sigma *
         (dat * xi/sigma + 1) * xi))/(dat * xi/sigma + 1)^(-1/xi - 1))
 }
 
@@ -211,8 +218,8 @@ gpd.dphi <- function(par, dat, V) {
     sigma = par[1]
     xi = as.vector(par[2])
     if (!isTRUE(all.equal(xi, 0))) {
-        rbind(xi * (1/xi + 1)/(sigma^2 * (dat * xi/sigma + 1)) - dat * xi^2 * (1/xi + 1)/(sigma^3 * (dat * 
-            xi/sigma + 1)^2), -(1/xi + 1)/(sigma * (dat * xi/sigma + 1)) + dat * (xi + 1)/(sigma^2 * 
+        rbind(xi * (1/xi + 1)/(sigma^2 * (dat * xi/sigma + 1)) - dat * xi^2 * (1/xi + 1)/(sigma^3 * (dat *
+            xi/sigma + 1)^2), -(1/xi + 1)/(sigma * (dat * xi/sigma + 1)) + dat * (xi + 1)/(sigma^2 *
             (dat * xi/sigma + 1)^2) + 1/(sigma * (dat * xi/sigma + 1) * xi)) %*% V
     } else {
         rbind(rep(sigma^(-2), length(dat)), (dat - sigma)/sigma^2) %*% V
@@ -263,19 +270,19 @@ gev.score <- function(par, dat) {
     sigma = par[2]
     xi = as.vector(par[3])
     if (!isTRUE(all.equal(xi, 0, tolerance = 1e-06))) {
-        c(sum(-(pmax(0, -(mu - dat) * xi/sigma + 1))^(-1/xi - 1)/sigma - xi * (1/xi + 1)/(sigma * ((mu - 
-            dat) * xi/sigma - 1))), sum(-(dat - mu) * ((dat - mu) * xi/sigma + 1)^(-1/xi - 1)/sigma^2 + 
-            (dat - mu) * (xi + 1)/(sigma^2 * ((dat - mu) * xi/sigma + 1)) - 1/sigma), sum(-(mu - dat) * 
-            (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma - 1)) - (log(pmax(0, -(mu - dat) * xi/sigma + 
-            1))/xi^2 - (mu - dat)/(sigma * ((mu - dat) * xi/sigma - 1) * xi))/(-(mu - dat) * xi/sigma + 
+        c(sum(-(pmax(0, -(mu - dat) * xi/sigma + 1))^(-1/xi - 1)/sigma - xi * (1/xi + 1)/(sigma * ((mu -
+            dat) * xi/sigma - 1))), sum(-(dat - mu) * ((dat - mu) * xi/sigma + 1)^(-1/xi - 1)/sigma^2 +
+            (dat - mu) * (xi + 1)/(sigma^2 * ((dat - mu) * xi/sigma + 1)) - 1/sigma), sum(-(mu - dat) *
+            (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma - 1)) - (log(pmax(0, -(mu - dat) * xi/sigma +
+            1))/xi^2 - (mu - dat)/(sigma * ((mu - dat) * xi/sigma - 1) * xi))/(-(mu - dat) * xi/sigma +
             1)^(1/xi) + log(pmax(0, -(mu - dat) * xi/sigma + 1))/xi^2))
     } else {
-        c(sum(-exp(mu/sigma - dat/sigma)/sigma + 1/sigma), sum(mu * exp(mu/sigma - dat/sigma)/sigma^2 - 
-            dat * exp(mu/sigma - dat/sigma)/sigma^2 - mu/sigma^2 - 1/sigma + dat/sigma^2), sum((exp(-(dat/sigma)) * 
-            (dat - mu) * (exp(mu/sigma) * (mu - dat) + exp(dat/sigma) * (dat - mu - 2 * sigma)))/(2 * 
+        c(sum(-exp(mu/sigma - dat/sigma)/sigma + 1/sigma), sum(mu * exp(mu/sigma - dat/sigma)/sigma^2 -
+            dat * exp(mu/sigma - dat/sigma)/sigma^2 - mu/sigma^2 - 1/sigma + dat/sigma^2), sum((exp(-(dat/sigma)) *
+            (dat - mu) * (exp(mu/sigma) * (mu - dat) + exp(dat/sigma) * (dat - mu - 2 * sigma)))/(2 *
             sigma^2)))
     }
-    
+
 }
 
 #' Information matrix for the generalized extreme value distribution
@@ -301,25 +308,25 @@ gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
         }
         # Limiting case when xi=0 Fix to value at zero
         if (abs(xi) < 0.001) {
-            return(nobs * cbind(c(1/sigma^2, -0.422784335098467/sigma^2, 0.41184033042644/sigma), c(-0.422784335098467/sigma^2, 
-                1.82368066085288/sigma^2, 0.332484907160274/sigma), c(0.41184033042644/sigma, 0.332484907160274/sigma, 
+            return(nobs * cbind(c(1/sigma^2, -0.422784335098467/sigma^2, 0.41184033042644/sigma), c(-0.422784335098467/sigma^2,
+                1.82368066085288/sigma^2, 0.332484907160274/sigma), c(0.41184033042644/sigma, 0.332484907160274/sigma,
                 2.42360605517703)))
         }
         p = (1 + xi)^2 * gamma(1 + 2 * xi)
         q = gamma(2 + xi) * (digamma(1 + xi) + (1 + xi)/xi)
-        infomat <- nobs * cbind(c(p/sigma^2, -(p - gamma(2 + xi))/(sigma^2 * xi), (p/xi - q)/(sigma * 
-            xi)), c(-(p - gamma(2 + xi))/(sigma^2 * xi), (1 - 2 * gamma(2 + xi) + p)/(sigma^2 * xi^2), 
-            -(1 + digamma(1) + (1 - gamma(2 + xi))/xi - q + p/xi)/(sigma * xi^2)), c((p/xi - q)/(sigma * 
-            xi), -(1 + digamma(1) + (1 - gamma(2 + xi))/xi - q + p/xi)/(sigma * xi^2), (pi^2/6 + (1 + 
+        infomat <- nobs * cbind(c(p/sigma^2, -(p - gamma(2 + xi))/(sigma^2 * xi), (p/xi - q)/(sigma *
+            xi)), c(-(p - gamma(2 + xi))/(sigma^2 * xi), (1 - 2 * gamma(2 + xi) + p)/(sigma^2 * xi^2),
+            -(1 + digamma(1) + (1 - gamma(2 + xi))/xi - q + p/xi)/(sigma * xi^2)), c((p/xi - q)/(sigma *
+            xi), -(1 + digamma(1) + (1 - gamma(2 + xi))/xi - q + p/xi)/(sigma * xi^2), (pi^2/6 + (1 +
             digamma(1) + 1/xi)^2 - 2 * q/xi + p/xi^2)/xi^2))
         if (xi < 0.003 & xi > 0) {
             # Linearization because numerically unstable in this region
-            y2 <- (pi^2/6 + (1 + digamma(1) + 1/0.003)^2 - 2 * (gamma(2 + 0.003) * (digamma(1 + 0.003) + 
+            y2 <- (pi^2/6 + (1 + digamma(1) + 1/0.003)^2 - 2 * (gamma(2 + 0.003) * (digamma(1 + 0.003) +
                 (1 + 0.003)/0.003))/0.003 + (1 + 0.003)^2 * gamma(1 + 2 * 0.003)/0.003^2)/0.003^2
             y1 <- 2.42360605517703
             infomat[3, 3] <- nobs * ((y2 - y1)/0.003 * xi + y1)
         } else if (xi > -0.003 & xi < 0) {
-            y2 <- (pi^2/6 + (1 + digamma(1) - 1/0.003)^2 + 2 * (gamma(2 - 0.003) * (digamma(1 - 0.003) - 
+            y2 <- (pi^2/6 + (1 + digamma(1) - 1/0.003)^2 + 2 * (gamma(2 - 0.003) * (digamma(1 - 0.003) -
                 (1 - 0.003)/0.003))/0.003 + (1 - 0.003)^2 * gamma(1 - 2 * 0.003)/0.003^2)/0.003^2
             y1 <- 2.42360605517703
             infomat[3, 3] <- nobs * (-(y2 - y1)/0.003 * xi + y1)
@@ -338,53 +345,53 @@ gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
         }
         infomat <- matrix(0, ncol = 3, nrow = 3)
         if (!isTRUE(all.equal(xi, 0))) {
-            infomat[1, 1] <- sum(-((dat - mu) * xi/sigma + 1)^(-1/xi - 2) * (xi + 1)/sigma^2 + xi^2 * 
+            infomat[1, 1] <- sum(-((dat - mu) * xi/sigma + 1)^(-1/xi - 2) * (xi + 1)/sigma^2 + xi^2 *
                 (1/xi + 1)/(sigma^2 * ((dat - mu) * xi/sigma + 1)^2))
-            infomat[1, 2] <- infomat[2, 1] <- sum(-(dat - mu) * ((dat - mu) * xi/sigma + 1)^(-1/xi - 
-                2) * (xi + 1)/sigma^3 + ((dat - mu) * xi/sigma + 1)^(-1/xi - 1)/sigma^2 - xi * (1/xi + 
-                1)/(sigma^2 * ((dat - mu) * xi/sigma + 1)) + (dat - mu) * xi^2 * (1/xi + 1)/(sigma^3 * 
+            infomat[1, 2] <- infomat[2, 1] <- sum(-(dat - mu) * ((dat - mu) * xi/sigma + 1)^(-1/xi -
+                2) * (xi + 1)/sigma^3 + ((dat - mu) * xi/sigma + 1)^(-1/xi - 1)/sigma^2 - xi * (1/xi +
+                1)/(sigma^2 * ((dat - mu) * xi/sigma + 1)) + (dat - mu) * xi^2 * (1/xi + 1)/(sigma^3 *
                 ((dat - mu) * xi/sigma + 1)^2))
-            infomat[1, 3] <- infomat[3, 1] <- sum((-(mu - dat) * xi/sigma + 1)^(-1/xi - 1) * ((mu - dat) * 
-                (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma - 1)) - log(-(mu - dat) * xi/sigma + 1)/xi^2)/sigma - 
-                (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma - 1)) + (mu - dat) * (xi + 1)/(sigma^2 * ((mu - 
+            infomat[1, 3] <- infomat[3, 1] <- sum((-(mu - dat) * xi/sigma + 1)^(-1/xi - 1) * ((mu - dat) *
+                (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma - 1)) - log(-(mu - dat) * xi/sigma + 1)/xi^2)/sigma -
+                (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma - 1)) + (mu - dat) * (xi + 1)/(sigma^2 * ((mu -
                 dat) * xi/sigma - 1)^2) + 1/(sigma * ((mu - dat) * xi/sigma - 1) * xi))
-            infomat[2, 3] <- infomat[3, 2] <- sum((mu - dat) * (-(mu - dat) * xi/sigma + 1)^(-1/xi - 
-                1) * (log(-(mu - dat) * xi/sigma + 1)/xi^2 - (mu - dat)/(sigma * ((mu - dat) * xi/sigma - 
-                1) * xi))/sigma^2 + (mu - dat) * (1/xi + 1)/(sigma^2 * ((mu - dat) * xi/sigma - 1)) - 
-                (mu - dat)^2 * (xi + 1)/(sigma^3 * ((mu - dat) * xi/sigma - 1)^2) - (mu - dat)/(sigma^2 * 
-                ((mu - dat) * xi/sigma - 1) * xi) + (mu - dat)^2/(sigma^3 * (-(mu - dat) * xi/sigma + 
+            infomat[2, 3] <- infomat[3, 2] <- sum((mu - dat) * (-(mu - dat) * xi/sigma + 1)^(-1/xi -
+                1) * (log(-(mu - dat) * xi/sigma + 1)/xi^2 - (mu - dat)/(sigma * ((mu - dat) * xi/sigma -
+                1) * xi))/sigma^2 + (mu - dat) * (1/xi + 1)/(sigma^2 * ((mu - dat) * xi/sigma - 1)) -
+                (mu - dat)^2 * (xi + 1)/(sigma^3 * ((mu - dat) * xi/sigma - 1)^2) - (mu - dat)/(sigma^2 *
+                ((mu - dat) * xi/sigma - 1) * xi) + (mu - dat)^2/(sigma^3 * (-(mu - dat) * xi/sigma +
                 1)^(1/xi) * ((mu - dat) * xi/sigma - 1)^2))
-            infomat[3, 3] <- sum(-(log(-(mu - dat) * xi/sigma + 1)/xi^2 - (mu - dat)/(sigma * ((mu - 
-                dat) * xi/sigma - 1) * xi))^2/(-(mu - dat) * xi/sigma + 1)^(1/xi) + (2 * log(-(mu - dat) * 
-                xi/sigma + 1)/xi^3 - 2 * (mu - dat)/(sigma * ((mu - dat) * xi/sigma - 1) * xi^2) - (mu - 
-                dat)^2/(sigma^2 * ((mu - dat) * xi/sigma - 1)^2 * xi))/(-(mu - dat) * xi/sigma + 1)^(1/xi) + 
-                (mu - dat)^2 * (1/xi + 1)/(sigma^2 * ((mu - dat) * xi/sigma - 1)^2) - 2 * log(-(mu - 
+            infomat[3, 3] <- sum(-(log(-(mu - dat) * xi/sigma + 1)/xi^2 - (mu - dat)/(sigma * ((mu -
+                dat) * xi/sigma - 1) * xi))^2/(-(mu - dat) * xi/sigma + 1)^(1/xi) + (2 * log(-(mu - dat) *
+                xi/sigma + 1)/xi^3 - 2 * (mu - dat)/(sigma * ((mu - dat) * xi/sigma - 1) * xi^2) - (mu -
+                dat)^2/(sigma^2 * ((mu - dat) * xi/sigma - 1)^2 * xi))/(-(mu - dat) * xi/sigma + 1)^(1/xi) +
+                (mu - dat)^2 * (1/xi + 1)/(sigma^2 * ((mu - dat) * xi/sigma - 1)^2) - 2 * log(-(mu -
                 dat) * xi/sigma + 1)/xi^3 + 2 * (mu - dat)/(sigma * ((mu - dat) * xi/sigma - 1) * xi^2))
-            infomat[2, 2] <- sum(-(mu - dat)^2 * (-(mu - dat) * xi/sigma + 1)^(-1/xi - 2) * (xi + 1)/sigma^4 - 
-                2 * (mu - dat) * (-(mu - dat) * xi/sigma + 1)^(-1/xi - 1)/sigma^3 - 2 * (mu - dat) * 
-                (xi + 1)/(sigma^3 * ((mu - dat) * xi/sigma - 1)) + (mu - dat)^2 * xi^2 * (1/xi + 1)/(sigma^4 * 
+            infomat[2, 2] <- sum(-(mu - dat)^2 * (-(mu - dat) * xi/sigma + 1)^(-1/xi - 2) * (xi + 1)/sigma^4 -
+                2 * (mu - dat) * (-(mu - dat) * xi/sigma + 1)^(-1/xi - 1)/sigma^3 - 2 * (mu - dat) *
+                (xi + 1)/(sigma^3 * ((mu - dat) * xi/sigma - 1)) + (mu - dat)^2 * xi^2 * (1/xi + 1)/(sigma^4 *
                 ((mu - dat) * xi/sigma - 1)^2) + 1/sigma^2)
         } else {
             infomat[1, 1] <- sum(-exp(mu/sigma - dat/sigma)/sigma^2)
-            infomat[1, 2] <- infomat[2, 1] <- sum(((mu + sigma) * exp(mu/sigma) - dat * exp(mu/sigma) - 
+            infomat[1, 2] <- infomat[2, 1] <- sum(((mu + sigma) * exp(mu/sigma) - dat * exp(mu/sigma) -
                 sigma * exp(dat/sigma)) * exp(-dat/sigma)/sigma^3)
-            infomat[2, 2] <- sum(-2 * mu * exp(mu/sigma - dat/sigma)/sigma^3 + 2 * dat * exp(mu/sigma - 
-                dat/sigma)/sigma^3 + 2 * mu/sigma^3 + 1/sigma^2 - 2 * dat/sigma^3 - (mu^2 * exp(mu/sigma) - 
+            infomat[2, 2] <- sum(-2 * mu * exp(mu/sigma - dat/sigma)/sigma^3 + 2 * dat * exp(mu/sigma -
+                dat/sigma)/sigma^3 + 2 * mu/sigma^3 + 1/sigma^2 - 2 * dat/sigma^3 - (mu^2 * exp(mu/sigma) -
                 2 * mu * dat * exp(mu/sigma) + dat^2 * exp(mu/sigma)) * exp(-dat/sigma)/sigma^4)
-            infomat[1, 3] <- infomat[3, 1] <- sum(-1/2 * (mu^2 * exp(mu/sigma) + 2 * mu * sigma * exp(mu/sigma) - 
-                2 * mu * dat * exp(mu/sigma) - 2 * sigma * dat * exp(mu/sigma) + dat^2 * exp(mu/sigma) - 
-                2 * mu * sigma * exp(dat/sigma) - 2 * sigma^2 * exp(dat/sigma) + 2 * sigma * dat * exp(dat/sigma)) * 
+            infomat[1, 3] <- infomat[3, 1] <- sum(-1/2 * (mu^2 * exp(mu/sigma) + 2 * mu * sigma * exp(mu/sigma) -
+                2 * mu * dat * exp(mu/sigma) - 2 * sigma * dat * exp(mu/sigma) + dat^2 * exp(mu/sigma) -
+                2 * mu * sigma * exp(dat/sigma) - 2 * sigma^2 * exp(dat/sigma) + 2 * sigma * dat * exp(dat/sigma)) *
                 exp(-dat/sigma)/sigma^3)
-            infomat[2, 3] <- infomat[3, 2] <- sum(1/2 * (mu^2 * exp(mu/sigma) + 2 * mu * sigma * exp(mu/sigma) - 
-                2 * mu * dat * exp(mu/sigma) - 2 * sigma * dat * exp(mu/sigma) + dat^2 * exp(mu/sigma) - 
-                2 * mu * sigma * exp(dat/sigma) - 2 * sigma^2 * exp(dat/sigma) + 2 * sigma * dat * exp(dat/sigma)) * 
+            infomat[2, 3] <- infomat[3, 2] <- sum(1/2 * (mu^2 * exp(mu/sigma) + 2 * mu * sigma * exp(mu/sigma) -
+                2 * mu * dat * exp(mu/sigma) - 2 * sigma * dat * exp(mu/sigma) + dat^2 * exp(mu/sigma) -
+                2 * mu * sigma * exp(dat/sigma) - 2 * sigma^2 * exp(dat/sigma) + 2 * sigma * dat * exp(dat/sigma)) *
                 (mu - dat) * exp(-dat/sigma)/sigma^4)
-            infomat[3, 3] <- sum(-1/12 * (3 * mu^2 * exp(mu/sigma) + 8 * mu * sigma * exp(mu/sigma) - 
-                6 * mu * dat * exp(mu/sigma) - 8 * sigma * dat * exp(mu/sigma) + 3 * dat^2 * exp(mu/sigma) - 
-                8 * mu * sigma * exp(dat/sigma) - 12 * sigma^2 * exp(dat/sigma) + 8 * sigma * dat * exp(dat/sigma)) * 
+            infomat[3, 3] <- sum(-1/12 * (3 * mu^2 * exp(mu/sigma) + 8 * mu * sigma * exp(mu/sigma) -
+                6 * mu * dat * exp(mu/sigma) - 8 * sigma * dat * exp(mu/sigma) + 3 * dat^2 * exp(mu/sigma) -
+                8 * mu * sigma * exp(dat/sigma) - 12 * sigma^2 * exp(dat/sigma) + 8 * sigma * dat * exp(dat/sigma)) *
                 (mu - dat)^2 * exp(-dat/sigma)/sigma^4)
         }
-        
+
         return(-infomat)
     }
 }
@@ -400,8 +407,8 @@ gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
 #' @name gev.temstat
 #' @keywords internal
 gev.Vfun <- function(par, dat) {
-    cbind(1, (dat - par[1])/par[2], par[2] * (-(par[1] - dat) * par[3]/par[2] + 1)^(-1/par[3]) * (log(-(par[1] - 
-        dat) * par[3]/par[2] + 1)/par[3]^2 - (par[1] - dat)/(par[2] * ((par[1] - dat) * par[3]/par[2] - 
+    cbind(1, (dat - par[1])/par[2], par[2] * (-(par[1] - dat) * par[3]/par[2] + 1)^(-1/par[3]) * (log(-(par[1] -
+        dat) * par[3]/par[2] + 1)/par[3]^2 - (par[1] - dat)/(par[2] * ((par[1] - dat) * par[3]/par[2] -
         1) * par[3]))/(-(par[1] - dat) * par[3]/par[2] + 1)^(-1/par[3] - 1))
 }
 
@@ -414,11 +421,11 @@ gev.phi <- function(par, dat, V) {
     sigma = par[2]
     xi = as.vector(par[3])
     if (!isTRUE(all.equal(xi, 0))) {
-        t(((dat - mu) * xi/sigma + 1)^(-1/xi - 1)/sigma + xi * (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma - 
+        t(((dat - mu) * xi/sigma + 1)^(-1/xi - 1)/sigma + xi * (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma -
             1))) %*% V
     } else {
         t(exp((mu - dat)/sigma)/sigma - 1/sigma) %*% V
-        
+
     }
 }
 
@@ -432,19 +439,19 @@ gev.dphi <- function(par, dat, V) {
     sigma = par[2]
     xi = as.vector(par[3])
     if (!isTRUE(all.equal(xi, 0))) {
-        rbind((-(mu - dat) * xi/sigma + 1)^(-1/xi - 2) * (xi + 1)/sigma^2 - xi^2 * (1/xi + 1)/(sigma^2 * 
-            ((mu - dat) * xi/sigma - 1)^2), -(mu - dat) * (-(mu - dat) * xi/sigma + 1)^(-1/xi - 2) * 
-            (xi + 1)/sigma^3 - (-(mu - dat) * xi/sigma + 1)^(-1/xi - 1)/sigma^2 - xi * (1/xi + 1)/(sigma^2 * 
-            ((mu - dat) * xi/sigma - 1)) + (mu - dat) * xi^2 * (1/xi + 1)/(sigma^3 * ((mu - dat) * xi/sigma - 
-            1)^2), -(-(mu - dat) * xi/sigma + 1)^(-1/xi - 1) * ((mu - dat) * (1/xi + 1)/(sigma * ((mu - 
-            dat) * xi/sigma - 1)) - log(-(mu - dat) * xi/sigma + 1)/xi^2)/sigma + (1/xi + 1)/(sigma * 
-            ((mu - dat) * xi/sigma - 1)) - (mu - dat) * (xi + 1)/(sigma^2 * ((mu - dat) * xi/sigma - 
+        rbind((-(mu - dat) * xi/sigma + 1)^(-1/xi - 2) * (xi + 1)/sigma^2 - xi^2 * (1/xi + 1)/(sigma^2 *
+            ((mu - dat) * xi/sigma - 1)^2), -(mu - dat) * (-(mu - dat) * xi/sigma + 1)^(-1/xi - 2) *
+            (xi + 1)/sigma^3 - (-(mu - dat) * xi/sigma + 1)^(-1/xi - 1)/sigma^2 - xi * (1/xi + 1)/(sigma^2 *
+            ((mu - dat) * xi/sigma - 1)) + (mu - dat) * xi^2 * (1/xi + 1)/(sigma^3 * ((mu - dat) * xi/sigma -
+            1)^2), -(-(mu - dat) * xi/sigma + 1)^(-1/xi - 1) * ((mu - dat) * (1/xi + 1)/(sigma * ((mu -
+            dat) * xi/sigma - 1)) - log(-(mu - dat) * xi/sigma + 1)/xi^2)/sigma + (1/xi + 1)/(sigma *
+            ((mu - dat) * xi/sigma - 1)) - (mu - dat) * (xi + 1)/(sigma^2 * ((mu - dat) * xi/sigma -
             1)^2) - 1/(sigma * ((mu - dat) * xi/sigma - 1) * xi)) %*% V
     } else {
-        rbind(exp(-dat/sigma + mu/sigma)/sigma^2, (sigma * exp(dat/sigma) + (dat - mu - sigma) * exp(mu/sigma)) * 
-            exp(-dat/sigma)/sigma^3, 1/2 * (2 * dat * sigma * exp(dat/sigma) - 2 * mu * sigma * exp(dat/sigma) - 
-            2 * sigma^2 * exp(dat/sigma) + dat^2 * exp(mu/sigma) - 2 * dat * mu * exp(mu/sigma) + mu^2 * 
-            exp(mu/sigma) - 2 * dat * sigma * exp(mu/sigma) + 2 * mu * sigma * exp(mu/sigma)) * exp(-dat/sigma)/sigma^3) %*% 
+        rbind(exp(-dat/sigma + mu/sigma)/sigma^2, (sigma * exp(dat/sigma) + (dat - mu - sigma) * exp(mu/sigma)) *
+            exp(-dat/sigma)/sigma^3, 1/2 * (2 * dat * sigma * exp(dat/sigma) - 2 * mu * sigma * exp(dat/sigma) -
+            2 * sigma^2 * exp(dat/sigma) + dat^2 * exp(mu/sigma) - 2 * dat * mu * exp(mu/sigma) + mu^2 *
+            exp(mu/sigma) - 2 * dat * sigma * exp(mu/sigma) + 2 * mu * sigma * exp(mu/sigma)) * exp(-dat/sigma)/sigma^3) %*%
             V
     }
 }
@@ -580,8 +587,8 @@ gpde.ll <- function(par, dat, m) {
     if (any(xi > 1, es < 0, min(1 + (m^xi - 1 + xi)/((1 - xi) * es) * dat) < 0)) {
         return(-1e+10)
     }
-    ifelse(!isTRUE(all.equal(xi, 0, tolerance = 1e-07)), sum(-log(xi * (1 - xi)/(m^xi - 1 + xi)) - log(es) - 
-        (1 + 1/xi) * log(1 + (m^xi - 1 + xi)/((1 - xi) * es) * dat)), sum(-log(1/(log(m) + 1)) - log(es) - 
+    ifelse(!isTRUE(all.equal(xi, 0, tolerance = 1e-07)), sum(-log(xi * (1 - xi)/(m^xi - 1 + xi)) - log(es) -
+        (1 + 1/xi) * log(1 + (m^xi - 1 + xi)/((1 - xi) * es) * dat)), sum(-log(1/(log(m) + 1)) - log(es) -
         exp(dat * log(m)/es + dat/es)))
 }
 
@@ -598,7 +605,7 @@ gpde.ll.optim <- function(par, dat, m) {
     if (xi > 1) {
         return(1e+10)
     }
-    -sum(-log(xi * (1 - xi)/(m^xi - 1 + xi)) - log(es) - (1 + 1/xi) * log(1 + (m^xi - 1 + xi)/((1 - xi) * 
+    -sum(-log(xi * (1 - xi)/(m^xi - 1 + xi)) - log(es) - (1 + 1/xi) * log(1 + (m^xi - 1 + xi)/((1 - xi) *
         es) * dat))
 }
 #' Score vector for the GP distribution (expected shortfall)
@@ -612,10 +619,10 @@ gpde.score <- function(par, dat, m) {
     if (xi > 1) {
         return(rep(NA, 2))
     }
-    c(sum(-1/es + dat * (m^xi + xi - 1) * (1/xi + 1)/(es^2 * (xi - 1) * (dat * (m^xi + xi - 1)/(es * 
-        (xi - 1)) - 1))), sum(-((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + xi - 1)/(es * 
-        (xi - 1)^2)) * (1/xi + 1)/(dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1) + (m^xi + xi - 1) * ((m^xi * 
-        log(m) + 1) * (xi - 1) * xi/(m^xi + xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) - xi/(m^xi + xi - 1))/((xi - 
+    c(sum(-1/es + dat * (m^xi + xi - 1) * (1/xi + 1)/(es^2 * (xi - 1) * (dat * (m^xi + xi - 1)/(es *
+        (xi - 1)) - 1))), sum(-((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + xi - 1)/(es *
+        (xi - 1)^2)) * (1/xi + 1)/(dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1) + (m^xi + xi - 1) * ((m^xi *
+        log(m) + 1) * (xi - 1) * xi/(m^xi + xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) - xi/(m^xi + xi - 1))/((xi -
         1) * xi) + log(-dat * (m^xi + xi - 1)/(es * (xi - 1)) + 1)/xi^2))
 }
 
@@ -634,34 +641,34 @@ gpde.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
         return(matrix(NA, 2, 2))
     }
     if (method == "obs") {
-        k11 = sum(-1/es^2 + 2 * dat * (m^xi + xi - 1) * (1/xi + 1)/(es^3 * (xi - 1) * (dat * (m^xi + 
-            xi - 1)/(es * (xi - 1)) - 1)) - dat^2 * (m^xi + xi - 1)^2 * (1/xi + 1)/(es^4 * (xi - 1)^2 * 
+        k11 = sum(-1/es^2 + 2 * dat * (m^xi + xi - 1) * (1/xi + 1)/(es^3 * (xi - 1) * (dat * (m^xi +
+            xi - 1)/(es * (xi - 1)) - 1)) - dat^2 * (m^xi + xi - 1)^2 * (1/xi + 1)/(es^4 * (xi - 1)^2 *
             (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1)^2))
-        k22 = sum(-((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + xi - 1)/(es * (xi - 1)^2))^2 * 
-            (1/xi + 1)/(dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1)^2 + (dat * m^xi * log(m)^2/(es * (xi - 
-            1)) - 2 * (m^xi * log(m) + 1) * dat/(es * (xi - 1)^2) + 2 * dat * (m^xi + xi - 1)/(es * (xi - 
-            1)^3)) * (1/xi + 1)/(dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1) - (m^xi * (xi - 1) * xi * 
-            log(m)^2/(m^xi + xi - 1)^2 - 2 * (m^xi * log(m) + 1)^2 * (xi - 1) * xi/(m^xi + xi - 1)^3 + 
-            2 * (m^xi * log(m) + 1) * (xi - 1)/(m^xi + xi - 1)^2 + 2 * (m^xi * log(m) + 1) * xi/(m^xi + 
-            xi - 1)^2 - 2/(m^xi + xi - 1)) * (m^xi + xi - 1)/((xi - 1) * xi) - (m^xi * log(m) + 1) * 
-            ((m^xi * log(m) + 1) * (xi - 1) * xi/(m^xi + xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) - xi/(m^xi + 
-                xi - 1))/((xi - 1) * xi) + (m^xi + xi - 1) * ((m^xi * log(m) + 1) * (xi - 1) * xi/(m^xi + 
-            xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) - xi/(m^xi + xi - 1))/((xi - 1) * xi^2) + (m^xi + xi - 
-            1) * ((m^xi * log(m) + 1) * (xi - 1) * xi/(m^xi + xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) - 
-            xi/(m^xi + xi - 1))/((xi - 1)^2 * xi) - 2 * ((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - 
-            dat * (m^xi + xi - 1)/(es * (xi - 1)^2))/(xi^2 * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 
+        k22 = sum(-((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + xi - 1)/(es * (xi - 1)^2))^2 *
+            (1/xi + 1)/(dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1)^2 + (dat * m^xi * log(m)^2/(es * (xi -
+            1)) - 2 * (m^xi * log(m) + 1) * dat/(es * (xi - 1)^2) + 2 * dat * (m^xi + xi - 1)/(es * (xi -
+            1)^3)) * (1/xi + 1)/(dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1) - (m^xi * (xi - 1) * xi *
+            log(m)^2/(m^xi + xi - 1)^2 - 2 * (m^xi * log(m) + 1)^2 * (xi - 1) * xi/(m^xi + xi - 1)^3 +
+            2 * (m^xi * log(m) + 1) * (xi - 1)/(m^xi + xi - 1)^2 + 2 * (m^xi * log(m) + 1) * xi/(m^xi +
+            xi - 1)^2 - 2/(m^xi + xi - 1)) * (m^xi + xi - 1)/((xi - 1) * xi) - (m^xi * log(m) + 1) *
+            ((m^xi * log(m) + 1) * (xi - 1) * xi/(m^xi + xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) - xi/(m^xi +
+                xi - 1))/((xi - 1) * xi) + (m^xi + xi - 1) * ((m^xi * log(m) + 1) * (xi - 1) * xi/(m^xi +
+            xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) - xi/(m^xi + xi - 1))/((xi - 1) * xi^2) + (m^xi + xi -
+            1) * ((m^xi * log(m) + 1) * (xi - 1) * xi/(m^xi + xi - 1)^2 - (xi - 1)/(m^xi + xi - 1) -
+            xi/(m^xi + xi - 1))/((xi - 1)^2 * xi) - 2 * ((m^xi * log(m) + 1) * dat/(es * (xi - 1)) -
+            dat * (m^xi + xi - 1)/(es * (xi - 1)^2))/(xi^2 * (dat * (m^xi + xi - 1)/(es * (xi - 1)) -
             1)) + 2 * log(-dat * (m^xi + xi - 1)/(es * (xi - 1)) + 1)/xi^3)
-        k12 = sum(-((m^xi * log(m) + 1) * dat/(es^2 * (xi - 1)) - dat * (m^xi + xi - 1)/(es^2 * (xi - 
-            1)^2)) * (1/xi + 1)/(dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1) + dat * (m^xi + xi - 1) * 
-            ((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + xi - 1)/(es * (xi - 1)^2)) * (1/xi + 
-            1)/(es^2 * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1)^2) + dat * (m^xi + xi - 
+        k12 = sum(-((m^xi * log(m) + 1) * dat/(es^2 * (xi - 1)) - dat * (m^xi + xi - 1)/(es^2 * (xi -
+            1)^2)) * (1/xi + 1)/(dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1) + dat * (m^xi + xi - 1) *
+            ((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + xi - 1)/(es * (xi - 1)^2)) * (1/xi +
+            1)/(es^2 * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1)^2) + dat * (m^xi + xi -
             1)/(es^2 * (xi - 1) * xi^2 * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1)))
         return(cbind(c(k11, k12), c(k12, k22)))
     } else if (method == "exp") {
         sigmae = es * (1 - xi) * xi/(m^xi - 1 + xi)
-        Jac <- rbind(c((1 - xi) * xi/(m^xi - 1 + xi), (m^xi * log(m) + 1) * es * (xi - 1) * xi/(m^xi + 
+        Jac <- rbind(c((1 - xi) * xi/(m^xi - 1 + xi), (m^xi * log(m) + 1) * es * (xi - 1) * xi/(m^xi +
             xi - 1)^2 - es * (xi - 1)/(m^xi + xi - 1) - es * xi/(m^xi + xi - 1)), c(0, 1))
-        return(t(Jac) %*% gpd.infomat(par = c(sigmae, xi), dat = dat, method = "exp", nobs = nobs) %*% 
+        return(t(Jac) %*% gpd.infomat(par = c(sigmae, xi), dat = dat, method = "exp", nobs = nobs) %*%
             Jac)
     }
 }
@@ -676,9 +683,9 @@ gpde.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
 gpde.Vfun <- function(par, dat, m) {
     es = par[1]
     xi = par[2]
-    cbind(dat/es, es * (xi - 1) * xi * (-dat * (m^xi + xi - 1)/(es * (xi - 1)) + 1)^(-1/xi) * (((m^xi * 
-        log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + xi - 1)/(es * (xi - 1)^2))/(xi * (dat * (m^xi + 
-        xi - 1)/(es * (xi - 1)) - 1)) - log(-dat * (m^xi + xi - 1)/(es * (xi - 1)) + 1)/xi^2)/((m^xi + 
+    cbind(dat/es, es * (xi - 1) * xi * (-dat * (m^xi + xi - 1)/(es * (xi - 1)) + 1)^(-1/xi) * (((m^xi *
+        log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + xi - 1)/(es * (xi - 1)^2))/(xi * (dat * (m^xi +
+        xi - 1)/(es * (xi - 1)) - 1)) - log(-dat * (m^xi + xi - 1)/(es * (xi - 1)) + 1)/xi^2)/((m^xi +
         xi - 1) * (-dat * (m^xi + xi - 1)/(es * (xi - 1)) + 1)^(-1/xi - 1)))
 }
 
@@ -691,7 +698,7 @@ gpde.Vfun <- function(par, dat, m) {
 gpde.phi <- function(par, dat, V, m) {
     es = par[1]
     xi = par[2]
-    rbind(-(m^xi + xi - 1) * (1/xi + 1)/(es * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1))) %*% 
+    rbind(-(m^xi + xi - 1) * (1/xi + 1)/(es * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1))) %*%
         V
 }
 
@@ -703,13 +710,13 @@ gpde.phi <- function(par, dat, V, m) {
 gpde.dphi <- function(par, dat, V, m) {
     es = par[1]
     xi = par[2]
-    rbind((m^xi + xi - 1) * (1/xi + 1)/(es^2 * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1)) - 
-        dat * (m^xi + xi - 1)^2 * (1/xi + 1)/(es^3 * (xi - 1)^2 * (dat * (m^xi + xi - 1)/(es * (xi - 
-            1)) - 1)^2), (m^xi + xi - 1) * ((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi + 
-        xi - 1)/(es * (xi - 1)^2)) * (1/xi + 1)/(es * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 
-        1)^2) - (m^xi * log(m) + 1) * (1/xi + 1)/(es * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 
-        1)) - 1)) + (m^xi + xi - 1) * (1/xi + 1)/(es * (xi - 1)^2 * (dat * (m^xi + xi - 1)/(es * (xi - 
-        1)) - 1)) + (m^xi + xi - 1)/(es * (xi - 1) * xi^2 * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 
+    rbind((m^xi + xi - 1) * (1/xi + 1)/(es^2 * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 1)) - 1)) -
+        dat * (m^xi + xi - 1)^2 * (1/xi + 1)/(es^3 * (xi - 1)^2 * (dat * (m^xi + xi - 1)/(es * (xi -
+            1)) - 1)^2), (m^xi + xi - 1) * ((m^xi * log(m) + 1) * dat/(es * (xi - 1)) - dat * (m^xi +
+        xi - 1)/(es * (xi - 1)^2)) * (1/xi + 1)/(es * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi - 1)) -
+        1)^2) - (m^xi * log(m) + 1) * (1/xi + 1)/(es * (xi - 1) * (dat * (m^xi + xi - 1)/(es * (xi -
+        1)) - 1)) + (m^xi + xi - 1) * (1/xi + 1)/(es * (xi - 1)^2 * (dat * (m^xi + xi - 1)/(es * (xi -
+        1)) - 1)) + (m^xi + xi - 1)/(es * (xi - 1) * xi^2 * (dat * (m^xi + xi - 1)/(es * (xi - 1)) -
         1))) %*% V
 }
 
@@ -728,7 +735,7 @@ gpdr.ll <- function(par, dat, m, tol = 1e-05) {
     nn = length(dat)
     pr <- m^xi - 1
     if (abs(xi) > tol) {
-        -nn * log(xi/pr) - nn * log(ym) - (1 + 1/xi) * sum(log(pmax(1 + exp(log(dat) - log(ym)) * pr, 
+        -nn * log(xi/pr) - nn * log(ym) - (1 + 1/xi) * sum(log(pmax(1 + exp(log(dat) - log(ym)) * pr,
             0)))
     } else {
         nn * log(log(m)) - nn * log(ym) + sum(-dat * log(m)/ym)
@@ -748,7 +755,7 @@ gpdr.ll.optim <- function(par, dat, m) {
     xi = par[2]
     p <- m^xi - 1
     if (abs(xi) > tol) {
-        -(-nn * log(xi/p) - nn * log(ym) - (1 + 1/xi) * sum(log(pmax(1 + exp(log(dat) - log(ym)) * p, 
+        -(-nn * log(xi/p) - nn * log(ym) - (1 + 1/xi) * sum(log(pmax(1 + exp(log(dat) - log(ym)) * p,
             0))))
     } else {
         -(nn * log(log(m)) - nn * log(ym) + sum(-dat * log(m)/ym))
@@ -765,8 +772,8 @@ gpdr.score <- function(par, dat, m) {
     xi = par[2]
     ym = par[1]
     p <- (m)^xi - 1
-    c(-nn/ym + (1 + 1/xi) * sum(dat * p/(ym + dat * p))/ym, -nn/xi + exp(log(nn) + xi * log(m) + log(log(m)))/p + 
-        sum(log(1 + dat/ym * p))/xi^2 - (1 + 1/xi) * sum(exp(log(dat) + log(log(m)) + xi * log(m) - log(ym + 
+    c(-nn/ym + (1 + 1/xi) * sum(dat * p/(ym + dat * p))/ym, -nn/xi + exp(log(nn) + xi * log(m) + log(log(m)))/p +
+        sum(log(1 + dat/ym * p))/xi^2 - (1 + 1/xi) * sum(exp(log(dat) + log(log(m)) + xi * log(m) - log(ym +
         dat * p))))
 }
 
@@ -786,25 +793,25 @@ gpdr.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
     }
     if (method == "obs") {
         info <- matrix(ncol = 2, nrow = 2)
-        info[1, 1] <- sum(dat^2 * (m^xi - 1)^2 * (1/xi + 1)/((dat * (m^xi - 1)/r + 1)^2 * r^4) - 2 * 
+        info[1, 1] <- sum(dat^2 * (m^xi - 1)^2 * (1/xi + 1)/((dat * (m^xi - 1)/r + 1)^2 * r^4) - 2 *
             dat * (m^xi - 1) * (1/xi + 1)/((dat * (m^xi - 1)/r + 1) * r^3) + 1/r^2)
-        info[2, 2] <- sum(dat^2 * (m^xi)^2 * (1/xi + 1) * log(m)^2/((dat * (m^xi - 1)/r + 1)^2 * r^2) - 
-            dat * m^xi * (1/xi + 1) * log(m)^2/((dat * (m^xi - 1)/r + 1) * r) + m^xi * (m^xi * xi * log(m)/(m^xi - 
-            1)^2 - 1/(m^xi - 1)) * log(m)/xi + (m^xi * xi * log(m)^2/(m^xi - 1)^2 - 2 * (m^xi)^2 * xi * 
-            log(m)^2/(m^xi - 1)^3 + 2 * m^xi * log(m)/(m^xi - 1)^2) * (m^xi - 1)/xi - (m^xi - 1) * (m^xi * 
-            xi * log(m)/(m^xi - 1)^2 - 1/(m^xi - 1))/xi^2 + 2 * dat * m^xi * log(m)/((dat * (m^xi - 1)/r + 
+        info[2, 2] <- sum(dat^2 * (m^xi)^2 * (1/xi + 1) * log(m)^2/((dat * (m^xi - 1)/r + 1)^2 * r^2) -
+            dat * m^xi * (1/xi + 1) * log(m)^2/((dat * (m^xi - 1)/r + 1) * r) + m^xi * (m^xi * xi * log(m)/(m^xi -
+            1)^2 - 1/(m^xi - 1)) * log(m)/xi + (m^xi * xi * log(m)^2/(m^xi - 1)^2 - 2 * (m^xi)^2 * xi *
+            log(m)^2/(m^xi - 1)^3 + 2 * m^xi * log(m)/(m^xi - 1)^2) * (m^xi - 1)/xi - (m^xi - 1) * (m^xi *
+            xi * log(m)/(m^xi - 1)^2 - 1/(m^xi - 1))/xi^2 + 2 * dat * m^xi * log(m)/((dat * (m^xi - 1)/r +
             1) * r * xi^2) - 2 * log(dat * (m^xi - 1)/r + 1)/xi^3)
-        info[2, 1] <- info[1, 2] <- sum(-dat^2 * (m^xi - 1) * m^xi * (1/xi + 1) * log(m)/((dat * (m^xi - 
-            1)/r + 1)^2 * r^3) + dat * m^xi * (1/xi + 1) * log(m)/((dat * (m^xi - 1)/r + 1) * r^2) - 
+        info[2, 1] <- info[1, 2] <- sum(-dat^2 * (m^xi - 1) * m^xi * (1/xi + 1) * log(m)/((dat * (m^xi -
+            1)/r + 1)^2 * r^3) + dat * m^xi * (1/xi + 1) * log(m)/((dat * (m^xi - 1)/r + 1) * r^2) -
             dat * (m^xi - 1)/((dat * (m^xi - 1)/r + 1) * r^2 * xi^2))
         return(-info)
     } else if (method == "exp") {
         sigmar = r * xi/(m^xi - 1)
         Jac <- rbind(c(xi/(m^xi - 1), -m^xi * r * xi * log(m)/(m^xi - 1)^2 + r/(m^xi - 1)), c(0, 1))
-        return(t(Jac) %*% gpd.infomat(par = c(sigmar, xi), method = "exp", dat = dat, nobs = nobs) %*% 
+        return(t(Jac) %*% gpd.infomat(par = c(sigmar, xi), method = "exp", dat = dat, nobs = nobs) %*%
             Jac)
     }
-    
+
 }
 
 #' Tangent exponential model statistics for the generalized Pareto distribution (return level)
@@ -843,9 +850,9 @@ gpdr.dphi <- function(par, dat, V, m) {
     xi = par[2]
     r = par[1]
     p = m^xi - 1
-    rbind((1 + 1/xi) * p/(r + dat * p)^2, p/(xi^2 * (r + dat * p)) - (1 + 1/xi) * log(m) * m^xi * r/(r + 
+    rbind((1 + 1/xi) * p/(r + dat * p)^2, p/(xi^2 * (r + dat * p)) - (1 + 1/xi) * log(m) * m^xi * r/(r +
         dat * p)^2) %*% V
-    
+
 }
 ####################################### GEV in terms of return levels ###
 
@@ -936,15 +943,15 @@ gevr.ll <- function(par, dat, p) {
     z = par[1]
     sigma = par[2]
     xi = as.vector(par[3])
-    muf = ifelse(!isTRUE(all.equal(xi, 0)), z + sigma/xi * (1 - (-log(1 - p))^(-xi)), sigma * log(-log(-p + 
+    muf = ifelse(!isTRUE(all.equal(xi, 0)), z + sigma/xi * (1 - (-log(1 - p))^(-xi)), sigma * log(-log(-p +
         1)) + z)
     if (!isTRUE(all.equal(xi, 0, tolerance = 1e-08))) {
-        sum(-log(sigma) - (1/xi + 1) * log(pmax(1 + xi * (dat - muf)/sigma, 0)) - pmax(1 + xi * (dat - 
+        sum(-log(sigma) - (1/xi + 1) * log(pmax(1 + xi * (dat - muf)/sigma, 0)) - pmax(1 + xi * (dat -
             muf)/sigma, 0)^(-1/xi))
     } else {
         sum((muf - dat)/sigma - exp((muf - dat)/sigma) - log(sigma))
     }
-    
+
 }
 
 #' Negative log likelihood parametrized in terms of location, log return level and shape in order to perform unconstrained optimization
@@ -969,24 +976,24 @@ gevr.score <- function(par, dat, p) {
     z = par[1]
     sigma = par[2]
     xi = par[3]
-    c(sum((((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(-1/xi - 2) * (xi + 1) * exp(-1/((dat - z) * 
-        xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi))/sigma^2 - ((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(-2/xi - 
-        2) * exp(-1/((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi))/sigma^2) * sigma * ((dat - z) * 
-        xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi + 1) * exp(1/(((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi)))), 
-        sum(-(dat * (-log(-p + 1))^xi - z * (-log(-p + 1))^xi - (dat * (-log(-p + 1))^xi - z * (-log(-p + 
-            1))^xi - sigma) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * 
-            (-log(-p + 1))^xi))^(1/xi))/((sigma * dat * xi * (-log(-p + 1))^xi - sigma * xi * z * (-log(-p + 
-            1))^xi + sigma^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * 
-            (-log(-p + 1))^xi))^(1/xi))), sum(-(xi * z * (-log(-p + 1))^xi - (dat * (-log(-p + 1))^xi - 
-            sigma * log(-log(-p + 1))) * xi + ((dat * (-log(-p + 1))^xi - sigma * log(-log(-p + 1))) * 
-            xi^2 + (dat * (-log(-p + 1))^xi - sigma * log(-log(-p + 1))) * xi - (xi^2 * (-log(-p + 1))^xi + 
-            xi * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + 
-            sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + (dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 
-            1))^xi - (dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma) * ((dat * xi * 
-            (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + 
-            sigma) * log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * 
-            (-log(-p + 1))^xi)))/((dat * xi^3 * (-log(-p + 1))^xi - xi^3 * z * (-log(-p + 1))^xi + sigma * 
-            xi^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 
+    c(sum((((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(-1/xi - 2) * (xi + 1) * exp(-1/((dat - z) *
+        xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi))/sigma^2 - ((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(-2/xi -
+        2) * exp(-1/((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi))/sigma^2) * sigma * ((dat - z) *
+        xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi + 1) * exp(1/(((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi)))),
+        sum(-(dat * (-log(-p + 1))^xi - z * (-log(-p + 1))^xi - (dat * (-log(-p + 1))^xi - z * (-log(-p +
+            1))^xi - sigma) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma *
+            (-log(-p + 1))^xi))^(1/xi))/((sigma * dat * xi * (-log(-p + 1))^xi - sigma * xi * z * (-log(-p +
+            1))^xi + sigma^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma *
+            (-log(-p + 1))^xi))^(1/xi))), sum(-(xi * z * (-log(-p + 1))^xi - (dat * (-log(-p + 1))^xi -
+            sigma * log(-log(-p + 1))) * xi + ((dat * (-log(-p + 1))^xi - sigma * log(-log(-p + 1))) *
+            xi^2 + (dat * (-log(-p + 1))^xi - sigma * log(-log(-p + 1))) * xi - (xi^2 * (-log(-p + 1))^xi +
+            xi * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi +
+            sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + (dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p +
+            1))^xi - (dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma) * ((dat * xi *
+            (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) +
+            sigma) * log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma *
+            (-log(-p + 1))^xi)))/((dat * xi^3 * (-log(-p + 1))^xi - xi^3 * z * (-log(-p + 1))^xi + sigma *
+            xi^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
             1))^xi))^(1/xi))))
 }
 
@@ -1005,112 +1012,112 @@ gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(da
     xi = par[3]
     if (method == "obs") {
         infomat <- matrix(0, ncol = 3, nrow = 3)
-        
-        infomat[1, 1] <- sum(-(xi * (-log(-p + 1))^(2 * xi) - (xi^2 * (-log(-p + 1))^(2 * xi) + xi * 
-            (-log(-p + 1))^(2 * xi)) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + 
-            sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + (-log(-p + 1))^(2 * xi))/((dat^2 * xi^2 * (-log(-p + 
-            1))^(2 * xi) + xi^2 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi * (-log(-p + 1))^xi + 
-            sigma^2 - 2 * (dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma * xi * (-log(-p + 1))^xi) * z) * 
-            ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 
+
+        infomat[1, 1] <- sum(-(xi * (-log(-p + 1))^(2 * xi) - (xi^2 * (-log(-p + 1))^(2 * xi) + xi *
+            (-log(-p + 1))^(2 * xi)) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi +
+            sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + (-log(-p + 1))^(2 * xi))/((dat^2 * xi^2 * (-log(-p +
+            1))^(2 * xi) + xi^2 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi * (-log(-p + 1))^xi +
+            sigma^2 - 2 * (dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma * xi * (-log(-p + 1))^xi) * z) *
+            ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
                 1))^xi))^(1/xi)))
-        
-        infomat[1, 2] <- infomat[2, 1] <- sum(-(dat * (-log(-p + 1))^(2 * xi) - z * (-log(-p + 1))^(2 * 
-            xi) - sigma * (-log(-p + 1))^xi + (sigma * xi * (-log(-p + 1))^xi + sigma * (-log(-p + 1))^xi) * 
-            ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 
-                1))^xi))^(1/xi))/((sigma * dat^2 * xi^2 * (-log(-p + 1))^(2 * xi) + sigma * xi^2 * z^2 * 
-            (-log(-p + 1))^(2 * xi) + 2 * sigma^2 * dat * xi * (-log(-p + 1))^xi + sigma^3 - 2 * (sigma * 
-            dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma^2 * xi * (-log(-p + 1))^xi) * z) * ((dat * xi * 
+
+        infomat[1, 2] <- infomat[2, 1] <- sum(-(dat * (-log(-p + 1))^(2 * xi) - z * (-log(-p + 1))^(2 *
+            xi) - sigma * (-log(-p + 1))^xi + (sigma * xi * (-log(-p + 1))^xi + sigma * (-log(-p + 1))^xi) *
+            ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
+                1))^xi))^(1/xi))/((sigma * dat^2 * xi^2 * (-log(-p + 1))^(2 * xi) + sigma * xi^2 * z^2 *
+            (-log(-p + 1))^(2 * xi) + 2 * sigma^2 * dat * xi * (-log(-p + 1))^xi + sigma^3 - 2 * (sigma *
+            dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma^2 * xi * (-log(-p + 1))^xi) * z) * ((dat * xi *
             (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi)))
-        infomat[1, 3] <- infomat[3, 1] <- sum(-((sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - dat * 
-            (-log(-p + 1))^(2 * xi)) * xi^2 + (sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - dat * 
-            (-log(-p + 1))^(2 * xi)) * xi + (xi^2 * (-log(-p + 1))^(2 * xi) + xi * (-log(-p + 1))^(2 * 
-            xi)) * z - (sigma * xi^3 * (-log(-p + 1))^xi * log(-log(-p + 1)) + xi^2 * z * (-log(-p + 
-            1))^(2 * xi) + (sigma * (-log(-p + 1))^xi * (log(-log(-p + 1)) + 1) - dat * (-log(-p + 1))^(2 * 
-            xi)) * xi^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * 
-            (-log(-p + 1))^xi))^(1/xi) + (dat * xi * (-log(-p + 1))^(2 * xi) - xi * z * (-log(-p + 1))^(2 * 
-            xi) + sigma * (-log(-p + 1))^xi) * log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 
-            1))^xi + sigma)/(sigma * (-log(-p + 1))^xi)))/((dat^2 * xi^4 * (-log(-p + 1))^(2 * xi) + 
-            xi^4 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi^3 * (-log(-p + 1))^xi + sigma^2 * 
-            xi^2 - 2 * (dat * xi^4 * (-log(-p + 1))^(2 * xi) + sigma * xi^3 * (-log(-p + 1))^xi) * z) * 
-            ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 
+        infomat[1, 3] <- infomat[3, 1] <- sum(-((sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - dat *
+            (-log(-p + 1))^(2 * xi)) * xi^2 + (sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - dat *
+            (-log(-p + 1))^(2 * xi)) * xi + (xi^2 * (-log(-p + 1))^(2 * xi) + xi * (-log(-p + 1))^(2 *
+            xi)) * z - (sigma * xi^3 * (-log(-p + 1))^xi * log(-log(-p + 1)) + xi^2 * z * (-log(-p +
+            1))^(2 * xi) + (sigma * (-log(-p + 1))^xi * (log(-log(-p + 1)) + 1) - dat * (-log(-p + 1))^(2 *
+            xi)) * xi^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma *
+            (-log(-p + 1))^xi))^(1/xi) + (dat * xi * (-log(-p + 1))^(2 * xi) - xi * z * (-log(-p + 1))^(2 *
+            xi) + sigma * (-log(-p + 1))^xi) * log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p +
+            1))^xi + sigma)/(sigma * (-log(-p + 1))^xi)))/((dat^2 * xi^4 * (-log(-p + 1))^(2 * xi) +
+            xi^4 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi^3 * (-log(-p + 1))^xi + sigma^2 *
+            xi^2 - 2 * (dat * xi^4 * (-log(-p + 1))^(2 * xi) + sigma * xi^3 * (-log(-p + 1))^xi) * z) *
+            ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
                 1))^xi))^(1/xi)))
-        infomat[2, 2] <- sum((dat^2 * xi * (-log(-p + 1))^(2 * xi) + (xi * (-log(-p + 1))^(2 * xi) - 
-            (-log(-p + 1))^(2 * xi)) * z^2 - dat^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * (-log(-p + 
-            1))^xi - 2 * (dat * xi * (-log(-p + 1))^(2 * xi) - dat * (-log(-p + 1))^(2 * xi) + sigma * 
-            (-log(-p + 1))^xi) * z - (dat^2 * xi * (-log(-p + 1))^(2 * xi) + xi * z^2 * (-log(-p + 1))^(2 * 
-            xi) + 2 * sigma * dat * (-log(-p + 1))^xi - sigma^2 - 2 * (dat * xi * (-log(-p + 1))^(2 * 
-            xi) + sigma * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 
-            1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi))/((sigma^2 * dat^2 * xi^2 * (-log(-p + 
-            1))^(2 * xi) + sigma^2 * xi^2 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma^3 * dat * xi * 
-            (-log(-p + 1))^xi + sigma^4 - 2 * (sigma^2 * dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma^3 * 
-            xi * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + 
+        infomat[2, 2] <- sum((dat^2 * xi * (-log(-p + 1))^(2 * xi) + (xi * (-log(-p + 1))^(2 * xi) -
+            (-log(-p + 1))^(2 * xi)) * z^2 - dat^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * (-log(-p +
+            1))^xi - 2 * (dat * xi * (-log(-p + 1))^(2 * xi) - dat * (-log(-p + 1))^(2 * xi) + sigma *
+            (-log(-p + 1))^xi) * z - (dat^2 * xi * (-log(-p + 1))^(2 * xi) + xi * z^2 * (-log(-p + 1))^(2 *
+            xi) + 2 * sigma * dat * (-log(-p + 1))^xi - sigma^2 - 2 * (dat * xi * (-log(-p + 1))^(2 *
+            xi) + sigma * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p +
+            1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi))/((sigma^2 * dat^2 * xi^2 * (-log(-p +
+            1))^(2 * xi) + sigma^2 * xi^2 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma^3 * dat * xi *
+            (-log(-p + 1))^xi + sigma^4 - 2 * (sigma^2 * dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma^3 *
+            xi * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi +
             sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi)))
-        infomat[3, 2] <- infomat[2, 3] <- sum(-((sigma * dat * (-log(-p + 1))^xi * log(-log(-p + 1)) - 
-            dat^2 * (-log(-p + 1))^(2 * xi)) * xi^2 - (xi^2 * (-log(-p + 1))^(2 * xi) + xi * (-log(-p + 
-            1))^(2 * xi)) * z^2 + (sigma * dat * (-log(-p + 1))^xi * log(-log(-p + 1)) - dat^2 * (-log(-p + 
-            1))^(2 * xi)) * xi - ((sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - 2 * dat * (-log(-p + 
-            1))^(2 * xi)) * xi^2 + (sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - 2 * dat * (-log(-p + 
-            1))^(2 * xi)) * xi) * z - (sigma * dat * xi^3 * (-log(-p + 1))^xi * log(-log(-p + 1)) - xi^2 * 
-            z^2 * (-log(-p + 1))^(2 * xi) + (sigma * dat * (-log(-p + 1))^xi * (log(-log(-p + 1)) + 1) - 
-            dat^2 * (-log(-p + 1))^(2 * xi)) * xi^2 - (sigma * xi^3 * (-log(-p + 1))^xi * log(-log(-p + 
-            1)) + (sigma * (-log(-p + 1))^xi * (log(-log(-p + 1)) + 1) - 2 * dat * (-log(-p + 1))^(2 * 
-            xi)) * xi^2) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * 
-            (-log(-p + 1))^xi))^(1/xi) + (dat^2 * xi * (-log(-p + 1))^(2 * xi) + xi * z^2 * (-log(-p + 
-            1))^(2 * xi) + sigma * dat * (-log(-p + 1))^xi - (2 * dat * xi * (-log(-p + 1))^(2 * xi) + 
-            sigma * (-log(-p + 1))^xi) * z) * log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 
-            1))^xi + sigma)/(sigma * (-log(-p + 1))^xi)))/((sigma * dat^2 * xi^4 * (-log(-p + 1))^(2 * 
-            xi) + sigma * xi^4 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma^2 * dat * xi^3 * (-log(-p + 
-            1))^xi + sigma^3 * xi^2 - 2 * (sigma * dat * xi^4 * (-log(-p + 1))^(2 * xi) + sigma^2 * xi^3 * 
-            (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * 
+        infomat[3, 2] <- infomat[2, 3] <- sum(-((sigma * dat * (-log(-p + 1))^xi * log(-log(-p + 1)) -
+            dat^2 * (-log(-p + 1))^(2 * xi)) * xi^2 - (xi^2 * (-log(-p + 1))^(2 * xi) + xi * (-log(-p +
+            1))^(2 * xi)) * z^2 + (sigma * dat * (-log(-p + 1))^xi * log(-log(-p + 1)) - dat^2 * (-log(-p +
+            1))^(2 * xi)) * xi - ((sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - 2 * dat * (-log(-p +
+            1))^(2 * xi)) * xi^2 + (sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - 2 * dat * (-log(-p +
+            1))^(2 * xi)) * xi) * z - (sigma * dat * xi^3 * (-log(-p + 1))^xi * log(-log(-p + 1)) - xi^2 *
+            z^2 * (-log(-p + 1))^(2 * xi) + (sigma * dat * (-log(-p + 1))^xi * (log(-log(-p + 1)) + 1) -
+            dat^2 * (-log(-p + 1))^(2 * xi)) * xi^2 - (sigma * xi^3 * (-log(-p + 1))^xi * log(-log(-p +
+            1)) + (sigma * (-log(-p + 1))^xi * (log(-log(-p + 1)) + 1) - 2 * dat * (-log(-p + 1))^(2 *
+            xi)) * xi^2) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma *
+            (-log(-p + 1))^xi))^(1/xi) + (dat^2 * xi * (-log(-p + 1))^(2 * xi) + xi * z^2 * (-log(-p +
+            1))^(2 * xi) + sigma * dat * (-log(-p + 1))^xi - (2 * dat * xi * (-log(-p + 1))^(2 * xi) +
+            sigma * (-log(-p + 1))^xi) * z) * log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p +
+            1))^xi + sigma)/(sigma * (-log(-p + 1))^xi)))/((sigma * dat^2 * xi^4 * (-log(-p + 1))^(2 *
+            xi) + sigma * xi^4 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma^2 * dat * xi^3 * (-log(-p +
+            1))^xi + sigma^3 * xi^2 - 2 * (sigma * dat * xi^4 * (-log(-p + 1))^(2 * xi) + sigma^2 * xi^3 *
+            (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma *
             (-log(-p + 1))^xi))^(1/xi)))
-        infomat[3, 3] <- sum((sigma * dat * xi^4 * (-log(-p + 1))^xi * log(-log(-p + 1))^2 + (4 * sigma * 
-            dat * (-log(-p + 1))^xi * log(-log(-p + 1)) - 3 * dat^2 * (-log(-p + 1))^(2 * xi)) * xi^3 + 
-            (2 * sigma * dat * (-log(-p + 1))^xi * (log(-log(-p + 1)) - 1) - (log(-log(-p + 1))^2 - 2 * 
-                log(-log(-p + 1))) * sigma^2 - dat^2 * (-log(-p + 1))^(2 * xi)) * xi^2 - (3 * xi^3 * 
-            (-log(-p + 1))^(2 * xi) + xi^2 * (-log(-p + 1))^(2 * xi)) * z^2 - (dat^2 * xi^2 * (-log(-p + 
-            1))^(2 * xi) + xi^2 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi * (-log(-p + 1))^xi + 
-            sigma^2 - 2 * (dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma * xi * (-log(-p + 1))^xi) * z) * 
-            log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 
-                1))^xi))^2 - (sigma * xi^4 * (-log(-p + 1))^xi * log(-log(-p + 1))^2 + 2 * (2 * sigma * 
-            (-log(-p + 1))^xi * log(-log(-p + 1)) - 3 * dat * (-log(-p + 1))^(2 * xi)) * xi^3 + 2 * (sigma * 
-            (-log(-p + 1))^xi * (log(-log(-p + 1)) - 1) - dat * (-log(-p + 1))^(2 * xi)) * xi^2) * z - 
-            (sigma * dat * xi^5 * (-log(-p + 1))^xi * log(-log(-p + 1))^2 + ((log(-log(-p + 1))^2 + 2 * 
-                log(-log(-p + 1))) * sigma * dat * (-log(-p + 1))^xi - dat^2 * (-log(-p + 1))^(2 * xi)) * 
-                xi^4 + (4 * sigma * dat * (-log(-p + 1))^xi * log(-log(-p + 1)) - 3 * dat^2 * (-log(-p + 
-                1))^(2 * xi)) * xi^3 - 2 * (sigma * dat * (-log(-p + 1))^xi - sigma^2 * log(-log(-p + 
-                1))) * xi^2 - (xi^4 * (-log(-p + 1))^(2 * xi) + 3 * xi^3 * (-log(-p + 1))^(2 * xi)) * 
-                z^2 - (sigma * xi^5 * (-log(-p + 1))^xi * log(-log(-p + 1))^2 + ((log(-log(-p + 1))^2 + 
-                2 * log(-log(-p + 1))) * sigma * (-log(-p + 1))^xi - 2 * dat * (-log(-p + 1))^(2 * xi)) * 
-                xi^4 + 2 * (2 * sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - 3 * dat * (-log(-p + 
-                1))^(2 * xi)) * xi^3 - 2 * sigma * xi^2 * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 
-                1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + 2 * 
-            (dat^2 * xi^3 * (-log(-p + 1))^(2 * xi) - (sigma * dat * (-log(-p + 1))^xi * (log(-log(-p + 
-                1)) - 2) - dat^2 * (-log(-p + 1))^(2 * xi)) * xi^2 + (xi^3 * (-log(-p + 1))^(2 * xi) + 
-                xi^2 * (-log(-p + 1))^(2 * xi)) * z^2 + (sigma * dat * (-log(-p + 1))^xi - sigma^2 * 
-                (log(-log(-p + 1)) - 1)) * xi - (2 * dat * xi^3 * (-log(-p + 1))^(2 * xi) - (sigma * 
-                (-log(-p + 1))^xi * (log(-log(-p + 1)) - 2) - 2 * dat * (-log(-p + 1))^(2 * xi)) * xi^2 + 
-                sigma * xi * (-log(-p + 1))^xi) * z - (dat^2 * xi^3 * (-log(-p + 1))^(2 * xi) + xi^3 * 
-                z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi^2 * (-log(-p + 1))^xi + sigma^2 * 
-                xi - 2 * (dat * xi^3 * (-log(-p + 1))^(2 * xi) + sigma * xi^2 * (-log(-p + 1))^xi) * 
-                z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 
-                1))^xi))^(1/xi)) * log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * 
-            (-log(-p + 1))^xi)))/((dat^2 * xi^6 * (-log(-p + 1))^(2 * xi) + xi^6 * z^2 * (-log(-p + 1))^(2 * 
-            xi) + 2 * sigma * dat * xi^5 * (-log(-p + 1))^xi + sigma^2 * xi^4 - 2 * (dat * xi^6 * (-log(-p + 
-            1))^(2 * xi) + sigma * xi^5 * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - 
+        infomat[3, 3] <- sum((sigma * dat * xi^4 * (-log(-p + 1))^xi * log(-log(-p + 1))^2 + (4 * sigma *
+            dat * (-log(-p + 1))^xi * log(-log(-p + 1)) - 3 * dat^2 * (-log(-p + 1))^(2 * xi)) * xi^3 +
+            (2 * sigma * dat * (-log(-p + 1))^xi * (log(-log(-p + 1)) - 1) - (log(-log(-p + 1))^2 - 2 *
+                log(-log(-p + 1))) * sigma^2 - dat^2 * (-log(-p + 1))^(2 * xi)) * xi^2 - (3 * xi^3 *
+            (-log(-p + 1))^(2 * xi) + xi^2 * (-log(-p + 1))^(2 * xi)) * z^2 - (dat^2 * xi^2 * (-log(-p +
+            1))^(2 * xi) + xi^2 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi * (-log(-p + 1))^xi +
+            sigma^2 - 2 * (dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma * xi * (-log(-p + 1))^xi) * z) *
+            log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
+                1))^xi))^2 - (sigma * xi^4 * (-log(-p + 1))^xi * log(-log(-p + 1))^2 + 2 * (2 * sigma *
+            (-log(-p + 1))^xi * log(-log(-p + 1)) - 3 * dat * (-log(-p + 1))^(2 * xi)) * xi^3 + 2 * (sigma *
+            (-log(-p + 1))^xi * (log(-log(-p + 1)) - 1) - dat * (-log(-p + 1))^(2 * xi)) * xi^2) * z -
+            (sigma * dat * xi^5 * (-log(-p + 1))^xi * log(-log(-p + 1))^2 + ((log(-log(-p + 1))^2 + 2 *
+                log(-log(-p + 1))) * sigma * dat * (-log(-p + 1))^xi - dat^2 * (-log(-p + 1))^(2 * xi)) *
+                xi^4 + (4 * sigma * dat * (-log(-p + 1))^xi * log(-log(-p + 1)) - 3 * dat^2 * (-log(-p +
+                1))^(2 * xi)) * xi^3 - 2 * (sigma * dat * (-log(-p + 1))^xi - sigma^2 * log(-log(-p +
+                1))) * xi^2 - (xi^4 * (-log(-p + 1))^(2 * xi) + 3 * xi^3 * (-log(-p + 1))^(2 * xi)) *
+                z^2 - (sigma * xi^5 * (-log(-p + 1))^xi * log(-log(-p + 1))^2 + ((log(-log(-p + 1))^2 +
+                2 * log(-log(-p + 1))) * sigma * (-log(-p + 1))^xi - 2 * dat * (-log(-p + 1))^(2 * xi)) *
+                xi^4 + 2 * (2 * sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - 3 * dat * (-log(-p +
+                1))^(2 * xi)) * xi^3 - 2 * sigma * xi^2 * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p +
+                1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + 2 *
+            (dat^2 * xi^3 * (-log(-p + 1))^(2 * xi) - (sigma * dat * (-log(-p + 1))^xi * (log(-log(-p +
+                1)) - 2) - dat^2 * (-log(-p + 1))^(2 * xi)) * xi^2 + (xi^3 * (-log(-p + 1))^(2 * xi) +
+                xi^2 * (-log(-p + 1))^(2 * xi)) * z^2 + (sigma * dat * (-log(-p + 1))^xi - sigma^2 *
+                (log(-log(-p + 1)) - 1)) * xi - (2 * dat * xi^3 * (-log(-p + 1))^(2 * xi) - (sigma *
+                (-log(-p + 1))^xi * (log(-log(-p + 1)) - 2) - 2 * dat * (-log(-p + 1))^(2 * xi)) * xi^2 +
+                sigma * xi * (-log(-p + 1))^xi) * z - (dat^2 * xi^3 * (-log(-p + 1))^(2 * xi) + xi^3 *
+                z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi^2 * (-log(-p + 1))^xi + sigma^2 *
+                xi - 2 * (dat * xi^3 * (-log(-p + 1))^(2 * xi) + sigma * xi^2 * (-log(-p + 1))^xi) *
+                z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
+                1))^xi))^(1/xi)) * log((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma *
+            (-log(-p + 1))^xi)))/((dat^2 * xi^6 * (-log(-p + 1))^(2 * xi) + xi^6 * z^2 * (-log(-p + 1))^(2 *
+            xi) + 2 * sigma * dat * xi^5 * (-log(-p + 1))^xi + sigma^2 * xi^4 - 2 * (dat * xi^6 * (-log(-p +
+            1))^(2 * xi) + sigma * xi^5 * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi -
             xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi)))
         return(-infomat)
         # else expected information matrix
     } else {
         muf = z + sigma/xi * (1 - (-log(1 - p))^(-xi))
         if (!isTRUE(all.equal(xi, 0, tolerance = 1e-07))) {
-            Jac <- rbind(c(1, -((-log(-p + 1))^(-xi) - 1)/xi, sigma * (-log(-p + 1))^(-xi) * log(-log(-p + 
+            Jac <- rbind(c(1, -((-log(-p + 1))^(-xi) - 1)/xi, sigma * (-log(-p + 1))^(-xi) * log(-log(-p +
                 1))/xi + sigma * ((-log(-p + 1))^(-xi) - 1)/xi^2), c(0, 1, 0), c(0, 0, 1))
         } else {
-            Jac <- rbind(c(1, log(-log(-p + 1)), -sigma * log(-log(-p + 1))^2 + 1/2 * sigma * (-log(-p + 
+            Jac <- rbind(c(1, log(-log(-p + 1)), -sigma * log(-log(-p + 1))^2 + 1/2 * sigma * (-log(-p +
                 1))^(-xi) * log(-log(-p + 1))^2), c(0, 1, 0), c(0, 0, 1))
         }
         return(t(Jac) %*% gev.infomat(dat = dat, method = "exp", par = c(muf, sigma, xi)) %*% Jac)
-        
+
     }
 }
 
@@ -1127,9 +1134,9 @@ gevr.Vfun <- function(par, dat, p) {
     z = par[1]
     sigma = par[2]
     xi = par[3]
-    cbind(1, (dat - z)/sigma, sigma * ((dat - z) * xi/sigma + (-log(-p + 1))^(-xi))^(-1/xi) * (((-log(-p + 
-        1))^(-xi) * log(-log(-p + 1)) - (dat - z)/sigma)/(((dat - z) * xi/sigma + (-log(-p + 1))^(-xi)) * 
-        xi) + log((dat - z) * xi/sigma + (-log(-p + 1))^(-xi))/xi^2)/((dat - z) * xi/sigma + (-log(-p + 
+    cbind(1, (dat - z)/sigma, sigma * ((dat - z) * xi/sigma + (-log(-p + 1))^(-xi))^(-1/xi) * (((-log(-p +
+        1))^(-xi) * log(-log(-p + 1)) - (dat - z)/sigma)/(((dat - z) * xi/sigma + (-log(-p + 1))^(-xi)) *
+        xi) + log((dat - z) * xi/sigma + (-log(-p + 1))^(-xi))/xi^2)/((dat - z) * xi/sigma + (-log(-p +
         1))^(-xi))^(-1/xi - 1))
 }
 
@@ -1142,9 +1149,9 @@ gevr.phi <- function(par, dat, p, V) {
     z = par[1]
     sigma = par[2]
     xi = par[3]
-    t(-((xi * (-log(-p + 1))^xi + (-log(-p + 1))^xi) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 
-        1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) - (-log(-p + 1))^xi)/((dat * xi * (-log(-p + 
-        1))^xi - xi * z * (-log(-p + 1))^xi + sigma) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 
+    t(-((xi * (-log(-p + 1))^xi + (-log(-p + 1))^xi) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p +
+        1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) - (-log(-p + 1))^xi)/((dat * xi * (-log(-p +
+        1))^xi - xi * z * (-log(-p + 1))^xi + sigma) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p +
         1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi))) %*% V
 }
 
@@ -1157,29 +1164,29 @@ gevr.dphi <- function(par, dat, p, V) {
     z = par[1]
     sigma = par[2]
     xi = par[3]
-    rbind((xi * (-log(-p + 1))^(2 * xi) - (xi^2 * (-log(-p + 1))^(2 * xi) + xi * (-log(-p + 1))^(2 * 
-        xi)) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 
-        1))^xi))^(1/xi) + (-log(-p + 1))^(2 * xi))/((dat^2 * xi^2 * (-log(-p + 1))^(2 * xi) + xi^2 * 
-        z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi * (-log(-p + 1))^xi + sigma^2 - 2 * (dat * 
-        xi^2 * (-log(-p + 1))^(2 * xi) + sigma * xi * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 
-        1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi)), (dat * (-log(-p + 
-        1))^(2 * xi) - z * (-log(-p + 1))^(2 * xi) - sigma * (-log(-p + 1))^xi + (sigma * xi * (-log(-p + 
-        1))^xi + sigma * (-log(-p + 1))^xi) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + 
-        sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi))/((sigma * dat^2 * xi^2 * (-log(-p + 1))^(2 * xi) + 
-        sigma * xi^2 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma^2 * dat * xi * (-log(-p + 1))^xi + sigma^3 - 
-        2 * (sigma * dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma^2 * xi * (-log(-p + 1))^xi) * z) * 
-        ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi)), 
-        ((sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - dat * (-log(-p + 1))^(2 * xi)) * xi^2 + (sigma * 
-            (-log(-p + 1))^xi * log(-log(-p + 1)) - dat * (-log(-p + 1))^(2 * xi)) * xi + (xi^2 * (-log(-p + 
-            1))^(2 * xi) + xi * (-log(-p + 1))^(2 * xi)) * z - (sigma * xi^3 * (-log(-p + 1))^xi * log(-log(-p + 
-            1)) + xi^2 * z * (-log(-p + 1))^(2 * xi) + (sigma * (-log(-p + 1))^xi * (log(-log(-p + 1)) + 
-            1) - dat * (-log(-p + 1))^(2 * xi)) * xi^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 
-            1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + (dat * xi * (-log(-p + 1))^(2 * xi) - 
-            xi * z * (-log(-p + 1))^(2 * xi) + sigma * (-log(-p + 1))^xi) * log((dat * xi * (-log(-p + 
-            1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi)))/((dat^2 * xi^4 * 
-            (-log(-p + 1))^(2 * xi) + xi^4 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi^3 * 
-            (-log(-p + 1))^xi + sigma^2 * xi^2 - 2 * (dat * xi^4 * (-log(-p + 1))^(2 * xi) + sigma * 
-            xi^3 * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + 
+    rbind((xi * (-log(-p + 1))^(2 * xi) - (xi^2 * (-log(-p + 1))^(2 * xi) + xi * (-log(-p + 1))^(2 *
+        xi)) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
+        1))^xi))^(1/xi) + (-log(-p + 1))^(2 * xi))/((dat^2 * xi^2 * (-log(-p + 1))^(2 * xi) + xi^2 *
+        z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi * (-log(-p + 1))^xi + sigma^2 - 2 * (dat *
+        xi^2 * (-log(-p + 1))^(2 * xi) + sigma * xi * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p +
+        1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi)), (dat * (-log(-p +
+        1))^(2 * xi) - z * (-log(-p + 1))^(2 * xi) - sigma * (-log(-p + 1))^xi + (sigma * xi * (-log(-p +
+        1))^xi + sigma * (-log(-p + 1))^xi) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi +
+        sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi))/((sigma * dat^2 * xi^2 * (-log(-p + 1))^(2 * xi) +
+        sigma * xi^2 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma^2 * dat * xi * (-log(-p + 1))^xi + sigma^3 -
+        2 * (sigma * dat * xi^2 * (-log(-p + 1))^(2 * xi) + sigma^2 * xi * (-log(-p + 1))^xi) * z) *
+        ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi)),
+        ((sigma * (-log(-p + 1))^xi * log(-log(-p + 1)) - dat * (-log(-p + 1))^(2 * xi)) * xi^2 + (sigma *
+            (-log(-p + 1))^xi * log(-log(-p + 1)) - dat * (-log(-p + 1))^(2 * xi)) * xi + (xi^2 * (-log(-p +
+            1))^(2 * xi) + xi * (-log(-p + 1))^(2 * xi)) * z - (sigma * xi^3 * (-log(-p + 1))^xi * log(-log(-p +
+            1)) + xi^2 * z * (-log(-p + 1))^(2 * xi) + (sigma * (-log(-p + 1))^xi * (log(-log(-p + 1)) +
+            1) - dat * (-log(-p + 1))^(2 * xi)) * xi^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p +
+            1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) + (dat * xi * (-log(-p + 1))^(2 * xi) -
+            xi * z * (-log(-p + 1))^(2 * xi) + sigma * (-log(-p + 1))^xi) * log((dat * xi * (-log(-p +
+            1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi)))/((dat^2 * xi^4 *
+            (-log(-p + 1))^(2 * xi) + xi^4 * z^2 * (-log(-p + 1))^(2 * xi) + 2 * sigma * dat * xi^3 *
+            (-log(-p + 1))^xi + sigma^2 * xi^2 - 2 * (dat * xi^4 * (-log(-p + 1))^(2 * xi) + sigma *
+            xi^3 * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi +
             sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi))) %*% V
 }
 
@@ -1244,9 +1251,9 @@ gpdN.score <- function(par, dat, N) {
     z = par[1]
     xi = par[2]
     cst <- exp(lgamma(N + 1) + lgamma(1 - xi) - lgamma(N + 1 - xi))
-    c(sum(dat * (cst - 1) * (1/xi + 1)/(z^2 * (dat * (cst - 1)/z + 1)) - 1/z), sum(-(psigamma(N - xi + 
-        1) * cst - psigamma(-xi + 1) * cst) * dat * (1/xi + 1)/(z * (dat * (cst - 1)/z + 1)) + ((psigamma(N - 
-        xi + 1) * cst - psigamma(-xi + 1) * cst) * xi * z/(cst - 1)^2 - z/(cst - 1)) * (cst - 1)/(xi * 
+    c(sum(dat * (cst - 1) * (1/xi + 1)/(z^2 * (dat * (cst - 1)/z + 1)) - 1/z), sum(-(psigamma(N - xi +
+        1) * cst - psigamma(-xi + 1) * cst) * dat * (1/xi + 1)/(z * (dat * (cst - 1)/z + 1)) + ((psigamma(N -
+        xi + 1) * cst - psigamma(-xi + 1) * cst) * xi * z/(cst - 1)^2 - z/(cst - 1)) * (cst - 1)/(xi *
         z) + log(dat * (cst - 1)/z + 1)/xi^2))
 }
 
@@ -1266,30 +1273,30 @@ gpdN.infomat <- function(par, dat, N, method = c("obs", "exp"), nobs = length(da
     cst <- exp(lgamma(N + 1) + lgamma(1 - xi) - lgamma(N + 1 - xi))
     if (method == "exp") {
         sigmaf <- z * xi/(cst - 1)
-        Jac <- rbind(c(xi/(cst - 1), -(digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst) * xi * z/(cst - 
+        Jac <- rbind(c(xi/(cst - 1), -(digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst) * xi * z/(cst -
             1)^2 + z/(cst - 1)), c(0, 1))
         return(t(Jac) %*% gpd.infomat(par = c(sigmaf, xi), dat = dat, method = "exp") %*% Jac)
-        
+
     } else if (method == "obs") {
         # Observed information
-        k11 <- sum(2 * dat * (cst - 1) * (1/xi + 1)/(z^3 * (dat * (cst - 1)/z + 1)) - dat^2 * (cst - 
+        k11 <- sum(2 * dat * (cst - 1) * (1/xi + 1)/(z^3 * (dat * (cst - 1)/z + 1)) - dat^2 * (cst -
             1)^2 * (1/xi + 1)/(z^4 * (dat * (cst - 1)/z + 1)^2) - 1/z^2)
-        k12 <- sum(-(digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst) * dat * (1/xi + 1)/(z^2 * (dat * 
-            (cst - 1)/z + 1)) + (digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst) * dat^2 * (cst - 
-            1) * (1/xi + 1)/(z^3 * (dat * (cst - 1)/z + 1)^2) + dat * (cst - 1)/(xi^2 * z^2 * (dat * 
+        k12 <- sum(-(digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst) * dat * (1/xi + 1)/(z^2 * (dat *
+            (cst - 1)/z + 1)) + (digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst) * dat^2 * (cst -
+            1) * (1/xi + 1)/(z^3 * (dat * (cst - 1)/z + 1)^2) + dat * (cst - 1)/(xi^2 * z^2 * (dat *
             (cst - 1)/z + 1)))
-        k22 <- sum(-(digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst)^2 * dat^2 * (1/xi + 1)/(z^2 * 
-            (dat * (cst - 1)/z + 1)^2) + (digamma(N - xi + 1)^2 * cst - 2 * digamma(N - xi + 1) * digamma(-xi + 
-            1) * cst + digamma(-xi + 1)^2 * cst - psigamma(deriv = 1, N - xi + 1) * cst + psigamma(deriv = 1, 
-            -xi + 1) * cst) * dat * (1/xi + 1)/(z * (dat * (cst - 1)/z + 1)) - (digamma(N - xi + 1) * 
-            cst - digamma(-xi + 1) * cst) * ((digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst) * xi * 
-            z/(cst - 1)^2 - z/(cst - 1))/(xi * z) + (2 * (digamma(N - xi + 1) * cst - digamma(-xi + 1) * 
-            cst)^2 * xi * z/(cst - 1)^3 - (digamma(N - xi + 1)^2 * cst - 2 * digamma(N - xi + 1) * digamma(-xi + 
-            1) * cst + digamma(-xi + 1)^2 * cst - psigamma(deriv = 1, N - xi + 1) * cst + psigamma(deriv = 1, 
-            -xi + 1) * cst) * xi * z/(cst - 1)^2 - 2 * (digamma(N - xi + 1) * cst - digamma(-xi + 1) * 
-            cst) * z/(cst - 1)^2) * (cst - 1)/(xi * z) + ((digamma(N - xi + 1) * cst - digamma(-xi + 
-            1) * cst) * xi * z/(cst - 1)^2 - z/(cst - 1)) * (cst - 1)/(xi^2 * z) - 2 * (digamma(N - xi + 
-            1) * cst - digamma(-xi + 1) * cst) * dat/(xi^2 * z * (dat * (cst - 1)/z + 1)) + 2 * log(dat * 
+        k22 <- sum(-(digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst)^2 * dat^2 * (1/xi + 1)/(z^2 *
+            (dat * (cst - 1)/z + 1)^2) + (digamma(N - xi + 1)^2 * cst - 2 * digamma(N - xi + 1) * digamma(-xi +
+            1) * cst + digamma(-xi + 1)^2 * cst - psigamma(deriv = 1, N - xi + 1) * cst + psigamma(deriv = 1,
+            -xi + 1) * cst) * dat * (1/xi + 1)/(z * (dat * (cst - 1)/z + 1)) - (digamma(N - xi + 1) *
+            cst - digamma(-xi + 1) * cst) * ((digamma(N - xi + 1) * cst - digamma(-xi + 1) * cst) * xi *
+            z/(cst - 1)^2 - z/(cst - 1))/(xi * z) + (2 * (digamma(N - xi + 1) * cst - digamma(-xi + 1) *
+            cst)^2 * xi * z/(cst - 1)^3 - (digamma(N - xi + 1)^2 * cst - 2 * digamma(N - xi + 1) * digamma(-xi +
+            1) * cst + digamma(-xi + 1)^2 * cst - psigamma(deriv = 1, N - xi + 1) * cst + psigamma(deriv = 1,
+            -xi + 1) * cst) * xi * z/(cst - 1)^2 - 2 * (digamma(N - xi + 1) * cst - digamma(-xi + 1) *
+            cst) * z/(cst - 1)^2) * (cst - 1)/(xi * z) + ((digamma(N - xi + 1) * cst - digamma(-xi +
+            1) * cst) * xi * z/(cst - 1)^2 - z/(cst - 1)) * (cst - 1)/(xi^2 * z) - 2 * (digamma(N - xi +
+            1) * cst - digamma(-xi + 1) * cst) * dat/(xi^2 * z * (dat * (cst - 1)/z + 1)) + 2 * log(dat *
             (cst - 1)/z + 1)/xi^3)
         return(cbind(c(k11, k12), c(k12, k22)))
     }
@@ -1307,8 +1314,8 @@ gpdN.Vfun <- function(par, dat, N) {
     xi = par[2]
     z = par[1]
     cst <- exp(lgamma(N + 1) + lgamma(-xi + 1) - lgamma(N - xi + 1))
-    cbind(dat/z, -xi * z * (dat * (cst - 1)/z + 1)^(-1/xi) * ((psigamma(N - xi + 1) * cst - psigamma(-xi + 
-        1) * cst) * dat/(xi * z * (dat * (cst - 1)/z + 1)) - log(dat * (cst - 1)/z + 1)/xi^2)/((dat * 
+    cbind(dat/z, -xi * z * (dat * (cst - 1)/z + 1)^(-1/xi) * ((psigamma(N - xi + 1) * cst - psigamma(-xi +
+        1) * cst) * dat/(xi * z * (dat * (cst - 1)/z + 1)) - log(dat * (cst - 1)/z + 1)/xi^2)/((dat *
         (cst - 1)/z + 1)^(-1/xi - 1) * (cst - 1)))
 }
 
@@ -1334,18 +1341,18 @@ gpdN.dphi <- function(par, dat, N, V) {
     xi = par[2]
     z = par[1]
     cst <- exp(lgamma(N + 1) + lgamma(-xi + 1) - lgamma(N - xi + 1))
-    rbind((cst - 1) * (1/xi + 1)/(z^2 * (dat * (cst - 1)/z + 1)) - dat * (cst - 1)^2 * (1/xi + 1)/(z^3 * 
-        (dat * (cst - 1)/z + 1)^2), -(psigamma(N - xi + 1) * cst - psigamma(-xi + 1) * cst) * (1/xi + 
-        1)/(z * (dat * (cst - 1)/z + 1)) + (psigamma(N - xi + 1) * cst - psigamma(-xi + 1) * cst) * dat * 
-        (cst - 1) * (1/xi + 1)/(z^2 * (dat * (cst - 1)/z + 1)^2) + (cst - 1)/(xi^2 * z * (dat * (cst - 
+    rbind((cst - 1) * (1/xi + 1)/(z^2 * (dat * (cst - 1)/z + 1)) - dat * (cst - 1)^2 * (1/xi + 1)/(z^3 *
+        (dat * (cst - 1)/z + 1)^2), -(psigamma(N - xi + 1) * cst - psigamma(-xi + 1) * cst) * (1/xi +
+        1)/(z * (dat * (cst - 1)/z + 1)) + (psigamma(N - xi + 1) * cst - psigamma(-xi + 1) * cst) * dat *
+        (cst - 1) * (1/xi + 1)/(z^2 * (dat * (cst - 1)/z + 1)^2) + (cst - 1)/(xi^2 * z * (dat * (cst -
         1)/z + 1))) %*% V
 }
 
 
 
-############################################################################################ 
+############################################################################################
 
-############################################################################################ 
+############################################################################################
 
 #' @title Generalized extreme value distribution (quantile/mean of N-block maxima parametrization)
 #'
@@ -1392,10 +1399,10 @@ gevN.ll <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
     z = par[2]
     xi = as.vector(par[3])
     if (!isTRUE(all.equal(xi, 0))) {
-        sigma <- switch(qty, quantile = (z - mu) * xi/(N^xi * (log(1/q))^(-xi) - 1), mean = (z - mu) * 
+        sigma <- switch(qty, quantile = (z - mu) * xi/(N^xi * (log(1/q))^(-xi) - 1), mean = (z - mu) *
             xi/(N^xi * gamma(1 - xi) - 1))
     } else {
-        sigma <- switch(qty, quantile = (z - mu)/(log(N) - log(-log(q))), mean = (z - mu)/(-psigamma(1) + 
+        sigma <- switch(qty, quantile = (z - mu)/(log(N) - log(-log(q))), mean = (z - mu)/(-psigamma(1) +
             log(N)))
     }
     gev.ll(par = c(mu, sigma, xi), dat = dat)
@@ -1414,39 +1421,39 @@ gevN.score <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
     xi = par[3]
     if (qty == "quantile") {
         # quantiles at prob. q
-        c(sum((-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 1)/(mu - z))/xi + ((N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/((N^xi * 
-            log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1) - 1/(mu - z)), sum(-(N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu - 
-            z)^2 * xi) - (N^xi * log(1/q)^(-xi) - 1) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z) - 1) * (mu - z)^2) + 1/(mu - z)), sum((-(N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * 
-            log(log(1/q))) * (dat - mu)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1) * (mu - 
-            z) * xi) - log(-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)/xi^2) - (N^xi * log(1/q)^(-xi) * 
-            log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z) - 1) * (mu - z)) + (N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) * 
-            log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - z) * xi/(N^xi * log(1/q)^(-xi) - 
-            1)^2 - (mu - z)/(N^xi * log(1/q)^(-xi) - 1))/((mu - z) * xi) + log(-(N^xi * log(1/q)^(-xi) - 
+        c(sum((-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 1)/(mu - z))/xi + ((N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/((N^xi *
+            log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1) - 1/(mu - z)), sum(-(N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu -
+            z)^2 * xi) - (N^xi * log(1/q)^(-xi) - 1) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z) - 1) * (mu - z)^2) + 1/(mu - z)), sum((-(N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
+            log(log(1/q))) * (dat - mu)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1) * (mu -
+            z) * xi) - log(-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)/xi^2) - (N^xi * log(1/q)^(-xi) *
+            log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z) - 1) * (mu - z)) + (N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) *
+            log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - z) * xi/(N^xi * log(1/q)^(-xi) -
+            1)^2 - (mu - z)/(N^xi * log(1/q)^(-xi) - 1))/((mu - z) * xi) + log(-(N^xi * log(1/q)^(-xi) -
             1) * (dat - mu)/(mu - z) + 1)/xi^2))
     } else {
         # Mean
-        c(sum((-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * gamma(-xi + 
-            1) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * gamma(-xi + 1) - 1)/(mu - z))/xi + ((N^xi * gamma(-xi + 
-            1) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * gamma(-xi + 1) - 1)/(mu - z)) * (1/xi + 1)/((N^xi * 
-            gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) - 1) - 1/(mu - z)), sum(-(N^xi * gamma(-xi + 1) - 
-            1) * (dat - mu) * (-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu - 
-            z)^2 * xi) - (N^xi * gamma(-xi + 1) - 1) * (dat - mu) * (1/xi + 1)/(((N^xi * gamma(-xi + 
-            1) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)^2) + 1/(mu - z)), sum((-(N^xi * gamma(-xi + 
-            1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 
-            1) * gamma(-xi + 1)) * (dat - mu)/(((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) - 1) * 
-            (mu - z) * xi) - log(-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)/xi^2) - (N^xi * 
-            log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (dat - mu) * (1/xi + 
-            1)/(((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)) + (N^xi * gamma(-xi + 
-            1) - 1) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * 
-            (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - (mu - z)/(N^xi * gamma(-xi + 1) - 1))/((mu - 
+        c(sum((-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * gamma(-xi +
+            1) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * gamma(-xi + 1) - 1)/(mu - z))/xi + ((N^xi * gamma(-xi +
+            1) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * gamma(-xi + 1) - 1)/(mu - z)) * (1/xi + 1)/((N^xi *
+            gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) - 1) - 1/(mu - z)), sum(-(N^xi * gamma(-xi + 1) -
+            1) * (dat - mu) * (-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu -
+            z)^2 * xi) - (N^xi * gamma(-xi + 1) - 1) * (dat - mu) * (1/xi + 1)/(((N^xi * gamma(-xi +
+            1) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)^2) + 1/(mu - z)), sum((-(N^xi * gamma(-xi +
+            1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi +
+            1) * gamma(-xi + 1)) * (dat - mu)/(((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) - 1) *
+            (mu - z) * xi) - log(-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)/xi^2) - (N^xi *
+            log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (dat - mu) * (1/xi +
+            1)/(((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)) + (N^xi * gamma(-xi +
+            1) - 1) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) *
+            (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - (mu - z)/(N^xi * gamma(-xi + 1) - 1))/((mu -
             z) * xi) + log(-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)/xi^2))
-        
+
     }
 }
 
@@ -1455,7 +1462,7 @@ gevN.score <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
 #' @inheritParams gevN
 #' @keywords internal
 #' @export
-gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "quantile"), N, q = 0.5, 
+gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "quantile"), N, q = 0.5,
     nobs = length(dat)) {
     mu = par[1]
     z = par[2]
@@ -1466,7 +1473,7 @@ gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "qu
         stop("Unimplemented for the case xi=0 for observed information")
     }
     eulergamma <- 0.577215664901533
-    
+
     if (qty == "mean") {
         if (!xizero) {
             # z = mu + sigma/xi*(N^xi*gamma(1-xi)-1)
@@ -1475,115 +1482,115 @@ gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "qu
             # z = mu + sigma*(log(N) + eulergamma)
             sigmaq <- (z - mu)/(log(N) + eulergamma)
         }
-        
+
         if (method == "obs") {
-            k11 <- sum(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 2) * ((N^xi * 
-                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * gamma(-xi + 1) - 1)/(mu - z))^2 * 
-                (1/xi + 1)/xi - 2 * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 
-                1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * gamma(-xi + 1) - 
-                1)/(mu - z)^2)/xi - ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * gamma(-xi + 
-                1) - 1)/(mu - z))^2 * (1/xi + 1)/((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 
-                1)^2 + 2 * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * gamma(-xi + 
-                1) - 1)/(mu - z)^2) * (1/xi + 1)/((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 
+            k11 <- sum(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 2) * ((N^xi *
+                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * gamma(-xi + 1) - 1)/(mu - z))^2 *
+                (1/xi + 1)/xi - 2 * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi -
+                1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * gamma(-xi + 1) -
+                1)/(mu - z)^2)/xi - ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * gamma(-xi +
+                1) - 1)/(mu - z))^2 * (1/xi + 1)/((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) +
+                1)^2 + 2 * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * gamma(-xi +
+                1) - 1)/(mu - z)^2) * (1/xi + 1)/((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) +
                 1) - 1/(mu - z)^2)
-            k12 <- sum(-(N^xi * gamma(-xi + 1) - 1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - 
-                z) + 1)^(-1/xi - 2) * (mu - dat) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 - 
-                (N^xi * gamma(-xi + 1) - 1)/(mu - z)) * (1/xi + 1)/((mu - z)^2 * xi) + ((N^xi * gamma(-xi + 
-                1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (2 * (N^xi * gamma(-xi + 1) - 1) * (mu - 
-                dat)/(mu - z)^3 - (N^xi * gamma(-xi + 1) - 1)/(mu - z)^2)/xi - (2 * (N^xi * gamma(-xi + 
-                1) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * gamma(-xi + 1) - 1)/(mu - z)^2) * (1/xi + 1)/((N^xi * 
-                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1) + (N^xi * gamma(-xi + 1) - 1) * (mu - 
-                dat) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * gamma(-xi + 1) - 
-                1)/(mu - z)) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * 
+            k12 <- sum(-(N^xi * gamma(-xi + 1) - 1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu -
+                z) + 1)^(-1/xi - 2) * (mu - dat) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 -
+                (N^xi * gamma(-xi + 1) - 1)/(mu - z)) * (1/xi + 1)/((mu - z)^2 * xi) + ((N^xi * gamma(-xi +
+                1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (2 * (N^xi * gamma(-xi + 1) - 1) * (mu -
+                dat)/(mu - z)^3 - (N^xi * gamma(-xi + 1) - 1)/(mu - z)^2)/xi - (2 * (N^xi * gamma(-xi +
+                1) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * gamma(-xi + 1) - 1)/(mu - z)^2) * (1/xi + 1)/((N^xi *
+                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1) + (N^xi * gamma(-xi + 1) - 1) * (mu -
+                dat) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * gamma(-xi + 1) -
+                1)/(mu - z)) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 *
                 (mu - z)^2) + 1/(mu - z)^2)
-            k13 <- sum(-((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * 
-                log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat) * (1/xi + 
-                1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)) - log((N^xi * 
-                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)/xi^2) * ((N^xi * gamma(-xi + 1) - 1) * 
-                (mu - dat)/(mu - z)^2 - (N^xi * gamma(-xi + 1) - 1)/(mu - z))/xi + ((N^xi * gamma(-xi + 
-                1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * 
-                psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat)/(mu - z)^2 - (N^xi * log(N) * gamma(-xi + 
-                1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1))/(mu - z))/xi - ((N^xi * log(N) * gamma(-xi + 
-                1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat)/(mu - z)^2 - (N^xi * log(N) * 
-                gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1))/(mu - z)) * (1/xi + 1)/((N^xi * 
-                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1) + (N^xi * log(N) * gamma(-xi + 1) - N^xi * 
-                psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat) * ((N^xi * gamma(-xi + 1) - 1) * (mu - 
-                dat)/(mu - z)^2 - (N^xi * gamma(-xi + 1) - 1)/(mu - z)) * (1/xi + 1)/(((N^xi * gamma(-xi + 
-                1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)) - ((N^xi * gamma(-xi + 1) - 1) * (mu - 
-                dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 - 
-                (N^xi * gamma(-xi + 1) - 1)/(mu - z))/xi^2 + ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - 
-                z)^2 - (N^xi * gamma(-xi + 1) - 1)/(mu - z))/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - 
+            k13 <- sum(-((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi *
+                log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat) * (1/xi +
+                1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)) - log((N^xi *
+                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)/xi^2) * ((N^xi * gamma(-xi + 1) - 1) *
+                (mu - dat)/(mu - z)^2 - (N^xi * gamma(-xi + 1) - 1)/(mu - z))/xi + ((N^xi * gamma(-xi +
+                1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi *
+                psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat)/(mu - z)^2 - (N^xi * log(N) * gamma(-xi +
+                1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1))/(mu - z))/xi - ((N^xi * log(N) * gamma(-xi +
+                1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat)/(mu - z)^2 - (N^xi * log(N) *
+                gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1))/(mu - z)) * (1/xi + 1)/((N^xi *
+                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1) + (N^xi * log(N) * gamma(-xi + 1) - N^xi *
+                psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat) * ((N^xi * gamma(-xi + 1) - 1) * (mu -
+                dat)/(mu - z)^2 - (N^xi * gamma(-xi + 1) - 1)/(mu - z)) * (1/xi + 1)/(((N^xi * gamma(-xi +
+                1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)) - ((N^xi * gamma(-xi + 1) - 1) * (mu -
+                dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z)^2 -
+                (N^xi * gamma(-xi + 1) - 1)/(mu - z))/xi^2 + ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu -
+                z)^2 - (N^xi * gamma(-xi + 1) - 1)/(mu - z))/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu -
                 z) + 1) * xi^2))
-            k22 <- sum((N^xi * gamma(-xi + 1) - 1)^2 * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - 
-                z) + 1)^(-1/xi - 2) * (mu - dat)^2 * (1/xi + 1)/((mu - z)^4 * xi) - 2 * (N^xi * gamma(-xi + 
-                1) - 1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - 
-                dat)/((mu - z)^3 * xi) - (N^xi * gamma(-xi + 1) - 1)^2 * (mu - dat)^2 * (1/xi + 1)/(((N^xi * 
-                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^4) + 2 * (N^xi * gamma(-xi + 
-                1) - 1) * (mu - dat) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 
+            k22 <- sum((N^xi * gamma(-xi + 1) - 1)^2 * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu -
+                z) + 1)^(-1/xi - 2) * (mu - dat)^2 * (1/xi + 1)/((mu - z)^4 * xi) - 2 * (N^xi * gamma(-xi +
+                1) - 1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu -
+                dat)/((mu - z)^3 * xi) - (N^xi * gamma(-xi + 1) - 1)^2 * (mu - dat)^2 * (1/xi + 1)/(((N^xi *
+                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^4) + 2 * (N^xi * gamma(-xi +
+                1) - 1) * (mu - dat) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) +
                 1) * (mu - z)^3) - 1/(mu - z)^2)
-            k23 <- sum((N^xi * gamma(-xi + 1) - 1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - 
-                z) + 1)^(-1/xi - 1) * (mu - dat) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 
-                1) * gamma(-xi + 1)) * (mu - dat) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - 
-                dat)/(mu - z) + 1) * (mu - z)) - log((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 
-                1)/xi^2)/((mu - z)^2 * xi) - (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 
-                1) * gamma(-xi + 1)) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 
-                1) * (mu - dat)/((mu - z)^2 * xi) - (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 
-                1) * gamma(-xi + 1)) * (N^xi * gamma(-xi + 1) - 1) * (mu - dat)^2 * (1/xi + 1)/(((N^xi * 
-                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^3) + (N^xi * log(N) * gamma(-xi + 
-                1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat) * (1/xi + 1)/(((N^xi * gamma(-xi + 
-                1) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)^2) + (N^xi * gamma(-xi + 1) - 1) * ((N^xi * 
-                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - dat)/((mu - z)^2 * 
-                xi^2) - (N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(((N^xi * gamma(-xi + 1) - 1) * (mu - 
+            k23 <- sum((N^xi * gamma(-xi + 1) - 1) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu -
+                z) + 1)^(-1/xi - 1) * (mu - dat) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi +
+                1) * gamma(-xi + 1)) * (mu - dat) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu -
+                dat)/(mu - z) + 1) * (mu - z)) - log((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) +
+                1)/xi^2)/((mu - z)^2 * xi) - (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi +
+                1) * gamma(-xi + 1)) * ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi -
+                1) * (mu - dat)/((mu - z)^2 * xi) - (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi +
+                1) * gamma(-xi + 1)) * (N^xi * gamma(-xi + 1) - 1) * (mu - dat)^2 * (1/xi + 1)/(((N^xi *
+                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^3) + (N^xi * log(N) * gamma(-xi +
+                1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat) * (1/xi + 1)/(((N^xi * gamma(-xi +
+                1) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)^2) + (N^xi * gamma(-xi + 1) - 1) * ((N^xi *
+                gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - dat)/((mu - z)^2 *
+                xi^2) - (N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(((N^xi * gamma(-xi + 1) - 1) * (mu -
                 dat)/(mu - z) + 1) * (mu - z)^2 * xi^2))
-            k33 <- sum(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(N) * 
-                gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat)/(((N^xi * gamma(-xi + 
-                1) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z) * xi) - log((N^xi * gamma(-xi + 1) - 1) * 
-                (mu - dat)/(mu - z) + 1)/xi^2)^2 + ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 
-                1)^(-1/xi) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 
-                1))^2 * (mu - dat)^2/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - 
-                z)^2 * xi) - (N^xi * log(N)^2 * gamma(-xi + 1) - 2 * N^xi * log(N) * psigamma(-xi + 1) * 
-                gamma(-xi + 1) + N^xi * psigamma(-xi + 1)^2 * gamma(-xi + 1) + N^xi * psigamma(1, -xi + 
-                1) * gamma(-xi + 1)) * (mu - dat)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 
-                1) * (mu - z) * xi) + 2 * (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * 
-                gamma(-xi + 1)) * (mu - dat)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1) * 
-                (mu - z) * xi^2) - 2 * log((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)/xi^3) - 
-                (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1))^2 * (mu - 
-                  dat)^2 * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - 
-                  z)^2) + (N^xi * log(N)^2 * gamma(-xi + 1) - 2 * N^xi * log(N) * psigamma(-xi + 1) * 
-                gamma(-xi + 1) + N^xi * psigamma(-xi + 1)^2 * gamma(-xi + 1) + N^xi * psigamma(1, -xi + 
-                1) * gamma(-xi + 1)) * (mu - dat) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - 
-                dat)/(mu - z) + 1) * (mu - z)) + (N^xi * gamma(-xi + 1) - 1) * (2 * (N^xi * log(N) * 
-                gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1))^2 * (mu - z) * xi/(N^xi * 
-                gamma(-xi + 1) - 1)^3 - (N^xi * log(N)^2 * gamma(-xi + 1) - 2 * N^xi * log(N) * psigamma(-xi + 
-                1) * gamma(-xi + 1) + N^xi * psigamma(-xi + 1)^2 * gamma(-xi + 1) + N^xi * psigamma(1, 
-                -xi + 1) * gamma(-xi + 1)) * (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - 2 * (N^xi * 
-                log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - z)/(N^xi * 
-                gamma(-xi + 1) - 1)^2)/((mu - z) * xi) - (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 
-                1) * gamma(-xi + 1)) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * 
-                gamma(-xi + 1)) * (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - (mu - z)/(N^xi * gamma(-xi + 
-                1) - 1))/((mu - z) * xi) + (N^xi * gamma(-xi + 1) - 1) * ((N^xi * log(N) * gamma(-xi + 
-                1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - z) * xi/(N^xi * gamma(-xi + 1) - 
-                1)^2 - (mu - z)/(N^xi * gamma(-xi + 1) - 1))/((mu - z) * xi^2) - 2 * (N^xi * log(N) * 
-                gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat)/(((N^xi * gamma(-xi + 
-                1) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z) * xi^2) + 2 * log((N^xi * gamma(-xi + 1) - 
+            k33 <- sum(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(N) *
+                gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat)/(((N^xi * gamma(-xi +
+                1) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z) * xi) - log((N^xi * gamma(-xi + 1) - 1) *
+                (mu - dat)/(mu - z) + 1)/xi^2)^2 + ((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) +
+                1)^(-1/xi) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi +
+                1))^2 * (mu - dat)^2/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu -
+                z)^2 * xi) - (N^xi * log(N)^2 * gamma(-xi + 1) - 2 * N^xi * log(N) * psigamma(-xi + 1) *
+                gamma(-xi + 1) + N^xi * psigamma(-xi + 1)^2 * gamma(-xi + 1) + N^xi * psigamma(1, -xi +
+                1) * gamma(-xi + 1)) * (mu - dat)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) +
+                1) * (mu - z) * xi) + 2 * (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) *
+                gamma(-xi + 1)) * (mu - dat)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1) *
+                (mu - z) * xi^2) - 2 * log((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)/xi^3) -
+                (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1))^2 * (mu -
+                  dat)^2 * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu -
+                  z)^2) + (N^xi * log(N)^2 * gamma(-xi + 1) - 2 * N^xi * log(N) * psigamma(-xi + 1) *
+                gamma(-xi + 1) + N^xi * psigamma(-xi + 1)^2 * gamma(-xi + 1) + N^xi * psigamma(1, -xi +
+                1) * gamma(-xi + 1)) * (mu - dat) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (mu -
+                dat)/(mu - z) + 1) * (mu - z)) + (N^xi * gamma(-xi + 1) - 1) * (2 * (N^xi * log(N) *
+                gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1))^2 * (mu - z) * xi/(N^xi *
+                gamma(-xi + 1) - 1)^3 - (N^xi * log(N)^2 * gamma(-xi + 1) - 2 * N^xi * log(N) * psigamma(-xi +
+                1) * gamma(-xi + 1) + N^xi * psigamma(-xi + 1)^2 * gamma(-xi + 1) + N^xi * psigamma(1,
+                -xi + 1) * gamma(-xi + 1)) * (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - 2 * (N^xi *
+                log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - z)/(N^xi *
+                gamma(-xi + 1) - 1)^2)/((mu - z) * xi) - (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi +
+                1) * gamma(-xi + 1)) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) *
+                gamma(-xi + 1)) * (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - (mu - z)/(N^xi * gamma(-xi +
+                1) - 1))/((mu - z) * xi) + (N^xi * gamma(-xi + 1) - 1) * ((N^xi * log(N) * gamma(-xi +
+                1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - z) * xi/(N^xi * gamma(-xi + 1) -
+                1)^2 - (mu - z)/(N^xi * gamma(-xi + 1) - 1))/((mu - z) * xi^2) - 2 * (N^xi * log(N) *
+                gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (mu - dat)/(((N^xi * gamma(-xi +
+                1) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z) * xi^2) + 2 * log((N^xi * gamma(-xi + 1) -
                 1) * (mu - dat)/(mu - z) + 1)/xi^3)
             return(cbind(c(k11, k12, k13), c(k12, k22, k23), c(k13, k23, k33)))
         } else if (method == "exp") {
             if (!xizero) {
-                Jac <- rbind(c(1, 0, 0), c(-xi/(N^xi * gamma(-xi + 1) - 1), xi/(N^xi * gamma(-xi + 1) - 
-                  1), (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * 
-                  (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - (mu - z)/(N^xi * gamma(-xi + 1) - 1)), 
+                Jac <- rbind(c(1, 0, 0), c(-xi/(N^xi * gamma(-xi + 1) - 1), xi/(N^xi * gamma(-xi + 1) -
+                  1), (N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) *
+                  (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - (mu - z)/(N^xi * gamma(-xi + 1) - 1)),
                   c(0, 0, 1))
-                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, xi), method = "exp", nobs = nobs) %*% 
+                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, xi), method = "exp", nobs = nobs) %*%
                   Jac)
             } else {
-                Jac <- rbind(c(1, 0, 0), c(-1/(eulergamma + log(N)), 1/(eulergamma + log(N)), 1/12 * 
-                  (6 * eulergamma^2 + pi^2 + 12 * eulergamma * log(N) + 6 * log(N)^2) * (mu - z)/(eulergamma + 
+                Jac <- rbind(c(1, 0, 0), c(-1/(eulergamma + log(N)), 1/(eulergamma + log(N)), 1/12 *
+                  (6 * eulergamma^2 + pi^2 + 12 * eulergamma * log(N) + 6 * log(N)^2) * (mu - z)/(eulergamma +
                   log(N))^2), c(0, 0, 1))
-                
-                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, 0), method = "exp", nobs = nobs) %*% 
+
+                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, 0), method = "exp", nobs = nobs) %*%
                   Jac)
-                
+
             }
         }
     } else if (qty == "quantile") {
@@ -1596,111 +1603,111 @@ gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "qu
         }
         # Quantiles, observed information
         if (method == "obs") {
-            k11 <- sum(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 2) * ((N^xi * 
-                log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) - 1)/(mu - z))^2 * 
-                (1/xi + 1)/xi - 2 * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 
-                1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * log(1/q)^(-xi) - 
-                1)/(mu - z)^2)/xi - ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) - 
-                1)/(mu - z))^2 * (1/xi + 1)/((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^2 + 
-                2 * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * log(1/q)^(-xi) - 1)/(mu - 
-                  z)^2) * (1/xi + 1)/((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) - 1/(mu - 
+            k11 <- sum(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 2) * ((N^xi *
+                log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) - 1)/(mu - z))^2 *
+                (1/xi + 1)/xi - 2 * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi -
+                1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * log(1/q)^(-xi) -
+                1)/(mu - z)^2)/xi - ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) -
+                1)/(mu - z))^2 * (1/xi + 1)/((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^2 +
+                2 * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^3 - (N^xi * log(1/q)^(-xi) - 1)/(mu -
+                  z)^2) * (1/xi + 1)/((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) - 1/(mu -
                 z)^2)
-            k12 <- sum(-(N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - 
-                z) + 1)^(-1/xi - 2) * (mu - dat) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - 
-                (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/((mu - z)^2 * xi) + ((N^xi * log(1/q)^(-xi) - 
-                1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (2 * (N^xi * log(1/q)^(-xi) - 1) * (mu - 
-                dat)/(mu - z)^3 - (N^xi * log(1/q)^(-xi) - 1)/(mu - z)^2)/xi - (2 * (N^xi * log(1/q)^(-xi) - 
-                1) * (mu - dat)/(mu - z)^3 - (N^xi * log(1/q)^(-xi) - 1)/(mu - z)^2) * (1/xi + 1)/((N^xi * 
-                log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) + (N^xi * log(1/q)^(-xi) - 1) * (mu - 
-                dat) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) - 
-                1)/(mu - z)) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^2 * 
+            k12 <- sum(-(N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu -
+                z) + 1)^(-1/xi - 2) * (mu - dat) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 -
+                (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/((mu - z)^2 * xi) + ((N^xi * log(1/q)^(-xi) -
+                1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (2 * (N^xi * log(1/q)^(-xi) - 1) * (mu -
+                dat)/(mu - z)^3 - (N^xi * log(1/q)^(-xi) - 1)/(mu - z)^2)/xi - (2 * (N^xi * log(1/q)^(-xi) -
+                1) * (mu - dat)/(mu - z)^3 - (N^xi * log(1/q)^(-xi) - 1)/(mu - z)^2) * (1/xi + 1)/((N^xi *
+                log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) + (N^xi * log(1/q)^(-xi) - 1) * (mu -
+                dat) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) -
+                1)/(mu - z)) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^2 *
                 (mu - z)^2) + 1/(mu - z)^2)
-            k13 <- sum(-((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * 
-                log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - dat) * (1/xi + 
-                1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)) - log((N^xi * 
-                log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)/xi^2) * ((N^xi * log(1/q)^(-xi) - 1) * 
-                (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) - 1)/(mu - z))/xi + ((N^xi * log(1/q)^(-xi) - 
-                1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * 
-                log(1/q)^(-xi) * log(log(1/q))) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) * log(N) - 
-                N^xi * log(1/q)^(-xi) * log(log(1/q)))/(mu - z))/xi - ((N^xi * log(1/q)^(-xi) * log(N) - 
-                N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) * 
-                log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q)))/(mu - z)) * (1/xi + 1)/((N^xi * log(1/q)^(-xi) - 
-                1) * (mu - dat)/(mu - z) + 1) + (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * 
-                log(log(1/q))) * (mu - dat) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - 
-                (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - 
-                dat)/(mu - z) + 1)^2 * (mu - z)) - ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 
-                1)^(-1/xi - 1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) - 
-                1)/(mu - z))/xi^2 + ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) - 
+            k13 <- sum(-((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi *
+                log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - dat) * (1/xi +
+                1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)) - log((N^xi *
+                log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)/xi^2) * ((N^xi * log(1/q)^(-xi) - 1) *
+                (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) - 1)/(mu - z))/xi + ((N^xi * log(1/q)^(-xi) -
+                1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * log(1/q)^(-xi) * log(N) - N^xi *
+                log(1/q)^(-xi) * log(log(1/q))) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) * log(N) -
+                N^xi * log(1/q)^(-xi) * log(log(1/q)))/(mu - z))/xi - ((N^xi * log(1/q)^(-xi) * log(N) -
+                N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) *
+                log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q)))/(mu - z)) * (1/xi + 1)/((N^xi * log(1/q)^(-xi) -
+                1) * (mu - dat)/(mu - z) + 1) + (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
+                log(log(1/q))) * (mu - dat) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 -
+                (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu -
+                dat)/(mu - z) + 1)^2 * (mu - z)) - ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) +
+                1)^(-1/xi - 1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) -
+                1)/(mu - z))/xi^2 + ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z)^2 - (N^xi * log(1/q)^(-xi) -
                 1)/(mu - z))/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * xi^2))
-            k22 <- sum((N^xi * log(1/q)^(-xi) - 1)^2 * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - 
-                z) + 1)^(-1/xi - 2) * (mu - dat)^2 * (1/xi + 1)/((mu - z)^4 * xi) - 2 * (N^xi * log(1/q)^(-xi) - 
-                1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - dat)/((mu - 
-                z)^3 * xi) - (N^xi * log(1/q)^(-xi) - 1)^2 * (mu - dat)^2 * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 
-                1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^4) + 2 * (N^xi * log(1/q)^(-xi) - 1) * (mu - 
-                dat) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)^3) - 
+            k22 <- sum((N^xi * log(1/q)^(-xi) - 1)^2 * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu -
+                z) + 1)^(-1/xi - 2) * (mu - dat)^2 * (1/xi + 1)/((mu - z)^4 * xi) - 2 * (N^xi * log(1/q)^(-xi) -
+                1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - dat)/((mu -
+                z)^3 * xi) - (N^xi * log(1/q)^(-xi) - 1)^2 * (mu - dat)^2 * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) -
+                1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^4) + 2 * (N^xi * log(1/q)^(-xi) - 1) * (mu -
+                dat) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)^3) -
                 1/(mu - z)^2)
-            k23 <- sum((N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - 
-                z) + 1)^(-1/xi - 1) * (mu - dat) * ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * 
-                log(log(1/q))) * (mu - dat) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - 
-                z) + 1) * (mu - z)) - log((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)/xi^2)/((mu - 
-                z)^2 * xi) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * 
-                ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - dat)/((mu - 
-                z)^2 * xi) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * 
-                (N^xi * log(1/q)^(-xi) - 1) * (mu - dat)^2 * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * 
-                (mu - dat)/(mu - z) + 1)^2 * (mu - z)^3) + (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * 
-                log(log(1/q))) * (mu - dat) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - 
-                z) + 1) * (mu - z)^2) + (N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) - 1) * 
-                (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - dat)/((mu - z)^2 * xi^2) - (N^xi * log(1/q)^(-xi) - 
-                1) * (mu - dat)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)^2 * 
+            k23 <- sum((N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu -
+                z) + 1)^(-1/xi - 1) * (mu - dat) * ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
+                log(log(1/q))) * (mu - dat) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu -
+                z) + 1) * (mu - z)) - log((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)/xi^2)/((mu -
+                z)^2 * xi) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) *
+                ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - dat)/((mu -
+                z)^2 * xi) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) *
+                (N^xi * log(1/q)^(-xi) - 1) * (mu - dat)^2 * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) *
+                (mu - dat)/(mu - z) + 1)^2 * (mu - z)^3) + (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
+                log(log(1/q))) * (mu - dat) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu -
+                z) + 1) * (mu - z)^2) + (N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) - 1) *
+                (mu - dat)/(mu - z) + 1)^(-1/xi - 1) * (mu - dat)/((mu - z)^2 * xi^2) - (N^xi * log(1/q)^(-xi) -
+                1) * (mu - dat)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z)^2 *
                 xi^2))
-            k33 <- sum(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(1/q)^(-xi) * 
-                log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - dat)/(((N^xi * log(1/q)^(-xi) - 
-                1) * (mu - dat)/(mu - z) + 1) * (mu - z) * xi) - log((N^xi * log(1/q)^(-xi) - 1) * (mu - 
-                dat)/(mu - z) + 1)/xi^2)^2 + ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi) * 
-                ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q)))^2 * (mu - dat)^2/(((N^xi * 
-                  log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^2 * xi) - (N^xi * log(1/q)^(-xi) * 
-                  log(N)^2 - 2 * N^xi * log(1/q)^(-xi) * log(N) * log(log(1/q)) + N^xi * log(1/q)^(-xi) * 
-                  log(log(1/q))^2) * (mu - dat)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 
-                  1) * (mu - z) * xi) + 2 * (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * 
-                  log(log(1/q))) * (mu - dat)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * 
-                  (mu - z) * xi^2) - 2 * log((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)/xi^3) - 
-                (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q)))^2 * (mu - dat)^2 * 
-                  (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^2) + 
-                (N^xi * log(1/q)^(-xi) * log(N)^2 - 2 * N^xi * log(1/q)^(-xi) * log(N) * log(log(1/q)) + 
-                  N^xi * log(1/q)^(-xi) * log(log(1/q))^2) * (mu - dat) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 
-                  1) * (mu - dat)/(mu - z) + 1) * (mu - z)) + (N^xi * log(1/q)^(-xi) - 1) * (2 * (N^xi * 
-                log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q)))^2 * (mu - z) * xi/(N^xi * 
-                log(1/q)^(-xi) - 1)^3 - (N^xi * log(1/q)^(-xi) * log(N)^2 - 2 * N^xi * log(1/q)^(-xi) * 
-                log(N) * log(log(1/q)) + N^xi * log(1/q)^(-xi) * log(log(1/q))^2) * (mu - z) * xi/(N^xi * 
-                log(1/q)^(-xi) - 1)^2 - 2 * (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * 
-                log(log(1/q))) * (mu - z)/(N^xi * log(1/q)^(-xi) - 1)^2)/((mu - z) * xi) - (N^xi * log(1/q)^(-xi) * 
-                log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * ((N^xi * log(1/q)^(-xi) * log(N) - 
-                N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - z) * xi/(N^xi * log(1/q)^(-xi) - 1)^2 - 
-                (mu - z)/(N^xi * log(1/q)^(-xi) - 1))/((mu - z) * xi) + (N^xi * log(1/q)^(-xi) - 1) * 
-                ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - z) * 
-                  xi/(N^xi * log(1/q)^(-xi) - 1)^2 - (mu - z)/(N^xi * log(1/q)^(-xi) - 1))/((mu - z) * 
-                xi^2) - 2 * (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * 
-                (mu - dat)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z) * xi^2) + 
+            k33 <- sum(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(1/q)^(-xi) *
+                log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - dat)/(((N^xi * log(1/q)^(-xi) -
+                1) * (mu - dat)/(mu - z) + 1) * (mu - z) * xi) - log((N^xi * log(1/q)^(-xi) - 1) * (mu -
+                dat)/(mu - z) + 1)/xi^2)^2 + ((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^(-1/xi) *
+                ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q)))^2 * (mu - dat)^2/(((N^xi *
+                  log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^2 * xi) - (N^xi * log(1/q)^(-xi) *
+                  log(N)^2 - 2 * N^xi * log(1/q)^(-xi) * log(N) * log(log(1/q)) + N^xi * log(1/q)^(-xi) *
+                  log(log(1/q))^2) * (mu - dat)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) +
+                  1) * (mu - z) * xi) + 2 * (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
+                  log(log(1/q))) * (mu - dat)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) *
+                  (mu - z) * xi^2) - 2 * log((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)/xi^3) -
+                (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q)))^2 * (mu - dat)^2 *
+                  (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)^2 * (mu - z)^2) +
+                (N^xi * log(1/q)^(-xi) * log(N)^2 - 2 * N^xi * log(1/q)^(-xi) * log(N) * log(log(1/q)) +
+                  N^xi * log(1/q)^(-xi) * log(log(1/q))^2) * (mu - dat) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) -
+                  1) * (mu - dat)/(mu - z) + 1) * (mu - z)) + (N^xi * log(1/q)^(-xi) - 1) * (2 * (N^xi *
+                log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q)))^2 * (mu - z) * xi/(N^xi *
+                log(1/q)^(-xi) - 1)^3 - (N^xi * log(1/q)^(-xi) * log(N)^2 - 2 * N^xi * log(1/q)^(-xi) *
+                log(N) * log(log(1/q)) + N^xi * log(1/q)^(-xi) * log(log(1/q))^2) * (mu - z) * xi/(N^xi *
+                log(1/q)^(-xi) - 1)^2 - 2 * (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
+                log(log(1/q))) * (mu - z)/(N^xi * log(1/q)^(-xi) - 1)^2)/((mu - z) * xi) - (N^xi * log(1/q)^(-xi) *
+                log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * ((N^xi * log(1/q)^(-xi) * log(N) -
+                N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - z) * xi/(N^xi * log(1/q)^(-xi) - 1)^2 -
+                (mu - z)/(N^xi * log(1/q)^(-xi) - 1))/((mu - z) * xi) + (N^xi * log(1/q)^(-xi) - 1) *
+                ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - z) *
+                  xi/(N^xi * log(1/q)^(-xi) - 1)^2 - (mu - z)/(N^xi * log(1/q)^(-xi) - 1))/((mu - z) *
+                xi^2) - 2 * (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) *
+                (mu - dat)/(((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1) * (mu - z) * xi^2) +
                 2 * log((N^xi * log(1/q)^(-xi) - 1) * (mu - dat)/(mu - z) + 1)/xi^3)
             return(cbind(c(k11, k12, k13), c(k12, k22, k23), c(k13, k23, k33)))
-            
+
         } else if (method == "exp") {
             if (!xizero) {
-                Jac <- rbind(c(1, 0, 0), c(-xi/(N^xi * log(1/q)^(-xi) - 1), xi/(N^xi * log(1/q)^(-xi) - 
-                  1), (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu - 
-                  z) * xi/(N^xi * log(1/q)^(-xi) - 1)^2 - (mu - z)/(N^xi * log(1/q)^(-xi) - 1)), c(0, 
+                Jac <- rbind(c(1, 0, 0), c(-xi/(N^xi * log(1/q)^(-xi) - 1), xi/(N^xi * log(1/q)^(-xi) -
+                  1), (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu -
+                  z) * xi/(N^xi * log(1/q)^(-xi) - 1)^2 - (mu - z)/(N^xi * log(1/q)^(-xi) - 1)), c(0,
                   0, 1))
-                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, xi), method = "exp", nobs = nobs) %*% 
+                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, xi), method = "exp", nobs = nobs) %*%
                   Jac)
             } else {
-                Jac <- rbind(c(1, 0, 0), c(-1/(log(N) - log(-log(q))), 1/(log(N) - log(-log(q))), 1/2 * 
+                Jac <- rbind(c(1, 0, 0), c(-1/(log(N) - log(-log(q))), 1/(log(N) - log(-log(q))), 1/2 *
                   (mu - z)), c(0, 0, 1))
-                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, 0), method = "exp", nobs = nobs) %*% 
+                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, 0), method = "exp", nobs = nobs) %*%
                   Jac)
             }
         }
     }
-    
+
 }
 
 
@@ -1720,20 +1727,20 @@ gevN.Vfun <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
     z = par[2]
     xi = par[3]
     if (qty == "quantile") {
-        cbind((mu - z) * ((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 
-            1)/(mu - z))/(N^xi * log(1/q)^(-xi) - 1), -(dat - mu)/(mu - z), (-(N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z) + 1)^(-1/xi) * (mu - z) * xi * ((N^xi * log(1/q)^(-xi) * log(N) - 
-            N^xi * log(1/q)^(-xi) * log(log(1/q))) * (dat - mu)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - 
-            mu)/(mu - z) - 1) * (mu - z) * xi) - log(-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - 
-            z) + 1)/xi^2)/((N^xi * log(1/q)^(-xi) - 1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - 
+        cbind((mu - z) * ((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) -
+            1)/(mu - z))/(N^xi * log(1/q)^(-xi) - 1), -(dat - mu)/(mu - z), (-(N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z) + 1)^(-1/xi) * (mu - z) * xi * ((N^xi * log(1/q)^(-xi) * log(N) -
+            N^xi * log(1/q)^(-xi) * log(log(1/q))) * (dat - mu)/(((N^xi * log(1/q)^(-xi) - 1) * (dat -
+            mu)/(mu - z) - 1) * (mu - z) * xi) - log(-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
+            z) + 1)/xi^2)/((N^xi * log(1/q)^(-xi) - 1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
             z) + 1)^(-1/xi - 1)))
     } else {
-        cbind((mu - z) * ((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * gamma(-xi + 1) - 
-            1)/(mu - z))/(N^xi * gamma(-xi + 1) - 1), -(dat - mu)/(mu - z), (-(N^xi * gamma(-xi + 1) - 
-            1) * (dat - mu)/(mu - z) + 1)^(-1/xi) * (mu - z) * xi * ((N^xi * log(N) * gamma(-xi + 1) - 
-            N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (dat - mu)/(((N^xi * gamma(-xi + 1) - 1) * (dat - 
-            mu)/(mu - z) - 1) * (mu - z) * xi) - log(-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - 
-            z) + 1)/xi^2)/((N^xi * gamma(-xi + 1) - 1) * (-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - 
+        cbind((mu - z) * ((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * gamma(-xi + 1) -
+            1)/(mu - z))/(N^xi * gamma(-xi + 1) - 1), -(dat - mu)/(mu - z), (-(N^xi * gamma(-xi + 1) -
+            1) * (dat - mu)/(mu - z) + 1)^(-1/xi) * (mu - z) * xi * ((N^xi * log(N) * gamma(-xi + 1) -
+            N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) * (dat - mu)/(((N^xi * gamma(-xi + 1) - 1) * (dat -
+            mu)/(mu - z) - 1) * (mu - z) * xi) - log(-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu -
+            z) + 1)/xi^2)/((N^xi * gamma(-xi + 1) - 1) * (-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu -
             z) + 1)^(-1/xi - 1)))
     }
 }
@@ -1750,12 +1757,12 @@ gevN.phi <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V) {
     z = par[2]
     xi = par[3]
     if (qty == "mean") {
-        matrix(-(N^xi * gamma(-xi + 1) - 1) * (-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 
-            1)/((mu - z) * xi) - (N^xi * gamma(-xi + 1) - 1) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 
+        matrix(-(N^xi * gamma(-xi + 1) - 1) * (-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi -
+            1)/((mu - z) * xi) - (N^xi * gamma(-xi + 1) - 1) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) -
             1) * (dat - mu)/(mu - z) - 1) * (mu - z)), nrow = 1) %*% V
     } else {
-        matrix(-(N^xi * log(1/q)^(-xi) - 1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 
-            1)/((mu - z) * xi) - (N^xi * log(1/q)^(-xi) - 1) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 
+        matrix(-(N^xi * log(1/q)^(-xi) - 1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi -
+            1)/((mu - z) * xi) - (N^xi * log(1/q)^(-xi) - 1) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) -
             1) * (dat - mu)/(mu - z) - 1) * (mu - z)), nrow = 1) %*% V
     }
 }
@@ -1771,91 +1778,91 @@ gevN.dphi <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V) {
     z = par[2]
     xi = par[3]
     if (qty == "mean") {
-        rbind(-(N^xi * mu * xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - 
-            z)/(mu - z))^(1/xi) * gamma(-xi + 1) - N^xi * xi^2 * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi * 
-            gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 1) + N^xi * mu * xi * ((N^xi * 
-            mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 
-            1) - N^xi * xi * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - 
-            z))^(1/xi) * gamma(-xi + 1) - N^xi * mu * xi * gamma(-xi + 1) + N^xi * xi * z * gamma(-xi + 
-            1) - N^xi * dat * gamma(-xi + 1) + N^xi * z * gamma(-xi + 1) + dat - z) * (N^xi * gamma(-xi + 
-            1) - 1)/((N^xi * dat * gamma(-xi + 1) - N^xi * mu * gamma(-xi + 1) - dat + z)^2 * (mu - z) * 
-            xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi)), 
-            (mu * xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - 
-                z))^(1/xi) - xi^2 * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * 
-                dat - z)/(mu - z))^(1/xi) + mu * xi * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 
-                1) - 1) * dat - z)/(mu - z))^(1/xi) - xi * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi * 
-                gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) - N^xi * dat * gamma(-xi + 1) + N^xi * 
-                mu * gamma(-xi + 1) - mu * xi + xi * z + dat - mu) * (N^xi * gamma(-xi + 1) - 1)/((N^xi * 
-                dat * gamma(-xi + 1) - N^xi * mu * gamma(-xi + 1) - dat + z)^2 * (mu - z) * xi^2 * ((N^xi * 
-                mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi)), (N^xi * 
-                mu * xi^3 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - 
-                z))^(1/xi) * log(N) * gamma(-xi + 1) - N^xi * xi^3 * z * ((N^xi * mu * gamma(-xi + 1) - 
-                (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * log(N) * gamma(-xi + 1) - N^xi * 
-                mu * xi^3 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - 
-                z))^(1/xi) * psigamma(-xi + 1) * gamma(-xi + 1) + N^xi * xi^3 * z * ((N^xi * mu * gamma(-xi + 
-                1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * psigamma(-xi + 1) * gamma(-xi + 
-                1) + N^xi * mu * xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * 
-                dat - z)/(mu - z))^(1/xi) * log(N) * gamma(-xi + 1) - N^xi * xi^2 * z * ((N^xi * mu * 
-                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * log(N) * gamma(-xi + 
-                1) - N^xi * mu * xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * 
-                dat - z)/(mu - z))^(1/xi) * psigamma(-xi + 1) * gamma(-xi + 1) + N^xi * xi^2 * z * ((N^xi * 
-                mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * psigamma(-xi + 
-                1) * gamma(-xi + 1) - N^xi * mu * xi^2 * log(N) * gamma(-xi + 1) + N^xi * xi^2 * z * 
-                log(N) * gamma(-xi + 1) + N^xi * mu * xi^2 * psigamma(-xi + 1) * gamma(-xi + 1) - N^xi * 
-                xi^2 * z * psigamma(-xi + 1) * gamma(-xi + 1) + N^(2 * xi) * dat * xi * ((N^xi * mu * 
-                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 
-                1)^2 - N^(2 * xi) * mu * xi * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 
-                1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 1)^2 - N^(2 * xi) * dat * xi * log(N) * 
-                gamma(-xi + 1)^2 + N^(2 * xi) * mu * xi * log(N) * gamma(-xi + 1)^2 + N^(2 * xi) * dat * 
-                xi * psigamma(-xi + 1) * gamma(-xi + 1)^2 - N^(2 * xi) * mu * xi * psigamma(-xi + 1) * 
-                gamma(-xi + 1)^2 - 2 * N^xi * dat * xi * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 
-                1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 1) + N^xi * mu * xi * ((N^xi * mu * 
-                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 
-                1) + N^xi * xi * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - 
-                z)/(mu - z))^(1/xi) * gamma(-xi + 1) + N^xi * dat * xi * log(N) * gamma(-xi + 1) - N^xi * 
-                mu * xi * log(N) * gamma(-xi + 1) - N^xi * dat * xi * psigamma(-xi + 1) * gamma(-xi + 
-                1) + N^xi * mu * xi * psigamma(-xi + 1) * gamma(-xi + 1) - N^(2 * xi) * dat * xi * gamma(-xi + 
-                1)^2 + N^(2 * xi) * mu * xi * gamma(-xi + 1)^2 + N^(2 * xi) * dat * log((N^xi * mu * 
-                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z)) * gamma(-xi + 1)^2 - 
-                N^(2 * xi) * mu * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - 
-                  z)/(mu - z)) * gamma(-xi + 1)^2 + 2 * N^xi * dat * xi * gamma(-xi + 1) - N^xi * mu * 
-                xi * gamma(-xi + 1) - N^xi * xi * z * gamma(-xi + 1) - 2 * N^xi * dat * log((N^xi * mu * 
-                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z)) * gamma(-xi + 1) + 
-                N^xi * mu * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - 
-                  z)) * gamma(-xi + 1) + N^xi * z * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 
-                1) - 1) * dat - z)/(mu - z)) * gamma(-xi + 1) + dat * xi * ((N^xi * mu * gamma(-xi + 
-                1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) - xi * z * ((N^xi * mu * 
-                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) - dat * xi + 
-                xi * z + dat * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - 
-                z)/(mu - z)) - z * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - 
-                z)/(mu - z)))/((N^xi * dat * gamma(-xi + 1) - N^xi * mu * gamma(-xi + 1) - dat + z)^2 * 
-                xi^3 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi))) %*% 
+        rbind(-(N^xi * mu * xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat -
+            z)/(mu - z))^(1/xi) * gamma(-xi + 1) - N^xi * xi^2 * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi *
+            gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 1) + N^xi * mu * xi * ((N^xi *
+            mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi +
+            1) - N^xi * xi * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu -
+            z))^(1/xi) * gamma(-xi + 1) - N^xi * mu * xi * gamma(-xi + 1) + N^xi * xi * z * gamma(-xi +
+            1) - N^xi * dat * gamma(-xi + 1) + N^xi * z * gamma(-xi + 1) + dat - z) * (N^xi * gamma(-xi +
+            1) - 1)/((N^xi * dat * gamma(-xi + 1) - N^xi * mu * gamma(-xi + 1) - dat + z)^2 * (mu - z) *
+            xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi)),
+            (mu * xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu -
+                z))^(1/xi) - xi^2 * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) *
+                dat - z)/(mu - z))^(1/xi) + mu * xi * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi +
+                1) - 1) * dat - z)/(mu - z))^(1/xi) - xi * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi *
+                gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) - N^xi * dat * gamma(-xi + 1) + N^xi *
+                mu * gamma(-xi + 1) - mu * xi + xi * z + dat - mu) * (N^xi * gamma(-xi + 1) - 1)/((N^xi *
+                dat * gamma(-xi + 1) - N^xi * mu * gamma(-xi + 1) - dat + z)^2 * (mu - z) * xi^2 * ((N^xi *
+                mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi)), (N^xi *
+                mu * xi^3 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu -
+                z))^(1/xi) * log(N) * gamma(-xi + 1) - N^xi * xi^3 * z * ((N^xi * mu * gamma(-xi + 1) -
+                (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * log(N) * gamma(-xi + 1) - N^xi *
+                mu * xi^3 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu -
+                z))^(1/xi) * psigamma(-xi + 1) * gamma(-xi + 1) + N^xi * xi^3 * z * ((N^xi * mu * gamma(-xi +
+                1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * psigamma(-xi + 1) * gamma(-xi +
+                1) + N^xi * mu * xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) *
+                dat - z)/(mu - z))^(1/xi) * log(N) * gamma(-xi + 1) - N^xi * xi^2 * z * ((N^xi * mu *
+                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * log(N) * gamma(-xi +
+                1) - N^xi * mu * xi^2 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) *
+                dat - z)/(mu - z))^(1/xi) * psigamma(-xi + 1) * gamma(-xi + 1) + N^xi * xi^2 * z * ((N^xi *
+                mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * psigamma(-xi +
+                1) * gamma(-xi + 1) - N^xi * mu * xi^2 * log(N) * gamma(-xi + 1) + N^xi * xi^2 * z *
+                log(N) * gamma(-xi + 1) + N^xi * mu * xi^2 * psigamma(-xi + 1) * gamma(-xi + 1) - N^xi *
+                xi^2 * z * psigamma(-xi + 1) * gamma(-xi + 1) + N^(2 * xi) * dat * xi * ((N^xi * mu *
+                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi +
+                1)^2 - N^(2 * xi) * mu * xi * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) -
+                1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 1)^2 - N^(2 * xi) * dat * xi * log(N) *
+                gamma(-xi + 1)^2 + N^(2 * xi) * mu * xi * log(N) * gamma(-xi + 1)^2 + N^(2 * xi) * dat *
+                xi * psigamma(-xi + 1) * gamma(-xi + 1)^2 - N^(2 * xi) * mu * xi * psigamma(-xi + 1) *
+                gamma(-xi + 1)^2 - 2 * N^xi * dat * xi * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi +
+                1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi + 1) + N^xi * mu * xi * ((N^xi * mu *
+                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) * gamma(-xi +
+                1) + N^xi * xi * z * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat -
+                z)/(mu - z))^(1/xi) * gamma(-xi + 1) + N^xi * dat * xi * log(N) * gamma(-xi + 1) - N^xi *
+                mu * xi * log(N) * gamma(-xi + 1) - N^xi * dat * xi * psigamma(-xi + 1) * gamma(-xi +
+                1) + N^xi * mu * xi * psigamma(-xi + 1) * gamma(-xi + 1) - N^(2 * xi) * dat * xi * gamma(-xi +
+                1)^2 + N^(2 * xi) * mu * xi * gamma(-xi + 1)^2 + N^(2 * xi) * dat * log((N^xi * mu *
+                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z)) * gamma(-xi + 1)^2 -
+                N^(2 * xi) * mu * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat -
+                  z)/(mu - z)) * gamma(-xi + 1)^2 + 2 * N^xi * dat * xi * gamma(-xi + 1) - N^xi * mu *
+                xi * gamma(-xi + 1) - N^xi * xi * z * gamma(-xi + 1) - 2 * N^xi * dat * log((N^xi * mu *
+                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z)) * gamma(-xi + 1) +
+                N^xi * mu * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu -
+                  z)) * gamma(-xi + 1) + N^xi * z * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi +
+                1) - 1) * dat - z)/(mu - z)) * gamma(-xi + 1) + dat * xi * ((N^xi * mu * gamma(-xi +
+                1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) - xi * z * ((N^xi * mu *
+                gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi) - dat * xi +
+                xi * z + dat * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat -
+                z)/(mu - z)) - z * log((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat -
+                z)/(mu - z)))/((N^xi * dat * gamma(-xi + 1) - N^xi * mu * gamma(-xi + 1) - dat + z)^2 *
+                xi^3 * ((N^xi * mu * gamma(-xi + 1) - (N^xi * gamma(-xi + 1) - 1) * dat - z)/(mu - z))^(1/xi))) %*%
             V
     } else {
-        rbind((N^xi * log(1/q)^(-xi) - 1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 
-            2) * ((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 1)/(mu - 
-            z)) * (1/xi + 1)/((mu - z) * xi) - (N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/(((N^xi * 
-            log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1)^2 * (mu - z)) + (N^xi * log(1/q)^(-xi) - 1) * 
-            (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu - z)^2 * xi) + 
-            (N^xi * log(1/q)^(-xi) - 1) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - 
-                z) - 1) * (mu - z)^2), -(N^xi * log(1/q)^(-xi) - 1)^2 * (dat - mu) * (-(N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 2) * (1/xi + 1)/((mu - z)^3 * xi) - (N^xi * log(1/q)^(-xi) - 
-            1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu - z)^2 * xi) + 
-            (N^xi * log(1/q)^(-xi) - 1)^2 * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - 
-                mu)/(mu - z) - 1)^2 * (mu - z)^3) - (N^xi * log(1/q)^(-xi) - 1) * (1/xi + 1)/(((N^xi * 
-            log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)^2), (N^xi * log(1/q)^(-xi) - 1) * 
-            (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * log(1/q)^(-xi) * 
-            log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 
-            1) * (dat - mu)/(mu - z) - 1) * (mu - z)) - log(-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - 
-            z) + 1)/xi^2)/((mu - z) * xi) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * 
-            log(log(1/q))) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu - 
-            z) * xi) + (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (N^xi * 
-            log(1/q)^(-xi) - 1) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - 
-            z) - 1)^2 * (mu - z)^2) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * 
-            (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)) + (N^xi * 
-            log(1/q)^(-xi) - 1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu - 
-            z) * xi^2) + (N^xi * log(1/q)^(-xi) - 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - 
+        rbind((N^xi * log(1/q)^(-xi) - 1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi -
+            2) * ((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 1)/(mu -
+            z)) * (1/xi + 1)/((mu - z) * xi) - (N^xi * log(1/q)^(-xi) - 1) * ((N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/(((N^xi *
+            log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1)^2 * (mu - z)) + (N^xi * log(1/q)^(-xi) - 1) *
+            (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu - z)^2 * xi) +
+            (N^xi * log(1/q)^(-xi) - 1) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
+                z) - 1) * (mu - z)^2), -(N^xi * log(1/q)^(-xi) - 1)^2 * (dat - mu) * (-(N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 2) * (1/xi + 1)/((mu - z)^3 * xi) - (N^xi * log(1/q)^(-xi) -
+            1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu - z)^2 * xi) +
+            (N^xi * log(1/q)^(-xi) - 1)^2 * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat -
+                mu)/(mu - z) - 1)^2 * (mu - z)^3) - (N^xi * log(1/q)^(-xi) - 1) * (1/xi + 1)/(((N^xi *
+            log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)^2), (N^xi * log(1/q)^(-xi) - 1) *
+            (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1) * ((N^xi * log(1/q)^(-xi) *
+            log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) -
+            1) * (dat - mu)/(mu - z) - 1) * (mu - z)) - log(-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
+            z) + 1)/xi^2)/((mu - z) * xi) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
+            log(log(1/q))) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu -
+            z) * xi) + (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (N^xi *
+            log(1/q)^(-xi) - 1) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
+            z) - 1)^2 * (mu - z)^2) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) *
+            (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)) + (N^xi *
+            log(1/q)^(-xi) - 1) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi - 1)/((mu -
+            z) * xi^2) + (N^xi * log(1/q)^(-xi) - 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
             z) - 1) * (mu - z) * xi^2)) %*% V
     }
 }

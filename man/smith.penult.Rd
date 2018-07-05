@@ -14,11 +14,11 @@ smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m,
 
 \item{ddensF}{derivative of the density function (optional)}
 
-\item{model}{either block maxima (\code{"bm"}) or peaks-over-threshold (\code{"pot"}) are supported}
+\item{model}{either block maxima (\code{'bm'}) or peaks-over-threshold (\code{'pot'}) are supported}
 
-\item{u}{vector of thresholds for method \code{"pot"}}
+\item{u}{vector of thresholds for method \code{'pot'}}
 
-\item{m}{vector of block sizes for method \code{"bm"}}
+\item{m}{vector of block sizes for method \code{'bm'}}
 
 \item{family}{the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}}
 
@@ -31,32 +31,32 @@ smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m,
 \value{
 a matrix or a list (if \code{returnList}) containing
 \itemize{
-\item{\code{loc}:} {location parameters (\code{method="bm"})}
+\item{\code{loc}:} {location parameters (\code{method='bm'})}
 \item{\code{scale}:} {scale parameters}
 \item{\code{shape}:} {shape parameters}
-\item{\code{u:}} {thresholds (\code{method="pot"})}
-\item{\code{m:}} {block sizes (\code{method="bm"})}
+\item{\code{u:}} {thresholds (\code{method='pot'})}
+\item{\code{m:}} {block sizes (\code{method='bm'})}
 }
 }
 \description{
 The function takes as arguments the distribution and density functions. There are two options:
-\code{method="bm"} yields block maxima and the user should provide in such case the block sizes via the
-argument \code{m}. If instead \code{method="pot"} is provided, a vector of threshold values must be
+\code{method='bm'} yields block maxima and the user should provide in such case the block sizes via the
+argument \code{m}. If instead \code{method='pot'} is provided, a vector of threshold values must be
 provided. The other argument (\code{u} or \code{m} depending on the method) is ignored.
 }
 \examples{
 #Threshold exceedance for Normal variables
 qu <- seq(1,5,by=0.02)
 penult <- smith.penult(densF=dnorm, distF=pnorm,
-   ddensF=function(x){-x*dnorm(x)}, model="pot", u=qu)
-plot(qu, penult$shape, type="l",xlab="Quantile",
-   ylab="Penultimate shape",ylim=c(-0.5,0))
+   ddensF=function(x){-x*dnorm(x)}, model='pot', u=qu)
+plot(qu, penult$shape, type='l',xlab='Quantile',
+   ylab='Penultimate shape',ylim=c(-0.5,0))
 #Block maxima for Gamma variables -
 #User must provide arguments for shape (or rate)
 m <- seq(30,3650,by=30)
-penult <- smith.penult(family = "gamma", model="bm", m=m, shape=0.1)
-plot(m, penult$shape, type="l",
- xlab="Quantile", ylab="Penultimate shape")
+penult <- smith.penult(family = 'gamma', model='bm', m=m, shape=0.1)
+plot(m, penult$shape, type='l',
+ xlab='Quantile', ylab='Penultimate shape')
 }
 \references{
 Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.

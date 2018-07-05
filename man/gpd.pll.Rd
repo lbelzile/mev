@@ -19,7 +19,7 @@ gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
 
 \item{dat}{sample vector of excesses}
 
-\item{m}{number of observations of interest for return levels. Required only for \code{args} values \code{"VaR"} or \code{"ES"}}
+\item{m}{number of observations of interest for return levels. Required only for \code{args} values \code{'VaR'} or \code{'ES'}}
 
 \item{N}{size of block over which to take maxima. Required only for \code{args} \code{Nmean} and \code{Nquant}.}
 
@@ -29,7 +29,7 @@ gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
 
 \item{correction}{logical indicating whether to use \code{spline.corr} to smooth the tem approximation.}
 
-\item{...}{additional arguments such as output from call to \code{Vfun} if \code{mode="tem"}.}
+\item{...}{additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.}
 }
 \value{
 a list with components
@@ -76,11 +76,11 @@ For the latter, the penalization is based on the TEM or an empirical covariance 
 \examples{
 \dontrun{
 dat <- evd::rgpd(n = 100, scale = 2, shape = 0.3)
-gpd.pll(psi = seq(-0.5, 1, by=0.01), param = "shape", dat = dat)
-gpd.pll(psi = seq(0.1, 5, by=0.1), param = "scale", dat = dat)
-gpd.pll(psi = seq(20, 35, by=0.1), param = "quant", dat = dat, p = 0.01)
-gpd.pll(psi = seq(20, 80, by=0.1), param = "ES", dat = dat, m = 100)
-gpd.pll(psi = seq(15, 100, by=1), param = "Nmean", N = 100, dat = dat)
-gpd.pll(psi = seq(15, 90, by=1), param = "Nquant", N = 100, dat = dat, q = 0.5)
+gpd.pll(psi = seq(-0.5, 1, by=0.01), param = 'shape', dat = dat)
+gpd.pll(psi = seq(0.1, 5, by=0.1), param = 'scale', dat = dat)
+gpd.pll(psi = seq(20, 35, by=0.1), param = 'quant', dat = dat, p = 0.01)
+gpd.pll(psi = seq(20, 80, by=0.1), param = 'ES', dat = dat, m = 100)
+gpd.pll(psi = seq(15, 100, by=1), param = 'Nmean', N = 100, dat = dat)
+gpd.pll(psi = seq(15, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 }
 }

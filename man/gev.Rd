@@ -8,7 +8,7 @@
 
 \item{dat}{sample vector}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} - the default) information matrix.}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
 \item{V}{vector calculated by \code{gev.Vfun}}
 
@@ -25,10 +25,10 @@ for the generalized extreme value distribution
  \preformatted{gev.ll(par, dat)
 gev.ll.optim(par, dat)
 gev.score(par, dat)
-gev.infomat(par, dat, method = c("obs","exp"))
+gev.infomat(par, dat, method = c('obs','exp'))
 gev.retlev(par, p)
 gev.bias(par, n)
-gev.Fscore(par, dat, method=c("obs","exp"))
+gev.Fscore(par, dat, method=c('obs','exp'))
 gev.Vfun(par, dat)
 gev.phi(par, dat, V)
 gev.dphi(par, dat, V)}

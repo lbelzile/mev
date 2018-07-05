@@ -26,7 +26,7 @@ are assumed to follow a generalized Pareto distribution. The parameters of the l
 estimated using maximum likelihood if either \code{scale = NULL} or \code{shape = NULL}.
 }
 \examples{
-x <- rmev(1000, d = 3, param = 2, model = "log")
+x <- rmev(1000, d = 3, param = 2, model = 'log')
 thresh <- apply(x, 2, quantile, 0.95)
 spunif(x, thresh)
 }

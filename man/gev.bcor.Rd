@@ -2,7 +2,7 @@
 % Please edit documentation in R/bias.R
 \name{gev.bcor}
 \alias{gev.bcor}
-\title{Bias correction for GEV distribution using Firth's modified score function or bias substraction}
+\title{Bias correction for GEV distribution}
 \usage{
 gev.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp"))
 }
@@ -13,24 +13,34 @@ gev.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp"))
 
 \item{corr}{string indicating which correction to employ either \code{subtract} or \code{firth}}
 
-\item{method}{string indicating whether to use the expected  (\code{"exp"}) or the observed (\code{"obs"} --- the default) information matrix. Used only if \code{corr="firth"}}
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} --- the default) information matrix. Used only if \code{corr='firth'}}
 }
 \value{
 vector of bias-corrected parameters
 }
 \description{
+Bias corrected estimates for the generalized extreme value distribution using
+Firth's modified score function or implicit bias substraction. The latter solves
+\deqn{\tilde{\boldsymbol{\theta}} = \hat{\boldsymbol{\theta}} + b(\tilde{\boldsymbol{\theta}}}
+for \eqn{\tilde{\boldsymbol{\theta}}}, using the first order term in the bias expansion as given by \code{\link{gev.bias}}.
+}
+\details{
+The alternative is to use Firth's modified score and find the root of
+\deqn{U(\tilde{\boldsymbol{\theta}})-i(\tilde{\boldsymbol{\theta}})b(\tilde{\boldsymbol{\theta}}),}
+where \eqn{U} is the score vector, \eqn{b} is the first order bias and \eqn{i} is either the observed or Fisher information.
+
+
+
 The routine uses the MLE (bias-corrected) as starting values and proceeds
 to find the solution using a root finding algorithm.
-Since the bias-correction is not valid for \eqn{xi < -1/3}, any solution that is unbounded
-will return a vector of \code{NA} - additionally, passing a \code{par} argument with shape less than -1/3
-will return an error if \code{method="subtract"} is selected, as the bias correction does not exist then.
-For small samples, expected and observed information can return very different estimates.
+Since the bias-correction is not valid for \eqn{\xi < -1/3}, any solution that is unbounded
+will return a vector of \code{NA} as the solution does not exist then.
 }
 \examples{
 set.seed(1)
 dat <- evd::rgev(n=40, loc = 1, scale=1, shape=-0.2)
 par <- evd::fgev(dat)$estimate
-gev.bcor(par,dat, "subtract")
-gev.bcor(par,dat, "firth") #observed information
-gev.bcor(par,dat, "firth","exp")
+gev.bcor(par,dat, 'subtract')
+gev.bcor(par,dat, 'firth') #observed information
+gev.bcor(par,dat, 'firth','exp')
 }

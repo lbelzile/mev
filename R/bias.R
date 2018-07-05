@@ -1,4 +1,4 @@
-#' Cox-Snell first order bias expression for the GEV distribution
+#' Cox-Snell first order bias for the GEV distribution
 #'
 #' Bias vector for the GEV distribution based on an \code{n} sample.
 #' Due to numerical instability, values of the information matrix and the bias
@@ -26,7 +26,7 @@ gev.bias <- function(par, n) {
     k11.3 <- 2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/sigma^2 + 2 * (xi + 1) * gamma(2 * xi + 1)/sigma^2
     k33.2 <- 0
     euler_gamma <- -psigamma(1)
-    
+
     # Numerical tolerance 1e-10 (all.equal has this)
     if (abs(xi) > 1e-10) {
         k112 <- (xi + 1) * (gamma(2 * xi + 2) - (xi + 1) * (4 * xi + 1) * gamma(3 * xi + 1))/(sigma^3 * xi)
@@ -35,14 +35,14 @@ gev.bias <- function(par, n) {
         k112 <- (euler_gamma - 3)/sigma^3
         k12.2 <- -2 * (euler_gamma - 1)/sigma^3
     }
-    
-    
+
+
     # Numerical tolerance 1e-6 If function is not too numerically unstable
     if (abs(xi) > 1e-06) {
-        k113 <- (1 + xi) * ((1 + xi) * (1 + 4 * xi) * gamma(1 + 3 * xi) - gamma(1 + 2 * xi) * (1 + 2 * xi * (2 + xi) + xi * (1 + 2 * 
+        k113 <- (1 + xi) * ((1 + xi) * (1 + 4 * xi) * gamma(1 + 3 * xi) - gamma(1 + 2 * xi) * (1 + 2 * xi * (2 + xi) + xi * (1 + 2 *
             xi) * psigamma(2 + 2 * xi, 0)))/(sigma^2 * xi^2)
         k122 <- ((1 - xi) * gamma(2 + xi) - gamma(3 + 2 * xi) + (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi))/(sigma^3 * xi^2)
-        k12.3 <- -(2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) + 2 * (xi + 1) * gamma(2 * xi + 1) - psigamma(xi + 2) * 
+        k12.3 <- -(2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) + 2 * (xi + 1) * gamma(2 * xi + 1) - psigamma(xi + 2) *
             gamma(xi + 2))/(sigma^2 * xi) + ((xi + 1)^2 * gamma(2 * xi + 1) - gamma(xi + 2))/(sigma^2 * xi^2)
         k13.2 <- -(((xi + 1)^2 * gamma(2 * xi + 1) - xi * ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2))/(sigma^2 * xi^2))
         k22.2 <- -2 * ((xi + 1)^2 * gamma(2 * xi + 1) - 2 * gamma(xi + 2) + 1)/(sigma^3 * xi^2)
@@ -64,14 +64,14 @@ gev.bias <- function(par, n) {
             # if xi !=0, but numerical breakdown,
             xit <- sign(xi) * 1e-06
             k113_l <- sapply(xit, function(xi) {
-                (1 + xi) * ((1 + xi) * (1 + 4 * xi) * gamma(1 + 3 * xi) - gamma(1 + 2 * xi) * (1 + 2 * xi * (2 + xi) + xi * (1 + 2 * 
+                (1 + xi) * ((1 + xi) * (1 + 4 * xi) * gamma(1 + 3 * xi) - gamma(1 + 2 * xi) * (1 + 2 * xi * (2 + xi) + xi * (1 + 2 *
                   xi) * psigamma(2 + 2 * xi, 0)))/(sigma^2 * xi^2)
             })
             k122_l <- sapply(xit, function(xi) {
                 ((1 - xi) * gamma(2 + xi) - gamma(3 + 2 * xi) + (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi))/(sigma^3 * xi^2)
             })
             k12.3_l <- sapply(xit, function(xi) {
-                -(2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) + 2 * (xi + 1) * gamma(2 * xi + 1) - psigamma(xi + 2) * 
+                -(2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) + 2 * (xi + 1) * gamma(2 * xi + 1) - psigamma(xi + 2) *
                   gamma(xi + 2))/(sigma^2 * xi) + ((xi + 1)^2 * gamma(2 * xi + 1) - gamma(xi + 2))/(sigma^2 * xi^2)
             })
             k13.2_l <- sapply(xit, function(xi) {
@@ -87,35 +87,35 @@ gev.bias <- function(par, n) {
             k13.2 <- approx(x = c(0, xit), y = c(k13.2_0, k13.2_l), xout = xi)$y
             k22.2 <- approx(x = c(0, xit), y = c(k22.2_0, k22.2_l), xout = xi)$y
         }
-        
+
     }
-    
-    
+
+
     # Numerical tolerance 1e-4 If function is not too numerically unstable
     if (abs(xi) > 1e-04) {
-        k123 <- ((-gamma(2 + xi)) * (1 + 2 * xi + xi * psigamma(2 + xi, 0)) + (1 + xi) * ((-(1 + 5 * xi + 4 * xi^2)) * gamma(1 + 3 * 
+        k123 <- ((-gamma(2 + xi)) * (1 + 2 * xi + xi * psigamma(2 + xi, 0)) + (1 + xi) * ((-(1 + 5 * xi + 4 * xi^2)) * gamma(1 + 3 *
             xi) + gamma(1 + 2 * xi) * (2 + 7 * xi + 3 * xi^2 + xi * (1 + 2 * xi) * psigamma(2 + 2 * xi, 0))))/(sigma^2 * xi^3)
-        k222 <- (1 - 3 * xi + 3 * (xi - 1) * gamma(2 + xi) + 1.5 * gamma(3 + 2 * xi) - (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi))/(sigma^3 * 
+        k222 <- (1 - 3 * xi + 3 * (xi - 1) * gamma(2 + xi) + 1.5 * gamma(3 + 2 * xi) - (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi))/(sigma^3 *
             xi^3)
-        k13.3 <- -(-(2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) - xi * ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi + 
-            2) * gamma(xi + 2) + xi * ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2) + 2 * (xi + 1) * gamma(2 * xi + 
-            1) - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2))/(sigma * xi^2) + 2 * ((xi + 1)^2 * gamma(2 * xi + 1) - xi * ((xi + 
+        k13.3 <- -(-(2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) - xi * ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi +
+            2) * gamma(xi + 2) + xi * ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2) + 2 * (xi + 1) * gamma(2 * xi +
+            1) - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2))/(sigma * xi^2) + 2 * ((xi + 1)^2 * gamma(2 * xi + 1) - xi * ((xi +
             1)/xi + psigamma(xi + 1)) * gamma(xi + 2))/(sigma * xi^3))
-        k22.3 <- 2 * ((xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) + (xi + 1) * gamma(2 * xi + 1) - psigamma(xi + 2) * gamma(xi + 
+        k22.3 <- 2 * ((xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) + (xi + 1) * gamma(2 * xi + 1) - psigamma(xi + 2) * gamma(xi +
             2))/(sigma^2 * xi^2) - 2 * ((xi + 1)^2 * gamma(2 * xi + 1) - 2 * gamma(xi + 2) + 1)/(sigma^2 * xi^3)
-        k23.2 <- -(-((digamma(1)) + (xi + 1)^2 * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2) - (gamma(xi + 
+        k23.2 <- -(-((digamma(1)) + (xi + 1)^2 * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2) - (gamma(xi +
             2) - 1)/xi + 1)/(sigma^2 * xi^2))
     } else {
         # Compute the approximation for xi=0, (limit)
-        k123_0 <- 1/12 * (60 * euler_gamma + 6 * euler_gamma^3 - euler_gamma * pi^2 + 4 * pi^2 * (euler_gamma - 1) - 48 * euler_gamma^2 - 
+        k123_0 <- 1/12 * (60 * euler_gamma + 6 * euler_gamma^3 - euler_gamma * pi^2 + 4 * pi^2 * (euler_gamma - 1) - 48 * euler_gamma^2 -
             4 * pi^2 + 12 * zeta3 - 12)/sigma^2
-        k222_0 <- 1/4 * (48 * euler_gamma + 4 * euler_gamma^3 + 9 * euler_gamma * pi^2 - 4 * pi^2 * (2 * euler_gamma - 3) + pi^2 * 
+        k222_0 <- 1/4 * (48 * euler_gamma + 4 * euler_gamma^3 + 9 * euler_gamma * pi^2 - 4 * pi^2 * (2 * euler_gamma - 3) + pi^2 *
             (euler_gamma - 1) - 36 * euler_gamma^2 - 17 * pi^2 + 8 * zeta3 - 16)/sigma^3
-        k13.3_0 <- (-6 * euler_gamma - 4 * euler_gamma^3 - 7/2 * euler_gamma * pi^2 + 3/2 * pi^2 * (euler_gamma - 1) + 12 * euler_gamma^2 + 
+        k13.3_0 <- (-6 * euler_gamma - 4 * euler_gamma^3 - 7/2 * euler_gamma * pi^2 + 3/2 * pi^2 * (euler_gamma - 1) + 12 * euler_gamma^2 +
             7/2 * pi^2 - 8 * zeta3)/(6 * sigma)
-        k22.3_0 <- -1/6 * (12 * euler_gamma + 6 * euler_gamma^3 + 4 * euler_gamma * pi^2 - pi^2 * (euler_gamma - 1) - 18 * euler_gamma^2 - 
+        k22.3_0 <- -1/6 * (12 * euler_gamma + 6 * euler_gamma^3 + 4 * euler_gamma * pi^2 - pi^2 * (euler_gamma - 1) - 18 * euler_gamma^2 -
             4 * pi^2 + 12 * zeta3)/sigma^2
-        k23.2_0 <- -1/12 * (12 * euler_gamma + 6 * euler_gamma^3 - euler_gamma * pi^2 + 4 * pi^2 * (euler_gamma - 1) - 18 * euler_gamma^2 + 
+        k23.2_0 <- -1/12 * (12 * euler_gamma + 6 * euler_gamma^3 - euler_gamma * pi^2 + 4 * pi^2 * (euler_gamma - 1) - 18 * euler_gamma^2 +
             pi^2 + 12 * zeta3)/sigma^2
         if (isTRUE(all.equal(xi, 0))) {
             # if xi numerically zero, use the latter
@@ -128,25 +128,25 @@ gev.bias <- function(par, n) {
             # else if less than tol, but not zero, interpolate linearly
             xit <- sign(xi) * 1e-04
             k123_l <- sapply(xit, function(xi) {
-                ((-gamma(2 + xi)) * (1 + 2 * xi + xi * psigamma(2 + xi, 0)) + (1 + xi) * ((-(1 + 5 * xi + 4 * xi^2)) * gamma(1 + 3 * 
+                ((-gamma(2 + xi)) * (1 + 2 * xi + xi * psigamma(2 + xi, 0)) + (1 + xi) * ((-(1 + 5 * xi + 4 * xi^2)) * gamma(1 + 3 *
                   xi) + gamma(1 + 2 * xi) * (2 + 7 * xi + 3 * xi^2 + xi * (1 + 2 * xi) * psigamma(2 + 2 * xi, 0))))/(sigma^2 * xi^3)
             })
             k222_l <- sapply(xit, function(xi) {
-                (1 - 3 * xi + 3 * (xi - 1) * gamma(2 + xi) + 1.5 * gamma(3 + 2 * xi) - (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi))/(sigma^3 * 
+                (1 - 3 * xi + 3 * (xi - 1) * gamma(2 + xi) + 1.5 * gamma(3 + 2 * xi) - (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi))/(sigma^3 *
                   xi^3)
             })
             k13.3_l <- sapply(xit, function(xi) {
-                -(-(2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) - xi * ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi + 
-                  2) * gamma(xi + 2) + xi * ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2) + 2 * (xi + 1) * gamma(2 * 
-                  xi + 1) - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2))/(sigma * xi^2) + 2 * ((xi + 1)^2 * gamma(2 * xi + 1) - 
+                -(-(2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) - xi * ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi +
+                  2) * gamma(xi + 2) + xi * ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2) + 2 * (xi + 1) * gamma(2 *
+                  xi + 1) - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2))/(sigma * xi^2) + 2 * ((xi + 1)^2 * gamma(2 * xi + 1) -
                   xi * ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2))/(sigma * xi^3))
             })
             k22.3_l <- sapply(xit, function(xi) {
-                2 * ((xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) + (xi + 1) * gamma(2 * xi + 1) - psigamma(xi + 2) * gamma(xi + 
+                2 * ((xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1) + (xi + 1) * gamma(2 * xi + 1) - psigamma(xi + 2) * gamma(xi +
                   2))/(sigma^2 * xi^2) - 2 * ((xi + 1)^2 * gamma(2 * xi + 1) - 2 * gamma(xi + 2) + 1)/(sigma^2 * xi^3)
             })
             k23.2_l <- sapply(xit, function(xi) {
-                -(-((digamma(1)) + (xi + 1)^2 * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2) - (gamma(xi + 
+                -(-((digamma(1)) + (xi + 1)^2 * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2) - (gamma(xi +
                   2) - 1)/xi + 1)/(sigma^2 * xi^2))
             })
             # Linear interpolation
@@ -157,34 +157,34 @@ gev.bias <- function(par, n) {
             k23.2 <- approx(x = c(0, xit), y = c(k23.2_0, k23.2_l), xout = xi)$y
         }
     }
-    
+
     # Numerical tolerance 1e-3 If function is not too numerically unstable
     if (abs(xi) > 0.001) {
-        k23.3 <- -((2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi + 
-            2) * gamma(xi + 2) + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2) - (xi + 1)^2 * gamma(2 * xi + 1)/xi^2 + 
-            2 * (xi + 1) * gamma(2 * xi + 1)/xi - psigamma(xi + 2) * gamma(xi + 2)/xi + (gamma(xi + 2) - 1)/xi^2)/(sigma * xi^2) - 
-            2 * ((digamma(1)) + (xi + 1)^2 * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2) - (gamma(xi + 
+        k23.3 <- -((2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi +
+            2) * gamma(xi + 2) + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2) - (xi + 1)^2 * gamma(2 * xi + 1)/xi^2 +
+            2 * (xi + 1) * gamma(2 * xi + 1)/xi - psigamma(xi + 2) * gamma(xi + 2)/xi + (gamma(xi + 2) - 1)/xi^2)/(sigma * xi^2) -
+            2 * ((digamma(1)) + (xi + 1)^2 * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2) - (gamma(xi +
                 2) - 1)/xi + 1)/(sigma * xi^3))
-        k133 <- ((1 + xi)^2 * (1 + 6 * xi + 8 * xi^2) * gamma(1 + 3 * xi) - gamma(3 + 2 * xi) * (1 + 5 * xi + 3 * xi^2 + xi * (1 + 
-            2 * xi) * psigamma(2 + 2 * xi, 0)) + (1 + 2 * xi) * gamma(1 + xi) * (1 + 6 * xi + 5 * xi^2 + 2 * xi^3 + 2 * xi * (1 + 
-            3 * xi + 2 * xi^2) * psigamma(2 + xi, 0) + xi^2 * (1 + xi) * psigamma(2 + xi, 0)^2 + (xi^2) * (1 + xi) * psigamma(2 + 
+        k133 <- ((1 + xi)^2 * (1 + 6 * xi + 8 * xi^2) * gamma(1 + 3 * xi) - gamma(3 + 2 * xi) * (1 + 5 * xi + 3 * xi^2 + xi * (1 +
+            2 * xi) * psigamma(2 + 2 * xi, 0)) + (1 + 2 * xi) * gamma(1 + xi) * (1 + 6 * xi + 5 * xi^2 + 2 * xi^3 + 2 * xi * (1 +
+            3 * xi + 2 * xi^2) * psigamma(2 + xi, 0) + xi^2 * (1 + xi) * psigamma(2 + xi, 0)^2 + (xi^2) * (1 + xi) * psigamma(2 +
             xi, 1)))/(sigma * xi^4 * (1 + 2 * xi))
-        k223 <- -(1 + 2 * xi + digamma(1) * xi - xi^2 - digamma(1) * xi^2 - 27 * xi^3 * gamma(3 * xi) - 12 * xi^4 * gamma(3 * xi) - 
-            3 * gamma(2 + xi) - 5 * xi * gamma(2 + xi) + 3 * (1 + xi) * gamma(1 + 2 * xi) + 10 * xi * (1 + xi) * gamma(1 + 2 * xi) + 
-            4 * xi^2 * (1 + xi) * gamma(1 + 2 * xi) - gamma(1 + 3 * xi) - 6 * xi * gamma(1 + 3 * xi) - 2 * xi * gamma(2 + xi) * psigamma(2 + 
+        k223 <- -(1 + 2 * xi + digamma(1) * xi - xi^2 - digamma(1) * xi^2 - 27 * xi^3 * gamma(3 * xi) - 12 * xi^4 * gamma(3 * xi) -
+            3 * gamma(2 + xi) - 5 * xi * gamma(2 + xi) + 3 * (1 + xi) * gamma(1 + 2 * xi) + 10 * xi * (1 + xi) * gamma(1 + 2 * xi) +
+            4 * xi^2 * (1 + xi) * gamma(1 + 2 * xi) - gamma(1 + 3 * xi) - 6 * xi * gamma(1 + 3 * xi) - 2 * xi * gamma(2 + xi) * psigamma(2 +
             xi, 0) + xi * (1 + xi) * (1 + 2 * xi) * gamma(1 + 2 * xi) * psigamma(2 + 2 * xi, 0))/(sigma^2 * xi^4)
-        k233 <- (1 + 7 * xi + 2 * digamma(1) * xi + 4 * xi^2 + 6 * digamma(1) * xi^2 + digamma(1)^2 * xi^2 + (pi^2 * xi^2)/6 - 3 * 
-            xi^3 * (9 + 4 * xi) * gamma(3 * xi) + 3 * gamma(1 + 2 * xi) + 17 * xi * gamma(1 + 2 * xi) + 22 * xi^2 * gamma(1 + 2 * 
-            xi) + 8 * xi^3 * gamma(1 + 2 * xi) - (1 + 6 * xi) * gamma(1 + 3 * xi) + (1 + 3 * xi + 2 * xi^2) * 2 * xi * gamma(1 + 2 * 
-            xi) * psigamma(2 + 2 * xi, 0) - gamma(1 + xi) * (3 + 16 * xi + 13 * xi^2 + 4 * xi^3 + 2 * xi * (2 + 5 * xi + 3 * xi^2) * 
+        k233 <- (1 + 7 * xi + 2 * digamma(1) * xi + 4 * xi^2 + 6 * digamma(1) * xi^2 + digamma(1)^2 * xi^2 + (pi^2 * xi^2)/6 - 3 *
+            xi^3 * (9 + 4 * xi) * gamma(3 * xi) + 3 * gamma(1 + 2 * xi) + 17 * xi * gamma(1 + 2 * xi) + 22 * xi^2 * gamma(1 + 2 *
+            xi) + 8 * xi^3 * gamma(1 + 2 * xi) - (1 + 6 * xi) * gamma(1 + 3 * xi) + (1 + 3 * xi + 2 * xi^2) * 2 * xi * gamma(1 + 2 *
+            xi) * psigamma(2 + 2 * xi, 0) - gamma(1 + xi) * (3 + 16 * xi + 13 * xi^2 + 4 * xi^3 + 2 * xi * (2 + 5 * xi + 3 * xi^2) *
             psigamma(2 + xi, 0) + xi^2 * (1 + xi) * psigamma(2 + xi, 0)^2 + xi^2 * (1 + xi) * psigamma(2 + xi, 1)))/(sigma * xi^5)
     } else {
         k23.3_0 <- -3.70965809351906/sigma
         k133_0 <- 0.10683192718888/sigma
-        k223_0 <- 1/40 * (20 * euler_gamma^4 + 3 * pi^4 - 200 * euler_gamma^3 + 20 * euler_gamma^2 * (pi^2 + 18) + 60 * pi^2 - 20 * 
+        k223_0 <- 1/40 * (20 * euler_gamma^4 + 3 * pi^4 - 200 * euler_gamma^3 + 20 * euler_gamma^2 * (pi^2 + 18) + 60 * pi^2 - 20 *
             euler_gamma * (5 * pi^2 - 8 * zeta3 + 8) - 400 * zeta3)/sigma^2
-        k233_0 <- 1/48 * (12 * euler_gamma^5 - 140 * euler_gamma^4 - 21 * pi^4 + 20 * euler_gamma^3 * (pi^2 + 16) - 4 * euler_gamma^2 * 
-            (35 * pi^2 - 60 * zeta3 + 48) + 8 * pi^2 * (5 * zeta3 - 4) + euler_gamma * (9 * pi^4 + 160 * pi^2 - 1120 * zeta3) + 288 * 
+        k233_0 <- 1/48 * (12 * euler_gamma^5 - 140 * euler_gamma^4 - 21 * pi^4 + 20 * euler_gamma^3 * (pi^2 + 16) - 4 * euler_gamma^2 *
+            (35 * pi^2 - 60 * zeta3 + 48) + 8 * pi^2 * (5 * zeta3 - 4) + euler_gamma * (9 * pi^4 + 160 * pi^2 - 1120 * zeta3) + 288 *
             zeta5 + 640 * zeta3)/sigma
         if (isTRUE(all.equal(xi, 0))) {
             k23.3 <- k23.3_0
@@ -194,31 +194,31 @@ gev.bias <- function(par, n) {
         } else {
             xit <- sign(xi) * 0.01
             k23.3_l <- sapply(xit, function(xi) {
-                -((2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi + 
-                  2) * gamma(xi + 2) + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2) - (xi + 1)^2 * gamma(2 * xi + 
-                  1)/xi^2 + 2 * (xi + 1) * gamma(2 * xi + 1)/xi - psigamma(xi + 2) * gamma(xi + 2)/xi + (gamma(xi + 2) - 1)/xi^2)/(sigma * 
-                  xi^2) - 2 * ((digamma(1)) + (xi + 1)^2 * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2) - 
+                -((2 * (xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi +
+                  2) * gamma(xi + 2) + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2) - (xi + 1)^2 * gamma(2 * xi +
+                  1)/xi^2 + 2 * (xi + 1) * gamma(2 * xi + 1)/xi - psigamma(xi + 2) * gamma(xi + 2)/xi + (gamma(xi + 2) - 1)/xi^2)/(sigma *
+                  xi^2) - 2 * ((digamma(1)) + (xi + 1)^2 * gamma(2 * xi + 1)/xi - ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2) -
                   (gamma(xi + 2) - 1)/xi + 1)/(sigma * xi^3))
             })
             k133_l <- sapply(xit, function(xi) {
-                ((1 + xi)^2 * (1 + 6 * xi + 8 * xi^2) * gamma(1 + 3 * xi) - gamma(3 + 2 * xi) * (1 + 5 * xi + 3 * xi^2 + xi * (1 + 
-                  2 * xi) * psigamma(2 + 2 * xi, 0)) + (1 + 2 * xi) * gamma(1 + xi) * (1 + 6 * xi + 5 * xi^2 + 2 * xi^3 + 2 * xi * 
-                  (1 + 3 * xi + 2 * xi^2) * psigamma(2 + xi, 0) + xi^2 * (1 + xi) * psigamma(2 + xi, 0)^2 + (xi^2) * (1 + xi) * psigamma(2 + 
+                ((1 + xi)^2 * (1 + 6 * xi + 8 * xi^2) * gamma(1 + 3 * xi) - gamma(3 + 2 * xi) * (1 + 5 * xi + 3 * xi^2 + xi * (1 +
+                  2 * xi) * psigamma(2 + 2 * xi, 0)) + (1 + 2 * xi) * gamma(1 + xi) * (1 + 6 * xi + 5 * xi^2 + 2 * xi^3 + 2 * xi *
+                  (1 + 3 * xi + 2 * xi^2) * psigamma(2 + xi, 0) + xi^2 * (1 + xi) * psigamma(2 + xi, 0)^2 + (xi^2) * (1 + xi) * psigamma(2 +
                   xi, 1)))/(sigma * xi^4 * (1 + 2 * xi))
             })
             k223_l <- sapply(xit, function(xi) {
-                -(1 + 2 * xi + digamma(1) * xi - xi^2 - digamma(1) * xi^2 - 27 * xi^3 * gamma(3 * xi) - 12 * xi^4 * gamma(3 * xi) - 
-                  3 * gamma(2 + xi) - 5 * xi * gamma(2 + xi) + 3 * (1 + xi) * gamma(1 + 2 * xi) + 10 * xi * (1 + xi) * gamma(1 + 2 * 
-                  xi) + 4 * xi^2 * (1 + xi) * gamma(1 + 2 * xi) - gamma(1 + 3 * xi) - 6 * xi * gamma(1 + 3 * xi) - 2 * xi * gamma(2 + 
-                  xi) * psigamma(2 + xi, 0) + xi * (1 + xi) * (1 + 2 * xi) * gamma(1 + 2 * xi) * psigamma(2 + 2 * xi, 0))/(sigma^2 * 
+                -(1 + 2 * xi + digamma(1) * xi - xi^2 - digamma(1) * xi^2 - 27 * xi^3 * gamma(3 * xi) - 12 * xi^4 * gamma(3 * xi) -
+                  3 * gamma(2 + xi) - 5 * xi * gamma(2 + xi) + 3 * (1 + xi) * gamma(1 + 2 * xi) + 10 * xi * (1 + xi) * gamma(1 + 2 *
+                  xi) + 4 * xi^2 * (1 + xi) * gamma(1 + 2 * xi) - gamma(1 + 3 * xi) - 6 * xi * gamma(1 + 3 * xi) - 2 * xi * gamma(2 +
+                  xi) * psigamma(2 + xi, 0) + xi * (1 + xi) * (1 + 2 * xi) * gamma(1 + 2 * xi) * psigamma(2 + 2 * xi, 0))/(sigma^2 *
                   xi^4)
             })
             k233_l <- sapply(xit, function(xi) {
-                (1 + 7 * xi + 2 * digamma(1) * xi + 4 * xi^2 + 6 * digamma(1) * xi^2 + digamma(1)^2 * xi^2 + (pi^2 * xi^2)/6 - 3 * 
-                  xi^3 * (9 + 4 * xi) * gamma(3 * xi) + 3 * gamma(1 + 2 * xi) + 17 * xi * gamma(1 + 2 * xi) + 22 * xi^2 * gamma(1 + 
-                  2 * xi) + 8 * xi^3 * gamma(1 + 2 * xi) - (1 + 6 * xi) * gamma(1 + 3 * xi) + (1 + 3 * xi + 2 * xi^2) * 2 * xi * gamma(1 + 
-                  2 * xi) * psigamma(2 + 2 * xi, 0) - gamma(1 + xi) * (3 + 16 * xi + 13 * xi^2 + 4 * xi^3 + 2 * xi * (2 + 5 * xi + 
-                  3 * xi^2) * psigamma(2 + xi, 0) + xi^2 * (1 + xi) * psigamma(2 + xi, 0)^2 + xi^2 * (1 + xi) * psigamma(2 + xi, 1)))/(sigma * 
+                (1 + 7 * xi + 2 * digamma(1) * xi + 4 * xi^2 + 6 * digamma(1) * xi^2 + digamma(1)^2 * xi^2 + (pi^2 * xi^2)/6 - 3 *
+                  xi^3 * (9 + 4 * xi) * gamma(3 * xi) + 3 * gamma(1 + 2 * xi) + 17 * xi * gamma(1 + 2 * xi) + 22 * xi^2 * gamma(1 +
+                  2 * xi) + 8 * xi^3 * gamma(1 + 2 * xi) - (1 + 6 * xi) * gamma(1 + 3 * xi) + (1 + 3 * xi + 2 * xi^2) * 2 * xi * gamma(1 +
+                  2 * xi) * psigamma(2 + 2 * xi, 0) - gamma(1 + xi) * (3 + 16 * xi + 13 * xi^2 + 4 * xi^3 + 2 * xi * (2 + 5 * xi +
+                  3 * xi^2) * psigamma(2 + xi, 0) + xi^2 * (1 + xi) * psigamma(2 + xi, 0)^2 + xi^2 * (1 + xi) * psigamma(2 + xi, 1)))/(sigma *
                   xi^5)
             })
             k133 <- approx(x = c(0, xit), y = c(k133_0, k133_l), xout = xi)$y
@@ -227,18 +227,18 @@ gev.bias <- function(par, n) {
             k23.3 <- approx(x = c(0, xit), y = c(k23.3_0, k23.3_l), xout = xi)$y
         }
     }
-    
+
     # Numerical tolerance 1e-2 If function is not too numerically unstable
     if (abs(xi) > 0.01) {
-        k333 <- (-3 * gamma(3 + 2 * xi) * (1 + 6 * xi + 4 * xi^2 + xi * (1 + 2 * xi) * psigamma(2 + 2 * xi, 0)) + 6 * (1 + 2 * xi) * 
-            gamma(1 + xi) * (1 + 8 * xi + 7 * xi^2 + 4 * xi^3 + 2 * xi * (1 + 4 * xi + 3 * xi^2) * psigamma(2 + xi, 0) + xi^2 * (1 + 
-            xi) * psigamma(2 + xi, 0)^2 + xi^2 * (1 + xi) * psigamma(2 + xi, 1)) + (1 + 2 * xi) * (-2 - 6 * (4 + digamma(1)) * xi - 
-            (30 + 42 * digamma(1) + 6 * digamma(1)^2 + pi^2) * xi^2 + 2 * (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi) + xi^3 * (-8 - 
+        k333 <- (-3 * gamma(3 + 2 * xi) * (1 + 6 * xi + 4 * xi^2 + xi * (1 + 2 * xi) * psigamma(2 + 2 * xi, 0)) + 6 * (1 + 2 * xi) *
+            gamma(1 + xi) * (1 + 8 * xi + 7 * xi^2 + 4 * xi^3 + 2 * xi * (1 + 4 * xi + 3 * xi^2) * psigamma(2 + xi, 0) + xi^2 * (1 +
+            xi) * psigamma(2 + xi, 0)^2 + xi^2 * (1 + xi) * psigamma(2 + xi, 1)) + (1 + 2 * xi) * (-2 - 6 * (4 + digamma(1)) * xi -
+            (30 + 42 * digamma(1) + 6 * digamma(1)^2 + pi^2) * xi^2 + 2 * (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi) + xi^3 * (-8 -
             18 * digamma(1)^2 - 2 * digamma(1)^3 - 3 * pi^2 - digamma(1) * (24 + pi^2) + 4 * zeta3)))/(xi^6 * (2 + 4 * xi))
-        k33.3 <- 2 * ((xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/xi^2 - ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi + 
-            2) * gamma(xi + 2)/xi + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2)/xi - (xi + 1)^2 * gamma(2 * xi + 
-            1)/xi^3 + (xi + 1) * gamma(2 * xi + 1)/xi^2 + ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2)/xi^2 - (digamma(1) + 1/xi + 
-            1)/xi^2)/xi^2 - 1/3 * (pi^2 + 6 * (digamma(1) + 1/xi + 1)^2 + 6 * (xi + 1)^2 * gamma(2 * xi + 1)/xi^2 - 12 * ((xi + 1)/xi + 
+        k33.3 <- 2 * ((xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/xi^2 - ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi +
+            2) * gamma(xi + 2)/xi + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2)/xi - (xi + 1)^2 * gamma(2 * xi +
+            1)/xi^3 + (xi + 1) * gamma(2 * xi + 1)/xi^2 + ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2)/xi^2 - (digamma(1) + 1/xi +
+            1)/xi^2)/xi^2 - 1/3 * (pi^2 + 6 * (digamma(1) + 1/xi + 1)^2 + 6 * (xi + 1)^2 * gamma(2 * xi + 1)/xi^2 - 12 * ((xi + 1)/xi +
             psigamma(xi + 1)) * gamma(xi + 2)/xi)/xi^3
     } else {
         k333_0 <- -20.8076715595589
@@ -249,18 +249,18 @@ gev.bias <- function(par, n) {
         } else {
             xit <- sign(xi) * 0.01
             k333_l <- sapply(xit, function(xi) {
-                (-3 * gamma(3 + 2 * xi) * (1 + 6 * xi + 4 * xi^2 + xi * (1 + 2 * xi) * psigamma(2 + 2 * xi, 0)) + 6 * (1 + 2 * xi) * 
-                  gamma(1 + xi) * (1 + 8 * xi + 7 * xi^2 + 4 * xi^3 + 2 * xi * (1 + 4 * xi + 3 * xi^2) * psigamma(2 + xi, 0) + xi^2 * 
-                  (1 + xi) * psigamma(2 + xi, 0)^2 + xi^2 * (1 + xi) * psigamma(2 + xi, 1)) + (1 + 2 * xi) * (-2 - 6 * (4 + digamma(1)) * 
-                  xi - (30 + 42 * digamma(1) + 6 * digamma(1)^2 + pi^2) * xi^2 + 2 * (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi) + 
-                  xi^3 * (-8 - 18 * digamma(1)^2 - 2 * digamma(1)^3 - 3 * pi^2 - digamma(1) * (24 + pi^2) + 4 * zeta3)))/(xi^6 * (2 + 
+                (-3 * gamma(3 + 2 * xi) * (1 + 6 * xi + 4 * xi^2 + xi * (1 + 2 * xi) * psigamma(2 + 2 * xi, 0)) + 6 * (1 + 2 * xi) *
+                  gamma(1 + xi) * (1 + 8 * xi + 7 * xi^2 + 4 * xi^3 + 2 * xi * (1 + 4 * xi + 3 * xi^2) * psigamma(2 + xi, 0) + xi^2 *
+                  (1 + xi) * psigamma(2 + xi, 0)^2 + xi^2 * (1 + xi) * psigamma(2 + xi, 1)) + (1 + 2 * xi) * (-2 - 6 * (4 + digamma(1)) *
+                  xi - (30 + 42 * digamma(1) + 6 * digamma(1)^2 + pi^2) * xi^2 + 2 * (1 + xi)^2 * (1 + 4 * xi) * gamma(1 + 3 * xi) +
+                  xi^3 * (-8 - 18 * digamma(1)^2 - 2 * digamma(1)^3 - 3 * pi^2 - digamma(1) * (24 + pi^2) + 4 * zeta3)))/(xi^6 * (2 +
                   4 * xi))
             })
             k33.3_l <- sapply(xit, function(xi) {
-                2 * ((xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/xi^2 - ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi + 
-                  2) * gamma(xi + 2)/xi + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2)/xi - (xi + 1)^2 * gamma(2 * 
-                  xi + 1)/xi^3 + (xi + 1) * gamma(2 * xi + 1)/xi^2 + ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2)/xi^2 - (digamma(1) + 
-                  1/xi + 1)/xi^2)/xi^2 - 1/3 * (pi^2 + 6 * (digamma(1) + 1/xi + 1)^2 + 6 * (xi + 1)^2 * gamma(2 * xi + 1)/xi^2 - 12 * 
+                2 * ((xi + 1)^2 * psigamma(2 * xi + 1) * gamma(2 * xi + 1)/xi^2 - ((xi + 1)/xi + psigamma(xi + 1)) * psigamma(xi +
+                  2) * gamma(xi + 2)/xi + ((xi + 1)/xi^2 - 1/xi - psigamma(xi + 1, 1)) * gamma(xi + 2)/xi - (xi + 1)^2 * gamma(2 *
+                  xi + 1)/xi^3 + (xi + 1) * gamma(2 * xi + 1)/xi^2 + ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2)/xi^2 - (digamma(1) +
+                  1/xi + 1)/xi^2)/xi^2 - 1/3 * (pi^2 + 6 * (digamma(1) + 1/xi + 1)^2 + 6 * (xi + 1)^2 * gamma(2 * xi + 1)/xi^2 - 12 *
                   ((xi + 1)/xi + psigamma(xi + 1)) * gamma(xi + 2)/xi)/xi^3
             })
             k333 <- approx(x = c(0, xit), y = c(k333_0, k333_l), xout = xi)$y
@@ -269,14 +269,14 @@ gev.bias <- function(par, n) {
     }
     # Derivatives of information matrix
     A1 <- 0.5 * cbind(c(k111, k112, k113), c(k112, k122, k123), c(k113, k123, k133))
-    A2 <- -cbind(c(k11.2, k12.2, k13.2), c(k12.2, k22.2, k23.2), c(k13.2, k23.2, k33.2)) + 0.5 * cbind(c(k112, k122, k123), c(k122, 
+    A2 <- -cbind(c(k11.2, k12.2, k13.2), c(k12.2, k22.2, k23.2), c(k13.2, k23.2, k33.2)) + 0.5 * cbind(c(k112, k122, k123), c(k122,
         k222, k223), c(k123, k223, k233))
-    A3 <- -cbind(c(k11.3, k12.3, k13.3), c(k12.3, k22.3, k23.3), c(k13.3, k23.3, k33.3)) + 0.5 * cbind(c(k113, k123, k133), c(k123, 
+    A3 <- -cbind(c(k11.3, k12.3, k13.3), c(k12.3, k22.3, k23.3), c(k13.3, k23.3, k33.3)) + 0.5 * cbind(c(k113, k123, k133), c(k123,
         k223, k233), c(k133, k233, k333))
     # Information matrix
     infomat <- gev.infomat(par = c(0, sigma, xi), dat = 1, method = "exp", nobs = 1)
     infoinv <- solve(infomat)
-    
+
     return(infoinv %*% cbind(A1, A2, A3) %*% c(infoinv)/n)
 }
 
@@ -345,12 +345,25 @@ gev.Fscore <- function(par, dat, method = "obs") {
     }
 }
 
-#' Bias correction for GP distribution using Firth's modified score function or bias substraction
+#' Bias correction for GP distribution
 #'
-#' The routine uses the MLE (bias-corrected) as starting values and proceeds
+#' Bias corrected estimates for the generalized Pareto distribution using
+#' Firth's modified score function or implicit bias substraction.
+#'
+#'
+#' Method \code{subtract} solves
+#' \deqn{\tilde{\boldsymbol{\theta}} = \hat{\boldsymbol{\theta}} + b(\tilde{\boldsymbol{\theta}}}
+#' for \eqn{\tilde{\boldsymbol{\theta}}}, using the first order term in the bias expansion as given by \code{\link{gpd.bias}}.
+#'
+#' The alternative is to use Firth's modified score and find the root of
+#' \deqn{U(\tilde{\boldsymbol{\theta}})-i(\tilde{\boldsymbol{\theta}})b(\tilde{\boldsymbol{\theta}}),}
+#' where \eqn{U} is the score vector, \eqn{b} is the first order bias and \eqn{i} is either the observed or Fisher information.
+#'
+#' The routine uses the MLE as starting value and proceeds
 #' to find the solution using a root finding algorithm.
-#' Since the bias-correction is not valid for \eqn{xi < -1/3}, any solution that is unbounded
+#' Since the bias-correction is not valid for \eqn{\xi < -1/3}, any solution that is unbounded
 #' will return a vector of \code{NA} as the bias correction does not exist then.
+#'
 #' @importFrom alabama constrOptim.nl
 #' @importFrom nleqslv nleqslv
 #' @param par parameter vector (\code{scale}, \code{shape})
@@ -433,7 +446,7 @@ gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
         gpd.Fscoren <- function(par, met, dat) {
             gpd.Fscore(par = par, method = met, dat = dat)
         }
-        par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gpd.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000))), 
+        par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gpd.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000))),
             silent = TRUE)
         if (!is.character(par.firth)) {
             if (par.firth$termcd == 1 || (par.firth$termcd == 2 && isTRUE(all.equal(par.firth$fvec, rep(0, 2), tolerance = 1e-06)))) {
@@ -454,12 +467,24 @@ gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 
 
 
-#' Bias correction for GEV distribution using Firth's modified score function or bias substraction
+#' Bias correction for GEV distribution
+#'
+#' Bias corrected estimates for the generalized extreme value distribution using
+#' Firth's modified score function or implicit bias substraction.
+#'
+#' Method \code{subtract}solves
+#' \deqn{\tilde{\boldsymbol{\theta}} = \hat{\boldsymbol{\theta}} + b(\tilde{\boldsymbol{\theta}}}
+#' for \eqn{\tilde{\boldsymbol{\theta}}}, using the first order term in the bias expansion as given by \code{\link{gev.bias}}.
+#'
+#' The alternative is to use Firth's modified score and find the root of
+#' \deqn{U(\tilde{\boldsymbol{\theta}})-i(\tilde{\boldsymbol{\theta}})b(\tilde{\boldsymbol{\theta}}),}
+#' where \eqn{U} is the score vector, \eqn{b} is the first order bias and \eqn{i} is either the observed or Fisher information.
 #'
 #' The routine uses the MLE (bias-corrected) as starting values and proceeds
 #' to find the solution using a root finding algorithm.
-#' Since the bias-correction is not valid for \eqn{xi < -1/3}, any solution that is unbounded
+#' Since the bias-correction is not valid for \eqn{\xi < -1/3}, any solution that is unbounded
 #' will return a vector of \code{NA} as the solution does not exist then.
+#'
 #' @param par parameter vector (\code{scale}, \code{shape})
 #' @param dat sample of observations
 #' @param corr string indicating which correction to employ either \code{subtract} or \code{firth}
@@ -500,7 +525,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
             return(rep(NA, 3))
         }
         # Root finding
-        
+
         bcor.rf <- try(nleqslv::nleqslv(x = st, fn = function(parbc, par, dat) {
             parbc - par + gev.bias(parbc, length(dat))
         }, par = par, dat = dat, control = list(maxit = 1000, xtol = 1e-10)), silent = TRUE)
@@ -522,7 +547,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
         }
         return(rep(NA, 3))
     }
-    
+
     bcorF <- function(par, dat, method = c("obs", "exp")) {
         method <- match.arg(method[1], c("obs", "exp"))
         maxdat <- max(dat)
@@ -545,7 +570,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
         gev.Fscoren <- function(par, met, dat) {
             gev.Fscore(par = par, method = met, dat = dat)
         }
-        par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000, 
+        par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000,
             xtol = 1e-10))), silent = TRUE)
         if (!is.character(par.firth)) {
             # Try finding the root with default options
@@ -553,7 +578,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
                 return(par.firth$x)
             }
             # Sometimes, method fails for values of xi close to zero - try with a full Broyden or Newton search
-            par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000, 
+            par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000,
                 xtol = 1e-10), global = "none")), silent = TRUE)
             if (!is.character(par.firth)) {
                 if (par.firth$termcd == 1 || (par.firth$termcd %in% c(2, 3) && isTRUE(all.equal(par.firth$fvec, rep(0, 3), tolerance = 1e-06)))) {
@@ -581,7 +606,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 #' based on a matrix of posterior density parameters
 .gev.postpred <- function(x, posterior, Nyr = 100, type = c("density", "quantile")) {
     rowMeans(cbind(apply(rbind(posterior), 1, function(par) {
-        switch(type, density = evd::dgev(x = x, loc = par[1] - par[2] * (1 - Nyr^par[3])/par[3], scale = par[2] * Nyr^par[3], shape = par[3]), 
+        switch(type, density = evd::dgev(x = x, loc = par[1] - par[2] * (1 - Nyr^par[3])/par[3], scale = par[2] * Nyr^par[3], shape = par[3]),
             quantile = evd::qgev(p = x, loc = par[1] - par[2] * (1 - Nyr^par[3])/par[3], scale = par[2] * Nyr^par[3], shape = par[3]))
     })))
 }
@@ -617,12 +642,12 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
     } else {
         stopifnot(N >= 1)
     }
-    
+
     # Euler-Masc. constant :
     emcst <- -psigamma(1)
     # Return levels, N-year median and mean for GEV
-    estimate <- switch(type, retlev = ifelse(xi == 0, mu - sigma * log(yp), mu - sigma/xi * (1 - yp^(-xi))), median = ifelse(xi == 
-        0, mu + sigma * (log(N) - log(log(2))), mu - sigma/xi * (1 - (N/log(2))^xi)), mean = ifelse(xi == 0, mu + sigma * (log(N) + 
+    estimate <- switch(type, retlev = ifelse(xi == 0, mu - sigma * log(yp), mu - sigma/xi * (1 - yp^(-xi))), median = ifelse(xi ==
+        0, mu + sigma * (log(N) - log(log(2))), mu - sigma/xi * (1 - (N/log(2))^xi)), mean = ifelse(xi == 0, mu + sigma * (log(N) +
         emcst), mu - sigma/xi * (1 - N^xi * gamma(1 - xi))))
     if (type == "retlev") {
         if (p > 0) {
@@ -654,7 +679,7 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
         if (xi == 0) {
             grad_Nmean <- c(1, log(N) + emcst, 0.5 * sigma * (emcst^2 + pi^2/6 + 2 * emcst * log(N) + log(N)^2))
         } else {
-            grad_Nmean <- c(1, (N^xi * gamma(-xi + 1) - 1)/xi, (N^xi * log(N) * gamma(-xi + 1) - N^xi * digamma(-xi + 1) * gamma(-xi + 
+            grad_Nmean <- c(1, (N^xi * gamma(-xi + 1) - 1)/xi, (N^xi * log(N) * gamma(-xi + 1) - N^xi * digamma(-xi + 1) * gamma(-xi +
                 1)) * sigma/xi - (N^xi * gamma(-xi + 1) - 1) * sigma/xi^2)
         }
         var_Nmean <- t(grad_Nmean) %*% solve(gev.infomat(par = par, dat = 1, method = "exp", nobs = nobs)) %*% grad_Nmean
@@ -674,29 +699,29 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
 gev.abias <- function(shape, rho) {
     stopifnot(rho <= 0, shape > -0.5)
     if (shape != 0 && rho < 0) {
-        bmu <- (1 + shape)/(shape * rho * (shape + rho)) * (-(shape + rho) * gamma(1 + shape) + (1 + shape) * rho * gamma(1 + 2 * 
+        bmu <- (1 + shape)/(shape * rho * (shape + rho)) * (-(shape + rho) * gamma(1 + shape) + (1 + shape) * rho * gamma(1 + 2 *
             shape) + shape * (1 - rho) * gamma(1 + shape - rho))
-        bsigma <- (-shape - rho + (1 + shape) * (shape + 2 * rho) * gamma(1 + shape) - (1 + shape)^2 * rho * gamma(1 + 2 * shape) + 
+        bsigma <- (-shape - rho + (1 + shape) * (shape + 2 * rho) * gamma(1 + shape) - (1 + shape)^2 * rho * gamma(1 + 2 * shape) +
             shape * gamma(2 - rho) - shape * (1 + shape) * (1 - rho) * gamma(1 + shape - rho))/(shape^2 * rho * (shape + rho))
-        bshape <- ((shape + rho) * (1 + shape + psigamma(1) * shape) - (shape + shape^2 * (1 + rho) + 2 * rho * (1 + shape)) * gamma(1 + 
-            shape) + (1 + shape)^2 * rho * gamma(1 + 2 * shape) + shape^2 * gamma(1 - rho) - shape * (1 + shape) * gamma(2 - rho) + 
-            shape * (1 + shape) * (1 - rho) * gamma(1 + shape - rho) - shape * rho * psigamma(2 + shape) * gamma(2 + shape) - shape^2 * 
+        bshape <- ((shape + rho) * (1 + shape + psigamma(1) * shape) - (shape + shape^2 * (1 + rho) + 2 * rho * (1 + shape)) * gamma(1 +
+            shape) + (1 + shape)^2 * rho * gamma(1 + 2 * shape) + shape^2 * gamma(1 - rho) - shape * (1 + shape) * gamma(2 - rho) +
+            shape * (1 + shape) * (1 - rho) * gamma(1 + shape - rho) - shape * rho * psigamma(2 + shape) * gamma(2 + shape) - shape^2 *
             psigamma(2 - rho) * gamma(2 - rho))/(shape^3 * rho * (shape + rho))
     } else if (rho == 0 && shape != 0) {
-        bmu <- (1 + shape)/shape^2 * ((1 + shape) * gamma(1 + 2 * shape) - gamma(2 + shape) - shape * psigamma(1 + shape) * gamma(1 + 
+        bmu <- (1 + shape)/shape^2 * ((1 + shape) * gamma(1 + 2 * shape) - gamma(2 + shape) - shape * psigamma(1 + shape) * gamma(1 +
             shape))
-        bsigma <- (shape^2 * gamma(1 + shape) * psigamma(1 + shape) - (shape + 1)^2 * gamma(1 + 2 * shape) + shape^2 * gamma(1 + shape) + 
-            shape * gamma(1 + shape) * psigamma(1 + shape) - (psigamma(1) + 1) * shape + 3 * shape * gamma(1 + shape) + 2 * gamma(1 + 
+        bsigma <- (shape^2 * gamma(1 + shape) * psigamma(1 + shape) - (shape + 1)^2 * gamma(1 + 2 * shape) + shape^2 * gamma(1 + shape) +
+            shape * gamma(1 + shape) * psigamma(1 + shape) - (psigamma(1) + 1) * shape + 3 * shape * gamma(1 + shape) + 2 * gamma(1 +
             shape) - 1)/shape^3
-        bshape <- ((1 + shape + shape * psigamma(1))^2 + shape^2 * pi^2/6 + (1 + shape)^2 * gamma(1 + 2 * shape) - 2 * (1 + shape) * 
+        bshape <- ((1 + shape + shape * psigamma(1))^2 + shape^2 * pi^2/6 + (1 + shape)^2 * gamma(1 + 2 * shape) - 2 * (1 + shape) *
             ((1 + shape) * gamma(1 + shape) + shape * psigamma(1 + shape) * gamma(1 + shape)))/shape^4
     } else if (rho < 0 && shape == 0) {
         bmu <- (-1 + rho + psigamma(1) * rho + (1 - rho) * gamma(1 - rho))/rho^2
-        bsigma <- (6 - 6 * rho - 6 * psigamma(1)^2 * rho - pi^2 * rho + 6 * psigamma(1) * (1 - 2 * rho) - 6 * (1 - rho) * gamma(1 - 
+        bsigma <- (6 - 6 * rho - 6 * psigamma(1)^2 * rho - pi^2 * rho + 6 * psigamma(1) * (1 - 2 * rho) - 6 * (1 - rho) * gamma(1 -
             rho) * (1 + psigamma(1 - rho)))/(6 * rho^2)
-        bshape <- -1/(12 * rho^3) * (-12 * gamma(2 - rho) * psigamma(2 - rho) + 6 * gamma(1 - rho) * (2 + 2 * (-1 + rho)^2 * psigamma(1 - 
-            rho) + (-1 + rho) * rho * psigamma(1 - rho)^2 + (-1 + rho) * rho * psigamma(1 - rho, deriv = 1)) + rho * (psigamma(1)^2 * 
-            (6 - 18 * rho) + pi^2 * (1 - 3 * rho) + 6 * (-psigamma(1)^3) * rho + 3 * (-psigamma(1)) * (-4 + (4 + pi^2) * rho) + 6 * 
+        bshape <- -1/(12 * rho^3) * (-12 * gamma(2 - rho) * psigamma(2 - rho) + 6 * gamma(1 - rho) * (2 + 2 * (-1 + rho)^2 * psigamma(1 -
+            rho) + (-1 + rho) * rho * psigamma(1 - rho)^2 + (-1 + rho) * rho * psigamma(1 - rho, deriv = 1)) + rho * (psigamma(1)^2 *
+            (6 - 18 * rho) + pi^2 * (1 - 3 * rho) + 6 * (-psigamma(1)^3) * rho + 3 * (-psigamma(1)) * (-4 + (4 + pi^2) * rho) + 6 *
             rho * (-2 - 2 * psigamma(1, deriv = 2) + psigamma(2, 2))))
     } else if (rho == 0 && shape == 0) {
         # Last row of information matrix with (0, 1, shape)
