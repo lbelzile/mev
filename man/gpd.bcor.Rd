@@ -20,11 +20,13 @@ vector of bias-corrected parameters
 }
 \description{
 Bias corrected estimates for the generalized Pareto distribution using
-Firth's modified score function or implicit bias substraction. The latter solves
-\deqn{\tilde{\boldsymbol{\theta}} = \hat{\boldsymbol{\theta}} + b(\tilde{\boldsymbol{\theta}}}
-for \eqn{\tilde{\boldsymbol{\theta}}}, using the first order term in the bias expansion as given by \code{\link{gpd.bias}}.
+Firth's modified score function or implicit bias substraction.
 }
 \details{
+Method \code{subtract} solves
+\deqn{\tilde{\boldsymbol{\theta}} = \hat{\boldsymbol{\theta}} + b(\tilde{\boldsymbol{\theta}}}
+for \eqn{\tilde{\boldsymbol{\theta}}}, using the first order term in the bias expansion as given by \code{\link{gpd.bias}}.
+
 The alternative is to use Firth's modified score and find the root of
 \deqn{U(\tilde{\boldsymbol{\theta}})-i(\tilde{\boldsymbol{\theta}})b(\tilde{\boldsymbol{\theta}}),}
 where \eqn{U} is the score vector, \eqn{b} is the first order bias and \eqn{i} is either the observed or Fisher information.

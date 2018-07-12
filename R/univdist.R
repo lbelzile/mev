@@ -637,7 +637,7 @@ gpde.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
     method <- match.arg(method, c("obs", "exp"))  #default to observed information
     es = as.vector(par[1])
     xi = as.vector(par[2])
-    if (xi >= 1 || xi <= -0.5) {
+    if (xi < -0.5) {
         return(matrix(NA, 2, 2))
     }
     if (method == "obs") {
@@ -788,7 +788,7 @@ gpdr.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
     xi = as.vector(par[2])
     r = as.vector(par[1])
     method <- method[1]
-    if (xi >= 1 || xi <= -0.5) {
+    if (xi < -0.5) {
         return(matrix(NA, 2, 2))
     }
     if (method == "obs") {
@@ -1265,7 +1265,7 @@ gpdN.score <- function(par, dat, N) {
 gpdN.infomat <- function(par, dat, N, method = c("obs", "exp"), nobs = length(dat)) {
     z = par[1]
     xi = par[2]
-    if (xi >= 1 || xi <= -0.5) {
+    if (xi < -0.5) {
         return(matrix(NA, 2, 2))
     }
     method <- method[1]  #default corresponds to observed information rather than Fisher information

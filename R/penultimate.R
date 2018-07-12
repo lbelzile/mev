@@ -73,13 +73,13 @@ egp.ll <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3")) {
     }
     args = pmax(0, (1 + xi * (xdat - thresh)/sigma))
     if (abs(xi) > 1e-08) {
-        switch(model, egp1 = length(xdat) * (log(abs(xi)) - log(sigma) - lbeta(kappa, 1/abs(xi))) + (kappa - 1) * sum(log(pmax(0, 
-            1 - args^(-sign(xi))))), egp2 = length(xdat) * (-log(sigma) - lgamma(kappa)) + (kappa - 1) * sum(log(log(args)/xi)), egp3 = length(xdat) * 
+        switch(model, egp1 = length(xdat) * (log(abs(xi)) - log(sigma) - lbeta(kappa, 1/abs(xi))) + (kappa - 1) * sum(log(pmax(0,
+            1 - args^(-sign(xi))))), egp2 = length(xdat) * (-log(sigma) - lgamma(kappa)) + (kappa - 1) * sum(log(log(args)/xi)), egp3 = length(xdat) *
             (log(kappa) - log(sigma)) + (kappa - 1) * sum(log(1 - args^(-1/xi)))) - (1/xi + 1) * sum(log(args))
     } else {
         # if xi=0
-        switch(model, egp1 = length(xdat) * (-log(sigma) - lgamma(kappa)) + (kappa - 1) * sum(log(xdat - thresh)), egp2 = length(xdat) * 
-            (-log(sigma) - lgamma(kappa)) + (kappa - 1) * sum(log(xdat - thresh)), egp3 = length(xdat) * (-log(sigma) + log(kappa)) + 
+        switch(model, egp1 = length(xdat) * (-log(sigma) - lgamma(kappa)) + (kappa - 1) * sum(log(xdat - thresh)), egp2 = length(xdat) *
+            (-log(sigma) - lgamma(kappa)) + (kappa - 1) * sum(log(xdat - thresh)), egp3 = length(xdat) * (-log(sigma) + log(kappa)) +
             (kappa - 1) * sum(log(1 - exp(-(xdat - thresh)/sigma)))) - sum(xdat - thresh)/sigma
     }
 }
@@ -90,15 +90,15 @@ egp.ll.opt <- function(par, xdat, thresh, model = c("egp1", "egp2", "egp3")) {
     xi = par[3]
     args = pmax(0, (1 + xi * (xdat - thresh)/exp(lsigma)))
     -(if (abs(xi) > 1e-08) {
-        switch(model, egp1 = length(xdat) * (log(abs(xi)) - log(exp(lsigma)) - lbeta(exp(lkappa), 1/abs(xi))) + (exp(lkappa) - 1) * 
-            sum(log(pmax(0, 1 - args^(-sign(xi))))), egp2 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) - 
-            1) * sum(log(log(args)/xi)), egp3 = length(xdat) * (log(exp(lkappa)) - log(exp(lsigma))) + (exp(lkappa) - 1) * sum(log(1 - 
+        switch(model, egp1 = length(xdat) * (log(abs(xi)) - log(exp(lsigma)) - lbeta(exp(lkappa), 1/abs(xi))) + (exp(lkappa) - 1) *
+            sum(log(pmax(0, 1 - args^(-sign(xi))))), egp2 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) -
+            1) * sum(log(log(args)/xi)), egp3 = length(xdat) * (log(exp(lkappa)) - log(exp(lsigma))) + (exp(lkappa) - 1) * sum(log(1 -
             args^(-1/xi)))) - (1/xi + 1) * sum(log(args))
     } else {
         # if xi=0
-        switch(model, egp1 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(xdat - thresh)), 
-            egp2 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(xdat - thresh)), egp3 = length(xdat) * 
-                (-log(exp(lsigma)) + log(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(1 - exp(-(xdat - thresh)/exp(lsigma))))) - sum(xdat - 
+        switch(model, egp1 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(xdat - thresh)),
+            egp2 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(xdat - thresh)), egp3 = length(xdat) *
+                (-log(exp(lsigma)) + log(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(1 - exp(-(xdat - thresh)/exp(lsigma))))) - sum(xdat -
             thresh)/exp(lsigma)
     })
 }
@@ -134,18 +134,18 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
         for (j in 1:length(p)) {
             pl = 1 - p[j]/rate[i]
             if (par[i, 3] == 0) {
-                retlev[i, j] <- thresh[i] - par[i, 2] * log(switch(model, egp1 = exp(-qgamma(pl, scale = 1, shape = par[i, 1])), egp2 = exp(-qgamma(pl, 
+                retlev[i, j] <- thresh[i] - par[i, 2] * log(switch(model, egp1 = exp(-qgamma(pl, scale = 1, shape = par[i, 1])), egp2 = exp(-qgamma(pl,
                   scale = 1, shape = par[i, 1])), egp3 = 1 - pl^(1/par[i, 1])))
             } else {
-                retlev[i, j] <- thresh[i] + par[i, 2]/par[i, 3] * (switch(model, egp1 = (1 - qbeta(pl, par[i, 1], 1/abs(par[i, 3])))^(-sign(par[i, 
-                  3])), egp2 = exp(par[i, 3] * qgamma(pl, scale = 1, shape = par[i, 1])), egp3 = (1 - pl^(1/par[i, 1]))^(-par[i, 3])) - 
+                retlev[i, j] <- thresh[i] + par[i, 2]/par[i, 3] * (switch(model, egp1 = (1 - qbeta(pl, par[i, 1], 1/abs(par[i, 3])))^(-sign(par[i,
+                  3])), egp2 = exp(par[i, 3] * qgamma(pl, scale = 1, shape = par[i, 1])), egp3 = (1 - pl^(1/par[i, 1]))^(-par[i, 3])) -
                   1)
             }
         }
     }
     if (plot) {
-        matplot(1/p, t(retlev), , type = "b", lty = rep(1, length(thresh)), col = rainbow(n = length(thresh), start = 2/6, end = 0), 
-            xlab = "Return period", ylab = "Estimated return level", main = paste0("Return level plot for EGP", substr(model, 4, 4), 
+        matplot(1/p, t(retlev), , type = "b", lty = rep(1, length(thresh)), col = rainbow(n = length(thresh), start = 2/6, end = 0),
+            xlab = "Return period", ylab = "Estimated return level", main = paste0("Return level plot for EGP", substr(model, 4, 4),
                 ""))
     }
     return(retlev)
@@ -197,7 +197,7 @@ egp.fit <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init) {
     if (opt$convergence == 0) {
         opt.par <- opt$par
         opt.par[1:2] <- exp(opt.par[1:2])
-        opt2 <- optim(par = opt.par, fn = egp.ll, method = "Nelder-Mead", xdat = xdata, thresh = thresh[1], model = model, hessian = TRUE, 
+        opt2 <- optim(par = opt.par, fn = egp.ll, method = "Nelder-Mead", xdat = xdata, thresh = thresh[1], model = model, hessian = TRUE,
             control = list(fnscale = -1))
         opt2$se <- sqrt(diag(-solve(opt2$hessian)))
         return(opt2)
@@ -222,7 +222,7 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
     if (missing(thresh) && isTRUE(any(c(missing(umin), missing(umax))))) {
         stop("Must provide either minimum and maximum threshold values, or a vector of threshold `thresh'")
     } else if (missing(thresh)) {
-        stopifnot(class(umin) %in% c("numeric", "integer"), (class(umax) %in% c("numeric", "integer")), length(umin) == 1, length(umax) == 
+        stopifnot(class(umin) %in% c("numeric", "integer"), (class(umax) %in% c("numeric", "integer")), length(umin) == 1, length(umax) ==
             1, umin < umax)
         thresh <- seq(umin, umax, length = nint)
     } else if (length(thresh) <= 1) {
@@ -245,26 +245,26 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
     }
     # Modify point estimates for the scale
     pe[, 4] <- pe[, 2] - pe[, 3] * thresh
-    
+
     # Graphics
     if (!(length(plots) == 1 && is.na(plots))) {
         plots <- sort(unique(plots))
         if (!isTRUE(all(plots %in% 1:3))) {
             stop("Invalid plot selection. Must be a vector of integers containing indices 1, 2 or 3.")
         }
-        
+
         old.par <- par(no.readonly = TRUE)
         par(mfrow = c(length(plots), 1), mar = c(4.5, 4.5, 3.1, 0.1))
         for (i in plots) {
-            if (i == 2) 
+            if (i == 2)
                 {
                   i <- 4
                 }  #Get modified scale
             # Plotting devices limits
             ylims = c(min(pe[, i]) - qnorm(0.975) * max(se[, i]), max(pe[, i]) + qnorm(0.975) * max(se[, i]))
-            plot(x = thresh, y = pe[, i], pch = 20, , xlab = "Threshold", bty = "l", ylab = switch(i, expression(kappa), expression(sigma), 
+            plot(x = thresh, y = pe[, i], pch = 20, , xlab = "Threshold", bty = "l", ylab = switch(i, expression(kappa), expression(sigma),
                 expression(xi), expression(tilde(sigma))), ylim = ylims, type = "n")  #,cex.lab=1.25)
-            polygon(c(thresh, rev(thresh)), c(pe[, i] - qnorm(0.975) * se[, i], rev(pe[, i] + qnorm(0.975) * se[, i])), col = "gray95", 
+            polygon(c(thresh, rev(thresh)), c(pe[, i] - qnorm(0.975) * se[, i], rev(pe[, i] + qnorm(0.975) * se[, i])), col = "gray95",
                 border = FALSE)
             if (i == min(plots)) {
                 title(paste0("Parameter stability plots for EGP", substr(model, 4, 4), ""), outer = FALSE)
@@ -272,11 +272,11 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
             if (i == 1) {
                 abline(h = 1, lwd = 0.5, col = "gray20", lty = 2)
             }
-            arrows(x0 = thresh, y0 = pe[, i] - qnorm(0.975) * se[, i], y1 = pe[, i] + qnorm(0.975) * se[, i], length = 0.05, angle = 90, 
+            arrows(x0 = thresh, y0 = pe[, i] - qnorm(0.975) * se[, i], y1 = pe[, i] + qnorm(0.975) * se[, i], length = 0.05, angle = 90,
                 code = 3)
             points(x = thresh, y = pe[, i], type = "b", pch = 20)
         }
-        
+
         par(old.par)
     }
     return(invisible(list(par = pe[, -4], se = se[, -4], model = model, conv = conv, thresh = thresh)))
@@ -285,7 +285,7 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
 
 ## (2) Smith penultimate approximations
 
-#' Smith (1987) penultimate approximations
+#' Smith's penultimate approximations
 #'
 #' The function takes as arguments the distribution and density functions. There are two options:
 #' \code{method='bm'} yields block maxima and the user should provide in such case the block sizes via the
@@ -299,19 +299,21 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
 #' @param ddensF derivative of the density function (optional)
 #' @param model either block maxima (\code{'bm'}) or peaks-over-threshold (\code{'pot'}) are supported
 #' @param u vector of thresholds for method \code{'pot'}
+#' @param qu vector of quantiles for method \code{'pot'}. Ignored if argument \code{u} is provided.
 #' @param m vector of block sizes for method \code{'bm'}
 #' @param returnList logical; should the arguments be returned as a list or as a matrix of parameter
 #' @param ... additional arguments passed to \code{densF} and \code{distF}
 #' @author Leo Belzile
 #' @importFrom methods formalArgs
 #' @import stats
-#' @return a matrix or a list (if \code{returnList}) containing
+#' @return either a vector, a matrix if either \code{length(m)>1} or \code{length(u)>1} or a list (if \code{returnList}) containing
 #' \itemize{
 #' \item{\code{loc}:} {location parameters (\code{method='bm'})}
 #' \item{\code{scale}:} {scale parameters}
 #' \item{\code{shape}:} {shape parameters}
-#' \item{\code{u:}} {thresholds (\code{method='pot'})}
-#' \item{\code{m:}} {block sizes (\code{method='bm'})}
+#' \item{\code{u:}} {thresholds (if \code{method='pot'})}
+#' \item{\code{u:}} {percentile corresponding to threshold (if \code{method='pot'})}
+#' \item{\code{m:}} {block sizes (if \code{method='bm'})}
 #' }
 #' @references Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
 #' @examples
@@ -328,7 +330,7 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
 #' plot(m, penult$shape, type='l',
 #'  xlab='Quantile', ylab='Penultimate shape')
 #' @export
-smith.penult <- function(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m, family, quantF = NULL, returnList = TRUE, ...) {
+smith.penult <- function(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, qu, m, family, quantF = NULL, returnList = TRUE, ...) {
     # Redefine density, quantile and distribution functions from family
     if (!missing(family)) {
         densF <- paste0("d", family)
@@ -345,9 +347,7 @@ smith.penult <- function(densF, distF, ddensF = NULL, model = c("bm", "pot"), u,
         indQ <- names(arguments) %in% formalArgs(quantF)
     }
     fn.arg <- arguments[which(indf * (indf == indF) == 1)]
-    if (!(length(model) == 1 && model %in% c("bm", "pot"))) {
-        stop("Invalid model selected")
-    }
+    model <- match.arg(model[1], c("bm","pot"))
     # Distribution function, density and density derivative
     densFn <- function(x) {
         do.call(densF, c(x = x, fn.arg))
@@ -403,12 +403,19 @@ smith.penult <- function(densF, distF, ddensF = NULL, model = c("bm", "pot"), u,
             params <- list(loc = bm, scale = phi(bm), shape = dphi(bm), m = m)
         } else {
             params <- cbind(loc = bm, scale = phi(bm), shape = dphi(bm), m = m)
+            if(nrow(params) == 1L){
+              params <- params[1,]
+            }
         }
         return(params)
-        
+
     } else if (model == "pot") {
-        if (missing(u)) {
+        if (missing(u) && missing(qu)) {
             stop("Sequence of thresholds must be provided.")
+        } else if(missing(u) && !missing(qu)){
+         u <-  sapply(qu, function(p){do.call(quantF, c(x = p, fn.arg))})
+        }  else if(!missing(u) && missing(qu)){
+         qu <-  sapply(u, function(q){do.call(distFn, c(x = q, fn.arg))})
         }
         phi <- function(x) {
             sapply(x, function(xval) {
@@ -421,22 +428,25 @@ smith.penult <- function(densF, distF, ddensF = NULL, model = c("bm", "pot"), u,
             })
         }
         if (returnList) {
-            params <- list(scale = phi(u), shape = dphi(u), u = u)
+            params <- list(u = u, scale = phi(u), shape = dphi(u),  qu = qu)
         } else {
-            params <- cbind(scale = phi(u), shape = dphi(u), u = u)
+            params <- cbind(u = u, scale = phi(u), shape = dphi(u),  qu = qu)
+            if(nrow(params) == 1L){
+             params <- params[1,]
+            }
         }
         return(params)
     }
     ## The approximations are for \eqn{F^m(x)} for the GEV distribution and for \eqn{1-F(u+x)}{1-F(u)} for the GP distribution.
-    
+
 }
 
 
-#' Smith (1987) third penultimate approximation
+#' Smith's third penultimate approximation
 #'
 #' This function returns the density and distribution functions
 #' of the 3rd penultimate approximation for extremes of Smith (1987). It requires
-#' knowledge of the exact constants \eqn{\epsilon} and \eqn{\rho}.
+#' knowledge of the exact constants \eqn{\epsilon} and \eqn{\rho} described in the paper.
 #'
 #' Let \eqn{F}, \eqn{f} denote respectively the distribution and density functions and define the function \eqn{\phi(x)}  as
 #' \deqn{\phi(x)=-\frac{F(x)\log F(x)}{f(x)}}{\phi(x)=-F(x)log F(x)/f(x)}
@@ -457,7 +467,7 @@ smith.penult <- function(densF, distF, ddensF = NULL, model = c("bm", "pot"), u,
 #'
 #' @section Warning:
 #' The third penultimate approximation does not yield a valid distribution function over the whole range of the original distribution, but is rather valid in a neighborhood of the true support of the distribution of maxima/threshold exceedance.
-#' The function handles the most standard failure (decreasing distribution function and negative densities), but any oscillatory behaviour will not be captured.
+#' The function handles the most standard failure (decreasing distribution function and negative densities), but any oscillatory behaviour will not necessarily be captured.
 #' This is inherent to the method and can be resolved by `not' evaluating the functions \eqn{F} and \eqn{f} at the faulty points.
 #' @param loc location parameter returned by \code{\link{smith.penult}} or threshold vector
 #' @param scale scale parameter returned by \code{\link{smith.penult}}
@@ -525,7 +535,7 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
     H <- function(x, eta, rho) {
         H0 <- function(x, eta) (0.5 * (log(pmax(1 + x * eta, 0))^2) - log(pmax(1 + x * eta, 0)) + 1 - 1/(1 + x * eta))/eta^3
         Hm1 <- function(x, eta) (log(pmax(1 + x * eta, 0))/(1 + x * eta) + log(pmax(1 + x * eta, 0)) - 2 * (1 - 1/(1 + x * eta)))/eta^3
-        Hrho <- function(x, eta, rho) ifelse((1 + x * eta) > 0, hrho(1 + x * eta, rho) + rho * hrho(1 + x * eta, -1) - (rho + 1) * 
+        Hrho <- function(x, eta, rho) ifelse((1 + x * eta) > 0, hrho(1 + x * eta, rho) + rho * hrho(1 + x * eta, -1) - (rho + 1) *
             log(1 + x * eta), 0)
         if (rho == 0) {
             H0(x, eta)
@@ -537,10 +547,10 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
     }
     # derivative of dH
     dH <- function(x, eta, rho) {
-        ifelse((1 + x * eta) > 0, ((1 + x * eta)^(rho - 1) + rho * (1 + x * eta)^(-2) - (rho + 1)/(1 + x * eta))/(rho * (rho + 1) * 
+        ifelse((1 + x * eta) > 0, ((1 + x * eta)^(rho - 1) + rho * (1 + x * eta)^(-2) - (rho + 1)/(1 + x * eta))/(rho * (rho + 1) *
             eta^2), 0)
     }
-    
+
     ## Block maxima - GEV-like distribution functions and densities Distribution function of third penultimate approximation
     if (model == "bm") {
         if (!mdaGumbel) {
@@ -550,7 +560,7 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
             GEV3rd <- function(x) {
                 # , an, bn, gamma, eps, rho
                 q <- (x - bn)/an
-                if (gamma == 0) 
+                if (gamma == 0)
                   p <- exp(-exp(-q) * (1 + eps * H(q, gamma, rho))) else p <- exp(-pmax(1 + gamma * q, 0)^(-1/gamma) * (1 + eps * H(q, gamma, rho)))
                 invalid <- which(diff(p) < 0)
                 p[invalid] <- 0
@@ -560,9 +570,9 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
             # Density of third penultimate approximation , an, bn, gamma, eps, rho
             dGEV3rd <- function(x) {
                 q <- (x - bn)/an
-                if (gamma == 0) 
+                if (gamma == 0)
                   stop("Not yet implemented")
-                pmax(0, GEV3rd(x)/an * ((1 + eps * H(q, gamma, rho)) * exp((-1/gamma - 1) * log(pmax(1 + q * gamma, 0))) - exp((-1/gamma) * 
+                pmax(0, GEV3rd(x)/an * ((1 + eps * H(q, gamma, rho)) * exp((-1/gamma - 1) * log(pmax(1 + q * gamma, 0))) - exp((-1/gamma) *
                   log(pmax(1 + q * gamma, 0))) * eps * dH(q, gamma, rho)))
             }
             return(list(F = GEV3rd, f = dGEV3rd))
@@ -570,7 +580,7 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
             # mdaGumbel Distribution function of the third penultimate approximation, replacing H_rho(x, eta) by x^3/6 , an, bn, gamma, eps
             GEV3rda <- function(x) {
                 q <- (x - bn)/an
-                if (gamma == 0) 
+                if (gamma == 0)
                   p <- exp(-exp(-q) * (1 + eps * q^3/6)) else p <- exp(-pmax(1 + gamma * q, 0)^(-1/gamma) * (1 + eps * q^3/6))
                 invalid <- which(diff(p) < 0)
                 p[invalid] <- 0
@@ -580,9 +590,9 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
             # Density of third penultimate approximation, replacing H_rho(x, eta) by x^3/6 , an, bn, gamma, eps
             dGEV3rda <- function(x) {
                 q <- (x - bn)/an
-                if (gamma == 0) 
+                if (gamma == 0)
                   stop("Not yet implemented")
-                pmax(0, GEV3rda(x)/an * ((1 + eps * q^3/6) * exp((-1/gamma - 1) * log(pmax(1 + q * gamma, 0))) - exp((-1/gamma) * 
+                pmax(0, GEV3rda(x)/an * ((1 + eps * q^3/6) * exp((-1/gamma - 1) * log(pmax(1 + q * gamma, 0))) - exp((-1/gamma) *
                   log(pmax(1 + q * gamma, 0))) * eps * q^2/2))
             }
             return(list(F = GEV3rda, f = dGEV3rda))
@@ -603,12 +613,12 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
             dGP3rd <- function(x) {
                 # , an, bn, gamma, eps, rho
                 q <- (x - bn)/an
-                pmax(0, pmax(0, (1 + gamma * q))^(-1/gamma - 1)/an * ((1 + eps * H(q, gamma, rho)) - pmax(0, (1 + gamma * q)) * eps * 
+                pmax(0, pmax(0, (1 + gamma * q))^(-1/gamma - 1)/an * ((1 + eps * H(q, gamma, rho)) - pmax(0, (1 + gamma * q)) * eps *
                   dH(q, gamma, rho)))
             }
             return(list(F = GP3rd, f = dGP3rd))
         } else {
-            
+
             GP3rda <- function(x) {
                 # , an, bn, gamma, eps
                 q <- (x - bn)/an
@@ -617,7 +627,7 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
                 p <- pmin(1, pmax(0, p))
                 p
             }
-            
+
             dGP3rda <- function(x) {
                 # , an, bn, gamma, eps
                 q <- (x - bn)/an
@@ -626,6 +636,6 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, model = c("bm", 
             return(list(F = GP3rda, f = dGP3rda))
         }
     }
-    
-    
+
+
 }

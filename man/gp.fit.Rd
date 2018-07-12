@@ -4,8 +4,8 @@
 \alias{gp.fit}
 \title{Peaks-over-threshold modelling using the generalized Pareto distribution}
 \usage{
-gp.fit(xdat, threshold, method = c("Grimshaw", "nlm", "optim", "ismev", "zs",
-  "zhang"), show = FALSE, MCMC = NULL)
+gp.fit(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim",
+  "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
@@ -56,8 +56,7 @@ Numerical optimization of the Generalized Pareto distribution over a
 high threshold.
 }
 \details{
-The default method is \code{'Grimshaw'}, consisting in maximization of the profile likelihood for the scale.
-Other options for maximization of the profile likelihood are \code{nlm} and \code{optim}, which use respectively \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{'ismev'} is the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
+The default method is \code{'Grimshaw'}, which maximizes the profile likelihood for the ratio scale/shape.  Other options include vanilla maximization of the log-likelihood using constrained optimization routine \code{copt}, 1-dimensional optimization of the profile likelihood using \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{'ismev'} performs the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
 The approximate Bayesian methods (\code{'zs'} and \code{'zhang'}) are extracted respectively from Zhang and Stephens (2009) and Zhang (2010) and consists of a approximate posterior mean calculated via importance
 sampling assuming a GPD prior is placed on the parameter of the profile likelihood.
 }
@@ -83,13 +82,13 @@ analyses, \emph{Extremes}, \bold{17}(2), 289--303.
 
 Zhang, J. (2010). Improving on estimation for the generalized Pareto distribution, \emph{Technometrics} \bold{52}(3), 335--339.
 
-Zhang, J.  and M.A. Stephens (2009). A new and efficient estimation method for the generalized Pareto distribution.
+Zhang, J.  and M. A. Stephens (2009). A new and efficient estimation method for the generalized Pareto distribution.
 \emph{Technometrics} \bold{51}(3), 316--325.
 }
 \seealso{
 \code{\link[evd]{fpot}} and \code{\link[ismev]{gpd.fit}}
 }
 \author{
-Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the other frequentist functions.
-Zhang and Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for the wrapper and MCMC samplers.
+Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the methods \code{nlm}, \code{nlm} and \code{ismev}.
+J. Zhang and Michael A. Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for the wrapper and MCMC samplers.
 }
