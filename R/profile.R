@@ -333,7 +333,8 @@ confint.extprof <- function(object, parm, level = 0.95, ...) {
 #' @export
 plot.extprof <- function(x, ...) {
     # plot the profile log-likelihoods
-    old.pars <- par(no.readonly = TRUE)
+    #old.pars <- par(no.readonly = TRUE)
+    args <- list(...)
     lik <- list()
     if (is.null(x$pll) && !is.null(x$r)) {
         lik$npll <- -x$r^2/2
@@ -348,8 +349,13 @@ plot.extprof <- function(x, ...) {
     if (!is.null(x$empcov.pll)) {
         lik$empcov.npll <- x$empcov.pll - x$empcov.maxpll
     }
-    ylim <- c(min(unlist(lapply(lik, min, na.rm = TRUE))), 0)
-    args <- list(...)
+
+    if(is.null(args$ylim)){
+      ylim <- c(min(unlist(lapply(lik, min, na.rm = TRUE))), 0)
+    } else{
+     ylim <- args$ylim
+    }
+
     tikz <- FALSE
     level <- c(0.95, 0.99)
     if (!is.null(args$level)) {
@@ -380,7 +386,13 @@ plot.extprof <- function(x, ...) {
         ind <- 1:4
         parm <- c("profile", "tem", "modif.tem", "modif.empcov")
     }
-    plot(NULL, type = "n", bty = "l", xlim = c(min(x$psi), max(x$psi)), ylim = ylim, xlab = ifelse(!tikz,
+
+    if(is.null(args$xlim)){
+      xlim <- c(min(x$psi), max(x$psi))
+    } else{
+      xlim <- args$xlim
+    }
+    plot(NULL, type = "n", bty = "l", xlim = xlim, ylim = ylim, xlab = ifelse(!tikz,
         expression(psi), "$\\psi$"), ylab = "Profile log likelihood")
     abline(h = -qchisq(level, 1)/2, col = "gray")
     # Legend
@@ -429,7 +441,7 @@ plot.extprof <- function(x, ...) {
     # add the legend in the top right corner
     legend(x = "topright", legend = rev(llegend), lty = rev(llty), lwd = rev(llwd), col = rev(lcols),
         bty = "n", x.intersp = 0.2, seg.len = 0.5, cex = 0.9)
-    par(old.pars)
+    #par(old.pars)
 
 }
 
