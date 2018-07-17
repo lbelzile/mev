@@ -62,5 +62,5 @@ gev.tem('Nquant', dat = dat, q = 0.5, N=100, plot = TRUE)
 }
 }
 \author{
-Leo Belzile, from code by A. Davison extracted from the \code{hoa} package bundle.
+Leo Belzile
 }

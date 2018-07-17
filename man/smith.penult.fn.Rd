@@ -2,7 +2,7 @@
 % Please edit documentation in R/penultimate.R
 \name{smith.penult.fn}
 \alias{smith.penult.fn}
-\title{Smith (1987) third penultimate approximation}
+\title{Smith's third penultimate approximation}
 \usage{
 smith.penult.fn(loc, scale, shape, eps, rho = NULL, model = c("bm", "pot"),
   mdaGumbel = FALSE)
@@ -25,7 +25,7 @@ smith.penult.fn(loc, scale, shape, eps, rho = NULL, model = c("bm", "pot"),
 \description{
 This function returns the density and distribution functions
 of the 3rd penultimate approximation for extremes of Smith (1987). It requires
-knowledge of the exact constants \eqn{\epsilon} and \eqn{\rho}.
+knowledge of the exact constants \eqn{\epsilon} and \eqn{\rho} described in the paper.
 }
 \details{
 Let \eqn{F}, \eqn{f} denote respectively the distribution and density functions and define the function \eqn{\phi(x)}  as
@@ -48,7 +48,7 @@ attraction of the Gumbel distribution and that are class N, it is also possible 
 \section{Warning}{
 
 The third penultimate approximation does not yield a valid distribution function over the whole range of the original distribution, but is rather valid in a neighborhood of the true support of the distribution of maxima/threshold exceedance.
-The function handles the most standard failure (decreasing distribution function and negative densities), but any oscillatory behaviour will not be captured.
+The function handles the most standard failure (decreasing distribution function and negative densities), but any oscillatory behaviour will not necessarily be captured.
 This is inherent to the method and can be resolved by `not' evaluating the functions \eqn{F} and \eqn{f} at the faulty points.
 }
 

@@ -2,9 +2,9 @@
 % Please edit documentation in R/penultimate.R
 \name{smith.penult}
 \alias{smith.penult}
-\title{Smith (1987) penultimate approximations}
+\title{Smith's penultimate approximations}
 \usage{
-smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m,
+smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, qu, m,
   family, quantF = NULL, returnList = TRUE, ...)
 }
 \arguments{
@@ -18,6 +18,8 @@ smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m,
 
 \item{u}{vector of thresholds for method \code{'pot'}}
 
+\item{qu}{vector of quantiles for method \code{'pot'}. Ignored if argument \code{u} is provided.}
+
 \item{m}{vector of block sizes for method \code{'bm'}}
 
 \item{family}{the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}}
@@ -29,13 +31,14 @@ smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, m,
 \item{...}{additional arguments passed to \code{densF} and \code{distF}}
 }
 \value{
-a matrix or a list (if \code{returnList}) containing
+either a vector, a matrix if either \code{length(m)>1} or \code{length(u)>1} or a list (if \code{returnList}) containing
 \itemize{
 \item{\code{loc}:} {location parameters (\code{method='bm'})}
 \item{\code{scale}:} {scale parameters}
 \item{\code{shape}:} {shape parameters}
-\item{\code{u:}} {thresholds (\code{method='pot'})}
-\item{\code{m:}} {block sizes (\code{method='bm'})}
+\item{\code{u:}} {thresholds (if \code{method='pot'})}
+\item{\code{u:}} {percentile corresponding to threshold (if \code{method='pot'})}
+\item{\code{m:}} {block sizes (if \code{method='bm'})}
 }
 }
 \description{

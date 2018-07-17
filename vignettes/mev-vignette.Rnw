@@ -45,7 +45,7 @@ EPFL-SB-MATH-STAT \\ Station 8, Bâtiment MA \\CH-1015, Switzerland,\\ \href{leo
 }
 \end{center}
 
-The `\code{mev}' package was originally introduced to implement the exact unconditional sampling algorithms in \cite{Dombry:2016}. Thetwo algorithms therein allow one to simulate simple max-stable random vectors. The implementation will work efficiently for moderate dimensions and do not currently take approximate schemes for large spatial domains.
+The `\code{mev}' package was originally introduced to implement the exact unconditional sampling algorithms in \cite{Dombry:2016}. The two algorithms therein allow one to simulate simple max-stable random vectors. The implementation will work efficiently for moderate dimensions.
 
 \section{Functions and use}
 

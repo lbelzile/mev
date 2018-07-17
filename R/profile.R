@@ -316,6 +316,16 @@ confint.extprof <- function(object, parm, level = 0.95, ...) {
     if (!is.null(conf)) {
         colnames(conf) <- c("Profile LRT", "TEM", "Modif. (TEM)", "Modif. (emp. cov.)")[ind]
         rownames(conf) <- c("Estimate", "Lower CI", "Upper CI")
+        #Check output makes sense - lower CI is lower than estimate
+        #and similarly upper CI is above estimate
+        wrong_below <- which(conf[2,]>conf[1,])
+        if(length(wrong_below)>0){
+         conf[2,][wrong_below] <- NA
+        }
+        wrong_above <- which(conf[3,] < conf[1,])
+        if(length(wrong_above)>0){
+          conf[3,][wrong_above] <- NA
+        }
         return(conf)
     }
 }
@@ -590,7 +600,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             mu = par[1]
             sigma = par[2]
             xi = as.vector(par[3])
-            if (!isTRUE(all.equal(xi, 0))) {
+            if (!isTRUE(all.equal(xi, 0, tolerance = 1e-8))) {
                 cbind(-(-(mu - dat) * xi/sigma + 1)^(-1/xi - 1)/sigma - xi * (1/xi + 1)/(sigma *
                   ((mu - dat) * xi/sigma - 1)), -(dat - mu) * ((dat - mu) * xi/sigma + 1)^(-1/xi -
                   1)/sigma^2 + (dat - mu) * xi * (1/xi + 1)/(sigma^2 * ((dat - mu) * xi/sigma +
@@ -802,8 +812,8 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         # Modified profile likelihood based on p* approximation, two modifications due to Severini
         if ("modif" %in% mod) {
             tem.objfunc <- function(par, dat = dat) {
-                0.5 * log(det(gev.infomat(par, dat = dat, method = "obs")[-ind, -ind])) - log(det(gev.dphi(par = par,
-                  dat = dat, V = V[, -ind])[-ind, ]))
+                0.5 * log(det(gev.infomat(par, dat = dat, method = "obs")[-ind, -ind])) -
+                log(abs(det(gev.dphi(par = par, dat = dat, V = V[, -ind])[-ind, ])))
             }
             optim.tem.fn <- function(psi, dat = dat, param = param) {
                 theta.psi.opt <- switch(param, loc = constr.mle.loc(psi, dat = dat), scale = constr.mle.scale(psi,
@@ -828,7 +838,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             score.scale.mle <- gev.score.f(mle, dat)[, -ind]  #keep s_lambda
             empcov.objfunc <- function(par, dat) {
                 0.5 * log(det(gev.infomat(par = par, dat = dat, method = "obs")[-ind, -ind])) -
-                  log(sum(score.scale.mle * gev.score.f(par, dat)[, -ind]))
+                  log(abs(sum(score.scale.mle * gev.score.f(par, dat)[, -ind])))
             }
             profllempcov <- profll + apply(pars, 1, empcov.objfunc, dat = dat)
             optim.empcov.fn <- function(psi, param = param, dat = dat) {
@@ -919,7 +929,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
             tem.objfunc.quant <- function(par) {
                 0.5 * log(det(gevr.infomat(par = par, dat = dat, method = "obs", p = p)[-1,
-                  -1])) - log(det(gevr.dphi(par = par, dat = dat, p = p, V = V[, -1])[-1, ]))
+                  -1])) - log(abs(det(gevr.dphi(par = par, dat = dat, p = p, V = V[, -1])[-1, ])))
             }
             optim.tem.fn.quant <- function(psi) {
                 theta.psi.opt <- constr.mle.quant(psi)
@@ -969,7 +979,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             score.quant.mle <- gevr.score.f(mle, dat, p = p)
             empcov.objfunc.quant <- function(par) {
                 0.5 * log(det(gevr.infomat(par = par, dat = dat, method = "obs", p = p)[-1,
-                  -1])) - log(sum(score.quant.mle * gevr.score.f(par, dat, p = p)))
+                  -1])) - log(abs(sum(score.quant.mle * gevr.score.f(par, dat, p = p))))
             }
             profllempcov <- profll + suppressWarnings(apply(pars, 1, empcov.objfunc.quant))
             optim.empcov.fn.quant <- function(psi) {
@@ -1097,8 +1107,8 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
             tem.objfunc.N <- function(par, dat = dat, N = N, qty = qty, q = q) {
                 0.5 * log(det(gevN.infomat(par = par, dat = dat, method = "obs", N = N, qty = qty,
-                  q = q)[-2, -2])) - log(det(gevN.dphi(par = par, dat = dat, N = N, V = V[,
-                  -2], qty = qty, q = q)[-2, ]))
+                  q = q)[-2, -2])) - log(abs(det(gevN.dphi(par = par, dat = dat, N = N, V = V[,
+                  -2], qty = qty, q = q)[-2, ])))
             }
             optim.tem.fn.N <- function(psi, dat = dat, q = q, qty = qty, N = N) {
                 theta.psi.opt <- constr.mle.N(psi, dat = dat)
@@ -1168,8 +1178,8 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             score.N.mle <- gevN.score.f(mle, dat, N, qty = qty, q = q)
             empcov.objfunc.N <- function(par, dat = dat, q = q, qty = qty, N = N) {
                 0.5 * log(det(gevN.infomat(par = par, dat = dat, method = "obs", N = N, q = q,
-                  qty = qty)[-2, -2])) - log(sum(score.N.mle * gevN.score.f(par, dat, N = N,
-                  qty = qty, q = q)))
+                  qty = qty)[-2, -2])) - log(abs(sum(score.N.mle * gevN.score.f(par, dat, N = N,
+                  qty = qty, q = q))))
             }
             profllempcov <- profll + suppressWarnings(apply(pars, 1, empcov.objfunc.N, N = N,
                 q = q, dat = dat, qty = qty))
@@ -1416,8 +1426,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         if ("modif" %in% mod) {
             # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
             tem.objfunc.scale <- function(par) {
-                0.5 * log(gpd.infomat(par = par, dat = dat, method = "obs")[2, 2]) - log(gpd.dphi(par = par,
-                  dat = dat, V = V[, 2, drop = FALSE])[2, 1])
+                0.5 * log(gpd.infomat(par = par, dat = dat, method = "obs")[2, 2]) -
+                log(abs(gpd.dphi(par = par, dat = dat, V = V[, 2, drop = FALSE])[2, 1]))
             }
             optim.tem.fn.scale <- function(psi) {
                 theta.psi.opt <- constr.mle.scale(psi)
@@ -1448,8 +1458,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             # Score at MLE (sums to zero)
             score.scale.mle <- gpd.score.f(mle, dat)[, 2]  #keep s_lambda
             empcov.objfunc.scale <- function(par) {
-                0.5 * log(gpd.infomat(par = par, dat = dat, method = "obs")[2, 2]) - log(sum(score.scale.mle *
-                  gpd.score.f(par, dat)[, 2]))
+                0.5 * log(gpd.infomat(par = par, dat = dat, method = "obs")[2, 2]) -
+                log(abs(sum(score.scale.mle * gpd.score.f(par, dat)[, 2])))
             }
             profllempcov <- profll + apply(pars, 1, empcov.objfunc.scale)
             optim.empcov.fn.scale <- function(psi) {
@@ -1531,8 +1541,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         if ("modif" %in% mod) {
             # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
             tem.objfunc.shape <- function(par) {
-                0.5 * log(gpd.infomat(par = par, dat = dat, method = "obs")[1, 1]) - log(gpd.dphi(par = par,
-                  dat = dat, V = V[, 1, drop = FALSE])[1, 1])
+                0.5 * log(gpd.infomat(par = par, dat = dat, method = "obs")[1, 1]) -
+                log(abs(gpd.dphi(par = par, dat = dat, V = V[, 1, drop = FALSE])[1, 1]))
             }
             optim.tem.fn.shape <- function(psi) {
                 theta.psi.opt <- constr.mle.shape(psi)
@@ -1562,8 +1572,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             # Score at MLE (sums to zero)
             score.shape.mle <- gpd.score.f(mle, dat)[, 1]  #keep s_lambda
             empcov.objfunc.shape <- function(par) {
-                0.5 * log(gpd.infomat(par = par, dat = dat, method = "obs")[1, 1]) - log(sum(score.shape.mle *
-                  gpd.score.f(par, dat)[, 1]))
+                0.5 * log(gpd.infomat(par = par, dat = dat, method = "obs")[1, 1]) -
+                log(abs(sum(score.shape.mle * gpd.score.f(par, dat)[, 1])))
             }
             profllempcov <- profll + apply(pars, 1, empcov.objfunc.shape)
             optim.empcov.fn.shape <- function(psi) {
@@ -1657,7 +1667,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
             tem.objfunc.quant <- function(par) {
                 0.5 * log(gpdr.infomat(par = par, dat = dat, method = "obs", m = m)[2, 2]) -
-                  log(gpdr.dphi(par = par, dat = dat, m = m, V = V[, 2, drop = FALSE])[2, 1])
+                  log(abs(gpdr.dphi(par = par, dat = dat, m = m, V = V[, 2, drop = FALSE])[2, 1]))
             }
             optim.tem.fn.quant <- function(psi) {
                 theta.psi.opt <- constr.mle.quant(psi)
@@ -1685,7 +1695,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             score.quant.mle <- gpdr.score.f(mle, dat, m)
             empcov.objfunc.quant <- function(par) {
                 0.5 * log(gpdr.infomat(par = par, dat = dat, method = "obs", m = m)[2, 2]) -
-                  log(sum(score.quant.mle * gpdr.score.f(par, dat, m = m)))
+                  log(abs(sum(score.quant.mle * gpdr.score.f(par, dat, m = m))))
             }
             profllempcov <- profll + suppressWarnings(apply(pars, 1, empcov.objfunc.quant))
             optim.empcov.fn.quant <- function(psi) {
@@ -1778,7 +1788,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
             tem.objfunc.es <- function(par) {
                 0.5 * log(gpde.infomat(par = par, dat = dat, method = "obs", m = m)[2, 2]) -
-                  log(gpde.dphi(par = par, dat = dat, m = m, V = V[, 2, drop = FALSE])[2, 1])
+                  log(abs(gpde.dphi(par = par, dat = dat, m = m, V = V[, 2, drop = FALSE])[2, 1]))
             }
             optim.tem.fn.es <- function(psi) {
                 theta.psi.opt <- constr.mle.es(psi)
@@ -1809,7 +1819,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             score.es.mle <- gpde.score.f(mle, dat, m)
             empcov.objfunc.es <- function(par) {
                 0.5 * log(gpde.infomat(par = par, dat = dat, method = "obs", m = m)[2, 2]) -
-                  log(sum(score.es.mle * gpde.score.f(par, dat, m = m)))
+                  log(abs(sum(score.es.mle * gpde.score.f(par, dat, m = m))))
             }
             profllempcov <- profll + suppressWarnings(apply(pars, 1, empcov.objfunc.es))
             optim.empcov.fn.es <- function(psi) {
@@ -1855,7 +1865,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             }
         }
         if (any(as.vector(psi) < 0)) {
-            warning("Negative scale values provided.")
+            warning("Negative Nmean values provided.")
             psi <- psi[psi > 0]
             if (length(psi) == 0) {
                 psi <- mle[1]
@@ -1905,7 +1915,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
             tem.objfunc.Nmean <- function(par) {
                 0.5 * log(gpdN.infomat(par = par, dat = dat, method = "obs", N = N)[2, 2]) -
-                  log(gpdN.dphi(par = par, dat = dat, N = N, V = V[, 2, drop = FALSE])[2, 1])
+                  log(abs(gpdN.dphi(par = par, dat = dat, N = N, V = V[, 2, drop = FALSE])[2, 1]))
             }
             optim.tem.fn.Nmean <- function(psi) {
                 theta.psi.opt <- constr.mle.Nmean(psi)
@@ -1935,7 +1945,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             score.Nmean.mle <- gpdN.score.f(mle, dat, N)
             empcov.objfunc.Nmean <- function(par) {
                 0.5 * log(gpdN.infomat(par = par, dat = dat, method = "obs", N = N)[2, 2]) -
-                  log(sum(score.Nmean.mle * gpdN.score.f(par, dat, N = N)))
+                  log(abs(sum(score.Nmean.mle * gpdN.score.f(par, dat, N = N))))
             }
             profllempcov <- profll + suppressWarnings(apply(pars, 1, empcov.objfunc.Nmean))
             optim.empcov.fn.Nmean <- function(psi) {
@@ -2128,7 +2138,7 @@ spline.corr <- function(fr) {
     # Ad-hoc fix of the values close to MLE where the numerical precision causes difficulty
     # Outlier detection via chi-square test From package outliers, (c)Lukasz Komsta
     scores <- function(x, prob = NA) {
-        abs((x - mean(x))^2/var(x)) > qchisq(prob, 1)
+        (x - mean(x))^2/var(x) > qchisq(prob, 1)
     }
     bad <- which(scores(departure, prob = 0.95))
 
@@ -2147,12 +2157,10 @@ spline.corr <- function(fr) {
         fr$spline <- spline
         fr$rstar <- predict(spline, fr$r, interval = "none")[, 2] + fr$r
     } else {
-        spline <- stats::smooth.spline(x = na.omit(cbind(regr, resp)), w = w, cv = FALSE, all.knots = TRUE)
+        spline <- stats::smooth.spline(x = na.omit(cbind(regr, resp)), cv = FALSE, all.knots = TRUE)
         fr$spline <- spline
         fr$rstar <- predict(spline, fr$r)$y + fr$r
     }
-
-
     return(fr)
 }
 
@@ -2264,7 +2272,7 @@ confint.fr <- function(object, parm, level = 0.95, ...) {
 #' @param n.psi number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE. If \code{psi} is a vector of length 2 and \code{n.psi} is greater than 2, these are taken to be endpoints of the sequence.
 #' @param plot logical indicating whether \code{plot.fr} should be called upon exit
 #' @param correction logical indicating whether \link{spline.corr} should be called.
-#' @author Leo Belzile, from code by A. Davison extracted from the \code{hoa} package bundle.
+#' @author Leo Belzile
 #' @importFrom ismev gev.fit
 #' @return an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
 #' \itemize{

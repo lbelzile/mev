@@ -5,10 +5,20 @@ New:
 * Exponent measure for Brown-Resnick and extremal Student model
 * 'spunif' for semi-parametric transform to uniform (tail modelled using GP)
 * 'rparp' now has attributes to give acceptance rate of accept/reject procedure.
+* Exponent measure estimate `extcoefschlather`
 Fixes:
 * scaling of Brown-Resnick is now consistent with literature (half of semivariogram)
 * Incorrect degrees of freedom argument in C++ code for 'rmev' with extremal Student family
 * rparp now has a hard bound to ensure the vector of simulated vectors fits in memory.
+* Fix to information matrix for case with shape greater than 1
+* Change to Grimshaw routine to ensure shape not less than -1, constrained optimization method
+* Information matrix, score for GEV now interpolate in a neighborhood of zero to preserve continuity and avoid numerical overflow.
+* Information matrix of GEV: scale factor off.
+
+Changes:
+* Change to plot for profile log-likelihood methods
+* Quantiles for Smith penultimate approximations
+* Changed all rootSolve for nleqslv routines
 
 mev v.1.11 (Release date: 2018-02-23)
 ==============
