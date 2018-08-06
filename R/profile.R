@@ -62,7 +62,8 @@
     return(S1)
 }
 
-################################################################### Additional routines, July 2017 ###### GEV in terms of return levels ###
+##################### Additional routines, July 2017
+#################### GEV in terms of return levels ###
 
 
 #' Generalized Pareto maximum likelihood estimates for various quantities of interest
@@ -120,6 +121,16 @@ gev.mle <- function(dat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nq
     p, q) {
     stopifnot(is.vector(dat))
     args <- match.arg(args, c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), several.ok = TRUE)
+
+    if(missing(q) && "Nquant" %in% args){
+      stop("Argument `q` missing for `Nquant`")
+    }
+    if(missing(p) && "quant" %in% args){
+     stop("Argument `p` missing for `quant`")
+    }
+    if(missing(N) && any(c("Nmean", "Nquant") %in% args)){
+      stop("Argument `N` missing for `Nquant` or `Nmean`")
+    }
     in2 <- sqrt(6 * var(dat))/pi
     in1 <- mean(dat) - 0.57722 * in2
     xmax <- max(dat)
@@ -127,13 +138,13 @@ gev.mle <- function(dat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nq
     # fitted <- nloptr::slsqp(x0 = c(in1, in2, 0.1), fn = function(par){-gev.ll(par, dat =
     # dat)}, gr = function(par){-gev.score(par, dat = dat)}, hin = function(par){ c(par[2] +
     # par[3]*(xmax-par[1]), par[2] + par[3]*(xmin-par[1]))})$par
-    fitted <- alabama::constrOptim.nl(par = c(in1, in2, 0.1), fn = function(par) {
+    fitted <- suppressWarnings(alabama::constrOptim.nl(par = c(in1, in2, 0.1), fn = function(par) {
         -gev.ll(par, dat = dat)
     }, gr = function(par) {
         -gev.score(par, dat = dat)
     }, hin = function(par) {
         c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
-    }, control.outer = list(trace = FALSE))$par
+    }, control.outer = list(trace = FALSE))$par)
     mu <- fitted[1]
     sigma <- fitted[2]
     xi <- fitted[3]
@@ -144,11 +155,110 @@ gev.mle <- function(dat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nq
         sigma/xi * (1 - N^xi * gamma(1 - xi)), mu + sigma * (log(N) - psigamma(1))))
 
     a <- as.vector(unlist(a))
-    names(a) = args
+    names(a) <- args
     a
 }
 
 
+#' Maximum likelihood estimation for the generalized extreme value distribution
+#'
+#' This function returns an object of class \code{gev}, with default methods for printing and quantile-quantile plots.
+#' @inheritParams gp.fit
+#' @return a list containing the following components:
+#' \itemize{
+#' \item \code{estimate} a vector containing all parameters.
+#' \item \code{std.err} a vector containing the standard errors.
+#' \item \code{var.cov} the variance covariance matrix, obtained as the numerical inverse of the observed information matrix.
+#' \item \code{method} the method used to fit the parameter.
+#' \item \code{deviance} the deviance at the maximum likelihood estimates.
+#' \item \code{convergence} components taken from the list returned by \code{\link[alabama]{constrOptim.nl}}.
+#' Values other than \code{0} indicate that the algorithm likely did not converge.
+#' \item \code{counts} components taken from the list returned by \code{\link[alabama]{constrOptim.nl}}.
+#' }
+fit.gev <- function(xdat, show = FALSE){
+  xdat <- na.omit(as.vector(xdat))
+  n <- length(xdat)
+  #Optimization routine, with default starting values
+  in2 <- sqrt(6 * var(xdat))/pi
+  in1 <- mean(xdat) - 0.57722 * in2
+  xmax <- max(xdat)
+  xmin <- min(xdat)
+  mle <- suppressWarnings(alabama::constrOptim.nl(par = c(in1, in2, 0.1), fn = function(par) {
+    -gev.ll(par, dat = xdat)
+  }, gr = function(par) {
+    -gev.score(par, dat = xdat)
+  }, hin = function(par) {
+    c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
+  }, control.outer = list(trace = FALSE)))
+
+  #Extract information and store
+  fitted <- list()
+  #Point estimate
+  fitted$estimate <- mle$par
+  #Observed information matrix and standard errors
+  if(fitted$estimate[3] > -0.5){
+    fitted$var.cov <- solve(gev.infomat(par = fitted$estimate, dat = xdat, method = "obs"))
+    fitted$std.err <- sqrt(diag(fitted$var.cov))
+  } else{
+    fitted$var.cov <- matrix(NA, ncol = 3, nrow = 3)
+    fitted$std.err <- rep(NA, 3)
+  }
+  names(fitted$std.err) <- names(fitted$estimate) <- c("loc","scale","shape")
+  fitted$method <- "copt"
+  fitted$deviance <- 2*mle$value
+  fitted$convergence <- mle$convergence
+  fitted$counts <- mle$counts
+  fitted$xdat <- xdat
+  class(fitted) <- "gev"
+  if(show){
+    print(fitted)
+  }
+  invisible(fitted)
+}
+
+# @param x A fitted object of class \code{gev}.
+# @param main title for the QQ-plot #' @param xlab x-axis label
+# @param ylab y-axis label
+# @param ... additional argument passed to \code{matplot}.
+#' @export
+plot.gev <- function(x, main = "Quantile-quantile plot", xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...) {
+  dat <- sort(x$xdat)
+  n <- length(dat)
+  confint_lim <- t(sapply(1:n, function(i) {
+    qgev(p = qbeta(c(0.025, 0.975), i, n - i + 1), loc = x$estimate[1], scale = x$estimate[2], shape = x$estimate[3])
+  }))
+  quant <- qgev(rank(dat)/(n + 1), loc = x$estimate[1], scale = x$estimate[2], shape = x$estimate[3])
+  matplot(quant, cbind(dat, confint_lim), main = main, xlab = xlab, ylab = ylab, type = "pll", pch = 20, col = c(1, "grey", "grey"),
+          lty = c(1, 2, 2), bty = "l", pty = "s", ...)
+  abline(0, 1)
+  matlim <- cbind(quant, confint_lim)
+  colnames(matlim) <- c("quantile", "lower","upper")
+  invisible(matlim)
+}
+
+
+
+# @param x A fitted object of class \code{gpd}.
+# @param digits Number of digits to display in \code{print} call.
+# @param ... Additional argument passed to \code{print}.
+#' @export
+"print.gev" <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+cat("Method:", x$method, "\n")
+cat("Deviance:", x$deviance, "\n")
+
+cat("\nEstimates\n")
+print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)
+if (!is.null(x$std.err) && x$estimate[1] > -0.5) {
+  cat("\nStandard Errors\n")
+  print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
+}
+cat("\nOptimization Information\n")
+cat("  Convergence:", x$convergence, "\n")
+  cat("  Function Evaluations:", x$counts["function"], "\n")
+  cat("  Gradient Evaluations:", x$counts["gradient"], "\n")
+  cat("\n")
+invisible(x)
+}
 
 
 
@@ -1729,7 +1839,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             lowvals <- sapply(psirangelow, function(par) {
                 gpde.ll(c(par, constr.mle.es(par)), m = m, dat = dat)
             }) - maxll
-            psirangehigh <- seq(2.5, 10, length = 12) * std.error + mle[1]
+            psirangehigh <- seq(2.5, 30, length = 12) * std.error + mle[1]
             highvals <- sapply(psirangehigh, function(par) {
                 gpde.ll(c(par, constr.mle.es(par)), m = m, dat = dat)
             }) - maxll
@@ -1841,28 +1951,41 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
                 -gpdN.ll(par = c(psi, lambda), dat = dat, N = N)
             }, psi = Nmeant, N = N, lower = -1 + 1e-10, upper = 1 - 1e-10)$par
         }
-
         # Missing psi vector
         if (missing(psi) || is.null(psi) || is.na(psi)) {
+            #compute profile log-lik on a grid left and right of the MLE
             psirangelow <- unique(pmax(mean(dat), seq(-3, -0.25, length = 20) * std.error +
                 mle[1]))
             lowvals <- sapply(psirangelow, function(par) {
                 gpdN.ll(c(par, constr.mle.Nmean(par)), dat = dat, N = N)
             }) - maxll
-            psirangehigh <- seq(2.5, 8, length = 6) * std.error + mle[1]
+            psirangehigh <- seq(2.5, 50, length = 20) * std.error + mle[1]
             highvals <- sapply(psirangehigh, function(par) {
                 gpdN.ll(c(par, constr.mle.Nmean(par)), dat = dat, N = N)
             }) - maxll
-
+            #Try to do linear interpolation - only works if value inside the interval lowvals or highvals
             lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
-            hi <- approx(x = highvals, y = psirangehigh, xout = -4)$y
-            lo <- ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[1], lo)
-            hi <- ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[1], hi)
-            psi <- c(seq(lo, mle[1], length = 15)[-15], seq(mle[1], min(mle[1] + 2 * std.error,
-                hi), length = 25)[-1])
-            if (mle[1] + 2 * std.error < hi) {
-                psi <- c(psi, seq(mle[1] + 2 * std.error, hi, length = 20))
-            }
+            #Else linear interpolation with linear model fitted to lower values
+            lo <- ifelse(is.na(lo), spline(x = lowvals, y = psirangelow, xout = -4)$y, lo)
+            psirangelow <- seq(lo, mle[1], length = 20)
+            lowvals <- sapply(psirangelow, function(par) {
+              gpdN.ll(c(par, constr.mle.Nmean(par)), dat = dat, N = N)
+            }) - maxll
+            #hi <- approx(x = highvals, y = psirangehigh, xout = -4)$y
+            #For upper, use spline approx
+            hi <- spline(x = highvals, y = psirangehigh, xout = -4)$y
+            #Recompute the range
+            psirangehigh <- seq(psirangehigh[1], hi, length = 30)
+            highvals <- sapply(psirangehigh, function(par) {
+               gpdN.ll(c(par, constr.mle.Nmean(par)), dat = dat, N = N)
+             }) - maxll
+            #Remove NAs, inf, etc.
+            highvals <- highvals[is.finite(highvals)]
+            psirangehigh <- psirangehigh[1:length(highvals)]
+            #If could not interpolate, use a simple linear model to predict lower value
+            #hi <- ifelse(is.na(hi), spline(x = highvals, y = psirangehigh, xout = -4)$y, hi)
+            psi <- as.vector(c(spline(x=c(lowvals, 0), y = c(psirangelow, mle[1]), xout = seq(-4, -0.1, length = 15))$y, mle[1],
+                     spline(x=c(0, highvals), y = c(mle[1], psirangehigh), xout = seq(-0.1, highvals[length(highvals)], length = 20))$y))
         }
         if (any(as.vector(psi) < 0)) {
             warning("Negative Nmean values provided.")
@@ -2092,7 +2215,7 @@ plot.fr <- function(x, ...) {
 #' @section Warning:
 #'
 #' While penalized (robust) splines often do a good job at capturing and correcting for numerical outliers and \code{NA}, it
-#' may also be driven by unusual features of the curve or fail at detecting outliers (or falsely identifying `correct' values as outliers). The user should always validate by comparing the plots of both the uncorrected (raw) output of the object with that of \code{spline.corr}.
+#' may also be driven by unusual values lying on the profile log-likelihood the curve or fail to detect outliers (or falsely identifying `correct' values as outliers). The user should always validate by comparing the plots of both the uncorrected (raw) output of the object with that of \code{spline.corr}.
 #' @details If available, the function uses \code{cobs} from the eponym package. The latter handles constraints and smoothness penalties, and is more robust than the equivalent \code{\link[stats]{smooth.spline}}.
 #'
 #' @param fr an object of class \code{fr}, normally the output of \link{gpd.tem} or \link{gev.tem}.
