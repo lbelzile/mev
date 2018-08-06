@@ -1510,6 +1510,11 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim
       }
       temp$mle <- temp$par
       temp$nllh <- -temp$value
+      nll_limxi <- -length(mdat) * log(max(mdat))
+      if(temp$value <  nll_limxi){
+        temp$mle <- c(max(mdat), -1+1e-7)
+        temp$nllh <- -nll_limxi
+      }
       temp$conv <- temp$convergence
     } else if (method == "optim") {
         temp <- .gpd_1D_fit(xdat, threshold, show = FALSE, xi.tol = xi.tol)  # 1D max, algebraic Hessian
@@ -1624,7 +1629,9 @@ plot.gpd <- function(x, main = "Quantile-quantile plot", xlab = "Theoretical qua
     matplot(quant, cbind(dat, confint_lim), main = main, xlab = xlab, ylab = ylab, type = "pll", pch = 20, col = c(1, "grey", "grey"),
         lty = c(1, 2, 2), bty = "l", pty = "s", ...)
     abline(0, 1)
-    invisible(cbind(quant, confint_lim))
+    matlim <- cbind(quant, confint_lim)
+    colnames(matlim) <- c("quantile", "lower","upper")
+    invisible(matlim)
 }
 
 
@@ -1635,7 +1642,7 @@ plot.gpd <- function(x, main = "Quantile-quantile plot", xlab = "Theoretical qua
 #' @export
 "print.gpd" <- function(x, digits = max(3, getOption("digits") - 3), ...) {
     cat("Method:", x$method, "\n")
-    cat("Deviance:", x$deviance, "\n")
+    cat("Deviance:", round(x$deviance, digits), "\n")
 
     cat("\nThreshold:", round(x$threshold, digits), "\n")
     cat("Number Above:", x$nat, "\n")
