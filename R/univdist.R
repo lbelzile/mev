@@ -306,6 +306,9 @@ gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
             sigma = par[1]
             xi = as.vector(par[2])
         }
+      if(xi < -0.5){
+        stop("The Fisher information is not defined if the shape parameter of the GEV is less than -0.5")
+      }
         # Limiting case when xi=0 Fix to value at zero
         if (abs(xi) < 0.001) {
             return(nobs * cbind(c(1/sigma^2, -0.422784335098467/sigma^2, 0.41184033042644/sigma), c(-0.422784335098467/sigma^2,
@@ -339,6 +342,9 @@ gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
         mu = par[1]
         sigma = par[2]
         xi = as.vector(par[3])
+        if(xi < -0.5){
+          stop("The observed information matrix is not defined if the shape parameter of the GEV is less than -0.5")
+        }
         # Bug fixed 21-10-2016 (parameter were defined after they were used).
         if (any((1 + xi * (dat - mu)/sigma) < 0)) {
             stop("Data outside of range specified by parameter, yielding a zero likelihood")
