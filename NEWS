@@ -5,19 +5,20 @@ New:
 * Exponent measure for Brown-Resnick and extremal Student model
 * 'spunif' for semi-parametric transform to uniform (tail modelled using GP)
 * 'rparp' now has attributes to give acceptance rate of accept/reject procedure.
-* Exponent measure estimate `extcoefschlather`
+* Exponent measure estimate `extcoef`
+* Functions `fit.gev` and `fit.gpd`, with default printing options and q-q plots
+
 Fixes:
 * scaling of Brown-Resnick is now consistent with literature (half of semivariogram)
 * Incorrect degrees of freedom argument in C++ code for 'rmev' with extremal Student family
 * rparp now has a hard bound to ensure the vector of simulated vectors fits in memory.
-* Fix to information matrix for case with shape greater than 1
 * Change to Grimshaw routine to ensure shape not less than -1, constrained optimization method
 * Information matrix, score for GEV now interpolate in a neighborhood of zero to preserve continuity and avoid numerical overflow.
 * Information matrix of GEV: scale factor off.
 
 Changes:
 * Change to plot for profile log-likelihood methods
-* Quantiles for Smith penultimate approximations
+* 'smith.penult' function has new arguments (backward compatible). The quantiles `u` are now returned for Smith penultimate approximations with `method = "pot"`
 * Changed all rootSolve for nleqslv routines
 
 mev v.1.11 (Release date: 2018-02-23)
@@ -35,9 +36,9 @@ Changes:
 * Function 'smith.penult' now has a 'family' as argument for specifying distributions via a string
 * Function 'gev.tem' and 'gpd.tem' are now a wrapper for 'gev.pll' and 'gpd.pll', respectively. Routine should be more robust
 * TEM corrections now handle more options
-* Clarifications in the vignette about the asymmetric negative logistic model following a discussion with A. Stephenson.
+* Clarifications in the vignette about the asymmetric negative logistic model (thanks to A. Stephenson)
 Fixes:
-* Fixed incorrect scaling in 'infomat.test' (thanks to P. Northrop for pointing the latter)
+* Fixed incorrect scaling in 'infomat.test' (thanks to P. Northrop)
 * Model "br" now simulates from stationary version only if argument 'sigma' is provided, and otherwise samples intrinsically Gaussian processes
 * Display of p-value matrix for 'infomat.test'
 
