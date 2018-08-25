@@ -1,12 +1,13 @@
-### This file contains penultimate models (1) the extended GP families of Papastathopoulos and Tawn (2013) (2) the penultimate
-### approximations of Smith (1987)
+### This file contains penultimate models
+### (1) the extended GP families of Papastathopoulos and Tawn (2013)
+### (2) the penultimate approximations of Smith (1987)
 
 
 #' Extended generalised Pareto families
 #'
 #' @description This function provides the log-likelihood and quantiles for the three different families presented
 #' in Papastathopoulos and Tawn (2013). The latter include an additional parameter, \eqn{\kappa}.
-#' All three families share the same tail index than the GP model, while allowing for lower thresholds.
+#' All three families share the same tail index as the generalized Pareto distribution, while allowing for lower thresholds.
 #' In the case \eqn{\kappa=1}, the models reduce to the generalised Pareto.
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
@@ -34,20 +35,30 @@
 #' @return \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a matrix of return levels.
 #' @examples
 #' set.seed(123)
-#' xdat <- evd::rgpd(1000, loc=0, scale=1, shape=0.5)
-#' par <- egp.fit(xdat, thresh=0, model='egp3')$par
-#' p <- c(1/1000,1/1500,1/2000)
-#' egp.retlev(xdat, 0, par, 'egp3',p)
+#' xdat <- evd::rgpd(1000, loc = 0, scale = 2, shape = 0.5)
+#' par <- fit.egp(xdat, thresh = 0, model = 'egp3')$par
+#' p <- c(1/1000, 1/1500, 1/2000)
 #' #With multiple thresholds
-#' th <- c(0,0.1,0.2,1)
-#' opt <- egp.fitrange(xdat, th, model='egp1',plots=NA)
-#' egp.retlev(xdat, opt$thresh, opt$par, 'egp1',p=p)
-#' opt <- egp.fitrange(xdat, th, model='egp2',plots=NA)
-#' egp.retlev(xdat, opt$thresh, opt$par, 'egp2',p=p)
-#' opt <- egp.fitrange(xdat, th, model='egp3',plots=NA)
-#' egp.retlev(xdat, opt$thresh, opt$par, 'egp3',p=p)
+#' th <- c(0, 0.1, 0.2, 1)
+#' opt <- tstab.egp(xdat, th, model = 'egp1')
+#' egp.retlev(xdat, opt$thresh, opt$par, 'egp1', p = p)
+#' opt <- tstab.egp(xdat, th, model = 'egp2', plots = NA)
+#' egp.retlev(xdat, opt$thresh, opt$par, 'egp2', p = p)
+#' opt <- tstab.egp(xdat, th, model = 'egp3', plots = NA)
+#' egp.retlev(xdat, opt$thresh, opt$par, 'egp3', p = p)
 NULL
 
+#' Fit of extended GP models and parameter stability plots
+#'
+#' This function is an alias of \code{\link{fit.egp}}.
+#'
+#' Supported for backward compatibility
+#'
+#' @export
+#' @keywords internal
+egp.fit <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE){
+  fit.egp(xdat = xdat, thresh = thresh, model = model, init = init, show = show)
+}
 
 #' Extended generalised Pareto families of Papastathopoulos and Tawn (functions)
 #'
@@ -84,25 +95,6 @@ egp.ll <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3")) {
     }
 }
 
-egp.ll.opt <- function(par, xdat, thresh, model = c("egp1", "egp2", "egp3")) {
-    lkappa = par[1]
-    lsigma = par[2]
-    xi = par[3]
-    args = pmax(0, (1 + xi * (xdat - thresh)/exp(lsigma)))
-    -(if (abs(xi) > 1e-08) {
-        switch(model, egp1 = length(xdat) * (log(abs(xi)) - log(exp(lsigma)) - lbeta(exp(lkappa), 1/abs(xi))) + (exp(lkappa) - 1) *
-            sum(log(pmax(0, 1 - args^(-sign(xi))))), egp2 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) -
-            1) * sum(log(log(args)/xi)), egp3 = length(xdat) * (log(exp(lkappa)) - log(exp(lsigma))) + (exp(lkappa) - 1) * sum(log(1 -
-            args^(-1/xi)))) - (1/xi + 1) * sum(log(args))
-    } else {
-        # if xi=0
-        switch(model, egp1 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(xdat - thresh)),
-            egp2 = length(xdat) * (-log(exp(lsigma)) - lgamma(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(xdat - thresh)), egp3 = length(xdat) *
-                (-log(exp(lsigma)) + log(exp(lkappa))) + (exp(lkappa) - 1) * sum(log(1 - exp(-(xdat - thresh)/exp(lsigma))))) - sum(xdat -
-            thresh)/exp(lsigma)
-    })
-}
-
 #' @name egp-function
 #' @export
 #' @inheritParams egp
@@ -134,8 +126,8 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
         for (j in 1:length(p)) {
             pl = 1 - p[j]/rate[i]
             if (par[i, 3] == 0) {
-                retlev[i, j] <- thresh[i] - par[i, 2] * log(switch(model, egp1 = exp(-qgamma(pl, scale = 1, shape = par[i, 1])), egp2 = exp(-qgamma(pl,
-                  scale = 1, shape = par[i, 1])), egp3 = 1 - pl^(1/par[i, 1])))
+                retlev[i, j] <- thresh[i] - par[i, 2] * switch(model, egp1 = -qgamma(pl, scale = 1, shape = par[i, 1]), egp2 = -qgamma(pl,
+                  scale = 1, shape = par[i, 1]), egp3 = log(1 - pl^(1/par[i, 1])))
             } else {
                 retlev[i, j] <- thresh[i] + par[i, 2]/par[i, 3] * (switch(model, egp1 = (1 - qbeta(pl, par[i, 1], 1/abs(par[i, 3])))^(-sign(par[i,
                   3])), egp2 = exp(par[i, 3] * qgamma(pl, scale = 1, shape = par[i, 1])), egp3 = (1 - pl^(1/par[i, 1]))^(-par[i, 3])) -
@@ -153,95 +145,154 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
 
 #' Fit of extended GP models and parameter stability plots
 #'
-#' \code{egp.fit} is a numerical optimization routine to fit the extended generalised Pareto models of Papastathopoulos and Tawn (2013),
+#' \code{fit.egp} is a numerical optimization routine to fit the extended generalised Pareto models of Papastathopoulos and Tawn (2013),
 #' using maximum likelihood estimation.
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
 #' @inheritParams egp
 #' @author Leo Belzile
 #' @param init vector of initial values, with \eqn{\log(\kappa)}{log(\kappa)} and \eqn{\log(\sigma)}{log(\sigma)}; can be omitted.
-#' @return \code{egp.fit} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
-#' @name egp.fit
-#' @description The function \code{egp.fitrange} provides classical parameter stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
+#' @return \code{fit.egp} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
+#' @name fit.egp
+#' @description The function \code{tstab.egp} provides classical threshold stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
 #'  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
-#' \code{egp.fitrange} can also be used to fit the model to multiple thresholds.
+#' \code{tstab.egp} can also be used to fit the model to multiple thresholds.
 #' @param plots vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots
 #' @inheritParams egp
 #' @param umin optional minimum value considered for threshold (if \code{thresh} is not provided)
 #' @param umax optional maximum value considered for threshold (if \code{thresh} is not provided)
 #' @param nint optional integer number specifying the number of thresholds to test.
-#' @return \code{egp.fitrange} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
+#' @return \code{tstab.egp} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
 #' @importFrom graphics arrows points polygon title
 #' @export
-egp.fit <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init) {
+#' @examples
+#' xdat <- evd::rgpd(n = 100, loc = 0, scale = 1, shape = 0.5)
+#' fitted <- fit.egp(xdat = xdat, thresh = 1, model = "egp2", show = TRUE)
+#' tstab.egp(xdat = xdat
+fit.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE) {
     if (!(model %in% c("egp1", "egp2", "egp3")) || length(model) != 1) {
         stop("Invalid model  argument: must be one of `egp1', `egp2' or `egp3'.")
     }
     if (length(thresh) > 1) {
         warning("Length of threshold vector greater than one. Selecting first component.")
+      thresh <- thresh[1]
     }
     # If no initial values are provided, fit a GP distribution to obtain them
-    if (missing(init)) {
-        init <- c(1, suppressWarnings(mev::gp.fit(xdat, threshold = thresh[1], show = FALSE)$est))
-        init[2] <- log(init[2])
-        if (init[3] < -1) {
-            warning("Numerical optimization yielded parameter value for the shape
-              that does not solve the score equation. Aborting")
-            # TODO replace with other initial values ?
-            return(list(par = rep(NA, 3), se = rep(NA, 3)))
-        }
+    changinit <- missing(init)
+    if(!changinit){
+     if(any(init[1:2] < 0)){
+       changinit <- TRUE
+     }
     }
+    if (changinit) {
+        init <- c(kappa = 1.01, suppressWarnings(fit.gpd(xdat, threshold = thresh[1], show = FALSE)$est))
+    }
+
     # Keep exceedances only
     xdata = xdat[xdat > thresh]
-    opt <- optim(par = init, fn = egp.ll.opt, method = "BFGS", xdat = xdata, thresh = thresh[1], model = model, hessian = FALSE, control = list(maxit = 300))
-    if (opt$convergence == 0) {
-        opt.par <- opt$par
-        opt.par[1:2] <- exp(opt.par[1:2])
-        opt2 <- optim(par = opt.par, fn = egp.ll, method = "Nelder-Mead", xdat = xdata, thresh = thresh[1], model = model, hessian = TRUE,
-            control = list(fnscale = -1))
-        opt2$se <- sqrt(diag(-solve(opt2$hessian)))
-        return(opt2)
-        # TODO write a print statement mimicking gp.fit or alternatively the one from the ismev package.
-    } else {
-        opt$par <- opt$se <- rep(NA, 3)
-        warning("Optimization routine failed; try providing better starting values")
-        return(par)
+    xmax <- max(xdata);
+    mle <- alabama::auglag(par = init,
+                           fn = function(par, xdat, thresh, model){-egp.ll(par = par, xdat = xdat, thresh = thresh, model = model)},
+                           hin = function(par, ...){c(par[1]-1e-10, par[2]-1e-10, par[3]+1,
+                                                      ifelse(par[3] < 0, thresh-par[2]/par[3] - xmax, 1))},
+                           xdat = xdata, thresh = thresh, model = model,
+                           control.outer = list(trace = FALSE, method = "BFGS"),
+                           control.optim = list(maxit = 500, reltol = 1e-10))
+    fitted <- list()
+    fitted$estimate <- fitted$param <- mle$par
+    fitted$deviance <- 2*mle$value
+    if (mle$convergence == 0) {
+      fitted$convergence <- "successful"
+      fitted$vcov <- try(solve(mle$hessian))
+      fitted$std.err <- try(sqrt(diag(fitted$vcov)))
+      if(is.character(mle$se) || mle$par[3] < -0.5){
+        fitted$vcov <- NULL
+        fitted$se <- rep(NA, 3)
+      }
+    } else{
+      fitted$convergence <- mle$convergence
+      warning("Maximization routine may have failed; check output and try providing better starting values")
     }
+    names(fitted$estimate) <- names(fitted$std.err) <-  c("kappa", "scale", "shape")
+    fitted$counts <- mle$counts
+    fitted$threshold <- thresh
+    fitted$nat <- length(xdata)
+    fitted$pat <- length(xdata)/length(xdat)
+    fitted$exceedances <- xdata
+    fitted$hessian <- mle$hessian
+    fitted$method <- "copt"
+    fitted$model <- model
+    class(fitted) <- c("mev_egp")
+    if(show){
+      print(fitted)
+    }
+    return(invisible(fitted))
+}
+
+# @param x A fitted object of class \code{mev_gpd}.
+# @param digits Number of digits to display in \code{print} call.
+# @param ... Additional argument passed to \code{print}.
+#' @export
+print.mev_egp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+  cat("Model:", x$model, "\n")
+  cat("Deviance:", round(x$deviance, digits), "\n")
+
+  cat("\nThreshold:", round(x$threshold, digits), "\n")
+  cat("Number Above:", x$nat, "\n")
+  cat("Proportion Above:", round(x$pat, digits), "\n")
+
+  cat("\nEstimates\n")
+  print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)
+  if (!is.na(x$std.err) && x$estimate[3] > -0.5) {
+    cat("\nStandard Errors\n")
+    print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
+  }
+  cat("\nOptimization Information\n")
+  cat("  Convergence:", x$convergence, "\n")
+  cat("  Function Evaluations:", x$counts["function"], "\n")
+  cat("  Gradient Evaluations:", x$counts["gradient"], "\n")
+  cat("\n")
+  invisible(x)
+}
+
+
+#' @export
+#' @keywords internal
+egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3, umin, umax, nint){
+  tstab.egp(xdat = xdat, thresh = thresh, model = model, plots = plots, umin = umin, umax = umax, nint)
 }
 
 #' @inheritParams egp
-#' @rdname egp.fit
+#' @rdname fit.egp
 #' @export
-egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3, umin, umax, nint) {
+tstab.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3, umin, umax, nint) {
     if (!(model %in% c("egp1", "egp2", "egp3")) || length(model) != 1) {
         stop("Invalid model selection")
-    }
-    egp.trpar <- function(par) {
-        c(log(par[1]), log(par[2]), par[3])
     }
     if (missing(thresh) && isTRUE(any(c(missing(umin), missing(umax))))) {
         stop("Must provide either minimum and maximum threshold values, or a vector of threshold `thresh'")
     } else if (missing(thresh)) {
-        stopifnot(class(umin) %in% c("numeric", "integer"), (class(umax) %in% c("numeric", "integer")), length(umin) == 1, length(umax) ==
-            1, umin < umax)
+        stopifnot(class(umin) %in% c("numeric", "integer"),
+                  class(umax) %in% c("numeric", "integer"),
+                  length(umin) == 1, length(umax) == 1, umin < umax)
         thresh <- seq(umin, umax, length = nint)
     } else if (length(thresh) <= 1) {
         stop("Invalid `thresh' provided; please use a vector of threshold candidates of length at least 2")
     }
     pe <- se <- matrix(0, ncol = 4, nrow = length(thresh))
     conv <- rep(0, length(thresh))
-    fit <- suppressWarnings(egp.fit(xdat = xdat, thresh = thresh[1], model = model))
-    pe[1, -4] <- fit$par
-    se[1, -4] <- fit$se
-    conv[1] <- fit$conv
-    se[1, 4] <- sqrt(cbind(1, -thresh[1]) %*% (-solve(fit$hessian[-1, -1])) %*% rbind(1, -thresh[1]))[1]
+    fit <- suppressWarnings(fit.egp(xdat = xdat, thresh = thresh[1], model = model))
+    pe[1, -4] <- fit$param
+    se[1, -4] <- fit$std.err
+    conv[1] <- ifelse(is.character(fit$convergence), 0, fit$convergence)
+    se[1, 4] <- sqrt(cbind(1, -thresh[1]) %*% solve(fit$hessian[-1, -1]) %*% rbind(1, -thresh[1]))[1]
     for (i in 2:length(thresh)) {
-        fit <- suppressWarnings(egp.fit(xdat = xdat, thresh = thresh[i], model = model, init = egp.trpar(pe[i - 1, ])))
-        pe[i, -4] <- fit$par
-        se[i, -4] <- fit$se
-        conv[i] <- fit$conv
+        fit <- suppressWarnings(fit.egp(xdat = xdat, thresh = thresh[i], model = model, init = pe[i - 1, -4]))
+        pe[i, -4] <- fit$param
+        se[i, -4] <- fit$std.err
+        conv[i] <- ifelse(is.character(fit$convergence), 0, fit$convergence)
         # Standard error for the modified scale via the delta-method
-        se[i, 4] <- sqrt(cbind(1, -thresh[i]) %*% (-solve(fit$hessian[-1, -1])) %*% rbind(1, -thresh[i]))[1]
+        se[i, 4] <- sqrt(cbind(1, -thresh[i]) %*% solve(fit$hessian[-1, -1]) %*% rbind(1, -thresh[i]))[1]
     }
     # Modify point estimates for the scale
     pe[, 4] <- pe[, 2] - pe[, 3] * thresh
@@ -254,15 +305,13 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
         }
 
         old.par <- par(no.readonly = TRUE)
+        on.exit(par(old.par))
         par(mfrow = c(length(plots), 1), mar = c(4.5, 4.5, 3.1, 0.1))
         for (i in plots) {
-            if (i == 2)
-                {
-                  i <- 4
-                }  #Get modified scale
+            if (i == 2) {  i <- 4  }  #Get modified scale
             # Plotting devices limits
             ylims = c(min(pe[, i]) - qnorm(0.975) * max(se[, i]), max(pe[, i]) + qnorm(0.975) * max(se[, i]))
-            plot(x = thresh, y = pe[, i], pch = 20, , xlab = "Threshold", bty = "l", ylab = switch(i, expression(kappa), expression(sigma),
+            plot(x = thresh, y = pe[, i], pch = 20, xlab = "Threshold", bty = "l", ylab = switch(i, expression(kappa), expression(sigma),
                 expression(xi), expression(tilde(sigma))), ylim = ylims, type = "n")  #,cex.lab=1.25)
             polygon(c(thresh, rev(thresh)), c(pe[, i] - qnorm(0.975) * se[, i], rev(pe[, i] + qnorm(0.975) * se[, i])), col = "gray95",
                 border = FALSE)
@@ -276,9 +325,7 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
                 code = 3)
             points(x = thresh, y = pe[, i], type = "b", pch = 20)
         }
-
-        par(old.par)
-    }
+      }
     return(invisible(list(par = pe[, -4], se = se[, -4], model = model, conv = conv, thresh = thresh)))
 }
 
@@ -328,6 +375,18 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
 #' m <- seq(30, 3650, by=30)
 #' penult <- smith.penult(family = 'gamma', method = 'bm', m=m, shape=0.1)
 #' plot(m, penult$shape, type='l', xlab='Quantile', ylab='Penultimate shape')
+#'
+#' #Comparing density of GEV approximation with true density of maxima
+#' m <- 100 #block of size 100
+#' p <- smith.penult(family='norm',
+#'    ddensF=function(x){-x*dnorm(x)}, method='bm', m=m, returnList=FALSE)
+#' x <- seq(1, 5, by = 0.01)
+#' plot(x, m*dnorm(x)*exp((m-1)*pnorm(x,log.p=TRUE)),type='l', ylab='Density',
+#' main='Distribution of the maxima of\n 100 standard normal variates')
+#' lines(x, evd::dgev(x,loc=p[1], scale=p[2], shape=0),col=2)
+#' lines(x, evd::dgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
+#' legend(x = 'topright',lty = c(1,1,1,1), col = c(1,2,3,4),
+#'    legend = c('exact', 'ultimate', 'penultimate'), bty = 'n')
 #' @export
 smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList = TRUE, ...) {
   ellips <- list(...)
@@ -356,8 +415,6 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
        }
       }
     }
-
-    # if(class(densF)!= 'function' || class(distF)!= 'function'){ stop('Invalid arguments. Please provide valid functions.') }
     # Matching extra arguments with additional ones passed via ellipsis
     # Which are formals of the function
     indf <- names(ellips) %in% formalArgs(densF)
@@ -376,7 +433,9 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
     }
     if (is.null(ellips$ddensF)) {
         ddensFn <- function(x) {
-            numDeriv::grad(densFn, x = x, method = "Richardson")
+          tol <- 6e-6
+            #numDeriv::grad(densFn, x = x, method = "Richardson")
+            (densFn(x+tol) - densFn(x-tol))/(2*tol)
         }
     } else {
       ddensF <- ellips$ddensF
@@ -439,7 +498,7 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
             u <- rep(NA, length(qu))
           }
         }  else if(!missing(u) && missing(qu)){
-         qu <-  sapply(u, function(q){do.call(distFn, c(x = q, fn.arg))})
+         qu <-  sapply(u, function(q){distFn(x = q)})
         }
         phi <- function(x) {
             sapply(x, function(xval) {

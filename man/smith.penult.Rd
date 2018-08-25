@@ -4,27 +4,19 @@
 \alias{smith.penult}
 \title{Smith's penultimate approximations}
 \usage{
-smith.penult(densF, distF, ddensF = NULL, model = c("bm", "pot"), u, qu, m,
-  family, quantF = NULL, returnList = TRUE, ...)
+smith.penult(family, method = c("bm", "pot"), u, qu, m, returnList = TRUE,
+  ...)
 }
 \arguments{
-\item{densF}{density function; for standard statistical family \code{family}, given by \code{dfamily}}
+\item{family}{the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}}
 
-\item{distF}{distribution function, for standard statistical family \code{family}, given by \code{pfamily}}
-
-\item{ddensF}{derivative of the density function (optional)}
-
-\item{model}{either block maxima (\code{'bm'}) or peaks-over-threshold (\code{'pot'}) are supported}
+\item{method}{either block maxima (\code{'bm'}) or peaks-over-threshold (\code{'pot'}) are supported}
 
 \item{u}{vector of thresholds for method \code{'pot'}}
 
 \item{qu}{vector of quantiles for method \code{'pot'}. Ignored if argument \code{u} is provided.}
 
 \item{m}{vector of block sizes for method \code{'bm'}}
-
-\item{family}{the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}}
-
-\item{quantF}{quantile function, default to \code{NULL}}
 
 \item{returnList}{logical; should the arguments be returned as a list or as a matrix of parameter}
 
@@ -47,19 +39,23 @@ The function takes as arguments the distribution and density functions. There ar
 argument \code{m}. If instead \code{method='pot'} is provided, a vector of threshold values must be
 provided. The other argument (\code{u} or \code{m} depending on the method) is ignored.
 }
+\details{
+Alternatively, the user can provide functions \code{densF}, \code{quantF} and \code{distF} for the density,
+quantile function and distribution functions, respectively. The user can also supply the derivative
+of the density function, \code{ddensF}. If the latter is missing, it will be approximated using finite-differences.
+}
 \examples{
 #Threshold exceedance for Normal variables
 qu <- seq(1,5,by=0.02)
-penult <- smith.penult(densF=dnorm, distF=pnorm,
-   ddensF=function(x){-x*dnorm(x)}, model='pot', u=qu)
-plot(qu, penult$shape, type='l',xlab='Quantile',
-   ylab='Penultimate shape',ylim=c(-0.5,0))
+penult <- smith.penult(family = "norm", ddensF=function(x){-x*dnorm(x)},
+   method = 'pot', u = qu)
+plot(qu, penult$shape, type='l', xlab='Quantile',
+   ylab='Penultimate shape', ylim=c(-0.5,0))
 #Block maxima for Gamma variables -
 #User must provide arguments for shape (or rate)
-m <- seq(30,3650,by=30)
-penult <- smith.penult(family = 'gamma', model='bm', m=m, shape=0.1)
-plot(m, penult$shape, type='l',
- xlab='Quantile', ylab='Penultimate shape')
+m <- seq(30, 3650, by=30)
+penult <- smith.penult(family = 'gamma', method = 'bm', m=m, shape=0.1)
+plot(m, penult$shape, type='l', xlab='Quantile', ylab='Penultimate shape')
 }
 \references{
 Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
