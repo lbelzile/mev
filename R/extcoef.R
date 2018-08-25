@@ -23,7 +23,7 @@
 #' @references Cooley, D., P. Naveau and P. Poncet (2006). Variograms for spatial max-stable random fields,  In: Bertail P., Soulier P., Doukhan P. (eds) \emph{Dependence in Probability and Statistics}. Lecture Notes in Statistics, vol. 187. Springer, New York, NY
 #' @param dat an \code{n} by \code{D} matrix of unit Frechet observations
 #' @param thresh threshold parameter (dafault is to keep all data if \code{prob = 0}.
-#' @param loc \code{n} by \code{d} matrix of locations
+#' @param loc \code{d} by \code{D} matrix of location coordinates
 #' @param prob probability of not exceeding threshold \code{thresh}
 #' @param estimator string indicating which model estimates to compute, one of \code{schlather} or \code{fmado}.
 #' @param which.plot string indicating which model estimates to plot, one of \code{schlather} or \code{fmado}. Can be abbreviated.
@@ -63,7 +63,7 @@
 #' lines(extcoefbr[,'h'], extcoefbr[,'extcoef'], type = 'l', col = 'orange', lwd = 2)
 #' }
 extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"), prob = 0, which.plot = c("schlather", "fmado"), tikz = FALSE) {
-    
+
     estimator <- match.arg(estimator, c("schlather", "fmado"), several.ok = TRUE)
     which.plot <- match.arg(which.plot, c("schlather", "fmado"), several.ok = TRUE)
     isSchlather <- "schlather" %in% estimator
@@ -83,7 +83,7 @@ extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"), prob 
     nll <- function(theta, X, thresh) {
         -sum(X > thresh) * log(theta) + theta * sum(1/pmax(thresh, X))
     }
-    
+
     harmo_mean <- apply(1/fr, 2, mean, na.rm = TRUE)
     transfo_fr <- t(t(fr) * harmo_mean)
     theta_mat <- matrix(NA, nrow = ncol(dat) * (ncol(dat) - 1)/2, ncol = 4)
@@ -128,13 +128,13 @@ extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"), prob 
         par(mfrow = c(1, 2))
     }
     if (1 %in% plotind) {
-        graphics::plot(theta_mat[, 1], theta_mat[, 2], xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))), 
+        graphics::plot(theta_mat[, 1], theta_mat[, 2], xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
             bty = "l", cex = 0.4, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, 2.1), yaxs = "i", xaxs = "i", main = "Schlather")
         abline(h = 2, col = "grey")
         lines(h[ubin], binned_theta, col = 2, lwd = 2)
     }
     if (2 %in% plotind) {
-        graphics::plot(theta_mat[, 1], theta_mat[, 4], xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))), 
+        graphics::plot(theta_mat[, 1], theta_mat[, 4], xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
             bty = "l", cex = 0.4, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, 2.1), yaxs = "i", xaxs = "i", main = "F-madogram")
         abline(h = 2, col = "grey")
     }
@@ -154,3 +154,61 @@ extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"), prob 
     return(invisible(reslist))
 }
 
+#' Pairwise extremal coefficient estimate of Smith
+#'
+#' Suppose \eqn{Z(x)} is  a max-stable vector with unit Frechet distribution. Then
+#'  \eqn{1/Z} is unit exponential and \eqn{1/\max(Z(s_1), Z(s_2))} is exponential
+#'  with rate \eqn{\theta = \max(Z(s_1), Z(s_2))}.
+#'  The extremal index for the pair can therefore be calculated using the reciprocal mean.
+#'
+#' @param dat an \code{n} by \code{d} matrix of maximas for \code{d} variables
+#' @param loc \code{d} by \code{D} matrix of coordinates; default to \code{NULL}
+#' @param standardize logical; should observations be transformed to unit Frechet scale? Default is to transform
+#' @references R. J. Erhardt, R. L. Smith (2012), Approximate Bayesian computing for spatial extremes, \emph{Computational Statistics and Data Analysis}, \bold{56}, pp.1468--1481.
+#' @examples
+#' loc <- 10*cbind(runif(20), runif(20))
+#' di <- as.matrix(dist(loc))
+#' dat <- rmev(n = 1000, d = 20, param = 3, sigma = exp(-di/2), model = 'xstud')
+#' res <- extcoef.smith(dat = dat, loc = loc)
+extcoef.smith <- function(dat, loc = NULL, standardize = TRUE, method = c("nonparametric", "parametric")){
+  stopifnot(is.matrix(dat), ncol(dat) >= 2)
+  #Preprocessing, transform observations to unit Frechet
+  if(standardize){
+    method <- match.arg(method[1], choices = c("parametric", "nonparametric"))
+    fre_dat <- matrix(0, ncol = ncol(dat), nrow = nrow(dat))
+    if(method == "nonparametric"){
+      for(j in 1:ncol(dat)){
+        nj <- sum(!is.na(dat[, 1])) + 1L
+        fre_dat[,j] <- -1/log(rank(dat[,j], na.last = "keep", ties.method = "random")/nj)
+      }
+    } else{ #parametric
+      for(j in 1:ncol(dat)){
+        fre_dat[,j] <- -1/log(do.call(what = evd::pgev, c(list(q = dat[,j]), fit.gev(dat[,j])$estimate)))
+      }
+    }
+  }
+  #Two methods: multivariate with all pairs or else as function of Euclidean distance
+    if(!is.null(loc)){
+      extcoef <- matrix(0, nrow = ncol(dat)*(ncol(dat)-1)/2, ncol = 2)
+      acc <- 0
+      for(i in 1:(ncol(dat)-1)){
+        for(j in (i+1):ncol(dat)){
+          acc <- acc + 1L
+          extcoef[acc,] <- c(dist(loc[c(i,j),]), 1/mean(1/apply(dat[,c(i, j)], 1, max)))
+        }
+      }
+      colnames(extcoef) <- c("dist", "ext.coeff")
+      return(extcoef)
+    } else{
+      extcoef <- matrix(0, nrow = ncol(dat)*(ncol(dat)-1)/2, ncol = 3)
+      acc <- 0
+    for(i in 1:(ncol(dat)-1)){
+      for(j in (i+1):ncol(dat)){
+        acc <- acc + 1L
+        extcoef[acc,] <- c(1/mean(1/apply(dat[,c(i, j)], 1, max)), i, j)
+      }
+    }
+      colnames(extcoef) <- c("dist", "index1", "index2")
+      return(extcoef)
+    }
+}
