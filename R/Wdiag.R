@@ -51,15 +51,15 @@
 #' @examples
 #' \dontrun{
 #' set.seed(123)
-#' W.diag(rexp(1000), model='nhpp', k=30, q1=0)
+#' W.diag(rexp(1000), model = 'nhpp', k = 30, q1 = 0)
 #' # Parameter stability only
-#' W.diag(abs(rnorm(5000)), model='nhpp', k=30, q1=0, plots= "PS")
+#' W.diag(abs(rnorm(5000)), model = 'nhpp', k = 30, q1 = 0, plots = "PS")
 #' xbvn <- mvrnorm(6000, mu = rep(0, 2), Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 #' # Transform margins to exponential manually
-#' xbvn.exp <- -log(1-pnorm(xbvn))
-#' W.diag(apply(xbvn.exp,1,min), model='exp', k=30, q1=0) #rate parametrization
-#' W.diag(xbvn, model='exp', k=30, q1=0)
-#' W.diag(apply(xbvn.exp,1,min), model='invexp', k=30, q1=0) #inverse rate parametrization
+#' xbvn.exp <- -log(1 - pnorm(xbvn))
+#' W.diag(apply(xbvn.exp, 1, min), model = 'exp', k = 30, q1 = 0) #rate parametrization
+#' W.diag(xbvn, model = 'exp', k = 30, q1 = 0)
+#' W.diag(apply(xbvn.exp, 1, min), model = 'invexp', k = 30, q1 = 0) #inverse rate parametrization
 #' }
 #' @export
 W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0, q2 = 1, par = NULL, M = NULL, nbs = 1000, alpha = 0.05,
@@ -76,10 +76,12 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (ncol(as.matrix(xdat)) != 1) {
         stop("Invalid input for `xdat`")
     }
-    switch(model, nhpp = .NHPP.diag(xdat = xdat, u = u, k = k, q1 = q1, q2 = q2, par = par, M = M, nbs = nbs, alpha = alpha, plots = plots,
-        UseQuantiles = UseQuantiles, pmar = pmar, ...), exp = .Expl.diag(x = xdat, u = u, k = k, q1 = q1, q2 = q2, nbs = nbs,
-        alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "Rate", pmar = pmar, ...), invexp = .Expl.diag(x = xdat,
-        u = u, k = k, q1 = q1, q2 = q2, nbs = nbs, alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "InvRate", pmar = pmar,
+    switch(model,
+           nhpp = .NHPP.diag(xdat = xdat, u = u, k = k, q1 = q1, q2 = q2, par = par, M = M, nbs = nbs, alpha = alpha, plots = plots,
+            UseQuantiles = UseQuantiles, pmar = pmar, ...),
+            exp = .Expl.diag(x = xdat, u = u, k = k, q1 = q1, q2 = q2, nbs = nbs,
+              alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "Rate", pmar = pmar, ...),
+            invexp = .Expl.diag(x = xdat, u = u, k = k, q1 = q1, q2 = q2, nbs = nbs, alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "InvRate", pmar = pmar,
         ...))
 }
 
@@ -282,7 +284,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
         }
     }
 
-    return(list(MLE = J1$mle, Cov = J1$Cov, WN = wn, LRT = nl, pval = pval, k = k, thresh = ustar, mle.u = theta.hat))
+    invisible(list(MLE = J1$mle, Cov = J1$Cov, WN = wn, LRT = nl, pval = pval, k = k, thresh = ustar, mle.u = theta.hat))
 }
 
 

@@ -150,3 +150,11 @@ NULL
 # .Expl.diag
 ### spunif.R
 # spunif
+### mle.R
+# fit.gpd
+# fit.gev
+# fit.pp
+# plot.mev_gpd
+# plot.mev_gev
+# plot.mev_pp
+# print
