@@ -62,203 +62,9 @@
     return(S1)
 }
 
-##################### Additional routines, July 2017
-#################### GEV in terms of return levels ###
-
-
-#' Generalized Pareto maximum likelihood estimates for various quantities of interest
-#'
-#' This function calls the \code{gp.fit} routine on the sample of excesses and returns maximum likelihood
-#' estimates for all quantities of interest, including scale and shape parameters, quantiles and value-at-risk,
-#' expected shortfall and mean and quantiles of maxima of \code{N} threshold exceedances
-#'
-#' @param dat sample vector of excesses
-#' @param args vector of strings indicating which arguments to return the maximum likelihood values for
-#' @param m number of observations of interest for return levels. Required only for \code{args} values \code{'VaR'} or \code{'ES'}
-#' @param N size of block over which to take maxima. Required only for \code{args} \code{Nmean} and \code{Nquant}.
-#' @param p tail probability, equivalent to \eqn{1/m}. Required only for \code{args} \code{quant}.
-#' @param q level of quantile for N-block maxima. Required only for \code{args} \code{Nquant}.
-#' @return named vector with maximum likelihood values for arguments \code{args}
-#' @export
-#' @examples
-#' dat <- evd::rgpd(n = 30, shape = 0.2)
-#' gpd.mle(dat = dat, N = 100, p = 0.01, q = 0.5, m = 100)
-gpd.mle <- function(dat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
-    m, N, p, q) {
-    args <- match.arg(args, c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"), several.ok = TRUE)
-    fitted <- try(gp.fit(xdat = dat, threshold = 0, method = "Grimshaw"))
-    sigma <- fitted$estimate[1]
-    xi <- fitted$estimate[2]
-    # Does not handle the case xi=0 because the optimizer does not return this value!
-    a <- sapply(args, switch, scale = sigma, shape = xi, quant = sigma/xi * (p^(-xi) - 1),
-        Nquant = sigma/xi * ((1 - q^(1/N))^(-xi) - 1), Nmean = (exp(lgamma(N + 1) + lgamma(1 -
-            xi) - lgamma(N + 1 - xi)) - 1) * sigma/xi, VaR = sigma/xi * (m^xi - 1), ES = ifelse(xi <
-            1, (sigma/xi * (m^xi - 1) + sigma)/(1 - xi), Inf))
-    a <- as.vector(unlist(a))
-    names(a) = args
-    return(a)
-}
 
 
 
-
-#'  Generalized extreme value maximum likelihood estimates for various quantities of interest
-#'
-#' This function calls the \code{fgev} routine on the sample of excesses and returns maximum likelihood
-#' estimates for all quantities of interest, including scale and shape parameters, quantiles and value-at-risk,
-#' expected shortfall and mean and quantiles of maxima of \code{N} threshold exceedances
-#' @export
-#' @param dat sample vector of excesses
-#' @param args vector of strings indicating which arguments to return the maximum likelihood values for.
-#' @param N size of block over which to take maxima. Required only for \code{args} \code{Nmean} and \code{Nquant}.
-#' @param p tail probability. Required only for \code{arg} \code{quant}.
-#' @param q level of quantile for maxima of \code{N} exceedances. Required only for \code{args} \code{Nquant}.
-#' @return named vector with maximum likelihood estimated parameter values for arguments \code{args}
-#' @examples
-#' dat <- evd::rgev(n = 100, shape = 0.2)
-#' gev.mle(dat = dat, N = 100, p = 0.01, q = 0.5)
-gev.mle <- function(dat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), N,
-    p, q) {
-    stopifnot(is.vector(dat))
-    args <- match.arg(args, c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), several.ok = TRUE)
-
-    if(missing(q) && "Nquant" %in% args){
-      stop("Argument `q` missing for `Nquant`")
-    }
-    if(missing(p) && "quant" %in% args){
-     stop("Argument `p` missing for `quant`")
-    }
-    if(missing(N) && any(c("Nmean", "Nquant") %in% args)){
-      stop("Argument `N` missing for `Nquant` or `Nmean`")
-    }
-    in2 <- sqrt(6 * var(dat))/pi
-    in1 <- mean(dat) - 0.57722 * in2
-    xmax <- max(dat)
-    xmin <- min(dat)
-    # fitted <- nloptr::slsqp(x0 = c(in1, in2, 0.1), fn = function(par){-gev.ll(par, dat =
-    # dat)}, gr = function(par){-gev.score(par, dat = dat)}, hin = function(par){ c(par[2] +
-    # par[3]*(xmax-par[1]), par[2] + par[3]*(xmin-par[1]))})$par
-    fitted <- suppressWarnings(alabama::constrOptim.nl(par = c(in1, in2, 0.1), fn = function(par) {
-        -gev.ll(par, dat = dat)
-    }, gr = function(par) {
-        -gev.score(par, dat = dat)
-    }, hin = function(par) {
-        c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
-    }, control.outer = list(trace = FALSE))$par)
-    mu <- fitted[1]
-    sigma <- fitted[2]
-    xi <- fitted[3]
-    # Does not handle the case xi=0 because the optimizer does not return this value!
-    a <- sapply(args, switch, loc = mu, scale = sigma, shape = xi, quant = evd::qgev(p = 1 -
-        p, loc = mu, scale = sigma, shape = xi), Nquant = ifelse(xi != 0, mu - sigma/xi * (1 -
-        (N/log(1/q))^xi), mu + sigma * (log(N) - log(log(1/q)))), Nmean = ifelse(xi != 0, mu -
-        sigma/xi * (1 - N^xi * gamma(1 - xi)), mu + sigma * (log(N) - psigamma(1))))
-
-    a <- as.vector(unlist(a))
-    names(a) <- args
-    a
-}
-
-
-#' Maximum likelihood estimation for the generalized extreme value distribution
-#'
-#' This function returns an object of class \code{gev}, with default methods for printing and quantile-quantile plots.
-#' @inheritParams gp.fit
-#' @return a list containing the following components:
-#' \itemize{
-#' \item \code{estimate} a vector containing all parameters.
-#' \item \code{std.err} a vector containing the standard errors.
-#' \item \code{var.cov} the variance covariance matrix, obtained as the numerical inverse of the observed information matrix.
-#' \item \code{method} the method used to fit the parameter.
-#' \item \code{deviance} the deviance at the maximum likelihood estimates.
-#' \item \code{convergence} components taken from the list returned by \code{\link[alabama]{constrOptim.nl}}.
-#' Values other than \code{0} indicate that the algorithm likely did not converge.
-#' \item \code{counts} components taken from the list returned by \code{\link[alabama]{constrOptim.nl}}.
-#' }
-fit.gev <- function(xdat, show = FALSE){
-  xdat <- na.omit(as.vector(xdat))
-  n <- length(xdat)
-  #Optimization routine, with default starting values
-  in2 <- sqrt(6 * var(xdat))/pi
-  in1 <- mean(xdat) - 0.57722 * in2
-  xmax <- max(xdat)
-  xmin <- min(xdat)
-  mle <- suppressWarnings(alabama::constrOptim.nl(par = c(in1, in2, 0.1), fn = function(par) {
-    -gev.ll(par, dat = xdat)
-  }, gr = function(par) {
-    -gev.score(par, dat = xdat)
-  }, hin = function(par) {
-    c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
-  }, control.outer = list(trace = FALSE)))
-
-  #Extract information and store
-  fitted <- list()
-  #Point estimate
-  fitted$estimate <- mle$par
-  #Observed information matrix and standard errors
-  if(fitted$estimate[3] > -0.5){
-    fitted$var.cov <- solve(gev.infomat(par = fitted$estimate, dat = xdat, method = "obs"))
-    fitted$std.err <- sqrt(diag(fitted$var.cov))
-  } else{
-    fitted$var.cov <- matrix(NA, ncol = 3, nrow = 3)
-    fitted$std.err <- rep(NA, 3)
-  }
-  names(fitted$std.err) <- names(fitted$estimate) <- c("loc","scale","shape")
-  fitted$method <- "copt"
-  fitted$deviance <- 2*mle$value
-  fitted$convergence <- mle$convergence
-  fitted$counts <- mle$counts
-  fitted$xdat <- xdat
-  class(fitted) <- "gev"
-  if(show){
-    print(fitted)
-  }
-  invisible(fitted)
-}
-
-# @param x A fitted object of class \code{gev}.
-# @param main title for the QQ-plot #' @param xlab x-axis label
-# @param ylab y-axis label
-# @param ... additional argument passed to \code{matplot}.
-#' @export
-plot.gev <- function(x, main = "Quantile-quantile plot", xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...) {
-  dat <- sort(x$xdat)
-  n <- length(dat)
-  confint_lim <- t(sapply(1:n, function(i) {
-    qgev(p = qbeta(c(0.025, 0.975), i, n - i + 1), loc = x$estimate[1], scale = x$estimate[2], shape = x$estimate[3])
-  }))
-  quant <- qgev(rank(dat)/(n + 1), loc = x$estimate[1], scale = x$estimate[2], shape = x$estimate[3])
-  matplot(quant, cbind(dat, confint_lim), main = main, xlab = xlab, ylab = ylab, type = "pll", pch = 20, col = c(1, "grey", "grey"),
-          lty = c(1, 2, 2), bty = "l", pty = "s", ...)
-  abline(0, 1)
-  matlim <- cbind(quant, confint_lim)
-  colnames(matlim) <- c("quantile", "lower","upper")
-  invisible(matlim)
-}
-
-
-
-# @param x A fitted object of class \code{gpd}.
-# @param digits Number of digits to display in \code{print} call.
-# @param ... Additional argument passed to \code{print}.
-#' @export
-"print.gev" <- function(x, digits = max(3, getOption("digits") - 3), ...) {
-cat("Method:", x$method, "\n")
-cat("Deviance:", x$deviance, "\n")
-
-cat("\nEstimates\n")
-print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)
-if (!is.null(x$std.err) && x$estimate[1] > -0.5) {
-  cat("\nStandard Errors\n")
-  print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
-}
-cat("\nOptimization Information\n")
-cat("  Convergence:", x$convergence, "\n")
-  cat("  Function Evaluations:", x$counts["function"], "\n")
-  cat("  Gradient Evaluations:", x$counts["gradient"], "\n")
-  cat("\n")
-invisible(x)
-}
 
 
 
@@ -267,14 +73,14 @@ invisible(x)
 #'
 #' This function uses spline interpolation to derive \code{level} confidence intervals.
 #'
-#' @param object an object of class \code{extprof}, normally the output of \link{gpd.pll} or \link{gev.pll}.
+#' @param object an object of class \code{eprof}, normally the output of \link{gpd.pll} or \link{gev.pll}.
 #' @param parm a specification of which parameters are to be given confidence intervals,
 #' either a vector of numbers or a vector of names. If missing, all parameters are considered.
 #' @param level confidence level, with default 0.95
 #' @param ... additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.
 #' @return a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
 #' @export
-confint.extprof <- function(object, parm, level = 0.95, ...) {
+confint.eprof <- function(object, parm, level = 0.95, ...) {
     args <- list(...)
     if ("warn" %in% names(args) && is.logical(args$warn)) {
         warn <- args$warn
@@ -445,13 +251,13 @@ confint.extprof <- function(object, parm, level = 0.95, ...) {
 #'
 #' The function plots the (modified) profile likelihood and the tangent exponential profile likelihood
 #'
-#' @param x an object of class \code{extprof} returned by \code{\link{gpd.pll}} or \code{\link{gev.pll}}.
+#' @param x an object of class \code{eprof} returned by \code{\link{gpd.pll}} or \code{\link{gev.pll}}.
 #' @param ... further arguments to \code{plot}.
 #' @return a graph of the (modified) profile likelihoods
 #' @references Brazzale, A. R., Davison, A. C. and Reid, N. (2007). \emph{Applied Asymptotics: Case Studies in Small-Sample Statistics}. Cambridge University Press, Cambridge.
 #' @references Severini, T. A. (2000). \emph{Likelihood Methods in Statistics}. Oxford University Press, Oxford.
 #' @export
-plot.extprof <- function(x, ...) {
+plot.eprof <- function(x, ...) {
     # plot the profile log-likelihoods
     #old.pars <- par(no.readonly = TRUE)
     args <- list(...)
@@ -531,7 +337,6 @@ plot.extprof <- function(x, ...) {
         abline(v = x$tem.psimax, lwd = 0.5, col = 3)
     }
     abline(v = x$psi.max, lwd = 0.5)
-
     if (4 %in% ind && !is.null(lik$empcov.npll)) {
         lines(x$psi, lik$empcov.npll, lty = 4, col = 4, lwd = 2)
         lcols <- c(lcols, 4)
@@ -559,27 +364,29 @@ plot.extprof <- function(x, ...) {
     llegend <- c(llegend, "profile")
     lines(x$psi, lik$npll, lwd = 2)
     # add the legend in the top right corner
+    if(!isTRUE(all.equal(llegend, "profile"))){
     legend(x = "topright", legend = rev(llegend), lty = rev(llty), lwd = rev(llwd), col = rev(lcols),
         bty = "n", x.intersp = 0.2, seg.len = 0.5, cex = 0.9)
+    }
     #par(old.pars)
 
 }
 
 
 
-#' Modified profile likelihood for the generalized extreme value distribution
+#' Profile log-likelihood for the generalized extreme value distribution
 #'
 #' This function calculates the profile likelihood along with two small-sample corrections
 #' based on Severini's (1999) empirical covariance and the Fraser and Reid tangent exponential
 #' model approximation.
 #'
-#' @details The two \code{mod} available are \code{tem}, the tangent exponential model (TEM) approximation and
+#' @details The two additional \code{mod} available are \code{tem}, the tangent exponential model (TEM) approximation and
 #' \code{modif} for the penalized profile likelihood based on \eqn{p^*} approximation proposed by Severini.
 #' For the latter, the penalization is based on the TEM or an empirical covariance adjustment term.
 #'
 #' @param psi parameter vector over which to profile (unidimensional)
 #' @param param string indicating the parameter to profile over
-#' @param mod string indicating the model. See \bold{Details}.
+#' @param mod string indicating the model, one of \code{profile}, \code{tem} or \code{modif}.See \bold{Details}.
 #' @param dat sample vector
 #' @param N size of block over which to take maxima. Required only for \code{param} \code{Nmean} and \code{Nquant}.
 #' @param p tail probability. Required only for \code{param} \code{quant}.
@@ -632,11 +439,11 @@ plot.extprof <- function(x, ...) {
 #' gev.pll(psi = seq(12, 100, by=1), param = 'Nmean', N = 100, dat = dat)
 #' gev.pll(psi = seq(12, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
-gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), mod = c("tem",
-    "modif"), dat, N = NULL, p = NULL, q = NULL, correction = TRUE, ...) {
+gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
+                    mod = "profile", dat, N = NULL, p = NULL, q = NULL, correction = TRUE, ...) {
 
     oldpar <- param <- match.arg(param, c("loc", "scale", "shape", "quant", "Nmean", "Nquant"))[1]
-    mod <- match.arg(mod, c("tem", "modif"), several.ok = TRUE)
+    mod <- match.arg(mod, c("profile","tem", "modif"), several.ok = TRUE)
     # Parametrization profiling over quant over scale is more numerically stable
     if (param == "quant") {
         stopifnot(!is.null(p))
@@ -715,9 +522,9 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                   ((mu - dat) * xi/sigma - 1)), -(dat - mu) * ((dat - mu) * xi/sigma + 1)^(-1/xi -
                   1)/sigma^2 + (dat - mu) * xi * (1/xi + 1)/(sigma^2 * ((dat - mu) * xi/sigma +
                   1)) - 1/sigma, -(mu - dat) * (1/xi + 1)/(sigma * ((mu - dat) * xi/sigma -
-                  1)) - (log(-(mu - dat) * xi/sigma + 1)/xi^2 - (mu - dat)/(sigma * ((mu -
-                  dat) * xi/sigma - 1) * xi))/(-(mu - dat) * xi/sigma + 1)^(1/xi) + log(-(mu -
-                  dat) * xi/sigma + 1)/xi^2)
+                  1)) - (log1p(-(mu - dat) * xi/sigma)/xi^2 - (mu - dat)/(sigma * ((mu -
+                  dat) * xi/sigma - 1) * xi))/(-(mu - dat) * xi/sigma + 1)^(1/xi) + log1p(-(mu -
+                  dat) * xi/sigma )/xi^2)
             } else {
                 cbind(-exp(mu/sigma - dat/sigma)/sigma + 1/sigma, mu * exp(mu/sigma - dat/sigma)/sigma^2 -
                   dat * exp(mu/sigma - dat/sigma)/sigma^2 - mu/sigma^2 - 1/sigma + dat/sigma^2,
@@ -1059,30 +866,30 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                 sigma <- par[2]
                 xi <- par[3]
                 z <- par[1]
-                cbind(((((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(-1/xi - 2) * xi * (1/xi +
-                  1) * exp(-1/((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi))/sigma^2 -
-                  ((dat - z) * xi/sigma + 1/(-log(-p + 1))^xi)^(-2/xi - 2) * exp(-1/((dat -
-                    z) * xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi))/sigma^2) * sigma * ((dat -
-                  z) * xi/sigma + 1/(-log(-p + 1))^xi)^(1/xi + 1) * exp(1/(((dat - z) * xi/sigma +
-                  1/(-log(-p + 1))^xi)^(1/xi)))), (-(dat * (-log(-p + 1))^xi - z * (-log(-p +
-                  1))^xi - (dat * (-log(-p + 1))^xi - z * (-log(-p + 1))^xi - sigma) * ((dat *
-                  xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
-                  1))^xi))^(1/xi))/((sigma * dat * xi * (-log(-p + 1))^xi - sigma * xi * z *
-                  (-log(-p + 1))^xi + sigma^2) * ((dat * xi * (-log(-p + 1))^xi - xi * z *
-                  (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi))), (-(xi *
-                  z * (-log(-p + 1))^xi - (dat * (-log(-p + 1))^xi - sigma * log(-log(-p +
-                  1))) * xi + ((dat * (-log(-p + 1))^xi - sigma * log(-log(-p + 1))) * xi^2 +
-                  (dat * (-log(-p + 1))^xi - sigma * log(-log(-p + 1))) * xi - (xi^2 * (-log(-p +
-                  1))^xi + xi * (-log(-p + 1))^xi) * z) * ((dat * xi * (-log(-p + 1))^xi -
-                  xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi))^(1/xi) +
-                  (dat * xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi - (dat * xi *
-                    (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma) * ((dat * xi *
-                    (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
-                    1))^xi))^(1/xi) + sigma) * log((dat * xi * (-log(-p + 1))^xi - xi * z *
-                    (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p + 1))^xi)))/((dat * xi^3 *
-                  (-log(-p + 1))^xi - xi^3 * z * (-log(-p + 1))^xi + sigma * xi^2) * ((dat *
-                  xi * (-log(-p + 1))^xi - xi * z * (-log(-p + 1))^xi + sigma)/(sigma * (-log(-p +
-                  1))^xi))^(1/xi))))
+                log1mp <- log(1 - p)
+                cbind(((((dat - z) * xi/sigma + 1/(-log1mp)^xi)^(-1/xi - 2) * xi * (1/xi +
+                  1) * exp(-1/((dat - z) * xi/sigma + 1/(-log1mp)^xi)^(1/xi))/sigma^2 -
+                  ((dat - z) * xi/sigma + 1/(-log1mp)^xi)^(-2/xi - 2) * exp(-1/((dat -
+                    z) * xi/sigma + 1/(-log1mp)^xi)^(1/xi))/sigma^2) * sigma * ((dat -
+                  z) * xi/sigma + 1/(-log1mp)^xi)^(1/xi + 1) * exp(1/(((dat - z) * xi/sigma +
+                  1/(-log1mp)^xi)^(1/xi)))), (-(dat * (-log1mp)^xi - z * (-log(-p +
+                  1))^xi - (dat * (-log1mp)^xi - z * (-log1mp)^xi - sigma) * ((dat *
+                  xi * (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi))/
+                    ((sigma * dat * xi * (-log1mp)^xi - sigma * xi * z *
+                  (-log1mp)^xi + sigma^2) * ((dat * xi * (-log1mp)^xi - xi * z *
+                  (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi))), (-(xi *
+                  z * (-log1mp)^xi - (dat * (-log1mp)^xi - sigma * log(-log1mp)) * xi +
+                    ((dat * (-log1mp)^xi - sigma * log(-log1mp)) * xi^2 +
+                  (dat * (-log1mp)^xi - sigma * log(-log1mp)) * xi - (xi^2 * (-log1mp)^xi +
+                  xi * (-log1mp)^xi) * z) * ((dat * xi * (-log1mp)^xi -
+                  xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi) +
+                  (dat * xi * (-log1mp)^xi - xi * z * (-log1mp)^xi - (dat * xi *
+                    (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma) * ((dat * xi *
+                    (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi) +
+                     sigma) * log((dat * xi * (-log1mp)^xi - xi * z *
+                    (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi)))/((dat * xi^3 *
+                  (-log1mp)^xi - xi^3 * z * (-log1mp)^xi + sigma * xi^2) * ((dat *
+                  xi * (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi))))
 
             }
             # Score at MLE (sums to zero)
@@ -1240,48 +1047,51 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                 mu = par[1]
                 z = par[2]
                 xi = par[3]
+                Npxi <- N^xi
+                log1q <- log(1/q)
+                logN <- log(N)
                 if (qty == "quantile") {
                   # quantiles at prob. q
-                  cbind(((-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi -
-                    1) * ((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * log(1/q)^(-xi) -
-                    1)/(mu - z))/xi + ((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z)^2 +
-                    (N^xi * log(1/q)^(-xi) - 1)/(mu - z)) * (1/xi + 1)/((N^xi * log(1/q)^(-xi) -
-                    1) * (dat - mu)/(mu - z) - 1) - 1/(mu - z)), (-(N^xi * log(1/q)^(-xi) -
-                    1) * (dat - mu) * (-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) +
-                    1)^(-1/xi - 1)/((mu - z)^2 * xi) - (N^xi * log(1/q)^(-xi) - 1) * (dat -
-                    mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu - z) -
-                    1) * (mu - z)^2) + 1/(mu - z)), ((-(N^xi * log(1/q)^(-xi) - 1) * (dat -
-                    mu)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
-                    log(log(1/q))) * (dat - mu)/(((N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
-                    z) - 1) * (mu - z) * xi) - log(-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
-                    z) + 1)/xi^2) - (N^xi * log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) *
-                    log(log(1/q))) * (dat - mu) * (1/xi + 1)/(((N^xi * log(1/q)^(-xi) - 1) *
-                    (dat - mu)/(mu - z) - 1) * (mu - z)) + (N^xi * log(1/q)^(-xi) - 1) * ((N^xi *
-                    log(1/q)^(-xi) * log(N) - N^xi * log(1/q)^(-xi) * log(log(1/q))) * (mu -
-                    z) * xi/(N^xi * log(1/q)^(-xi) - 1)^2 - (mu - z)/(N^xi * log(1/q)^(-xi) -
-                    1))/((mu - z) * xi) + log(-(N^xi * log(1/q)^(-xi) - 1) * (dat - mu)/(mu -
-                    z) + 1)/xi^2))
+                  cbind(((-(Npxi * log1q^(-xi) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi -
+                    1) * ((Npxi * log1q^(-xi) - 1) * (dat - mu)/(mu - z)^2 + (Npxi * log1q^(-xi) -
+                    1)/(mu - z))/xi + ((Npxi * log1q^(-xi) - 1) * (dat - mu)/(mu - z)^2 +
+                    (Npxi * log1q^(-xi) - 1)/(mu - z)) * (1/xi + 1)/((Npxi * log1q^(-xi) -
+                    1) * (dat - mu)/(mu - z) - 1) - 1/(mu - z)), (-(Npxi * log1q^(-xi) -
+                    1) * (dat - mu) * (-(Npxi * log1q^(-xi) - 1) * (dat - mu)/(mu - z) +
+                    1)^(-1/xi - 1)/((mu - z)^2 * xi) - (Npxi * log1q^(-xi) - 1) * (dat -
+                    mu) * (1/xi + 1)/(((Npxi * log1q^(-xi) - 1) * (dat - mu)/(mu - z) -
+                    1) * (mu - z)^2) + 1/(mu - z)), ((-(Npxi * log1q^(-xi) - 1) * (dat -
+                    mu)/(mu - z) + 1)^(-1/xi) * ((Npxi * log1q^(-xi) * logN - Npxi * log1q^(-xi) *
+                    log(log1q)) * (dat - mu)/(((Npxi * log1q^(-xi) - 1) * (dat - mu)/(mu -
+                    z) - 1) * (mu - z) * xi) - log1p(-(Npxi * log1q^(-xi) - 1) * (dat - mu)/(mu -
+                    z))/xi^2) - (Npxi * log1q^(-xi) * logN - Npxi * log1q^(-xi) *
+                    log(log1q)) * (dat - mu) * (1/xi + 1)/(((Npxi * log1q^(-xi) - 1) *
+                    (dat - mu)/(mu - z) - 1) * (mu - z)) + (Npxi * log1q^(-xi) - 1) * ((Npxi *
+                    log1q^(-xi) * logN - Npxi * log1q^(-xi) * log(log1q)) * (mu -
+                    z) * xi/(Npxi * log1q^(-xi) - 1)^2 - (mu - z)/(Npxi * log1q^(-xi) -
+                    1))/((mu - z) * xi) + log1p(-(Npxi * log1q^(-xi) - 1) * (dat - mu)/(mu -
+                    z))/xi^2))
                 } else {
                   # Mean
-                  cbind(((-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi -
-                    1) * ((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z)^2 + (N^xi * gamma(-xi +
-                    1) - 1)/(mu - z))/xi + ((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu -
-                    z)^2 + (N^xi * gamma(-xi + 1) - 1)/(mu - z)) * (1/xi + 1)/((N^xi * gamma(-xi +
-                    1) - 1) * (dat - mu)/(mu - z) - 1) - 1/(mu - z)), (-(N^xi * gamma(-xi +
-                    1) - 1) * (dat - mu) * (-(N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu -
-                    z) + 1)^(-1/xi - 1)/((mu - z)^2 * xi) - (N^xi * gamma(-xi + 1) - 1) * (dat -
-                    mu) * (1/xi + 1)/(((N^xi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) -
-                    1) * (mu - z)^2) + 1/(mu - z)), ((-(N^xi * gamma(-xi + 1) - 1) * (dat -
-                    mu)/(mu - z) + 1)^(-1/xi) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi +
-                    1) * gamma(-xi + 1)) * (dat - mu)/(((N^xi * gamma(-xi + 1) - 1) * (dat -
-                    mu)/(mu - z) - 1) * (mu - z) * xi) - log(-(N^xi * gamma(-xi + 1) - 1) *
-                    (dat - mu)/(mu - z) + 1)/xi^2) - (N^xi * log(N) * gamma(-xi + 1) - N^xi *
-                    psigamma(-xi + 1) * gamma(-xi + 1)) * (dat - mu) * (1/xi + 1)/(((N^xi *
-                    gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)) + (N^xi * gamma(-xi +
-                    1) - 1) * ((N^xi * log(N) * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) *
-                    gamma(-xi + 1)) * (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - (mu - z)/(N^xi *
-                    gamma(-xi + 1) - 1))/((mu - z) * xi) + log(-(N^xi * gamma(-xi + 1) - 1) *
-                    (dat - mu)/(mu - z) + 1)/xi^2))
+                  cbind(((-(Npxi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) + 1)^(-1/xi -
+                    1) * ((Npxi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z)^2 + (Npxi * gamma(-xi +
+                    1) - 1)/(mu - z))/xi + ((Npxi * gamma(-xi + 1) - 1) * (dat - mu)/(mu -
+                    z)^2 + (Npxi * gamma(-xi + 1) - 1)/(mu - z)) * (1/xi + 1)/((Npxi * gamma(-xi +
+                    1) - 1) * (dat - mu)/(mu - z) - 1) - 1/(mu - z)), (-(Npxi * gamma(-xi +
+                    1) - 1) * (dat - mu) * (-(Npxi * gamma(-xi + 1) - 1) * (dat - mu)/(mu -
+                    z) + 1)^(-1/xi - 1)/((mu - z)^2 * xi) - (Npxi * gamma(-xi + 1) - 1) * (dat -
+                    mu) * (1/xi + 1)/(((Npxi * gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) -
+                    1) * (mu - z)^2) + 1/(mu - z)), ((-(Npxi * gamma(-xi + 1) - 1) * (dat -
+                    mu)/(mu - z) + 1)^(-1/xi) * ((Npxi * logN * gamma(-xi + 1) - Npxi * psigamma(-xi +
+                    1) * gamma(-xi + 1)) * (dat - mu)/(((Npxi * gamma(-xi + 1) - 1) * (dat -
+                    mu)/(mu - z) - 1) * (mu - z) * xi) - log1p(-(Npxi * gamma(-xi + 1) - 1) *
+                    (dat - mu)/(mu - z))/xi^2) - (Npxi * logN * gamma(-xi + 1) - Npxi *
+                    psigamma(-xi + 1) * gamma(-xi + 1)) * (dat - mu) * (1/xi + 1)/(((Npxi *
+                    gamma(-xi + 1) - 1) * (dat - mu)/(mu - z) - 1) * (mu - z)) + (Npxi * gamma(-xi +
+                    1) - 1) * ((Npxi * logN * gamma(-xi + 1) - Npxi * psigamma(-xi + 1) *
+                    gamma(-xi + 1)) * (mu - z) * xi/(Npxi * gamma(-xi + 1) - 1)^2 - (mu - z)/(Npxi *
+                    gamma(-xi + 1) - 1))/((mu - z) * xi) + log1p(-(Npxi * gamma(-xi + 1) - 1) *
+                    (dat - mu)/(mu - z))/xi^2))
                 }
             }
             # Score at MLE (sums to zero)
@@ -1328,21 +1138,21 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     }
 
     if ("tem" %in% mod) {
-        class(ans) <- c("extprof", "fr")
+        class(ans) <- c("eprof", "fr")
     } else {
-        class(ans) <- "extprof"
+        class(ans) <- "eprof"
     }
     ans
 }
 
-#' Modified profile likelihood for the generalized Pareto distribution
+#' Profile log-likelihood for the generalized Pareto distribution
 #'
 #' This function calculates the (modified) profile likelihood based on the \eqn{p^*} formula.
 #' There are two small-sample corrections that use a proxy for
 #' \eqn{\ell_{\lambda; \hat{\lambda}}}{the sample space derivative of the nuisance},
 #' which are based on Severini's (1999) empirical covariance
 #' and the Fraser and Reid tangent exponential model approximation.
-#' @details The two \code{mod} available are \code{tem}, the tangent exponential model (TEM) approximation and
+#' @details The three \code{mod} available are \code{profile} (the default), \code{tem}, the tangent exponential model (TEM) approximation and
 #' \code{modif} for the penalized profile likelihood based on \eqn{p^*} approximation proposed by Severini.
 #' For the latter, the penalization is based on the TEM or an empirical covariance adjustment term.
 #'
@@ -1398,10 +1208,10 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' gpd.pll(psi = seq(15, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
 gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
-    mod = c("tem", "modif"), mle = NULL, dat, m = NULL, N = NULL, p = NULL, q = NULL, correction = TRUE,
+    mod = "profile", mle = NULL, dat, m = NULL, N = NULL, p = NULL, q = NULL, correction = TRUE,
     ...) {
     param <- match.arg(param, c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"))
-    mod <- match.arg(mod, c("tem", "modif"), several.ok = TRUE)
+    mod <- match.arg(mod, c("profile", "tem", "modif"), several.ok = TRUE)
     # Arguments for parametrization of the log likelihood
     if (param == "shape") {
         args <- c("scale", "shape")
@@ -1541,7 +1351,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             }
             optim.tem.fn.scale <- function(psi) {
                 theta.psi.opt <- constr.mle.scale(psi)
-                param <- c(psi, theta.psi.opt)  #ll <- -theta.psi.opt$deviance/2
+                param <- c(psi, theta.psi.opt)  #ll <- -theta.psi.opt$nllh
                 ll <- gpd.ll(param, dat = dat)
                 ll + tem.objfunc.scale(param)
             }
@@ -2105,9 +1915,9 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         ans$empcov.maxpll <- as.vector(empcov.mle.opt$value)
     }
     if ("tem" %in% mod) {
-        class(ans) <- c("extprof", "fr")
+        class(ans) <- c("eprof", "fr")
     } else {
-        class(ans) <- "extprof"
+        class(ans) <- "eprof"
     }
     ans
 }
@@ -2396,7 +2206,6 @@ confint.fr <- function(object, parm, level = 0.95, ...) {
 #' @param plot logical indicating whether \code{plot.fr} should be called upon exit
 #' @param correction logical indicating whether \link{spline.corr} should be called.
 #' @author Leo Belzile
-#' @importFrom ismev gev.fit
 #' @return an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
 #' \itemize{
 #' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
