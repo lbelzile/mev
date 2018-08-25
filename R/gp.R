@@ -1394,79 +1394,15 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
 
 
 
-#' Peaks-over-threshold modelling using the generalized Pareto distribution
+#' Maximum likelihood estimate of generalized Pareto applied to threshold exceedances
 #'
-#' Numerical optimization of the Generalized Pareto distribution over a
-#' high threshold.
-#'
-#' @param xdat a numeric vector of data to be fitted.
-#' @param threshold the chosen threshold.
-#' @param show logical; if \code{TRUE} (the default), print details of the fit.
-#' @param method the method to be used. See \bold{Details}. Can be abbreviated.
-#' @param MCMC \code{NULL} for frequentist estimates, otherwise a boolean or a list with parameters passed. If \code{TRUE}, runs a Metropolis-Hastings sampler to get posterior mean estimates. Can be used to pass arguments \code{niter}, \code{burnin} and \code{thin} to the sampler as a list.
-#' @seealso \code{\link[evd]{fpot}} and \code{\link[ismev]{gpd.fit}}
-#'
-#' @details The default method is \code{'Grimshaw'}, which maximizes the profile likelihood for the ratio scale/shape.  Other options include vanilla maximization of the log-likelihood using constrained optimization routine \code{copt}, 1-dimensional optimization of the profile likelihood using \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{'ismev'} performs the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
-#' The approximate Bayesian methods (\code{'zs'} and \code{'zhang'}) are extracted respectively from Zhang and Stephens (2009) and Zhang (2010) and consists of a approximate posterior mean calculated via importance
-#' sampling assuming a GPD prior is placed on the parameter of the profile likelihood.
-#' @note Some of the internal functions (which are hidden from the user) allow for modelling of the parameters using covariates. This is not currently implemented within \code{gp.fit}, but users can call internal functions should they wish to use these features.
-#' @author Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the methods \code{nlm}, \code{nlm} and \code{ismev}.
-#' J. Zhang and Michael A. Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for the wrapper and MCMC samplers.
-#'
-#' @references Davison, A.C. (1984). Modelling excesses over high thresholds, with an application, in
-#' \emph{Statistical extremes and applications}, J. Tiago de Oliveira (editor), D. Reidel Publishing Co., 461--482.
-#' @references Grimshaw, S.D. (1993). Computing Maximum Likelihood Estimates for the Generalized
-#'  Pareto Distribution, \emph{Technometrics}, \bold{35}(2), 185--191.
-#' @references Northrop, P.J. and C. L. Coleman (2014). Improved threshold diagnostic plots for extreme value
-#' analyses, \emph{Extremes}, \bold{17}(2), 289--303.
-#' @references Zhang, J. (2010). Improving on estimation for the generalized Pareto distribution, \emph{Technometrics} \bold{52}(3), 335--339.
-#' @references Zhang, J.  and M. A. Stephens (2009). A new and efficient estimation method for the generalized Pareto distribution.
-#' \emph{Technometrics} \bold{51}(3), 316--325.
-#'
-#'
-#' @return If \code{method} is neither \code{'zs'} nor \code{'zhang'}, a list containing the following components:
-#' \itemize{
-#' \item \code{estimate} a vector containing all parameters (optimized and fixed).
-#' \item \code{std.err} a vector containing the standard errors.
-#' \item \code{var.cov} the variance covariance matrix, obtained as the numerical inverse of the observed information matrix.
-#' \item \code{threshold} the threshold.
-#' \item \code{method} the method used to fit the parameter. See details.
-#' \item \code{deviance} the deviance at the maximum likelihood estimates.
-#' \item \code{nat} number of points lying above the threshold.
-#' \item \code{pat} proportion of points lying above the threshold.
-#' \item \code{convergence} components taken from the list returned by \code{\link[stats]{optim}}.
-#' Values other than \code{0} indicate that the algorithm likely did not converge (in particular 1 and 50).
-#' \item \code{counts} components taken from the list returned by \code{\link[stats]{optim}}.
-#' }
-#' Otherwise, a list containing
-#' \itemize{
-#' \item \code{threshold} the threshold.
-#' \item \code{method} the method used to fit the parameter. See \bold{Details}.
-#' \item \code{nat} number of points lying above the threshold.
-#' \item \code{pat} proportion of points lying above the threshold.
-#' \item \code{approx.mean} a vector containing containing the approximate posterior mean estimates.
-#' }
-#' and in addition if MCMC is neither \code{FALSE}, nor \code{NULL}
-#' \itemize{
-#' \item \code{post.mean} a vector containing the posterior mean estimates.
-#' \item \code{post.se} a vector containing the posterior standard error estimates.
-#' \item \code{accept.rate} proportion of points lying above the threshold.
-#' \item \code{niter} length of resulting Markov Chain
-#' \item \code{burnin} amount of discarded iterations at start, capped at 10000.
-#' \item \code{thin} thinning integer parameter describing
-#' }
-#'
+#' The function \code{fit.gpd} is a wrapper around gp.fit
 #' @export
-#'
-#' @examples
-#' library(ismev)
-#' data(rain)
-#' threshold <- quantile(rain,0.9)
-#' gp.fit(rain, threshold, method='Grimshaw')
-#' gp.fit(rain, threshold, method='zs')
-gp.fit <- function(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL) {
+#' @rdname fit.gpd
+gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL) {
     xi.tol = 1e-04
     xdat <- na.omit(xdat)
+    xdatu <- xdat[xdat > threshold] - threshold
     # Optimization of model, depending on routine
     method <- match.arg(method)
     if (!is.null(MCMC) && !method %in% c("zs", "zhang"))
@@ -1475,7 +1411,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim
         method = "Grimshaw"
     }
     if (method == "nlm") {
-        temp <- .Zhang_Stephens_posterior(xdat[xdat > threshold] - threshold)
+        temp <- .Zhang_Stephens_posterior(xdatu)
         temp <- .GP_1D_fit_nlm(xdat, threshold, init.val = temp$mle[2]/temp$mle[1], gradtol = 1e-10, steptol = 1e-05, calc.se = FALSE)
         ifelse(temp$code < 2, temp$conv <- 0, temp$conv <- 50)
         # 1D max, use nlm to get gradients v close to zero
@@ -1484,12 +1420,13 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim
         if (temp$conv != 0) {
             # algorithm failed to converge
             warning("Algorithm did not converge. Switching method to Grimshaw")
-            temp <- .gpd_grimshaw(xdat[xdat > threshold] - threshold)
+            temp <- .gpd_grimshaw(xdatu)
             temp$mle <- c(temp$a, -temp$k)
         }
         temp <- .gpd_2D_fit(xdat, threshold, show = FALSE, siginit = temp$mle[1], shinit = temp$mle[2], method = "BFGS", reltol = 1e-30,
             abstol = 1e-30)
-    } else if (method == "copt") {
+    } else if (method %in% c("copt", "auglag")) {
+      method <- "auglag"
       mdat <- xdat[xdat > threshold] - threshold
       maxdat <- max(mdat)
       temp <- try(alabama::constrOptim.nl(c(1,0.1),
@@ -1548,13 +1485,28 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim
             post.mean <- bayespost$summary[1, ]
             post.se <- sqrt(bayespost$summary[2, ])
             names(post.mean) <- names(post.se) <- c("scale", "shape")
-            post <- structure(list(method = method, threshold = threshold, nat = sum(xdat > threshold), pat = sum(xdat > threshold)/length(xdat),
-                approx.mean = temp$mle, post.mean = post.mean, post.se = post.se, accept.rate = bayespost$rate, thin = bayespost$thin,
-                burnin = bayespost$burnin, niter = bayespost$niter, xdat = xdat), class = "gpdbayes")
+            post <- structure(list(method = method,
+                                   estimate = post.mean,
+                                   threshold = threshold,
+                                   nat = sum(xdat > threshold),
+                                   pat = sum(xdat > threshold)/length(xdat),
+                                    approx.mean = temp$mle,
+                                    post.mean = post.mean,
+                                    post.se = post.se,
+                                    accept.rate = bayespost$rate,
+                                    thin = bayespost$thin,
+                                    burnin = bayespost$burnin,
+                                    niter = bayespost$niter,
+                                    exceedances = xdatu), class = c("mev_gpdbayes", "mev_gpd"))
 
         } else {
-            post <- structure(list(method = method, threshold = threshold, nat = sum(xdat > threshold), pat = sum(xdat > threshold)/length(xdat),
-                approx.mean = temp$mle), class = "gpdbayes")
+            post <- structure(list(method = method,
+                                   estimate = temp$mle,
+                                   threshold = threshold,
+                                   nat = sum(xdat > threshold),
+                                   pat = sum(xdat > threshold)/length(xdat),
+                                   approx.mean = temp$mle,
+                                   exceedances = xdatu), class = c("mev_gpdbayes", "mev_gpd"))
 
         }
         if (show)
@@ -1562,23 +1514,22 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim
         return(invisible(post))
     }
     if (method == "Grimshaw") {
-        yy <- xdat[xdat > threshold] - threshold  # thresholds excesses
-        pjn <- .gpd_grimshaw(yy)  # Grimshaw (1993) function, note: k is -xi, a is sigma
+        pjn <- .gpd_grimshaw(xdatu)  # Grimshaw (1993) function, note: k is -xi, a is sigma
         temp <- list()
         temp$mle <- c(pjn$a, -pjn$k)  # mle for (sigma, xi)
-        sc <- rep(temp$mle[1], length(yy))
+        sc <- rep(temp$mle[1], length(xdatu))
         xi <- temp$mle[2]
-        temp$nllh <- sum(log(sc)) + sum(log(1 + xi * yy/sc) * (1/xi + 1))
+        temp$nllh <- sum(log(sc)) + sum(log(1 + xi * xdatu/sc) * (1/xi + 1))
         temp$conv <- pjn$conv
     }
     if(temp$mle[2] < -1){
       #Transform the solution (unbounded) to boundary - with maximum observation for scale and -1 for shape.
-      temp$mle <- c(max( xdat[xdat > threshold] - threshold) + 1e-10, -1)
+      temp$mle <- c(max(xdatu) + 1e-10, -1)
     }
 
     # Collecting observations from temp and formatting the output
-    invobsinfomat <- tryCatch(solve(.gpd_obs_info(data = xdat[xdat > threshold],
-                                                  scale = temp$mle[1], shape = temp$mle[2], loc = threshold)),
+    invobsinfomat <- tryCatch(solve(.gpd_obs_info(data = xdatu,
+                                                  scale = temp$mle[1], shape = temp$mle[2], loc = 0)),
         error = function(e) {
             "notinvert"
         }, warning = function(w) w)
@@ -1600,90 +1551,154 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "copt", "nlm", "optim
         warning("The MLE is not a solution to the score equation for `xi < -1'")
     }
     names(temp$mle) <- names(std.errors) <- c("scale", "shape")
-    output <- structure(list(threshold = threshold, estimate = temp$mle,
-                             std.err = std.errors, var.cov = invobsinfomat, threshold = threshold,
-        method = method, deviance = 2 * temp$nllh, nat = sum(xdat > threshold),
-        pat = sum(xdat > threshold)/length(xdat), convergence = temp$conv,
-        counts = temp$counts, xdat = xdat), class = "gpd")
+    output <- structure(list(estimate = temp$mle,
+                             std.err = std.errors,
+                             vcov = invobsinfomat,
+                             threshold = threshold,
+        method = method,
+        nllh = temp$nllh,
+        nat = sum(xdat > threshold),
+        pat = length(xdatu)/length(xdat),
+        convergence = ifelse(temp$conv == 0, "successful", temp$conv),
+        counts = temp$counts, exceedances = xdatu), class = "mev_gpd")
     if (show) {
         print(output)
     }
     invisible(output)
 }
 
-# @param x A fitted object of class \code{gpd}.
-# @param main title for the QQ-plot #' @param xlab x-axis label
-# @param ylab y-axis label
-# @param ... additional argument passed to \code{matplot}.
-#' @export
-plot.gpd <- function(x, main = "Quantile-quantile plot", xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...) {
-    if (is.matrix(x)) {
-        stop("Data provided must be a vector, not a matrix")
+#' Robust threshold selection of Dupuis
+#'
+#' The optimal bias-robust estimator (OBRE) for the generalized Pareto.
+#' This function returns robust estimates and the associated weights.
+#'
+#' @references Dupuis, D.J. (1998). Exceedances over High Thresholds: A Guide to Threshold Selection,
+#' \emph{Extremes}, \bold{1}(3), 251--261.
+#'
+#' @param dat a numeric vector of data
+#' @param thresh threshold parameter
+#' @param k bound on the influence function; the constant \code{k} is a robustness parameter
+#' (higher bounds are more efficient, low bounds are more robust). Default to 4.
+#' @param tol numerical tolerance for OBRE weights iterations.
+#' @param show logical: should diagnostics and estimates be printed. Default to \code{FALSE}.
+#' @seealso [fit.gpd]
+#' @return a list with the same components as [fit.gpd],
+#' in addition to
+#' \itemize{
+#' \item{\code{estimate}:}{optimal bias-robust estimates of the \code{scale} and \code{shape} parameters.}
+#' \item{\code{weights}:}{vector of OBRE weights.}
+#' }
+#' @examples
+#' dat <- rexp(100)
+#' .fit.rob.gpd(dat, 0.1)
+.fit.gpd.rob <- function(dat, thresh, k = 4, tol = 1e-5, show = FALSE){
+  k <- max(k, sqrt(2))
+  ninit <- length(dat)
+  gpd.score.i <- function(par, dat) {
+    sigma = par[1]
+    xi = as.vector(par[2])
+    if (!isTRUE(all.equal(0, xi))) {
+      rbind(dat * (xi + 1)/(sigma^2 * (dat * xi/sigma + 1)) - 1/sigma,
+            (-dat * (1/xi + 1)/(sigma *(dat * xi/sigma + 1)) + log1p(dat * xi/sigma)/xi^2))
+    } else {
+      rbind((dat - sigma)/sigma^2, (1/2 * (dat - 2 * sigma) * dat/sigma^2))
     }
-    dat <- sort(x$xdat[x$xdat > x$threshold])
-    n <- length(dat)
-    confint_lim <- t(sapply(1:n, function(i) {
-        qgpd(qbeta(c(0.025, 0.975), i, n - i + 1), loc = x$threshold, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
-    }))
-    quant <- qgpd(rank(dat)/(n + 1), loc = x$threshold, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
-    matplot(quant, cbind(dat, confint_lim), main = main, xlab = xlab, ylab = ylab, type = "pll", pch = 20, col = c(1, "grey", "grey"),
-        lty = c(1, 2, 2), bty = "l", pty = "s", ...)
-    abline(0, 1)
-    matlim <- cbind(quant, confint_lim)
-    colnames(matlim) <- c("quantile", "lower","upper")
-    invisible(matlim)
-}
-
-
-
-# @param x A fitted object of class \code{gpd}.
-# @param digits Number of digits to display in \code{print} call.
-# @param ... Additional argument passed to \code{print}.
-#' @export
-"print.gpd" <- function(x, digits = max(3, getOption("digits") - 3), ...) {
-    cat("Method:", x$method, "\n")
-    cat("Deviance:", round(x$deviance, digits), "\n")
-
-    cat("\nThreshold:", round(x$threshold, digits), "\n")
-    cat("Number Above:", x$nat, "\n")
-    cat("Proportion Above:", round(x$pat, digits), "\n")
-
-    cat("\nEstimates\n")
-    print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)
-    if (!is.null(x$std.err) && x$estimate[1] > -0.5) {
-        cat("\nStandard Errors\n")
-        print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
+  }
+  #B-score weight function
+  Wfun <- function(dat, par, A, a, k){
+    pmin(1, k/sqrt(colSums((A %*% (gpd.score.i(dat = dat, par = par) - a))^2)))
+  }
+  afun <- function(par, A, a, k){
+    upbound <- ifelse(par[2] < 0, -par[1]/par[2], Inf)
+    c(integrate(f = function(x){
+      gpd.score.i(par = par, dat = x)[1,] *
+        Wfun(dat = x, par = par, A = A, a = a, k = k) *
+        dgpd(x = x, loc = 0, scale = par[1], shape = par[2])
+    }, lower = 0, upper = upbound)$value,
+    integrate(f = function(x){
+      gpd.score.i(par = par, dat = x)[2,] *
+        Wfun(dat = x, par = par, A = A, a = a, k = k) *
+        dgpd(x = x, loc = 0, scale = par[1], shape = par[2])
+    }, lower = 0, upper = upbound)$value)/
+      integrate(f = function(x){
+        Wfun(dat = x, par = par, A = A, a = a, k = k) *
+          dgpd(x = x, loc = 0, scale = par[1], shape = par[2])
+      }, lower = 0, upper = upbound)$value
+  }
+  #Initialize algorithm
+  # keep only exceedances
+  dat <- as.vector(dat[dat>thresh] - thresh)
+  # starting value is maximum likelihood estimates
+  par_val <- gp.fit(dat, threshold = 0)$estimate
+  a <- rep(0, 2)
+  A <- t(solve(chol(gpd.infomat(par = par_val, dat = dat, method = "obs"))))
+  dtheta <- rep(Inf, 2)
+  u <- runif(1e4);
+  niter <- 0L; niter_max <- 1e3L
+  while(max(abs(dtheta/par_val)) > tol && niter < niter_max){
+    niter <- niter + 1L
+    if(all(is.finite(dtheta))){
+      par_val <- par_val + dtheta
     }
-    cat("\nOptimization Information\n")
-    cat("  Convergence:", x$convergence, "\n")
-    if (x$method != "Grimshaw") {
-        cat("  Function Evaluations:", x$counts["function"], "\n")
-        if (!is.null(x$counts["gradient"]) && x$method != "nlm")
-            cat("  Gradient Evaluations:", x$counts["gradient"], "\n")
-        cat("\n")
+    #Monte-Carlo integration with antithetic variables
+    xd <- evd::qgpd(c(u, 1-u), loc = 0, scale = par_val[1], shape = par_val[2])
+    #Obtain a
+    score <- gpd.score.i(par = par_val, dat = xd)
+    Wc <- Wfun(dat = xd, par = par_val, A = A, a = a, k = k)
+    a <- rowSums(score %*% Wc)/ sum(Wc)
+    Wcsq <- Wfun(dat = xd, par = par_val, A = A, a = a, k = k)^2
+    M2e <- c(mean((score[1,]-a[1])^2*Wcsq),
+             mean((score[1,]-a[1])*(score[2,]-a[2])*Wcsq),
+             mean((score[2,]-a[2])^2*Wcsq))
+    M2 <- matrix(c(M2e[1], M2e[2], M2e[2], M2e[3]), ncol = 2, nrow = 2, byrow = TRUE)
+    #Compute Matrix A
+    A <- chol(solve(M2))
+    #Compute matrix M1 with new values of a, A and Delta theta
+    Wc <- Wfun(dat = xd, par = par_val, A = A, a = a, k = k)
+    M1e <- c(mean((score[1,]-a[1])^2*Wc),
+             mean((score[1,]-a[1])*(score[2,]-a[2])*Wc),
+             mean((score[2,]-a[2])^2*Wc))
+    M1 <- matrix(c(M1e[1], M1e[2], M1e[2], M1e[3]), ncol = 2, nrow = 2, byrow = TRUE)
+    Wgt_dat <- Wfun(dat = dat, par = par_val, A = A, a = a, k = k)
+    dtheta <- c(solve(M1) %*% colMeans(t(gpd.score.i(dat = dat, par = par_val) - a) * Wgt_dat))
+  }
+  #Test for standard errors - Huber robust sandwich variance
+  Wc <- Wfun(dat = xd, par = par_val, A = A, a = a, k = k)
+  M3 <- c(mean((score[1,]-a[1])*score[1,]*Wc),
+          mean((score[1,]-a[1])*score[2,]*Wc),
+          #mean((score[2,]-a[2])*score[1,]*Wc),
+          # should be symmetric, not quite numerically but error 10e-8
+          mean((score[2,]-a[2])*score[2,]*Wc))
+  #Compute inverse of -\int \partial/\partial theta \psi dF(\theta)
+  Masy <- solve(matrix(c(M3[1], M3[2], M3[2], M3[3]), ncol = 2, nrow = 2, byrow = TRUE))
+  #Hampel et al. (1986), eq. 4.2.13, p. 231
+  vcov <- Masy %*% M1 %*% Masy / length(dat)
+  stderr <- sqrt(diag(vcov))
+  names(stderr) <- names(par_val)
+  ret <- structure(list(estimate = par_val,
+                        std.err = stderr,
+                        vcov = vcov,
+                        threshold = thresh,
+                        method = "obre",
+                        nllh = -as.vector(gpd.ll(par_val, dat = dat)),
+                        convergence = ifelse(niter == niter_max, 1, "successful"),
+                        nat = length(dat),
+                        pat = length(dat)/ninit,
+                        counts = c("function" = niter),
+                        exceedances = dat,
+                        weights = Wgt_dat), class = "mev_gpd")
+  if(show){
+    print(ret)
+
+    matw <- head(cbind("exceedances" =  ret$exceedances,
+                       "weights" = ret$weights,
+                       "p-value" = rank(ret$weights)/length(ret$weights))[order(ret$exceedances, decreasing = TRUE),])
+    rownames(matw) <- 1:6
+    matw <- matw[matw[,2] != 1,]
+    if(length(matw)> 0){
+      cat("Largest observations: OBRE weights\n")
+      print(round(matw, digits = 3))
     }
-    invisible(x)
-}
-
-# @param x A fitted object of class \code{gpdbayes}.
-# @param digits Number of digits to display in \code{print} call.
-# @param ... Additional argument passed to \code{print}.
-#' @export
-"print.gpdbayes" <- function(x, digits = max(3, getOption("digits") - 3), ...) {
-    cat("\nMethod:", switch(x$method, zs = "Zhang and Stephens", zhang = "Zhang"), "\n")
-    cat("\nThreshold:", round(x$threshold, digits), "\n")
-    cat("Number Above:", x$nat, "\n")
-    cat("Proportion Above:", round(x$pat, digits), "\n")
-
-    cat("\nApproximate posterior mean estimates\n")
-    print.default(format(x$approx.mean, digits = 3), print.gap = 2, quote = FALSE)
-    if (!is.null(x$post.mean)) {
-        cat("\nPosterior mean estimates\n")
-        print.default(format(x$post.mean, digits = 3), print.gap = 2, quote = FALSE)
-        cat("\nMonte Carlo standard errors\n")
-        print.default(format(x$post.se, digits = 3), print.gap = 2, quote = FALSE)
-        cat("\nEstimates based on an adaptive MCMC\n Runs:   ", x$niter, "\n Burnin: ", x$burnin, "\n Acceptance rate:", round(x$accept.rate,
-            digits = 2), "\n Thinning:", x$thin, "\n")
-
-    }
+  }
+  return(invisible(ret))
 }

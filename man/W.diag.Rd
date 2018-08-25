@@ -73,21 +73,14 @@ is transformed to exponential margins using the empirical distribution function.
 \dontrun{
 set.seed(123)
 W.diag(rexp(1000), model='nhpp', k=30, q1=0)
-# Parameter Stability only
+# Parameter stability only
 W.diag(abs(rnorm(5000)), model='nhpp', k=30, q1=0, plots=c('PS'))
-library(mvtnorm)
-xbvn<-rmvnorm(6000, sigma=matrix(c(1,0.7,0.7,1),2,2))
+xbvn <- mvrnorm(6000, mu = rep(0, 2), Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 # Transform margins to exponential manually
-xbvn.exp<- -log(1-pnorm(xbvn))
+xbvn.exp <- -log(1-pnorm(xbvn))
 W.diag(apply(xbvn.exp,1,min), model='exp', k=30, q1=0) #rate parametrization
 W.diag(xbvn, model='exp', k=30, q1=0)
 W.diag(apply(xbvn.exp,1,min), model='invexp', k=30, q1=0) #inverse rate parametrization
-}
-\dontrun{
-library(ismev)
-data(rain)
-u <- quantile(rain, seq(0.85,0.99,by=0.01))
-W.diag(xdat=rain, u=u, plots='PS')
 }
 }
 \references{

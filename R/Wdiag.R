@@ -17,14 +17,13 @@
 #' @param q1 lowest quantile for the threshold sequence.
 #' @param q2 upper quantile limit for the threshold sequence (\code{q2} itself is not used as a threshold,
 #'  but rather the uppermost threshold will be at the \eqn{(q_2-1/k)}{q2-1/k} quantile).
-#' @param par parameters of the NHPP likelihood. If \code{missing}, the \code{\link[evd]{fpot}} routine will be run to obtain values
+#' @param par parameters of the NHPP likelihood. If \code{missing}, the \code{\link[mev]{fit.pp}} routine will be run to obtain values
 #' @param M number of superpositions or 'blocks' / 'years' the process corresponds to (can affect the optimization)
 #' @param nbs number of simulations used to assess the null distribution of the LRT, and produce the p-value
 #' @param alpha significance level of the LRT
 #' @param plots vector of strings indicating which plots to produce; \code{LRT}= likelihood ratio test, \code{WN} = white noise, \code{PS} = parameter stability
 #' @param UseQuantiles logical; use quantiles as the thresholds in the plot?
 #' @param pmar vector of length 4 giving the arguments for the plot margins in \code{par(mar=c(*,*,*,*))}.
-#' @param tikz logical; if \code{TRUE}, axis labels are replaced with \code{LaTeX} code
 #' @param ... additional parameters passed to \code{plot}.
 #'
 #' @details The function is a wrapper for the univariate (non-homogeneous Poisson process model) and bivariate exponential dependence model.
@@ -38,7 +37,7 @@
 #' @references Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
 #'
 #' @author Jennifer L. Wadsworth
-#' @return plots of the requested diagnostics and a list with components
+#' @return plots of the requested diagnostics and an invisible list with components
 #' \itemize{
 #' \item \code{MLE}  maximum likelihood estimates from all thresholds
 #' \item \code{Cov}  joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{\eta^{-1}}{1/\eta}.
@@ -53,25 +52,20 @@
 #' \dontrun{
 #' set.seed(123)
 #' W.diag(rexp(1000), model='nhpp', k=30, q1=0)
-#' # Parameter Stability only
-#' W.diag(abs(rnorm(5000)), model='nhpp', k=30, q1=0, plots=c('PS'))
-#' library(mvtnorm)
-#' xbvn<-rmvnorm(6000, sigma=matrix(c(1,0.7,0.7,1),2,2))
+#' # Parameter stability only
+#' W.diag(abs(rnorm(5000)), model='nhpp', k=30, q1=0, plots= "PS")
+#' xbvn <- mvrnorm(6000, mu = rep(0, 2), Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 #' # Transform margins to exponential manually
-#' xbvn.exp<- -log(1-pnorm(xbvn))
+#' xbvn.exp <- -log(1-pnorm(xbvn))
 #' W.diag(apply(xbvn.exp,1,min), model='exp', k=30, q1=0) #rate parametrization
 #' W.diag(xbvn, model='exp', k=30, q1=0)
 #' W.diag(apply(xbvn.exp,1,min), model='invexp', k=30, q1=0) #inverse rate parametrization
 #' }
-#' \dontrun{
-#' library(ismev)
-#' data(rain)
-#' u <- quantile(rain, seq(0.85,0.99,by=0.01))
-#' W.diag(xdat=rain, u=u, plots='PS')
-#' }
 #' @export
 W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0, q2 = 1, par = NULL, M = NULL, nbs = 1000, alpha = 0.05,
-    plots = c("LRT", "WN", "PS"), UseQuantiles = TRUE, pmar = c(5.5, 7, 3, 3), tikz = FALSE, ...) {
+    plots = c("LRT", "WN", "PS"), UseQuantiles = TRUE, pmar = c(5.5, 7, 3, 3), ...) {
+    old.par <- par(no.readonly = TRUE)
+    on.exit(par(old.par))
     model <- match.arg(model, c("nhpp", "exp", "invexp"))
     if (ncol(as.matrix(xdat)) == 2 && model %in% c("exp", "invexp")) {
         xdat <- -log(1 - apply(xdat, 2, function(y) {
@@ -83,16 +77,15 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
         stop("Invalid input for `xdat`")
     }
     switch(model, nhpp = .NHPP.diag(xdat = xdat, u = u, k = k, q1 = q1, q2 = q2, par = par, M = M, nbs = nbs, alpha = alpha, plots = plots,
-        UseQuantiles = UseQuantiles, pmar = pmar, tikz = tikz, ...), exp = .Expl.diag(x = xdat, u = u, k = k, q1 = q1, q2 = q2, nbs = nbs,
+        UseQuantiles = UseQuantiles, pmar = pmar, ...), exp = .Expl.diag(x = xdat, u = u, k = k, q1 = q1, q2 = q2, nbs = nbs,
         alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "Rate", pmar = pmar, ...), invexp = .Expl.diag(x = xdat,
         u = u, k = k, q1 = q1, q2 = q2, nbs = nbs, alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "InvRate", pmar = pmar,
         ...))
 }
 
 
-#' @importFrom ismev pp.fit
 .NHPP.diag <- function(xdat, u = NULL, k, q1 = 0, q2 = 1, par = NULL, M = NULL, nbs = 1000, alpha = 0.05, plots = c("LRT", "WN", "PS"),
-    UseQuantiles = TRUE, pmar = c(5.5, 7, 3, 3), tikz = FALSE, ...) {
+    UseQuantiles = TRUE, pmar = c(5.5, 7, 3, 3), ...) {
 
 
     unull <- is.null(u)
@@ -110,24 +103,11 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
             M <- length(xdat[xdat > thresh])/3
         }  #why M=nat/3 as default?
     if (is.null(par)) {
-        {
-            # require(ismev)
-            # # Starting values for PP fit
-            # uInd <- xdat > thresh lrate <- sum(uInd)/length(xdat)
-            # xdatu <- xdat[uInd]
-            # in2 <- sqrt(6 * var(xdatu))/pi
-            # in1 <- mean(xdatu) - 0.57722 * in2
-            # in3 <- .Zhang_Stephens_posterior(xdatu-thresh)$mle['shape']
-            # in2 <- exp(log(in2) + in3 * log(lrate))
-            # in1 <- thresh - (in2/in3) * (lrate^(-in3) - 1)
-            # init.par <- list(loc=in1, scale=in2, shape=in3)
-            # ppf <- evd::fpot(x=xdat, threshold=thresh, npp=length(xdat)/M, start=init.par, model='pp')
-            ppf <- ismev::pp.fit(xdat = xdat, thresh = quantile(xdat, q1), npy = length(xdat)/M, show = F)
-            par <- ppf$mle
-            # par <- ppf$estimate
-        }
+            ppf <- fit.pp(xdat = xdat, thresh = quantile(xdat, q1), npp = length(xdat)/M, show = FALSE)
+            par <- ppf$estimate
+
     }
-    par(mfrow = c(length(plots), 1), las = 1, mar = pmar)
+    par(mfrow = c(length(plots), 1), las = 1, mar = pmar, pch = 19)
 
     J1 <- .Joint_MLE_NHPP(x = xdat, u = u, k = k, q1 = q1, q2 = q2, par = par, M = M)
     warn <- any(eigen(J1$Cov.xi, only.values = TRUE)$val <= .Machine$double.eps)
@@ -171,20 +151,20 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 
     if (is.element("LRT", plots)) {
         if (!UseQuantiles) {
-            plot(qs, c(rep(NA, 2), nl[, 2]), xlab = "Quantile", ylab = "LR statistic", main = paste("p-value:", pval), ...)
+            plot(qs, c(rep(NA, 2), nl[, 2]), xlab = "quantile", ylab = "LR statistic", main = paste("p-value:", pval), ...)
         } else {
-            plot(u[-c(k + 1)], c(rep(NA, 2), nl[, 2]), xlab = "Threshold", ylab = "LR statistic", main = paste("p-value:", pval),
+            plot(u[-c(k + 1)], c(rep(NA, 2), nl[, 2]), xlab = "threshold", ylab = "LR statistic", main = paste("p-value:", pval),
                 ...)
         }
     }
 
     if (is.element("WN", plots)) {
         if (!UseQuantiles) {
-            plot(qs, c(NA, wn), xlab = "Quantile", ylab = "White noise", ...)
+            plot(qs, c(NA, wn), xlab = "quantile", ylab = "white noise", ...)
             abline(h = 0, col = 2)
             abline(v = mean(xdat <= ustar), col = 4)
         } else {
-            plot(u[-c(k + 1)], c(NA, wn), xlab = "Threshold", ylab = "White noise", ...)
+            plot(u[-c(k + 1)], c(NA, wn), xlab = "threshold", ylab = "white noise", ...)
             abline(h = 0, col = 2)
             abline(v = ustar, col = 4)
         }
@@ -193,21 +173,19 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (is.element("PS", plots)) {
         TradCI <- cbind(J1$mle[, 3] - qnorm(0.975) * sqrt(diag(J1$Cov.xi)), J1$mle[, 3] + qnorm(0.975) * sqrt(diag(J1$Cov.xi)))
         if (!UseQuantiles) {
-            plot(qs, J1$mle[, 3], ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Quantile", ylab = ifelse(tikz, "$\\hat{\\xi}$",
-                expression(hat(xi))), ...)
+            plot(qs, J1$mle[, 3], ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "quantile", ylab = "shape", ...)
             lines(qs, TradCI[, 1], lty = 2)
             lines(qs, TradCI[, 2], lty = 2)
             abline(v = mean(xdat <= ustar), col = 4)
         } else {
-            plot(u[-(k + 1)], J1$mle[, 3], ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Threshold", ylab = ifelse(tikz, "$\\hat{\\xi}$",
-                expression(hat(xi))), ...)
+            plot(u[-(k + 1)], J1$mle[, 3], ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "threshold", ylab = "shape", ...)
             lines(u[-(k + 1)], TradCI[, 1], lty = 2)
             lines(u[-(k + 1)], TradCI[, 2], lty = 2)
             abline(v = ustar, col = 4)
         }
     }
 
-    return(list(MLE = J1$mle, Cov = J1$Cov.xi, WN = wn, LRT = nl, pval = pval, k = k, thresh = ustar, mle.u = theta.hat))
+    invisible(list(MLE = J1$mle, Cov = J1$Cov.xi, WN = wn, LRT = nl, pval = pval, k = k, thresh = ustar, mle.u = theta.hat))
 }
 
 
@@ -450,7 +428,9 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     thetahat <- matrix(NA, ncol = 3, nrow = k)
 
     for (i in 1:k) {
-        opt <- optim(.nhpp_nll, par = par, x = x, u = u[i], M = M, hessian = F)
+        #opt <- optim(.nhpp_nll, par = par, x = x, u = u[i], M = M, hessian = FALSE)
+        opt <- fit.pp(xdat = x, threshold = u[i], np = M)
+        opt$par <- opt$estimate
         thetahat[i, ] <- opt$par
 
         ### Deal with xi <- 0.5
@@ -647,12 +627,12 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 
 .d2ldxi2 <- function(x, mu, sig, xi, u, M) {
     c1 <- (1 + (xi/sig) * (u - mu))^(-1/xi)
-    p1 <- M * c1 * (-2/xi^3) * log(1 + (xi/sig) * (x - mu))  #
+    p1 <- M * c1 * (-2/xi^3) * log1p((xi/sig) * (x - mu))  #
     p2 <- M * c1 * 2 * ((x - mu)/(sig * xi^2)) * (1 + (xi/sig) * (x - mu))^(-1)  #
     p3 <- M * c1 * ((1/xi + 1)/sig^2) * ((x - mu)^2) * (1 + (xi/sig) * (x - mu))^(-2)  #
-    p4.1 <- ((-1/xi^2) * log(1 + (xi/sig) * (u - mu)) + (1/sig) * (1/xi) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1))  #
+    p4.1 <- ((-1/xi^2) * log1p((xi/sig) * (u - mu)) + (1/sig) * (1/xi) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1))  #
     p4 <- -(p4.1^2) * M * (1 + (xi/sig) * (u - mu))^(-1/xi)  #
-    p5.1 <- ((2/xi^3) * log(1 + (xi/sig) * (u - mu)) - (2/sig) * (1/xi^2) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1) - (1/sig^2) *
+    p5.1 <- ((2/xi^3) * log1p((xi/sig) * (u - mu)) - (2/sig) * (1/xi^2) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1) - (1/sig^2) *
         (1/xi) * ((u - mu)^2) * (1 + (xi/sig) * (u - mu))^(-2))  #
     p5 <- (p5.1) * M * (1 + (xi/sig) * (u - mu))^(-1/xi)  #
 
@@ -719,7 +699,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
         Ed2ldmudxi$abs.err, Ed2ldsigdxi$abs.err, Ed2ldxi2$abs.err)
 
     EIM <- -matrix(c(Ed2ldmu2$val, Ed2ldmudsig$val, Ed2ldmudxi$val, Ed2ldmudsig$val, Ed2ldsig2$val, Ed2ldsigdxi$val, Ed2ldmudxi$val,
-        Ed2ldsigdxi$val, Ed2ldxi2$val), byrow = T, nrow = 3)
+        Ed2ldsigdxi$val, Ed2ldxi2$val), byrow = TRUE, nrow = 3)
 
     return(list(EIM = EIM, Errors = Errors))
 }
