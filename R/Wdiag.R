@@ -51,7 +51,7 @@
 #' @examples
 #' \dontrun{
 #' set.seed(123)
-#' W.diag(rexp(1000), model = 'nhpp', k = 30, q1 = 0)
+#' W.diag(rexp(1000), model = 'nhpp', k = 20, q1 = 0)
 #' # Parameter stability only
 #' W.diag(abs(rnorm(5000)), model = 'nhpp', k = 30, q1 = 0, plots = "PS")
 #' xbvn <- mvrnorm(6000, mu = rep(0, 2), Sigma = cbind(c(1, 0.7), c(0.7, 1)))
@@ -96,21 +96,16 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     } else {
         thresh <- min(u)
     }
-
     if (!unull) {
         k <- length(u)
     }
-    if (is.null(M))
-        {
-            M <- length(xdat[xdat > thresh])/3
+    if (is.null(M)){
+            M <- length(xdat[xdat > thresh])
         }  #why M=nat/3 as default?
     if (is.null(par)) {
             ppf <- fit.pp(xdat = xdat, thresh = quantile(xdat, q1), npp = length(xdat)/M, show = FALSE)
             par <- ppf$estimate
-
     }
-    par(mfrow = c(length(plots), 1), las = 1, mar = pmar, pch = 19)
-
     J1 <- .Joint_MLE_NHPP(x = xdat, u = u, k = k, q1 = q1, q2 = q2, par = par, M = M)
     warn <- any(eigen(J1$Cov.xi, only.values = TRUE)$val <= .Machine$double.eps)
     if (!unull && warn) {
@@ -151,6 +146,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
         qs <- seq(q1, q2, len = k + 1)[-(k + 1)]
     }
 
+    par(mfrow = c(length(plots), 1), las = 1, mar = pmar, pch = 19)
     if (is.element("LRT", plots)) {
         if (!UseQuantiles) {
             plot(qs, c(rep(NA, 2), nl[, 2]), xlab = "quantile", ylab = "LR statistic", main = paste("p-value:", pval), ...)
@@ -301,19 +297,18 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 #' Calculates the MLEs of the rate parameter, and joint asymptotic covariance matrix of these MLEs
 #' over a range of thresholds as supplied by the user.
 #'
-#'@param x vector of data
-#'@param u vector of thresholds. If not supplied, then \code{k}
+#' @param x vector of data
+#' @param u vector of thresholds. If not supplied, then \code{k}
 #' thresholds between quantiles (\code{q1}, \code{q2}) will be used
-#'@param k number of thresholds to consider if u not supplied
-#'@param q1 lower quantile to consider for threshold
-#'@param q2 upper quantile to consider for threshold
-#'@param param character specifying \code{'InvRate'} or \code{'Rate'}
+#' @param k number of thresholds to consider if u not supplied
+#' @param q1 lower quantile to consider for threshold
+#' @param q2 upper quantile to consider for threshold
+#' @param param character specifying \code{'InvRate'} or \code{'Rate'}
 #' for either inverse rate parameter / rate parameter, respectively
 #'
 #' @author Jennifer L. Wadsworth
 #'
-# Value: (returns:)
-#'@return a list with
+#' @return a list with
 #' \itemize{
 #' \item mle vector of MLEs above the supplied thresholds
 #' \item cov joint asymptotic covariance matrix of these MLEs
@@ -356,39 +351,6 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     return(list(mle = thetahat, Cov = CovT))
 }
 
-#####################################################################################
-#' Negative log-likelihood of the non-homogeneous Poisson process (NHPP)
-#'
-#' Negative log likelihood for the NHPP model, to minimize for MLEs
-#'
-#' @param theta parameter vector (\eqn{\mu}, \eqn{sigma}, \eqn{xi})
-#' @param x data vector
-#' @param u threshold
-#' @param M number of superpositions or 'blocks' / 'years' the process corresponds to (affects estimation of \eqn{mu}, #' \eqn{sigma}, but these can be changed post-hoc to correspond to any number)
-#'
-#' @author Jennifer L. Wadsworth
-#'
-#' @return the value of the negative log-likelihood value
-.nhpp_nll <- function(theta, x, u, M) {
-    x <- x[x > u]
-    mu <- theta[1]
-    sig <- theta[2]
-    xi <- theta[3]
-    Nu <- length(x)
-
-    if (sig <= 0 || any(1 + xi * (x - mu)/sig < 0)) {
-        return(1e+11)
-    } else {
-        if (abs(xi) > 1e-10) {
-            nll <- (1/xi + 1) * sum(log(1 + xi * (x - mu)/sig)) + Nu * log(sig) + M * (1 + xi * (u - mu)/sig)^(-1/xi)
-        } else {
-            nll <- Nu * log(sig) + sum((x - mu)/sig) + M * exp(-(u - mu)/sig)
-        }
-        return(nll)
-    }
-}
-
-
 
 #####################################################################################
 
@@ -397,25 +359,25 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 #'
 #' Calculates the MLEs of the parameters (\eqn{\mu}, \eqn{\sigma}, \eqn{\xi}), and joint
 #' asymptotic covariance matrix of these MLEs over a range of thresholds as supplied by the user.
-#'@param x vector of data
-#'@param u optional vector of thresholds. If not supplied, then k thresholds between quantiles (q1, q2) will be used
-#'@param k number of thresholds to consider if \code{u} not supplied
-#'@param q1 lower  quantile to consider for threshold
-#'@param q2 upper quantile to consider for threshold. Default to 1
-#'@param par starting values for the optimization
-#'@param  M  number of superpositions or 'blocks' / 'years' the process corresponds to.
+#' @param x vector of data
+#' @param u optional vector of thresholds. If not supplied, then k thresholds between quantiles (q1, q2) will be used
+#' @param k number of thresholds to consider if \code{u} not supplied
+#' @param q1 lower  quantile to consider for threshold
+#' @param q2 upper quantile to consider for threshold. Default to 1
+#' @param par starting values for the optimization
+#' @param  M  number of superpositions or 'blocks' / 'years' the process corresponds to.
 #' It affects the estimation of \eqn{mu} and \eqn{sigma},
 #' but these can be changed post-hoc to correspond to any number)
 #'
-#' #' @author Jennifer L. Wadsworth
-#'@return a list with components
-#'\itemize{
-#'\item mle matrix of MLEs above the supplied thresholds; columns are (\eqn{\mu}, \eqn{\sigma}, \eqn{\xi})
-#'\item Cov.all joint asymptotic covariance matrix of all MLEs
-#'\item Cov.mu joint asymptotic covariance matrix of MLEs for \eqn{\mu}
-#'\item Cov.sig joint asymptotic covariance matrix of MLEs for \eqn{\sigma}
-#'\item Cov.xi joint asymptotic covariance matrix of MLEs for \eqn{\xi}
-#'}
+#' @author Jennifer L. Wadsworth
+#' @return a list with components
+#' \itemize{
+#' \item mle matrix of MLEs above the supplied thresholds; columns are (\eqn{\mu}, \eqn{\sigma}, \eqn{\xi})
+#' \item Cov.all joint asymptotic covariance matrix of all MLEs
+#' \item Cov.mu joint asymptotic covariance matrix of MLEs for \eqn{\mu}
+#' \item Cov.sig joint asymptotic covariance matrix of MLEs for \eqn{\sigma}
+#' \item Cov.xi joint asymptotic covariance matrix of MLEs for \eqn{\xi}
+#' }
 .Joint_MLE_NHPP <- function(x, u = NULL, k, q1, q2 = 1, par, M) {
     if (!is.null(u)) {
         k <- length(u)
@@ -430,15 +392,12 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     thetahat <- matrix(NA, ncol = 3, nrow = k)
 
     for (i in 1:k) {
-        #opt <- optim(.nhpp_nll, par = par, x = x, u = u[i], M = M, hessian = FALSE)
         opt <- fit.pp(xdat = x, threshold = u[i], np = M)
-        opt$par <- opt$estimate
-        thetahat[i, ] <- opt$par
+        thetahat[i, ] <- opt$estimate
 
         ### Deal with xi <- 0.5
         if (thetahat[i, 3] > -0.5) {
-            ###
-            I[[i]] <- .E_Info_Mat(theta = opt$par, u = u[i], M = M)$EIM
+            I[[i]] <- pp.infomat(par = opt$estimate, u = u[i], np = M, method = "exp", nobs = 1)
             Iinv[[i]] <- solve(I[[i]])
         } else {
             I[[i]] <- Iinv[[i]] <- matrix(0, 3, 3)
@@ -457,7 +416,6 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     Wcov1 <- Wcov1[, -c(1:3)]
 
     CovT <- Wcov1
-
     Cov.mu <- CovT[seq(1, 3 * k, by = 3), seq(1, 3 * k, by = 3)]
     Cov.sig <- CovT[seq(2, 3 * k, by = 3), seq(2, 3 * k, by = 3)]
     Cov.xi <- CovT[seq(3, 3 * k, by = 3), seq(3, 3 * k, by = 3)]
@@ -503,7 +461,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (theta[2] < 0) {
         return(1e+11)
     } else {
-        return(-sum(dnorm(x, mean = theta[1], sd = theta[2], log = T)))
+        return(-sum(dnorm(x, mean = theta[1], sd = theta[2], log = TRUE)))
     }
 }
 
@@ -525,183 +483,3 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     return(C)
 }
 
-
-###################################################################################
-
-#' Functions for the expected information matrix used in .Joint_MLE_NHPP
-#'
-#' Functions with names of form \code{'d2ldmu2'} are derivatives (with expectation over the random NUMBER of points
-#' already incorporated). Functions with names of form \code{'i_d2ldmu2'}, are in a form ready for integration;
-#' this integration yields the expectation over the random LOCATIONS of the points.
-#'
-#' @param x dummy variable over which to integrate
-#' @param mu location parameter
-#' @param sig scale parameter
-#' @param shape parameter
-#' @param u threshold above which NHPP model assumed
-#' @param M number of superpositions or 'blocks' / 'years' the process corresponds to
-.d2ldmu2 <- function(x, mu, sig, xi, u, M) {
-    c1 <- (1 + (xi/sig) * (u - mu))^(-1/xi)
-    p1 <- M * c1 * (xi * (1 + xi)/sig^2) * (1 + (xi/sig) * (x - mu))^(-2)
-    p2 <- -M * ((1 + xi)/sig^2) * (1 + (xi/sig) * (u - mu))^(-1/xi - 2)
-    return(p1 + p2)
-}
-
-.i_d2ldmu2 <- function(x, mu, sig, xi, u, M) {
-    .d2ldmu2(x = x, mu = mu, sig = sig, xi = xi, u = u, M = M) * (1 + (xi/sig) * (u - mu))^(1/xi) * (1/sig) * (1 + (xi/sig) * (x -
-        mu))^(-1/xi - 1)
-}
-
-
-
-.d2ldmudsig <- function(x, mu, sig, xi, u, M) {
-    c1 <- (1 + (xi/sig) * (u - mu))^(-1/xi)
-    p1 <- M * c1 * (xi * (1 + xi)/sig^3) * (x - mu) * (1 + (xi/sig) * (x - mu))^(-2)
-    p2 <- M * c1 * (-(1 + xi)/sig^2) * (1 + (xi/sig) * (x - mu))^(-1)
-    p3 <- M * (1/sig^2) * (1 + (xi/sig) * (u - mu))^(-1/xi - 1)
-    p4 <- -M * ((1 + xi)/sig^3) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1/xi - 2)
-    return(p1 + p2 + p3 + p4)
-}
-
-.i_d2ldmudsig <- function(x, mu, sig, xi, u, M) {
-    .d2ldmudsig(x = x, mu = mu, sig = sig, xi = xi, u = u, M = M) * (1 + (xi/sig) * (u - mu))^(1/xi) * (1/sig) * (1 + (xi/sig) * (x -
-        mu))^(-1/xi - 1)
-}
-
-#########
-
-.d2ldmudxi <- function(x, mu, sig, xi, u, M) {
-    c1 <- (1 + (xi/sig) * (u - mu))^(-1/xi)
-    p1 <- M * c1 * (1/sig) * (1 + (xi/sig) * (x - mu))^(-1)
-    p2 <- M * c1 * (-(1 + xi)/sig^2) * (x - mu) * (1 + (xi/sig) * (x - mu))^(-2)
-    p3.1 <- (1/sig) * ((-1/xi^2) * log(1 + (xi/sig) * (u - mu)) + (1/sig) * (1/xi + 1) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1))
-    p3 <- M * p3.1 * (1 + (xi/sig) * (u - mu))^(-1/xi - 1)
-    return(p1 + p2 + p3)
-}
-
-.i_d2ldmudxi <- function(x, mu, sig, xi, u, M) {
-    .d2ldmudxi(x = x, mu = mu, sig = sig, xi = xi, u = u, M = M) * (1 + (xi/sig) * (u - mu))^(1/xi) * (1/sig) * (1 + (xi/sig) * (x -
-        mu))^(-1/xi - 1)
-}
-
-
-
-##########
-
-
-.d2ldsig2 <- function(x, mu, sig, xi, u, M) {
-    c1 <- (1 + (xi/sig) * (u - mu))^(-1/xi)
-    p1 <- M * c1 * (-2 * (1 + xi)/sig^3) * (x - mu) * (1 + (xi/sig) * (x - mu))^(-1)
-    p2 <- M * c1 * (xi * (1 + xi)/sig^4) * ((x - mu)^2) * (1 + (xi/sig) * (x - mu))^(-2)
-    p3 <- M * (2/sig^3) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1/xi - 1)
-    p4 <- -M * ((1 + xi)/sig^4) * ((u - mu)^2) * (1 + (xi/sig) * (u - mu))^(-1/xi - 2)
-    p5 <- M * c1 * 1/sig^2
-    return(p1 + p2 + p3 + p4 + p5)
-}
-
-.i_d2ldsig2 <- function(x, mu, sig, xi, u, M) {
-    .d2ldsig2(x = x, mu = mu, sig = sig, xi = xi, u = u, M = M) * (1 + (xi/sig) * (u - mu))^(1/xi) * (1/sig) * (1 + (xi/sig) * (x -
-        mu))^(-1/xi - 1)
-}
-
-
-
-#########
-
-.d2ldsigdxi <- function(x, mu, sig, xi, u, M) {
-    c1 <- (1 + (xi/sig) * (u - mu))^(-1/xi)
-    p1 <- M * c1 * ((x - mu)/sig^2) * (1 + (xi/sig) * (x - mu))^(-1)
-    p2 <- M * c1 * (-(1 + xi)/sig^3) * ((x - mu)^2) * (1 + (xi/sig) * (x - mu))^(-2)
-    p3.1 <- ((u - mu)/sig^2) * ((-1/xi^2) * log(1 + (xi/sig) * (u - mu)) + (1/sig) * (1/xi + 1) * (u - mu) * (1 + (xi/sig) * (u -
-        mu))^(-1))
-    p3 <- M * p3.1 * (1 + (xi/sig) * (u - mu))^(-1/xi - 1)
-    return(p1 + p2 + p3)
-}
-
-
-.i_d2ldsigdxi <- function(x, mu, sig, xi, u, M) {
-    .d2ldsigdxi(x = x, mu = mu, sig = sig, xi = xi, u = u, M = M) * (1 + (xi/sig) * (u - mu))^(1/xi) * (1/sig) * (1 + (xi/sig) * (x -
-        mu))^(-1/xi - 1)
-}
-
-
-#########
-
-.d2ldxi2 <- function(x, mu, sig, xi, u, M) {
-    c1 <- (1 + (xi/sig) * (u - mu))^(-1/xi)
-    p1 <- M * c1 * (-2/xi^3) * log1p((xi/sig) * (x - mu))  #
-    p2 <- M * c1 * 2 * ((x - mu)/(sig * xi^2)) * (1 + (xi/sig) * (x - mu))^(-1)  #
-    p3 <- M * c1 * ((1/xi + 1)/sig^2) * ((x - mu)^2) * (1 + (xi/sig) * (x - mu))^(-2)  #
-    p4.1 <- ((-1/xi^2) * log1p((xi/sig) * (u - mu)) + (1/sig) * (1/xi) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1))  #
-    p4 <- -(p4.1^2) * M * (1 + (xi/sig) * (u - mu))^(-1/xi)  #
-    p5.1 <- ((2/xi^3) * log1p((xi/sig) * (u - mu)) - (2/sig) * (1/xi^2) * (u - mu) * (1 + (xi/sig) * (u - mu))^(-1) - (1/sig^2) *
-        (1/xi) * ((u - mu)^2) * (1 + (xi/sig) * (u - mu))^(-2))  #
-    p5 <- (p5.1) * M * (1 + (xi/sig) * (u - mu))^(-1/xi)  #
-
-    return(p1 + p2 + p3 + p4 + p5)
-}
-
-.i_d2ldxi2 <- function(x, mu, sig, xi, u, M) {
-    .d2ldxi2(x = x, mu = mu, sig = sig, xi = xi, u = u, M = M) * (1 + (xi/sig) * (u - mu))^(1/xi) * (1/sig) * (1 + (xi/sig) * (x -
-        mu))^(-1/xi - 1)
-}
-
-## version of d2ldxi2 and i_d2ldxi2 with limit as xi \to 0. (This derivative has most trouble with small absolute values of xi.)
-## Also possible to take such limits in other derivatives, but not implemented as they are generally less problematic.
-
-
-.d2ldxi2_xi0 <- function(x, mu, sig, xi, u, M) {
-    c1 <- exp(-(u - mu)/sig)
-    q1 <- ((x - mu)/sig)
-    q2 <- ((u - mu)/sig)
-    p1 <- -((2/3) * q1^3 - q1^2) * M * c1
-    p2 <- -(-(2/3) * q2^3 + (1/4) * q2^4) * M * c1
-
-    return(p1 + p2)
-}
-
-.i_d2ldxi2_xi0 <- function(x, mu, sig, xi, u, M) {
-    .d2ldxi2_xi0(x = x, mu = mu, sig = sig, xi = xi, u = u, M = M) * (1/sig) * exp(-(x - u)/sig)
-}
-
-
-
-#############################################################################################
-#' Numerically integrated expected information matrix of the NHPP
-#'
-#' Calculates the numerically-integrated expected information matrix for an NHPP with specified parameters
-#' @param theta vector of parameters (\eqn{\mu}, \eqn{\sigma}, \eqn{\xi})
-#' @param u threshold for NHPP
-#' @param M number of superpositions or 'blocks' / 'years' the process corresponds to
-#' @author Jennifer L. Wadsworth
-#'
-#' @return a list with components
-#' \itemize{
-#' \item EIM  expected information matrix
-#' \item Errors  vector of errors from the numerical integration of the 6 unique components
-#' }
-.E_Info_Mat <- function(theta, u, M) {
-    if (theta[3] < 0) {
-        up <- theta[1] - theta[2]/theta[3]
-    } else {
-        up <- Inf
-    }
-    Ed2ldmu2 <- integrate(.i_d2ldmu2, lower = u, upper = up, mu = theta[1], sig = theta[2], xi = theta[3], u = u, M = M, abs.tol = 0)
-    Ed2ldmudsig <- integrate(.i_d2ldmudsig, lower = u, upper = up, mu = theta[1], sig = theta[2], xi = theta[3], u = u, M = M, abs.tol = 0)
-    Ed2ldmudxi <- integrate(.i_d2ldmudxi, lower = u, upper = up, mu = theta[1], sig = theta[2], xi = theta[3], u = u, M = M, abs.tol = 0)
-    Ed2ldsig2 <- integrate(.i_d2ldsig2, lower = u, upper = up, mu = theta[1], sig = theta[2], xi = theta[3], u = u, M = M, abs.tol = 0)
-    Ed2ldsigdxi <- integrate(.i_d2ldsigdxi, lower = u, upper = up, mu = theta[1], sig = theta[2], xi = theta[3], u = u, M = M, abs.tol = 0)
-    if (abs(theta[3]) > 1e-04) {
-        Ed2ldxi2 <- integrate(.i_d2ldxi2, lower = u, upper = up, mu = theta[1], sig = theta[2], xi = theta[3], u = u, M = M, abs.tol = 0)
-    } else {
-        Ed2ldxi2 <- integrate(.i_d2ldxi2_xi0, lower = u, upper = up, mu = theta[1], sig = theta[2], xi = theta[3], u = u, M = M, abs.tol = 0)
-    }
-
-    Errors <- c(Ed2ldmu2$abs.err, Ed2ldmudsig$abs.err, Ed2ldmudxi$abs.err, Ed2ldmudsig$abs.err, Ed2ldsig2$abs.err, Ed2ldsigdxi$abs.err,
-        Ed2ldmudxi$abs.err, Ed2ldsigdxi$abs.err, Ed2ldxi2$abs.err)
-
-    EIM <- -matrix(c(Ed2ldmu2$val, Ed2ldmudsig$val, Ed2ldmudxi$val, Ed2ldmudsig$val, Ed2ldsig2$val, Ed2ldsigdxi$val, Ed2ldmudxi$val,
-        Ed2ldsigdxi$val, Ed2ldxi2$val), byrow = TRUE, nrow = 3)
-
-    return(list(EIM = EIM, Errors = Errors))
-}

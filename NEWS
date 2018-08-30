@@ -5,8 +5,12 @@ New:
 * Exponent measure for Brown-Resnick and extremal Student model
 * 'spunif' for semi-parametric transform to uniform (tail modelled using GP)
 * 'rparp' now has attributes to give acceptance rate of accept/reject procedure.
-* Exponent measure estimate `extcoef`
-* Functions `fit.gev` and `fit.gpd`, with default printing options and q-q plots
+* Exponent measure estimators `extcoef`
+* New method for robust OBRE estimates of GP parameters
+* Functions `fit.gev`,`fit.gpd`, `fit.rlarg` and `fit.pp`
+* Default printing and plot optims (p-p and q-q plots) for mev_ objects
+* Changes to optimization routine for pp  in `W.diag` function
+* Datasets
 
 Fixes:
 * scaling of Brown-Resnick is now consistent with literature (half of semivariogram)
@@ -17,9 +21,10 @@ Fixes:
 * Information matrix of GEV: scale factor off.
 
 Changes:
+* Removed dependency to `ismev`, `rootsolve` (replaced with `nleqslv` routine) and `numDeriv`.
 * Change to plot for profile log-likelihood methods
 * 'smith.penult' function has new arguments (backward compatible). The quantiles `u` are now returned for Smith penultimate approximations with `method = "pot"`
-* Changed all rootSolve for nleqslv routines
+
 
 mev v.1.11 (Release date: 2018-02-23)
 ==============
