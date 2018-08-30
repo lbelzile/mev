@@ -159,9 +159,7 @@ gpd.score <- function(par, dat) {
 #' @export
 #' @keywords internal
 gpd.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) {
-    if (missing(method)) {
-        method <- "obs"
-    }
+    method <- match.arg(method[1], choices = c("obs","exp"))
     sigma <- as.vector(par[1])
     xi <- as.vector(par[2])
     if (method == "obs") {
@@ -295,10 +293,7 @@ gev.score <- function(par, dat) {
 #' @export
 #' @keywords internal
 gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) {
-    method <- match.arg(method, c("obs", "exp"))
-    if (missing(method)) {
-        method = "obs"
-    }
+    method <- match.arg(method[1], choices = c("obs","exp"))
     if (method == "exp") {
         # (Expected) Fisher information does not depend on location parameter
         if (length(par) == 3) {
@@ -2207,3 +2202,147 @@ gevrl.score <- function(par, dat){
   }
 
 }
+
+#' Poisson process of extremes.
+#'
+#' Likelihood, score function and information matrix for the Poisson process likelihood.
+#'
+#' @author Leo Belzile
+#' @name pp
+#' @param par vector of \code{loc}, \code{scale} and \code{shape}
+#' @param dat sample vector
+#' @param u threshold
+#' @param method string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.
+#' @param np number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide
+#' with those of a generalized extreme value distribution with block size \code{length(dat)/np}.
+#' @param nobs number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.
+#' @section Usage:
+#' \preformatted{gpd.ll(par, dat, tol=1e-5)
+#' pp.ll(par, dat, u, np)
+#' pp.score(par, dat)
+#' pp.infomat(par, dat, method = c('obs','exp'))
+#'
+#' @section Functions:
+#'
+#' \itemize{
+#' \item{\code{pp.ll}:} {log likelihood}
+#' \item{\code{pp.score}:} {score vector}
+#' \item{\code{pp.infomat}:} {observed or expected information matrix}
+#' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
+#' @references Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
+#'
+NULL
+
+
+
+#Poisson likelihood
+#
+#
+# Poisson process log-likelihood
+#' @export
+#' @rdname
+pp.ll <- function(par, dat, u, np = 1){
+  par <- as.vector(par)
+  if(abs(par[3]) > 1e-6){
+  -np[1]*(1+par[3]*(u[1]-par[1])/par[2])^(-1/par[3]) -
+    length(dat)*log(par[2]) - (1+1/par[3]) * sum(log1p(par[3]*(dat-par[1])/par[2]))
+  } else{
+    -np[1]*exp((par[1]-u)/par[2]) - length(dat)*log(par[2]) + sum(par[1] - dat)/par[2]
+
+  }
+}
+
+#' Score vector for the Poisson process above u
+#'
+#' @seealso \code{\link{pp}}
+#' @inheritParams pp
+#' @export
+#' @keywords internal
+pp.score <- function(par, dat, u, np = 1){
+  mu <- par[1]; sigma <- par[2]; xi <- par[3]; nu <- length(dat)
+  c(  -sum(xi*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1))) -  np*(-(mu - u)*xi/sigma + 1)^(-1/xi - 1)/sigma,
+       sum((mu - dat)*xi*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1))) - nu/sigma + (mu - u)*np*((u - mu)*xi/sigma + 1)^(1/xi - 1)/(sigma^2*((u - mu)*xi/sigma + 1)^(2/xi)),
+       - sum((mu - dat)*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1))) + sum(log1p(-(mu - dat)*xi/sigma)/xi^2) -
+         np*(log1p((u - mu)*xi/sigma)/xi^2 - (mu - u)/(sigma*((mu - u)*xi/sigma - 1)*xi))/(-(mu - u)*xi/sigma + 1)^(1/xi))
+}
+
+
+
+#' Information matrix for the Poisson process likelihood
+#'
+#' The function returns the expected or observed information matrix.
+#'
+#' @note For the expected information matrix, the number of points above the threshold is random, but should correspond to
+#' \code{np}\eqn{\Lambda}. In this sense, unless \code{np} is linear in the sample size, the
+#'
+#' @seealso \code{\link{pp}}
+#' @inheritParams pp
+#' @export
+#' @keywords internal
+pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = length(dat)) {
+  method <- match.arg(method[1], choices = c("obs","exp"))
+  if(method == "obs"){
+  dat <- as.vector(dat)
+  if(sum(dat >u) != length(dat)){
+   warning("`dat` contains non-exceedances")
+    dat <- dat[dat >u]
+  }
+  }
+  mu <- par[1]
+  sigma <- par[2]
+  xi <- par[3]
+  r1 <- nobs;
+  m <- np
+
+  vm <- (u - mu)/sigma
+  xizero <- abs(xi) < 1e-5
+
+   if(method == "obs"){
+     zm <- (dat - mu)/sigma
+     if(!xizero){
+       d11 <- -sum(xi^2*(1/xi + 1)/((xi*zm + 1)^2*sigma^2)) - (vm*xi + 1)^(1/xi - 2)*m*xi*(1/xi - 1)/((vm*xi + 1)^(2/xi)*sigma^2) + 2*(vm*xi + 1)^(2/xi - 2)*m/((vm*xi + 1)^(3/xi)*sigma^2)
+       d12 <- (vm*xi + 1)^(-1/xi - 2)*m*vm*xi*(1/xi + 1)/sigma^2 - xi^2*sum(zm*(1/xi + 1)/((xi*zm + 1)^2*sigma^2)) -
+         (vm*xi + 1)^(-1/xi - 1)*m/sigma^2 + xi*(1/xi + 1)*sum(1/(xi*zm + 1))/sigma^2
+       d13 <- -(vm*xi + 1)^(-1/xi - 1)*m*(vm/((vm*xi + 1)*xi) - log(vm*xi + 1)/xi^2)/sigma + sum(xi*zm*(1/xi + 1)/((xi*zm + 1)^2*sigma)) -
+         (vm*xi + 1)^(-1/xi)*m*vm/((vm*xi + 1)^2*sigma) - sum((1/xi + 1)/((xi*zm + 1)*sigma)) + sum(1/((xi*zm + 1)*sigma*xi))
+       d22 <- (vm*xi + 1)^(-1/xi - 2)*m*vm^2*xi*(1/xi + 1)/sigma^2 - sum(xi^2*zm^2*(1/xi + 1)/((xi*zm + 1)^2*sigma^2)) - 2*(vm*xi + 1)^(-1/xi - 1)*m*vm/sigma^2 + 2*xi*sum(zm*(1/xi + 1)/((xi*zm + 1)*sigma^2)) - r1/sigma^2
+       d23 <- -(vm*xi + 1)^(-1/xi - 1)*m*vm*(vm/((vm*xi + 1)*xi) - log(vm*xi + 1)/xi^2)/sigma + sum(xi*zm^2*(1/xi + 1)/((xi*zm + 1)^2*sigma)) - (vm*xi + 1)^(-1/xi)*m*vm^2/((vm*xi + 1)^2*sigma) - sum(zm*(1/xi + 1)/((xi*zm + 1)*sigma)) + sum(zm/((xi*zm + 1)*sigma*xi))
+       d33 <- (vm*xi + 1)^(-1/xi)*m*(vm/((vm*xi + 1)*xi) - log(vm*xi + 1)/xi^2)^2 + (vm*xi + 1)^(-1/xi)*m*(vm^2/((vm*xi + 1)^2*xi) + 2*vm/((vm*xi + 1)*xi^2) - 2*log(vm*xi + 1)/xi^3) - sum(zm^2*(1/xi + 1)/(xi*zm + 1)^2) - 2*sum(zm/((xi*zm + 1)*xi^2)) + 2*sum(log(xi*zm + 1))/xi^3
+     } else{ #Observed information, xi = 0
+       d11 <- m*exp(-vm)/sigma^2
+       d12 <- m*vm*exp(-vm)/sigma^2 - m*exp(-vm)/sigma^2 + r1/sigma^2
+       d22 <- m*vm^2*exp(-vm)/sigma^2 - 2*m*vm*exp(-vm)/sigma^2 + 2*sum(zm)/sigma^2 - r1/sigma^2
+       d13 <- 0.5*(m*vm^2 + 2*sum(zm)*exp(vm) - 2*m*vm - 2*r1*exp(vm))*exp(-vm)/sigma
+       d23 <- 0.5*(m*vm^3 + 2*sum(zm^2)*exp(vm) - 2*m*vm^2 - 2*sum(zm)*exp(vm))*exp(-vm)/sigma
+       d33 <- ((1/12)*(m*vm^3*(-8 + 3*vm) + 4*exp(vm)*sum(zm^2*(-3 + 2*zm))))/exp(vm)
+     }
+     return(matrix(c(d11,d12,d13,d12,d22,d23,d13,d23,d33), nrow = 3, ncol = 3, byrow = TRUE))
+} else{
+  r2 <- r1 <- 1
+  if(!xizero){
+    e11 <- (vm*xi + 1)^(-1/xi)*m*r2*(xi + 1)*xi/((sigma*vm*xi + sigma)^2*(2*xi + 1)) - (vm*xi + 1)^(-1/xi - 2)*m*xi*(1/xi + 1)/sigma^2
+    e12 <- -(vm*xi + 1)^(-1/xi - 2)*m*vm*xi*(1/xi + 1)/sigma^2 - (vm*xi + 1)^(-1/xi)*m*r2*(xi + 1)/((sigma*vm*xi + sigma)^2*(2*xi + 1)) +
+          (vm*xi + 1)^(-1/xi - 1)*m/sigma^2
+    e13 <- (vm*xi + 1)^(-1/xi - 1)*m*(vm*(1/xi + 1)/(vm*xi + 1) - log(vm*xi + 1)/xi^2)/sigma -
+      (2*vm*xi + vm - xi)*(vm*xi + 1)^(-1/xi)*m*r2/((vm*xi + 1)^2*(2*xi^2 + 3*xi + 1)*sigma)
+    e22 <- -(vm*xi + 1)^(-1/xi - 2)*m*vm^2*xi*(1/xi + 1)/sigma^2 + 2*(vm*xi + 1)^(-1/xi - 1)*m*vm/sigma^2 +
+      ((vm*xi + 1)^2*r1*(2*xi + 1) - ((vm*xi + 2)*vm*(2*xi + 1) + 2)*r2*(xi + 1))*(vm*xi + 1)^(-1/xi)*m/((sigma*vm*xi + sigma)^2*(2*xi + 1))
+    e23 <- (vm*xi + 1)^(-1/xi - 1)*m*vm*(vm*(1/xi + 1)/(vm*xi + 1) - log(vm*xi + 1)/xi^2)/sigma -
+      ((vm*xi + vm + 1)*vm*(2*xi + 1) + 1)*(vm*xi + 1)^(-1/xi)*m*r2/((vm*xi + 1)^2*sigma*(2*xi + 1)*(xi + 1))
+    e33 <- -(vm*xi + 1)^(-1/xi)*m*(vm/((vm*xi + 1)*xi) - log(vm*xi + 1)/xi^2)^2 -
+      (vm*xi + 1)^(-1/xi)*m*(vm^2/((vm*xi + 1)^2*xi) + 2*vm/((vm*xi + 1)*xi^2) - 2*log(vm*xi + 1)/xi^3) -
+      (2*(vm*xi + 1)^2*(2*xi + 1)*(xi + 1)*log(vm*xi + 1) +
+         (vm^2*(2*xi + 1)*(xi + 1)*(xi - 3)*xi + 2*((2*xi^2 - xi - 3)*xi - 1)*vm + 2*xi^2)*xi)*
+      (vm*xi + 1)^(-1/xi)*m*r2/((vm*xi + 1)^2*(2*xi + 1)*(xi + 1)*xi^3)
+  } else{
+    e11 <- -m*exp(-vm)/sigma^2
+    e12 <- -m*r2*exp(-vm)/sigma^2 - m*vm*exp(-vm)/sigma^2 + m*exp(-vm)/sigma^2
+    e13 <- -1/2*(2*r2*vm + vm^2 - 2*vm)*m*exp(-vm)/sigma
+    e22 <- -2*m*r2*vm*exp(-vm)/sigma^2 - m*vm^2*exp(-vm)/sigma^2 + m*r1*exp(-vm)/sigma^2 - 2*m*r2*exp(-vm)/sigma^2 + 2*m*vm*exp(-vm)/sigma^2
+    e23 <- -1/2*(2*r2*vm^2 + vm^3 + 2*r2*vm - 2*vm^2 + 2*r2)*m*exp(-vm)/sigma
+    e33 <- -1/12*(8*r2*vm^3 + 3*vm^4 + 12*r2*vm^2 - 8*vm^3 + 24*r2*vm + 24*r2)*m*exp(-vm)
+}
+  return(-matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE))
+}
+}
+

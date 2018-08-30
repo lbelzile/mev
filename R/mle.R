@@ -213,18 +213,13 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
   if(is.null(np)){
     np <- n/npp
   }
-  # Poisson log-likelihood
+  #Without covariates, we have exactly np*(1+xi/sigma*(u-mu))^(-1/xi)=nu
+  #So degenerate optimization!
  pp.nll <- function(par, xdat, u, np){
-  np*(1+par[3]*(u-par[1])/par[2])^(-1/par[3]) +
-    length(xdat)*log(par[2]) + (1+1/par[3]) * sum(log1p(par[3]*(xdat-par[1])/par[2]))
+     -pp.ll(par = par, dat = xdat, u = u, np = np)
  }
- #Gradient of pp likelihood
  pp.ngr <- function(par, xdat, u, np){
-   mu <- par[1]; sigma <- par[2]; xi <- par[3]; nu <- length(xdat)
-   -c(  -sum(xi*(1/xi + 1)/(sigma*((mu - xdat)*xi/sigma - 1))) -  np*(-(mu - u)*xi/sigma + 1)^(-1/xi - 1)/sigma,
- sum((mu - xdat)*xi*(1/xi + 1)/(sigma^2*((mu - xdat)*xi/sigma - 1))) - nu/sigma + (mu - u)*np*((u - mu)*xi/sigma + 1)^(1/xi - 1)/(sigma^2*((u - mu)*xi/sigma + 1)^(2/xi)),
- - sum((mu - xdat)*(1/xi + 1)/(sigma*((mu - xdat)*xi/sigma - 1))) + sum(log1p(-(mu - xdat)*xi/sigma)/xi^2) -
-        np*(log1p((u - mu)*xi/sigma)/xi^2 - (mu - u)/(sigma*((mu - u)*xi/sigma - 1)*xi))/(-(mu - u)*xi/sigma + 1)^(1/xi))
+   -pp.score(par = par, dat = xdat, u = u, np = np)
  }
  xmax <- max(xdatu); xmin <- min(xdatu)
  #hin Inequalities for Augmented Lagrangian
@@ -236,11 +231,12 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
  }
 
  # Starting value
- in2 <- sqrt(6 * var(xdatu))/pi
- in1 <- mean(xdatu) - 0.57722 * in2
- # Optimization
+ gppars <- fit.gpd(xdat = xdatu, threshold = threshold)$estimate
+ sigma_init <- gppars['scale']*(length(xdatu)/np)^(gppars['shape'])
+ mu_init <-  threshold - sigma_init*(((length(xdatu)/np)^(-gppars['shape']))-1)/gppars['shape']
+ # Optimization - basically started at MLE
  mle <- suppressWarnings(
-   alabama::auglag(par = c(in1, in2, 0.1),
+   alabama::auglag(par = c(mu_init, sigma_init, gppars['shape']),
                    fn = pp.nll, gr = pp.ngr, hin = pp.hin,
              u = u, xdat = xdatu, np = np, control.outer = list(trace=FALSE, method = "nlminb")))
  if(mle$convergence == 0  || isTRUE(all.equal(mle$gradient, rep(0,3), tolerance = 1e-3))){
@@ -251,7 +247,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
  }
  fitted <- list()
  if(mle$par[3] > -0.5){
-   fitted$vcov <- try(solve(mle$hessian))
+   fitted$vcov <- try(solve(pp.infomat(par = mle$par, u = u, np = np, dat = xdatu, method = "obs")))
    fitted$std.err <- try(sqrt(diag(fitted$vcov)))
    if(is.character(fitted$vcov) || is.character(fitted$std.err)){
      fitted$vcov <- NULL
@@ -267,7 +263,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
  fitted$convergence <- mle$convergence
  fitted$counts <- mle$counts
  fitted$threshold <- u
- fitted$npp <- npp
+ fitted$np <- np
  fitted$nat <- nu
  fitted$pat <- nu/n
  fitted$exceedances <- xdatu
@@ -441,12 +437,12 @@ plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
   dat <- sort(x$exceedances)
   n <- length(dat)
   pp_confint_lim <- t(sapply(1:n, function(i) {qbeta(c(0.025, 0.975), i, n - i + 1) }))
-  qq_confint_lim <- apply(pp_confint_lim, 2, function(y){ qgpd(y, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])})
+  qq_confint_lim <- apply(pp_confint_lim, 2, function(y){ evd::qgpd(y, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])})
   pobs <- (1:n)/(n + 1)
-  quant <- qgpd(pobs, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
+  quant <- evd::qgpd(pobs, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
   if(show[1]){
     matplot(pobs, cbind(pp_confint_lim,
-                        pgpd(dat, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
+                        evd::pgpd(dat, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
                         ), main = main[1], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = c(0,1), xlim = c(0,1),
             lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)
@@ -603,19 +599,19 @@ plot.mev_pp <- function(x, which = 1:2, main = "Quantile-quantile plot", xlab = 
   n <- length(dat)
   pp_confint_lim <- t(sapply(1:n, function(i) {qbeta(c(0.025, 0.975), i, n - i + 1) }))
   qq_confint_lim <- apply(pp_confint_lim, 2, function(y){
-    qgpd(y, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])})
+    evd::qgpd(y, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])})
   pobs <- (1:n)/(n + 1)
-  quant <- qgpd(pobs, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])
+  quant <- evd::qgpd(pobs, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])
   if(show[1]){
     matplot(pobs, cbind(pp_confint_lim,
-                        pgpd(dat, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])),
+                        evd::pgpd(dat, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])),
             main = main[1], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = c(0,1), xlim = c(0,1),
             lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)
   }
 
   if(show[2]){
-    limqq <- c(0, max(c(quant[n], dat[n])))
+    limqq <- c(threshold, max(c(quant[n], dat[n])))
     matplot(quant, cbind(qq_confint_lim, dat), main = main[2], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = limqq, xlim = limqq,
             lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)
@@ -685,6 +681,33 @@ print.mev_gpdbayes <- function(x, digits = max(3, getOption("digits") - 3), ...)
 #' @export
 print.mev_gev <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("Log-likelihood:", -x$nllh, "\n")
+
+  cat("\nEstimates\n")
+  print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)
+  if (!is.na(x$std.err) && x$estimate[1] > -0.5) {
+    cat("\nStandard Errors\n")
+    print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
+  }
+  cat("\nOptimization Information\n")
+  cat("  Convergence:", x$convergence, "\n")
+  cat("  Function Evaluations:", x$counts["function"], "\n")
+  cat("  Gradient Evaluations:", x$counts["gradient"], "\n")
+  cat("\n")
+  invisible(x)
+}
+
+
+# @param x A fitted object of class \code{mev_gev}.
+# @param digits Number of digits to display in \code{print} call.
+# @param ... Additional argument passed to \code{print}.
+#' @export
+print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+  cat("Log-likelihood:", -x$nllh, "\n")
+
+  cat("\nThreshold:", round(x$threshold, digits), "\n")
+  cat("Number Above:", x$nat, "\n")
+  cat("Proportion Above:", round(x$pat, digits), "\n")
+  cat("Number of periods:", round(x$np, digits), "\n")
 
   cat("\nEstimates\n")
   print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)

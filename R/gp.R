@@ -39,10 +39,9 @@
 #' @return a plot of P-values for the test at the different thresholds \code{u}
 #' @examples
 #' \dontrun{
-#' library(ismev)
-#' data(rain)
-#' u <- quantile(rain, seq(0.85,0.99,by=0.01))
-#' NC.diag(rain, u, size=0.05)
+#' data(nidd)
+#' u <- quantile(nidd, seq(0.85, 0.99, by = 0.01))
+#' NC.diag(nidd, u, size = 0.05)
 #' }
 NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LRT = FALSE, size = NULL, my.xlab = NULL, xi.tol = 0.001) {
     if (any(diff(u) <= 0)) {
@@ -165,7 +164,8 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
         }
 
         fscale <- negated.mult.log.likelihood(init.ests)
-        temp <- optim(init.ests, negated.mult.log.likelihood, hessian = F, method = method, control = list(maxit = maxit, fnscale = fscale,
+        temp <- optim(init.ests, negated.mult.log.likelihood, hessian = FALSE,
+                      method = method, control = list(maxit = maxit, fnscale = fscale,
             ...))
         zz <- list()
         zz$mle <- temp$par
@@ -603,25 +603,16 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
     xi <- mean(log(zz))
     sc <- xi/phi
     z$mle <- c(sc, xi)
-    #
-    if (calc.se) {
-        if (abs(xi) >= xi.tol && xi > -0.5)
-            z$cov <- solve(.gpd_obs_info(scale = sc, shape = xi, data = xdatu - u))
-        if (abs(xi) < xi.tol && xi > -0.5) {
-            delta <- 2 * xi.tol  # evaluate observed information at xi+delta and xi-delta
-            o.info1 <- .gpd_obs_info(scale = sc, shape = xi + delta, data = xdatu - u)
-            o.info2 <- .gpd_obs_info(scale = sc, shape = xi - delta, data = xdatu - u)
-            z$cov <- solve((o.info1 + o.info2)/2)
-        }
+    if (calc.se && xi > -0.5) {
+        z$cov <- solve(gpd.infomat(par = c(sc, xi), dat = xdatu - u))
     }
-    #
     z$conv <- temp$convergence
     z$counts <- temp$counts
     z$nllh <- temp$value
     z$vals <- cbind(sc, xi, u)
     z$rate <- length(xdatu)/n
     if (calc.se) {
-        # z$se <- tryCatch(sqrt(diag(z$cov)), error = function(e) NULL)
+        z$se <- tryCatch(sqrt(diag(z$cov)), error = function(e) NULL)
     }
     z$n <- n
     z$npy <- npy
@@ -641,50 +632,6 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
     class(z) <- "gpd.fit"
     invisible(z)
 }
-
-#------------------------------------------------------------------------------#
-# Algebraic observed information for GP(sigma, xi) fit #
-#------------------------------------------------------------------------------#
-
-#' Observated information matrix for the Generalized Pareto distribution
-#'
-#' @param data data vector
-#' @param scale scale parameter \eqn{sigma}
-#' @param shape shape parameter \code{xi}
-#' @param loc optional location parameter, corresponding to threshold
-#'
-#' @author Paul J. Northrop and Claire L. Coleman
-#' @export
-#' @return the observed information matrix
-.gpd_obs_info <- function(data, scale, shape, loc = NULL) {
-    y <- data
-    if (!is.null(loc)) {
-        y <- y - loc
-    }
-    x <- shape
-    s <- scale
-    i <- matrix(NA, 2, 2)
-    i[1, 1] <- -sum((1 - (1 + x) * y * (2 * s + x * y)/(s + x * y)^2)/s^2)
-    i[1, 2] <- -sum(y * (1 - y/s)/(1 + x * y/s)^2/s^2)
-    i[2, 1] <- i[1, 2]
-    i[2, 2] <- sum(2 * log(1 + x * y/s)/x^3 - 2 * y/(s + x * y)/x^2 - (1 + 1/x) * y^2/(s + x * y)^2)
-    i
-}
-# Expected information based covariance matrix (Smith 1984)
-gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
-    y <- data
-    if (!is.null(loc)) {
-        y <- y - loc
-    }
-    info <- matrix(NA, 2, 2)
-    info[1, 1] <- 1/scale^2
-    info[1, 2] <- exp(-log(scale) - log(1 + shape))
-    info[2, 1] <- info[1, 2]
-    info[2, 2] <- 2/(1 + shape)
-    info * scale^2 * (1 + shape)^2
-}
-
-
 
 #------------------------------------------------------------------------------#
 # Fit GP(sigma, xi) distribution using 2D optimisation #
@@ -851,7 +798,7 @@ gpd.vcov.mat <- function(data, scale, shape, loc = NULL) {
     z.fit$counts["function"] <- res$iterations
     z.fit$convergence <- ifelse(res$code %in% 1:2, 0, 1)
     if (calc.se)
-        z.fit$se <- sqrt(diag(solve(.gpd_obs_info(scale = sigma.hat, shape = xi.hat, data = ex.data))))
+        z.fit$se <- sqrt(diag(solve(gpd.infomat(c(sigma.hat, xi.hat), dat = ex.data, method = "obs"))))
     invisible(z.fit)
 }
 
@@ -1528,8 +1475,8 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     }
 
     # Collecting observations from temp and formatting the output
-    invobsinfomat <- tryCatch(solve(.gpd_obs_info(data = xdatu,
-                                                  scale = temp$mle[1], shape = temp$mle[2], loc = 0)),
+    invobsinfomat <- tryCatch(solve(gpd.infomat(dat = xdatu,
+                                                  par = c(temp$mle[1], temp$mle[2]), method = "obs")),
         error = function(e) {
             "notinvert"
         }, warning = function(w) w)

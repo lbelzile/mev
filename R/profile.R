@@ -144,8 +144,7 @@ confint.eprof <- function(object, parm, level = 0.95, ...) {
                 fit.r <- cobs::cobs(x = object$r, y = object$psi, constraint = "decrease",
                   lambda = 0, ic = "SIC", pointwise = cbind(0, 0, object$normal[1]), knots.add = TRUE,
                   repeat.delete.add = TRUE, print.mesg = FALSE, print.warn = FALSE)
-                pr <- predict(fit.r, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))[,
-                  2]
+                pr <- predict(fit.r, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))[,2]
             } else {
                 fit.r <- stats::smooth.spline(x = na.omit(cbind(object$r, object$psi)), cv = FALSE)
                 pr <- predict(fit.r, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))$y
