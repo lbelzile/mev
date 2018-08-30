@@ -1259,9 +1259,9 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
 //' @param Sigma matrix of asymmetry parameters
 //'
 //' @references Stephenson, A. G. (2003) Simulating multivariate extreme value distributions of logistic type.
-//' \emph{Extremes}, \bf{6}(1), 49--60.
+//' \emph{Extremes}, \bold{6}(1), 49--60.
 //' @references Joe, H. (1990). Families of min-stable multivariate exponential and multivariate
-//' extreme value distributions, \bf{9}, 75--81.
+//' extreme value distributions, \bold{9}, 75--81.
 //'
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevasy)]]

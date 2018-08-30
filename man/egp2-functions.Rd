@@ -14,7 +14,8 @@
 \usage{
 pegp2.G(u, type = 1, prob, kappa, delta)
 
-degp2.G(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE)
+degp2.G(u, type = 1, prob = NA, kappa = NA, delta = NA,
+  log = FALSE)
 
 qegp2.G(u, type = 1, prob = NA, kappa = NA, delta = NA)
 

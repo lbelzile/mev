@@ -4,13 +4,13 @@
 \alias{extcoef}
 \title{Estimator of the extremal coefficient}
 \usage{
-extcoef(dat, loc, thresh, estimator = c("schlather", "fmado"), prob = 0,
-  which.plot = c("schlather", "fmado"), tikz = FALSE)
+extcoef(dat, loc, thresh, estimator = c("schlather", "fmado"),
+  prob = 0, which.plot = c("schlather", "fmado"), tikz = FALSE)
 }
 \arguments{
 \item{dat}{an \code{n} by \code{D} matrix of unit Frechet observations}
 
-\item{loc}{\code{n} by \code{d} matrix of locations}
+\item{loc}{\code{d} by \code{D} matrix of location coordinates}
 
 \item{thresh}{threshold parameter (dafault is to keep all data if \code{prob = 0}.}
 

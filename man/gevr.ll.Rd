@@ -23,7 +23,5 @@ Negative log likelihood parametrized in terms of location, log return level and 
 }
 \seealso{
 \code{\link{gevr}}
-
-\code{\link{gevr}}
 }
 \keyword{internal}

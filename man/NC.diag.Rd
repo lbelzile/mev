@@ -42,10 +42,9 @@ and will not recover from failure of the maximization routine, returning various
 }
 \examples{
 \dontrun{
-library(ismev)
-data(rain)
-u <- quantile(rain, seq(0.85,0.99,by=0.01))
-NC.diag(rain, u, size=0.05)
+data(nidd)
+u <- quantile(nidd, seq(0.85, 0.99, by = 0.01))
+NC.diag(nidd, u, size = 0.05)
 }
 }
 \references{

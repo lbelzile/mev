@@ -24,7 +24,7 @@
 \description{
 This function provides the log-likelihood and quantiles for the three different families presented
 in Papastathopoulos and Tawn (2013). The latter include an additional parameter, \eqn{\kappa}.
-All three families share the same tail index than the GP model, while allowing for lower thresholds.
+All three families share the same tail index as the generalized Pareto distribution, while allowing for lower thresholds.
 In the case \eqn{\kappa=1}, the models reduce to the generalised Pareto.
 
 \code{egp.retlev} gives the return levels for the extended generalised Pareto distributions
@@ -44,18 +44,17 @@ to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
 
 \examples{
 set.seed(123)
-xdat <- evd::rgpd(1000, loc=0, scale=1, shape=0.5)
-par <- egp.fit(xdat, thresh=0, model='egp3')$par
-p <- c(1/1000,1/1500,1/2000)
-egp.retlev(xdat, 0, par, 'egp3',p)
+xdat <- evd::rgpd(1000, loc = 0, scale = 2, shape = 0.5)
+par <- fit.egp(xdat, thresh = 0, model = 'egp3')$par
+p <- c(1/1000, 1/1500, 1/2000)
 #With multiple thresholds
-th <- c(0,0.1,0.2,1)
-opt <- egp.fitrange(xdat, th, model='egp1',plots=NA)
-egp.retlev(xdat, opt$thresh, opt$par, 'egp1',p=p)
-opt <- egp.fitrange(xdat, th, model='egp2',plots=NA)
-egp.retlev(xdat, opt$thresh, opt$par, 'egp2',p=p)
-opt <- egp.fitrange(xdat, th, model='egp3',plots=NA)
-egp.retlev(xdat, opt$thresh, opt$par, 'egp3',p=p)
+th <- c(0, 0.1, 0.2, 1)
+opt <- tstab.egp(xdat, th, model = 'egp1')
+egp.retlev(xdat, opt$thresh, opt$par, 'egp1', p = p)
+opt <- tstab.egp(xdat, th, model = 'egp2', plots = NA)
+egp.retlev(xdat, opt$thresh, opt$par, 'egp2', p = p)
+opt <- tstab.egp(xdat, th, model = 'egp3', plots = NA)
+egp.retlev(xdat, opt$thresh, opt$par, 'egp3', p = p)
 }
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.

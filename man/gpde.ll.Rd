@@ -24,7 +24,5 @@ The negative log likelihood is parametrized in terms of log expected shortfall a
 }
 \seealso{
 \code{\link{gpde}}
-
-\code{\link{gpde}}
 }
 \keyword{internal}

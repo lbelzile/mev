@@ -2,10 +2,10 @@
 % Please edit documentation in R/profile.R
 \name{gev.pll}
 \alias{gev.pll}
-\title{Modified profile likelihood for the generalized extreme value distribution}
+\title{Profile log-likelihood for the generalized extreme value distribution}
 \usage{
-gev.pll(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
-  mod = c("tem", "modif"), dat, N = NULL, p = NULL, q = NULL,
+gev.pll(psi, param = c("loc", "scale", "shape", "quant", "Nmean",
+  "Nquant"), mod = "profile", dat, N = NULL, p = NULL, q = NULL,
   correction = TRUE, ...)
 }
 \arguments{
@@ -13,7 +13,7 @@ gev.pll(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
 
 \item{param}{string indicating the parameter to profile over}
 
-\item{mod}{string indicating the model. See \bold{Details}.}
+\item{mod}{string indicating the model, one of \code{profile}, \code{tem} or \code{modif}.See \bold{Details}.}
 
 \item{dat}{sample vector}
 
@@ -65,7 +65,7 @@ based on Severini's (1999) empirical covariance and the Fraser and Reid tangent 
 model approximation.
 }
 \details{
-The two \code{mod} available are \code{tem}, the tangent exponential model (TEM) approximation and
+The two additional \code{mod} available are \code{tem}, the tangent exponential model (TEM) approximation and
 \code{modif} for the penalized profile likelihood based on \eqn{p^*} approximation proposed by Severini.
 For the latter, the penalization is based on the TEM or an empirical covariance adjustment term.
 }

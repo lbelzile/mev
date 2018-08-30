@@ -25,6 +25,6 @@ If available, the function uses \code{cobs} from the eponym package. The latter 
 
 
 While penalized (robust) splines often do a good job at capturing and correcting for numerical outliers and \code{NA}, it
-may also be driven by unusual features of the curve or fail at detecting outliers (or falsely identifying `correct' values as outliers). The user should always validate by comparing the plots of both the uncorrected (raw) output of the object with that of \code{spline.corr}.
+may also be driven by unusual values lying on the profile log-likelihood the curve or fail to detect outliers (or falsely identifying `correct' values as outliers). The user should always validate by comparing the plots of both the uncorrected (raw) output of the object with that of \code{spline.corr}.
 }
 

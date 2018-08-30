@@ -5,7 +5,7 @@
 \alias{gpdr.ll.optim}
 \title{Negative log likelihood of the generalized Pareto distribution (return levels)}
 \usage{
-gpdr.ll(par, dat, m, tol = 1e-05)
+gpdr.ll(par, dat, m)
 
 gpdr.ll.optim(par, dat, m)
 }
@@ -15,8 +15,6 @@ gpdr.ll.optim(par, dat, m)
 \item{dat}{sample vector}
 
 \item{m}{number of observations of interest for return levels. See \strong{Details}}
-
-\item{tol}{numerical tolerance for the exponential model}
 }
 \description{
 Negative log likelihood of the generalized Pareto distribution (return levels)
@@ -24,8 +22,6 @@ Negative log likelihood of the generalized Pareto distribution (return levels)
 Negative log likelihood parametrized in terms of log return level and shape in order to perform unconstrained optimization
 }
 \seealso{
-\code{\link{gpdr}}
-
 \code{\link{gpdr}}
 }
 \keyword{internal}

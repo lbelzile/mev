@@ -2,11 +2,11 @@
 % Please edit documentation in R/profile.R
 \name{gpd.pll}
 \alias{gpd.pll}
-\title{Modified profile likelihood for the generalized Pareto distribution}
+\title{Profile log-likelihood for the generalized Pareto distribution}
 \usage{
 gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
-  "Nquant"), mod = c("tem", "modif"), mle = NULL, dat, m = NULL,
-  N = NULL, p = NULL, q = NULL, correction = TRUE, ...)
+  "Nquant"), mod = "profile", mle = NULL, dat, m = NULL, N = NULL,
+  p = NULL, q = NULL, correction = TRUE, ...)
 }
 \arguments{
 \item{psi}{parameter vector over which to profile (unidimensional)}
@@ -69,7 +69,7 @@ which are based on Severini's (1999) empirical covariance
 and the Fraser and Reid tangent exponential model approximation.
 }
 \details{
-The two \code{mod} available are \code{tem}, the tangent exponential model (TEM) approximation and
+The three \code{mod} available are \code{profile} (the default), \code{tem}, the tangent exponential model (TEM) approximation and
 \code{modif} for the penalized profile likelihood based on \eqn{p^*} approximation proposed by Severini.
 For the latter, the penalization is based on the TEM or an empirical covariance adjustment term.
 }

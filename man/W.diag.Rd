@@ -6,8 +6,8 @@
 \usage{
 W.diag(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0,
   q2 = 1, par = NULL, M = NULL, nbs = 1000, alpha = 0.05,
-  plots = c("LRT", "WN", "PS"), UseQuantiles = TRUE, pmar = c(5.5, 7, 3,
-  3), tikz = FALSE, ...)
+  plots = c("LRT", "WN", "PS"), UseQuantiles = TRUE, pmar = c(5.5, 7,
+  3, 3), ...)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
@@ -24,7 +24,7 @@ for the univariate model, \code{exp} (\code{invexp}) for the bivariate exponenti
 \item{q2}{upper quantile limit for the threshold sequence (\code{q2} itself is not used as a threshold,
 but rather the uppermost threshold will be at the \eqn{(q_2-1/k)}{q2-1/k} quantile).}
 
-\item{par}{parameters of the NHPP likelihood. If \code{missing}, the \code{\link[evd]{fpot}} routine will be run to obtain values}
+\item{par}{parameters of the NHPP likelihood. If \code{missing}, the \code{\link[mev]{fit.pp}} routine will be run to obtain values}
 
 \item{M}{number of superpositions or 'blocks' / 'years' the process corresponds to (can affect the optimization)}
 
@@ -38,12 +38,10 @@ but rather the uppermost threshold will be at the \eqn{(q_2-1/k)}{q2-1/k} quanti
 
 \item{pmar}{vector of length 4 giving the arguments for the plot margins in \code{par(mar=c(*,*,*,*))}.}
 
-\item{tikz}{logical; if \code{TRUE}, axis labels are replaced with \code{LaTeX} code}
-
 \item{...}{additional parameters passed to \code{plot}.}
 }
 \value{
-plots of the requested diagnostics and a list with components
+plots of the requested diagnostics and an invisible list with components
 \itemize{
 \item \code{MLE}  maximum likelihood estimates from all thresholds
 \item \code{Cov}  joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{\eta^{-1}}{1/\eta}.
@@ -72,15 +70,15 @@ is transformed to exponential margins using the empirical distribution function.
 \examples{
 \dontrun{
 set.seed(123)
-W.diag(rexp(1000), model='nhpp', k=30, q1=0)
+W.diag(rexp(1000), model = 'nhpp', k = 20, q1 = 0)
 # Parameter stability only
-W.diag(abs(rnorm(5000)), model='nhpp', k=30, q1=0, plots=c('PS'))
+W.diag(abs(rnorm(5000)), model = 'nhpp', k = 30, q1 = 0, plots = "PS")
 xbvn <- mvrnorm(6000, mu = rep(0, 2), Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 # Transform margins to exponential manually
-xbvn.exp <- -log(1-pnorm(xbvn))
-W.diag(apply(xbvn.exp,1,min), model='exp', k=30, q1=0) #rate parametrization
-W.diag(xbvn, model='exp', k=30, q1=0)
-W.diag(apply(xbvn.exp,1,min), model='invexp', k=30, q1=0) #inverse rate parametrization
+xbvn.exp <- -log(1 - pnorm(xbvn))
+W.diag(apply(xbvn.exp, 1, min), model = 'exp', k = 30, q1 = 0) #rate parametrization
+W.diag(xbvn, model = 'exp', k = 30, q1 = 0)
+W.diag(apply(xbvn.exp, 1, min), model = 'invexp', k = 30, q1 = 0) #inverse rate parametrization
 }
 }
 \references{
