@@ -2,7 +2,18 @@
 % Please edit documentation in R/univdist.R
 \name{pp}
 \alias{pp}
+\alias{pp.ll}
+\alias{pp.score}
+\alias{pp.infomat}
 \title{Poisson process of extremes.}
+\usage{
+pp.ll(par, dat, u, np = 1)
+
+pp.score(par, dat, u, np = 1)
+
+pp.infomat(par, dat, method = c("obs", "exp"), u, np = 1,
+  nobs = length(dat))
+}
 \arguments{
 \item{par}{vector of \code{loc}, \code{scale} and \code{shape}}
 
@@ -10,21 +21,50 @@
 
 \item{u}{threshold}
 
-\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
-
 \item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide
 with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
+
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
 \item{nobs}{number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.}
 }
 \description{
 Likelihood, score function and information matrix for the Poisson process likelihood.
+
+The function returns the expected or observed information matrix.
 }
+\note{
+For the expected information matrix, the number of points above the threshold is random, but should correspond to
+\code{np}\eqn{\Lambda}. In this sense, unless \code{np} is linear in the sample size, the
+}
+\section{Usage}{
+
+\preformatted{pp.ll(par, dat)
+pp.ll(par, dat, u, np)
+pp.score(par, dat)
+pp.infomat(par, dat, method = c('obs', 'exp'))}
+}
+
+\section{Functions}{
+
+\itemize{
+\item{\code{pp.ll}:} {log likelihood}
+\item{\code{pp.score}:} {score vector}
+\item{\code{pp.infomat}:} {observed or expected information matrix}
+}
+}
+
 \references{
 Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 
 Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
 }
+\seealso{
+\code{\link{pp}}
+
+\code{\link{pp}}
+}
 \author{
 Leo Belzile
 }
+\keyword{internal}

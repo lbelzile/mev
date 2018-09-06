@@ -2162,10 +2162,10 @@ rrlarg <- function(n, r, loc, scale, shape){
 #' @param nobs number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.
 #' @param r number of order statistics kept. Default to \code{ncol(dat)}
 #' @section Usage:
-#' \preformatted{rlarg.ll(par, dat)
+#' \preformatted{
 #' rlarg.ll(par, dat, u, np)
 #' rlarg.score(par, dat)
-#' rlarg.infomat(par, dat, method = c('obs', 'exp'), nobs = nrow(dat), r = ncol(dat))
+#' rlarg.infomat(par, dat, method = c('obs', 'exp'), nobs = nrow(dat), r = ncol(dat))}
 #'
 #' @section Functions:
 #'
@@ -2173,6 +2173,7 @@ rrlarg <- function(n, r, loc, scale, shape){
 #' \item{\code{rlarg.ll}:} {log likelihood}
 #' \item{\code{rlarg.score}:} {score vector}
 #' \item{\code{rlarg.infomat}:} {observed or expected information matrix}
+#' }
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 #' @references Smith, R.L. (1986).  Extreme value theory based on the r largest annual events, \emph{Journal of Hydrology}, \bold{86}(1-2), 27--43, \code{http://dx.doi.org/10.1016/0022-1694(86)90004-1}.
 NULL
@@ -2203,7 +2204,7 @@ rlarg.ll <- function(par, dat){
 #' Score of the r-largest observations
 #'
 #' The score is computed via linear interpolation for the shape parameter in a neighborhood of zero
-#' @inheritParams gevrl.ll
+#' @inheritParams rlarg.ll
 #' @return a vector of size 3
 #' @export
 #' @keywords internal
@@ -2382,14 +2383,14 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
 #' \preformatted{pp.ll(par, dat)
 #' pp.ll(par, dat, u, np)
 #' pp.score(par, dat)
-#' pp.infomat(par, dat, method = c('obs', 'exp'))
+#' pp.infomat(par, dat, method = c('obs', 'exp'))}
 #'
 #' @section Functions:
-#'
-#' \itemize{
+#'\itemize{
 #' \item{\code{pp.ll}:} {log likelihood}
 #' \item{\code{pp.score}:} {score vector}
 #' \item{\code{pp.infomat}:} {observed or expected information matrix}
+#' }
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 #' @references Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
 #'

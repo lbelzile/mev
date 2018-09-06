@@ -4,10 +4,15 @@
 \alias{fit.rlarg}
 \title{Maximum likelihood estimates of point process for the r-largest observations}
 \usage{
-fit.rlarg(xdat, show = FALSE)
+fit.rlarg(xdat, start = NULL, method = c("nlminb", "BFGS"),
+  show = FALSE)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
+
+\item{start}{numeric vector of starting values}
+
+\item{method}{the method to be used. See \bold{Details}. Can be abbreviated.}
 
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
 }
@@ -29,4 +34,8 @@ Values other than \code{0} indicate that the algorithm likely did not converge.
 This uses a constrained optimization routine to return the maximum likelihood estimate
 based on an \code{n} by \code{r} matrix of observations. Observations should be ordered, i.e.,
 the \code{r}-largest should be in the last column.
+}
+\examples{
+xdat <- rrlarg(n = 10, loc = 0, scale = 1, shape = 0.1, r = 4)
+fit.rlarg(xdat)
 }
