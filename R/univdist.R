@@ -294,6 +294,7 @@ gev.score <- function(par, dat) {
 #' @keywords internal
 gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) {
     method <- match.arg(method[1], choices = c("obs","exp"))
+    par <- as.vector(par)
     if (method == "exp") {
         # (Expected) Fisher information does not depend on location parameter
         if (length(par) == 3) {
@@ -331,6 +332,7 @@ gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
             y1 <- 2.42360605517703
             infomat[3, 3] <- nobs * (-(y2 - y1)/0.003 * xi + y1)
         }
+        colnames(infomat) <- rownames(infomat) <- c("loc","scale","shape")
         return(infomat)
     } else if (method == "obs") {
         if (length(par) != 3) {
@@ -391,9 +393,8 @@ gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
                 (mu - dat) * exp(-dat/sigma)/sigma^4)
             infomat[3, 3] <- sum(exp(-(dat/sigma))*(4*exp(dat/sigma)* sigma*(2*mu + 3*sigma - 2*dat) -
                                  exp(mu/sigma)*(3*mu + 8*sigma - 3*dat)*(mu - dat))*(mu - dat)^2)/(12*sigma^4)
-            #Does not match Hessian, but correct value
         }
-
+        colnames(infomat) <- rownames(infomat) <- c("loc","scale","shape")
         return(-infomat)
     }
 }
@@ -2134,11 +2135,14 @@ gevN.dphi <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V) {
 #' @param loc location parameter
 #' @param scale scale parameter
 #' @param shape shape parameter
-#' @return an \code{n} by \code{r} matrix of samples from the point process
+#' @return an \code{n} by \code{r} matrix of samples from the point process, ordered from largest to smallest in each row.
 #' @export
-rgevrl <- function(n, r, loc, scale, shape){
+rrlarg <- function(n, r, loc, scale, shape){
   U <- matrix(rexp(n*r), nrow = n, ncol = r)
   U <- t(apply(U, 1, cumsum))
+  if(r == 1){
+   U <- matrix(U, ncol = 1, nrow = n)
+  }
   if(!isTRUE(all.equal(shape, 0))){
    loc + scale*(U^(-shape)-1)/shape
   } else{
@@ -2146,21 +2150,54 @@ rgevrl <- function(n, r, loc, scale, shape){
   }
 }
 
+#' Distribution of the r-largest observations
+#'
+#' Likelihood, score function and information matrix for the r-largest observations likelihood.
+#'
+#' @author Leo Belzile
+#' @name rlarg
+#' @param par vector of \code{loc}, \code{scale} and \code{shape}
+#' @param dat an \code{n} by \code{r} sample matrix, ordered from largest to smallest in each row
+#' @param method string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.
+#' @param nobs number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.
+#' @param r number of order statistics kept. Default to \code{ncol(dat)}
+#' @section Usage:
+#' \preformatted{rlarg.ll(par, dat)
+#' rlarg.ll(par, dat, u, np)
+#' rlarg.score(par, dat)
+#' rlarg.infomat(par, dat, method = c('obs', 'exp'), nobs = nrow(dat), r = ncol(dat))
+#'
+#' @section Functions:
+#'
+#' \itemize{
+#' \item{\code{rlarg.ll}:} {log likelihood}
+#' \item{\code{rlarg.score}:} {score vector}
+#' \item{\code{rlarg.infomat}:} {observed or expected information matrix}
+#' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
+#' @references Smith, R.L. (1986).  Extreme value theory based on the r largest annual events, \emph{Journal of Hydrology}, \bold{86}(1-2), 27--43, \code{http://dx.doi.org/10.1016/0022-1694(86)90004-1}.
+NULL
+
+
 #' Log-likelihood of the point process of r-largest observations
 #'
 #' @param par a vector of location, scale and shape parameter
-#' @param dat an \code{n} by \code{r} matrix of observations
+#' @param dat an \code{n} by \code{r} matrix of observations, ordered from largest to smallest in each row.
 #' @importFrom stats approx
 #' @export
 #' @keywords internal
-gevrl.ll <- function(par, dat){
+rlarg.ll <- function(par, dat){
  #Maximum is in first column, ordered
+  dat <- as.matrix(dat)
+  if(!isTRUE(all(dat[1,1] >= dat[1,]))){
+    stop("Observations in `dat` must be ordered from largest to smallest in each row.")
+  }
   r <- ncol(dat)
+  n <- nrow(dat)
   if(abs(par[3]) > 1e-7){
-  - sum((1+par[3]*(dat[,r]-par[1])/par[2])^(-1/par[3])) - length(dat)*log(par[2]) -
+  - sum((1+par[3]*(dat[,r]-par[1])/par[2])^(-1/par[3])) - n*r*log(par[2]) -
       (1/par[3]+1)*sum(log1p(par[3]*(dat-par[1])/par[2]))
   } else{
-    -sum(exp((par[1]-dat[,r])/par[2])) - length(dat)*log(par[2]) - sum((dat-par[1])/par[2])
+    -sum(exp((par[1]-dat[,r])/par[2])) - n*r*log(par[2]) - sum((dat-par[1])/par[2])
   }
 }
 #' Score of the r-largest observations
@@ -2170,9 +2207,13 @@ gevrl.ll <- function(par, dat){
 #' @return a vector of size 3
 #' @export
 #' @keywords internal
-gevrl.score <- function(par, dat){
+rlarg.score <- function(par, dat){
+  par <- as.vector(par)
   mu <- par[1]; sigma <- par[2]; xi <- par[3]
   dat <- as.matrix(dat)
+  if(!isTRUE(all(dat[1,1] >= dat[1,]))){
+    stop("Observations in `dat` must be ordered from largest to smallest in each row.")
+  }
   r <- ncol(dat)
   n <- nrow(dat)
   # xi \neq 0
@@ -2203,6 +2244,127 @@ gevrl.score <- function(par, dat){
 
 }
 
+
+#' Information matrix for the r-largest observations.
+#'
+#' The function returns the expected or observed information matrix.
+#' @seealso \code{\link{rlarg}}
+#' @inheritParams rlarg
+#' @rdname rlarg
+#' @export
+#' @keywords internal
+rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), r = ncol(dat)){
+  eta <- par[1]
+  tau <- par[2]
+  xi <- par[3]
+  r <- as.integer(r)
+  xizero <- abs(xi) < 1e-5
+  if(method == "exp"){
+    m11a <- -(((r + xi*(2 + xi))*gamma(r + 2*xi))/(tau^2*gamma(r)))
+    if(!xizero){
+      m12a <- (-gamma(1 + r + xi) + (r + xi*(2 + xi))*gamma(r + 2*xi))/(tau^2*xi*gamma(r))
+      m13a <- ((-r)*xi*gamma(r + xi) - (r + xi*(2 + xi))*gamma(r + 2*xi) +
+                 gamma(1 + r + xi)*(1 + xi + xi*digamma(1 + r + xi)))/(tau*xi^2*gamma(r))
+      m22a <- -((gamma(1 + r) - 2*gamma(1 + r + xi) + (r + xi*(2 + xi))*gamma(r + 2*xi))/(tau^2* xi^2*gamma(r)))
+      m23a <- (1/(tau*xi^3*gamma(r)))*((r + xi*(2 + xi))*gamma(r + 2*xi) +
+                                         gamma(1 + r)*(1 + xi*digamma(1 + r)) - gamma(r + xi)*(2*r + xi*(2 + xi) +
+                                                                                                 xi*(r + xi)*digamma(1 + r + xi)))
+
+
+    } else{
+      m12a <- (1 + r*digamma(r))/tau^2
+      m13a <- -((digamma(r)*(2 + r*digamma(r)) + r*psigamma(deriv = 1, r))/(2*tau))
+      m22a <- -((1 + digamma(r)*(2 + r*digamma(r)) + r*psigamma(deriv = 1, r))/tau^2)
+      m23a <-  (1/(2*tau))*(3*psigamma(deriv = 1, r) +  digamma(r)*(2 + digamma(r)*(3 + r*digamma(r)) +
+                                                                      3*r*psigamma(deriv = 1, r)) + r*psigamma(deriv = 2, r))
+    }
+    if(abs(xi) > 1e-3){
+      m33a <- -((1/(xi^4*gamma(r)))*((r + xi*(2 + xi))*gamma(r + 2*xi) -
+                                       2*gamma(r + xi)*(r + xi + xi^2 + xi*(r + xi)*digamma(1 + r + xi)) +
+                                       gamma(r)*(r + xi*(2 + xi) + r*xi*(2*digamma(r) + xi*(digamma(1 + r)^2 + psigamma(deriv = 1, 1 + r))))))
+    } else{
+      m33a <- -(4*psigamma(deriv=0, r)^3 + r*psigamma(deriv=0, r)^4 +
+                  psigamma(deriv=1, r)*(4 + 3*r*psigamma(deriv=1, r)) + psigamma(deriv=0, r)^2*
+                  (4 + 6*r*psigamma(deriv=1, r)) + 4*psigamma(deriv=2, r) +
+                  4*psigamma(deriv=0, r)*(3*psigamma(deriv=1, r) + r*psigamma(deriv=2, r)) +
+                  r*psigamma(deriv=3, r))/4
+    }
+    ma <- matrix(c(m11a, m12a, m13a, m12a, m22a, m23a, m13a, m23a, m33a), nrow = 3, ncol = 3)
+    if(r == 1L){
+      return(nobs*ma)
+    } else if(r > 1L){
+      if(!xizero){
+        m11b <- -((xi^2*gamma(r + 2*xi))/(tau^2*(1 + 2*xi)*gamma(r)))
+        m12b <- (xi*gamma(r + 2*xi))/(tau^2*(1 + 2*xi)*gamma(r))
+        m13b <- (gamma(r + xi)/(1 + xi) - gamma(r + 2*xi)/(1 + 2*xi))/(tau*gamma(r))
+        m22b <- -(gamma(r + 2*xi)/(tau^2*(1 + 2*xi)*gamma(r)))
+        m23b <- (-(gamma(r + xi)/(1 + xi)) + gamma(r + 2*xi)/(1 + 2*xi))/(tau*xi*gamma(r))
+        m33b <- (-1 + (2*gamma(r + xi))/(gamma(r) + xi*gamma(r)) -
+                   gamma(r + 2*xi)/(gamma(r) + 2*xi*gamma(r)))/xi^2
+      } else{
+        m11b <- 0
+        m12b <- 0
+        m13b <- 0
+        m22b <- -(1/tau^2)
+        m23b <- (-1 + digamma(r))/tau
+        m33b <- -2 + 2*digamma(r) - digamma(r)^2 - psigamma(deriv = 1, r)
+      }
+      mb <- matrix(c(m11b, m12b, m13b, m12b, m22b, m23b, m13b, m23b, m33b), nrow = 3, ncol = 3)
+      return(-nobs*(ma + (r-1)*mb))
+    }
+
+  } else if(method == "obs"){
+    #Partial check for ordering in first column
+    if(!isTRUE(all(dat[1,1] >= dat[1,]))){
+      stop("Observations in `dat` must be ordered from largest to smallest in each row.")
+    }
+    #Observed information matrix
+    dat <- as.matrix(dat)
+    r <- ncol(dat)
+    yr <- dat[,r]
+
+    if(!xizero){
+      d11a <- sum(xi^2*(r/xi + 1)/(tau^2*((eta - yr)*xi/tau - 1)^2) + (-(eta - yr)*xi/tau + 1)^(1/xi - 2)*xi*(1/xi - 1)/(tau^2*(-(eta - yr)*xi/tau + 1)^(2/xi)) - 2*(-(eta - yr)*xi/tau + 1)^(2/xi - 2)/(tau^2*(-(eta - yr)*xi/tau + 1)^(3/xi)))
+      d12a <- sum(xi*(r/xi + 1)/(tau^2*((eta - yr)*xi/tau - 1)) - (eta - yr)*xi^2*(r/xi + 1)/(tau^3*((eta - yr)*xi/tau - 1)^2) - (eta - yr)*(-(eta - yr)*xi/tau + 1)^(1/xi - 2)*xi*(1/xi - 1)/(tau^3*(-(eta - yr)*xi/tau + 1)^(2/xi)) + (-(eta - yr)*xi/tau + 1)^(1/xi - 1)/(tau^2*(-(eta - yr)*xi/tau + 1)^(2/xi)) + 2*(eta - yr)*(-(eta - yr)*xi/tau + 1)^(2/xi - 2)/(tau^3*(-(eta - yr)*xi/tau + 1)^(3/xi)))
+      d13a <- sum(-(r/xi + 1)/(tau*((eta - yr)*xi/tau - 1)) + (eta - yr)*xi*(r/xi + 1)/(tau^2*((eta - yr)*xi/tau - 1)^2) - (-(eta - yr)*xi/tau + 1)^(1/xi - 1)*((eta - yr)*(1/xi - 1)/(tau*((eta - yr)*xi/tau - 1)) - log(-(eta - yr)*xi/tau + 1)/xi^2)/(tau*(-(eta - yr)*xi/tau + 1)^(2/xi)) - 2*(-(eta - yr)*xi/tau + 1)^(1/xi - 1)*(log(-(eta - yr)*xi/tau + 1)/xi^2 - (eta - yr)/(tau*((eta - yr)*xi/tau - 1)*xi))/(tau*(-(eta - yr)*xi/tau + 1)^(2/xi)) + r/(tau*((eta - yr)*xi/tau - 1)*xi))
+      d22a <- sum(-2*(eta - yr)*xi*(r/xi + 1)/(tau^3*((eta - yr)*xi/tau - 1)) + (eta - yr)^2*xi^2*(r/xi + 1)/(tau^4*((eta - yr)*xi/tau - 1)^2) + (eta - yr)^2*(-(eta - yr)*xi/tau + 1)^(1/xi - 2)*xi*(1/xi - 1)/(tau^4*(-(eta - yr)*xi/tau + 1)^(2/xi)) + 1/tau^2 - 2*(eta - yr)*(-(eta - yr)*xi/tau + 1)^(1/xi - 1)/(tau^3*(-(eta - yr)*xi/tau + 1)^(2/xi)) - 2*(eta - yr)^2*(-(eta - yr)*xi/tau + 1)^(2/xi - 2)/(tau^4*(-(eta - yr)*xi/tau + 1)^(3/xi)))
+      d23a <- sum((eta - yr)*(r/xi + 1)/(tau^2*((eta - yr)*xi/tau - 1)) - (eta - yr)^2*xi*(r/xi + 1)/(tau^3*((eta - yr)*xi/tau - 1)^2) + (eta - yr)*(-(eta - yr)*xi/tau + 1)^(1/xi - 1)*(log(-(eta - yr)*xi/tau + 1)/xi^2 - (eta - yr)/(tau*((eta - yr)*xi/tau - 1)*xi))/(tau^2*(-(eta - yr)*xi/tau + 1)^(2/xi)) - (eta - yr)*r/(tau^2*((eta - yr)*xi/tau - 1)*xi) + (eta - yr)^2/(tau^3*(-(eta - yr)*xi/tau + 1)^(1/xi)*((eta - yr)*xi/tau - 1)^2))
+      d33a <- sum(-(log(-(eta - yr)*xi/tau + 1)/xi^2 - (eta - yr)/(tau*((eta - yr)*xi/tau - 1)*xi))^2/(-(eta - yr)*xi/tau + 1)^(1/xi) + (2*log(-(eta - yr)*xi/tau + 1)/xi^3 - 2*(eta - yr)/(tau*((eta - yr)*xi/tau - 1)*xi^2) - (eta - yr)^2/(tau^2*((eta - yr)*xi/tau - 1)^2*xi))/(-(eta - yr)*xi/tau + 1)^(1/xi) + (eta - yr)^2*(r/xi + 1)/(tau^2*((eta - yr)*xi/tau - 1)^2) - 2*r*log(-(eta - yr)*xi/tau + 1)/xi^3 + 2*(eta - yr)*r/(tau*((eta - yr)*xi/tau - 1)*xi^2))
+      da <- - matrix(c(d11a, d12a, d13a, d12a, d22a, d23a, d13a, d23a, d33a), nrow = 3, ncol = 3)
+    } else {
+      d110a <- sum(-exp(eta/tau - yr/tau)/tau^2)
+      d120a <- sum(-(r*tau*exp(yr/tau) - (eta + tau)*exp(eta/tau) + yr*exp(eta/tau))*exp(-yr/tau)/tau^3)
+      d130a <- sum(1/2*(2*(eta + tau)*yr*exp(eta/tau) - yr^2*exp(eta/tau) - (eta^2 + 2*eta*tau)*exp(eta/tau) + 2*(eta*r*tau - r*tau*yr + tau^2)*exp(yr/tau))*exp(-yr/tau)/tau^3)
+      d220a <- sum((2*(eta + tau)*yr*exp(eta/tau) - yr^2*exp(eta/tau) - (eta^2 + 2*eta*tau)*exp(eta/tau) + (2*eta*r*tau - 2*r*tau*yr + tau^2)*exp(yr/tau))*exp(-yr/tau)/tau^4)
+      d230a <- sum(1/2*((3*eta + 2*tau)*yr^2*exp(eta/tau) - yr^3*exp(eta/tau) - (3*eta^2 + 4*eta*tau)*yr*exp(eta/tau) + (eta^3 + 2*eta^2*tau)*exp(eta/tau) - 2*(eta^2*r*tau + r*tau*yr^2 + eta*tau^2 - (2*eta*r*tau + tau^2)*yr)*exp(yr/tau))*exp(-yr/tau)/tau^4)
+      d330a <- sum(1/12*(4*(3*eta + 2*tau)*yr^3*exp(eta/tau) - 3*yr^4*exp(eta/tau) - 6*(3*eta^2 + 4*eta*tau)*yr^2*exp(eta/tau) + 12*(eta^3 + 2*eta^2*tau)*yr*exp(eta/tau) - (3*eta^4 + 8*eta^3*tau)*exp(eta/tau) + 4*(2*eta^3*r*tau - 2*r*tau*yr^3 + 3*eta^2*tau^2 + 3*(2*eta*r*tau + tau^2)*yr^2 - 6*(eta^2*r*tau + eta*tau^2)*yr)*exp(yr/tau))*exp(-yr/tau)/tau^4)
+      da <- - matrix(c(d110a, d120a, d130a, d120a, d220a, d230a, d130a, d230a, d330a), nrow = 3, ncol = 3)
+    }
+    if(r == 1){
+      return(da)
+    } else if(r > 1){
+      y <- dat[,-r]
+      if(!xizero){
+        d11b <- sum(-2*xi^3*(y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^3*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)) + xi^4*(y - yr)^2*(1/xi + 1)/(((eta - yr)*xi - tau)^4*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)^2) + xi^2/((eta - yr)*xi - tau)^2)
+        d12b <- sum(2*xi^2*(y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^3*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)) - xi^3*(y - yr)^2*(1/xi + 1)/(((eta - yr)*xi - tau)^4*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)^2) - xi/((eta - yr)*xi - tau)^2)
+        d22b <- sum(-2*xi*(y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^3*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)) + xi^2*(y - yr)^2*(1/xi + 1)/(((eta - yr)*xi - tau)^4*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)^2) + 1/((eta - yr)*xi - tau)^2)
+        d13b <- sum(-2*(eta - yr)*xi^2*(y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^3*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)) + xi^2*((eta - yr)*xi*(y - yr)/((eta - yr)*xi - tau)^2 - (y - yr)/((eta - yr)*xi - tau))*(y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^2*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)^2) + (eta - yr)*xi/((eta - yr)*xi - tau)^2 + 2*xi*(y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^2*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)) - 1/((eta - yr)*xi - tau) - (y - yr)/(((eta - yr)*xi - tau)^2*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)))
+        d23b <- sum(2*(eta - yr)*xi*(y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^3*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)) - xi*((eta - yr)*xi*(y - yr)/((eta - yr)*xi - tau)^2 - (y - yr)/((eta - yr)*xi - tau))*(y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^2*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)^2) - (eta - yr)/((eta - yr)*xi - tau)^2 - (y - yr)*(1/xi + 1)/(((eta - yr)*xi - tau)^2*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)) + (y - yr)/(((eta - yr)*xi - tau)^2*xi*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)))
+        d33b <- sum(((eta - yr)*xi*(y - yr)/((eta - yr)*xi - tau)^2 - (y - yr)/((eta - yr)*xi - tau))^2*(1/xi + 1)/(xi*(y - yr)/((eta - yr)*xi - tau) - 1)^2 - 2*((eta - yr)^2*xi*(y - yr)/((eta - yr)*xi - tau)^3 - (eta - yr)*(y - yr)/((eta - yr)*xi - tau)^2)*(1/xi + 1)/(xi*(y - yr)/((eta - yr)*xi - tau) - 1) + (eta - yr)^2/((eta - yr)*xi - tau)^2 - 2*((eta - yr)*xi*(y - yr)/((eta - yr)*xi - tau)^2 - (y - yr)/((eta - yr)*xi - tau))/(xi^2*(xi*(y - yr)/((eta - yr)*xi - tau) - 1)) - 2*log(-xi*(y - yr)/((eta - yr)*xi - tau) + 1)/xi^3)
+      } else{
+        d11b <- 0
+        d12b <- 0
+        d22b <- sum((tau - 2*y + 2*yr)/tau^3)
+        d13b <- sum((tau - y + yr)/tau^2)
+        d23b <- sum(-(eta*tau - (2*eta + tau)*y + y^2 + 2*eta*yr - yr^2)/tau^3)
+        d33b <- sum(1/3*(3*eta^2*tau + 3*(2*eta + tau)*y^2 - 2*y^3 + 6*eta^2*yr - 6*eta*yr^2 + 2*yr^3 - 6*(eta^2 + eta*tau)*y)/tau^3)
+      }
+      db <-  - matrix(c(d11b, d12b, d13b, d12b, d22b, d23b, d13b, d23b, d33b), nrow = 3, ncol = 3)
+      return(da + db)
+    }
+  }
+}
+
 #' Poisson process of extremes.
 #'
 #' Likelihood, score function and information matrix for the Poisson process likelihood.
@@ -2217,10 +2379,10 @@ gevrl.score <- function(par, dat){
 #' with those of a generalized extreme value distribution with block size \code{length(dat)/np}.
 #' @param nobs number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.
 #' @section Usage:
-#' \preformatted{gpd.ll(par, dat, tol=1e-5)
+#' \preformatted{pp.ll(par, dat)
 #' pp.ll(par, dat, u, np)
 #' pp.score(par, dat)
-#' pp.infomat(par, dat, method = c('obs','exp'))
+#' pp.infomat(par, dat, method = c('obs', 'exp'))
 #'
 #' @section Functions:
 #'
@@ -2236,11 +2398,10 @@ NULL
 
 
 #Poisson likelihood
-#
-#
-# Poisson process log-likelihood
+
+#' Poisson process log-likelihood
 #' @export
-#' @rdname
+#' @rdname pp
 pp.ll <- function(par, dat, u, np = 1){
   par <- as.vector(par)
   if(abs(par[3]) > 1e-6){
@@ -2257,6 +2418,7 @@ pp.ll <- function(par, dat, u, np = 1){
 #' @seealso \code{\link{pp}}
 #' @inheritParams pp
 #' @export
+#' @rdname pp
 #' @keywords internal
 pp.score <- function(par, dat, u, np = 1){
   mu <- par[1]; sigma <- par[2]; xi <- par[3]; nu <- length(dat)
@@ -2278,6 +2440,7 @@ pp.score <- function(par, dat, u, np = 1){
 #' @seealso \code{\link{pp}}
 #' @inheritParams pp
 #' @export
+#' @rdname pp
 #' @keywords internal
 pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = length(dat)) {
   method <- match.arg(method[1], choices = c("obs","exp"))
@@ -2344,5 +2507,6 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
 }
   return(-matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE))
 }
+
 }
 

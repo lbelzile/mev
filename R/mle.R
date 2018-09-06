@@ -280,6 +280,8 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
 #' This function returns an object of class \code{mev_gev}, with default methods for printing and quantile-quantile plots.
 #' @inheritParams gp.fit
 #' @importFrom alabama auglag
+#' @param start numeric vector of starting values
+#' @param method string indicating the outer optimization routine for the augmented Lagrangian. One of \code{nlminb} or \code{BFGS}.
 #' @return a list containing the following components:
 #' \itemize{
 #' \item \code{estimate} a vector containing the maximum likelihood estimates.
@@ -292,23 +294,39 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
 #' \item \code{counts} components taken from the list returned by \code{\link[alabama]{auglag}}.
 #' \item \code{xdat} vector of data
 #' }
-fit.gev <- function(xdat, show = FALSE){
+fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE){
   xdat <- na.omit(as.vector(xdat))
+  method <- match.arg(method[1], choices = c("nlminb","BFGS"))
   n <- length(xdat)
+  if(is.null(start)){
   #Optimization routine, with default starting values
   in2 <- sqrt(6 * var(xdat))/pi
   in1 <- mean(xdat) - 0.57722 * in2
+  spar <- c(in1, in2, 0.1)
+  if(spar[2] + spar[3] * (xmin - spar[1]) <= 0){
+    spar[2] <- abs(spar[3]*(xmin-spar[1])) - 1e-5
+  }
+  } else{
+   stopifnot(length(start)==3)
+    spar <- as.vector(start)
+  }
   xmax <- max(xdat)
   xmin <- min(xdat)
-  mle <- suppressWarnings(alabama::auglag(par = c(in1, in2, 0.1), fn = function(par) {
+  mle <- try(suppressWarnings(alabama::auglag(par = spar, fn = function(par) {
     -gev.ll(par, dat = xdat)
   }, gr = function(par) {
     -gev.score(par, dat = xdat)
   }, hin = function(par) {
     c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
-  }, control.outer = list(method = "nlminb", trace = FALSE),
-  control.optim = list(iter.max = 300L, rel.tol = 1e-10, step.min = 1e-10)))
+  }, control.outer = list(method = method, trace = FALSE),
+  control.optim = switch(method,
+                         nlminb = list(iter.max = 300L, rel.tol = 1e-10, step.min = 1e-10),
+                         BFGS = list(iter.max = 300L, rel.tol = 1e-10)
 
+  ))))
+  if(is.character(mle)){
+   error("Optimization routine for the GEV did not converge.")
+  }
   #Extract information and store
   fitted <- list()
   #Point estimate
@@ -342,6 +360,7 @@ fit.gev <- function(xdat, show = FALSE){
 #' the \code{r}-largest should be in the last column.
 #'
 #' @export
+#' @inheritParams fit.gpd
 #' @inheritParams fit.gev
 #' @return a list containing the following components:
 #' \itemize{
@@ -355,8 +374,12 @@ fit.gev <- function(xdat, show = FALSE){
 #' \item \code{counts} components taken from the list returned by \code{\link[alabama]{auglag}}.
 #' \item \code{xdat} an \code{n} by \code{r} matrix of data
 #' }
-fit.rlarg <- function(xdat, show = FALSE){
+#' @examples
+#' xdat <- rrlarg(n = 10, loc = 0, scale = 1, shape = 0.1, r = 4)
+#' fit.rlarg(xdat)
+fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE){
   xdat <- na.omit(xdat)
+  method <- match.arg(method[1], choices = c("nlminb","BFGS"))
   n <- nrow(xdat)
   r <- ncol(xdat)
   if(which.min(xdat[1,]) != r){
@@ -364,24 +387,39 @@ fit.rlarg <- function(xdat, show = FALSE){
   }
 #Optimization routine, with default starting values
 xmax <- max(xdat); xmin <- min(xdat)
-prelim_opt <- fit.gev(xdat = xdat[,1])
-mle <- suppressWarnings(alabama::auglag(par = prelim_opt$estimate,
+if(is.null(start)){
+  in2 <- sqrt(6 * var(xdat[,1]))/pi
+  in1 <- mean(xdat[,1]) - 0.57722 * in2
+  spar <- c(in1, in2, 0.1)
+  if(spar[2] + spar[3] * (xmin - spar[1]) <= 0){
+   spar[2] <- abs(spar[3]*(xmin-spar[1])) - 1e-5
+  }
+} else{
+  stopifnot(length(start)==3)
+  spar <- as.vector(start)
+}
+mle <- try(suppressWarnings(alabama::auglag(par = spar,
   fn = function(par) {
-  -gevrl.ll(par, dat = xdat)
+  -rlarg.ll(par, dat = xdat)
 }, gr = function(par) {
-  -gevrl.score(par, dat = xdat)
+  -rlarg.score(par, dat = xdat)
 }, hin = function(par) {
   c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
-}, control.outer = list(method = "nlminb", trace = FALSE),
-control.optim = list(iter.max = 300L, rel.tol = 1e-10, step.min = 1e-9)))
-
+}, control.outer = list(method = method, trace = FALSE),
+control.optim = switch(method,
+                       nlminb = list(iter.max = 300L, rel.tol = 1e-10, step.min = 1e-10),
+                       BFGS = list(iter.max = 300L, rel.tol = 1e-10)
+))))
+if(is.character(mle)){
+  stop("Optimization routine for r-largest observations did not converge")
+}
 #Extract information and store
 fitted <- list()
 #Point estimate
 fitted$estimate <- mle$par
 #Observed information matrix and standard errors
 if(fitted$estimate[3] > -0.5){
-  fitted$vcov <- try(solve(mle$hessian))
+  fitted$vcov <- try(solve(rlarg.infomat(par = fitted$estimate, dat = xdat, method = "obs")))
   fitted$std.err <- try(sqrt(diag(fitted$vcov)))
   if(is.character(fitted$std.err)){
     fitted$vcov <- NULL
