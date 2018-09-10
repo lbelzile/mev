@@ -15,6 +15,8 @@ non-parametric spectral measure estimation using empirical likelihood methods, e
 To install from Github, use 
 
 ```R
+devtools::install_github("jyypma/nloptr")
+devtools::install_github("lbelzile/TruncatedNormal")
 devtools::install_github("lbelzile/mev")
 ```
 
