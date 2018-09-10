@@ -31,6 +31,10 @@ with those of a generalized extreme value distribution with block size \code{len
 \description{
 Likelihood, score function and information matrix for the Poisson process likelihood.
 
+Poisson process log-likelihood
+
+Score vector for the Poisson process above u
+
 The function returns the expected or observed information matrix.
 }
 \note{

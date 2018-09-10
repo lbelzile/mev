@@ -130,6 +130,27 @@ namespace mev {
         return Rcpp::as<NumericVector >(rcpp_result_gen);
     }
 
+    inline List Zhang_Stephens(NumericVector x, NumericVector init, NumericVector adapt_sd = 0.1, bool adapt = true, int burnin = 1000, int niter = 10000, int thin = 1, int method = 1) {
+        typedef SEXP(*Ptr_Zhang_Stephens)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_Zhang_Stephens p_Zhang_Stephens = NULL;
+        if (p_Zhang_Stephens == NULL) {
+            validateSignature("List(*Zhang_Stephens)(NumericVector,NumericVector,NumericVector,bool,int,int,int,int)");
+            p_Zhang_Stephens = (Ptr_Zhang_Stephens)R_GetCCallable("mev", "_mev_Zhang_Stephens");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_Zhang_Stephens(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(init)), Shield<SEXP>(Rcpp::wrap(adapt_sd)), Shield<SEXP>(Rcpp::wrap(adapt)), Shield<SEXP>(Rcpp::wrap(burnin)), Shield<SEXP>(Rcpp::wrap(niter)), Shield<SEXP>(Rcpp::wrap(thin)), Shield<SEXP>(Rcpp::wrap(method)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<List >(rcpp_result_gen);
+    }
+
     inline NumericMatrix rdir(int n, NumericVector alpha, bool normalize = true) {
         typedef SEXP(*Ptr_rdir)(SEXP,SEXP,SEXP);
         static Ptr_rdir p_rdir = NULL;
@@ -842,27 +863,6 @@ namespace mev {
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
-    }
-
-    inline List Zhang_Stephens(NumericVector x, NumericVector init, NumericVector adapt_sd = 0.1, bool adapt = true, int burnin = 1000, int niter = 10000, int thin = 1, int method = 1) {
-        typedef SEXP(*Ptr_Zhang_Stephens)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_Zhang_Stephens p_Zhang_Stephens = NULL;
-        if (p_Zhang_Stephens == NULL) {
-            validateSignature("List(*Zhang_Stephens)(NumericVector,NumericVector,NumericVector,bool,int,int,int,int)");
-            p_Zhang_Stephens = (Ptr_Zhang_Stephens)R_GetCCallable("mev", "_mev_Zhang_Stephens");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_Zhang_Stephens(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(init)), Shield<SEXP>(Rcpp::wrap(adapt_sd)), Shield<SEXP>(Rcpp::wrap(adapt)), Shield<SEXP>(Rcpp::wrap(burnin)), Shield<SEXP>(Rcpp::wrap(niter)), Shield<SEXP>(Rcpp::wrap(thin)), Shield<SEXP>(Rcpp::wrap(method)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<List >(rcpp_result_gen);
     }
 
 }

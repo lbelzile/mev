@@ -22,12 +22,12 @@
 #'
 #' @author Raphael Huser and Philippe Naveau
 #' @param data data vector.
-#' @param model integer ranging from 0 to 4 indicating the model to select (see \code{\link{egp2}}).
+#' @param model integer ranging from 0 to 4 indicating the model to select (see \code{\link{extgp}}).
 #' @param method string; either \code{'mle'} for maximum likelihood, or \code{'pwm'} for probability weighted moments, or both.
 #' @param init vector of initial values, comprising of \eqn{p}, \eqn{\kappa}, \eqn{\delta},\eqn{\sigma},\eqn{\xi} (in that order) for the optimization. All parameters may not appear depending on \code{model}.
 #' @param censoring numeric vector of length 2 containing the lower and upper bound for censoring; \code{censoring=c(0,Inf)} is equivalent to no censoring.
 #' @param rounded numeric giving the instrumental precision (and rounding of the data), with default of 0.
-#' @param CI logical; should confidence interval be returned (percentile bootstrap).
+#' @param confint logical; should confidence interval be returned (percentile bootstrap).
 #' @param R integer; number of bootstrap replications.
 #' @param ncpus integer; number of CPUs for parallel calculations (default: 1).
 #' @param plots logical; whether to produce histogram and density plots.
@@ -36,18 +36,23 @@
 #' @importFrom grDevices rgb
 #' @importFrom graphics hist layout
 #' @importFrom evd dgpd pgpd qgpd
-#' @importFrom gmm gmm
-#' @seealso \code{\link{egp.fit}}, \code{\link{egp}}, \code{\link{egp2}}
+#' @seealso \code{\link{egp.fit}}, \code{\link{egp}}, \code{\link{extgp}}
 #' @references Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.
 #' @examples
 #' \donttest{
-#' library(ismev)
-#' data(rain)
-#' egp2.fit(rain[rain>0], model=1, method='mle', init=c(0.9, gp.fit(rain,0, show=FALSE)$est),
-#'  rounded=0.1,CI=TRUE, R=20)
+#' data(rain, package = "ismev")
+#' fit.extgp(rain[rain>0], model=1, method = 'mle', init = c(0.9, gp.fit(rain, 0)$est),
+#'  rounded = 0.1, confint = TRUE, R = 20)
 #' }
-egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring = c(0, Inf), rounded = 0, CI = FALSE, R = 1000, ncpus = 1,
-    plots = TRUE) {
+fit.extgp <- function(data, model = 1, method = c("mle", "pwm"), init, censoring = c(0, Inf),
+                      rounded = 0, confint = FALSE, R = 1000, ncpus = 1, plots = TRUE) {
+    method <- match.arg(method, c("mle", "pwm"), several.ok = TRUE)
+    if("pwm" %in% method){
+      if (!requireNamespace("gmm", quietly = TRUE)) {
+        stop("Package \"gmm\" needed for this function to work. Please install it.",
+             call. = FALSE)
+      }
+    }
     # Sanity checks
     initsize <- switch(model, 3, 3, 4, 5)
     if (length(init) != initsize) {
@@ -59,58 +64,60 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
     }
 
     x <- seq(0, max(data, na.rm = TRUE), by = 0.05)
-    degp2s <- c()
-    qegp2s <- c()
+    dextgps <- c()
+    qextgps <- c()
 
     if (any(method == "pwm")) {
         if (model == 1) {
-            fit.pwm <- egp2.fit.pwm(x = data, type = 1, kappa0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring)
-            if (CI) {
-                fit.pwm.boot <- boot::boot(data = data, statistic = egp2.fit.pwm.boot, R = R, type = 1, kappa0 = init[1], sigma0 = init[2],
+            fit.pwm <- extgp.fit.pwm(x = data, type = 1, kappa0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring)
+            if (confint) {
+                fit.pwm.boot <- boot::boot(data = data, statistic = extgp.fit.pwm.boot, R = R, type = 1, kappa0 = init[1], sigma0 = init[2],
                   ncpus = ncpus, xi0 = init[3], censoring = censoring, parallel = "multicore")
                 CI.pwm.kappa <- boot::boot.ci(boot.out = fit.pwm.boot, index = 1, type = "perc")$perc[4:5]
                 CI.pwm.sigma <- boot::boot.ci(boot.out = fit.pwm.boot, index = 2, type = "perc")$perc[4:5]
                 CI.pwm.xi <- boot::boot.ci(boot.out = fit.pwm.boot, index = 3, type = "perc")$perc[4:5]
                 CIs.pwm <- cbind(CI.pwm.kappa, CI.pwm.sigma, CI.pwm.xi)
             }
-            degp2.pwm <- degp2(x = x, type = 1, kappa = fit.pwm[1], sigma = fit.pwm[2], xi = fit.pwm[3])
-            degp2s <- c(degp2s, degp2.pwm)
+            dextgp.pwm <- dextgp(x = x, type = 1, kappa = fit.pwm[1], sigma = fit.pwm[2], xi = fit.pwm[3])
+            dextgps <- c(dextgps, dextgp.pwm)
             if (plots) {
-                qegp2.pwm <- qegp2(p = c(1:length(data))/(length(data) + 1), type = 1, kappa = fit.pwm[1], sigma = fit.pwm[2], xi = fit.pwm[3])
-                qegp2s <- c(qegp2s, qegp2.pwm)
-                if (CI) {
-                  q.pwm.boot <- mapply(FUN = qegp2, p = list(c(1:length(data))/(length(data) + 1)), type = list(1), kappa = as.list(fit.pwm.boot$t[,
+                qextgp.pwm <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 1, kappa = fit.pwm[1], sigma = fit.pwm[2], xi = fit.pwm[3])
+                qextgps <- c(qextgps, qextgp.pwm)
+                if (confint) {
+                  q.pwm.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(1),
+                                       kappa = as.list(fit.pwm.boot$t[,
                     1]), sigma = as.list(fit.pwm.boot$t[, 2]), xi = as.list(fit.pwm.boot$t[, 3]))
                   q.pwm.L <- apply(q.pwm.boot, 1, quantile, 0.025, na.rm = TRUE)
                   q.pwm.U <- apply(q.pwm.boot, 1, quantile, 0.975, na.rm = TRUE)
                 }
             }
         } else if (model == 2) {
-            fit.pwm <- egp2.fit.pwm(x = data, type = 2, delta0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring)
-            if (CI) {
-                fit.pwm.boot <- boot::boot(data = data, statistic = egp2.fit.pwm.boot, R = R, type = 2, delta0 = init[1], sigma0 = init[2],
+            fit.pwm <- extgp.fit.pwm(x = data, type = 2, delta0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring)
+            if (confint) {
+                fit.pwm.boot <- boot::boot(data = data, statistic = extgp.fit.pwm.boot, R = R, type = 2, delta0 = init[1], sigma0 = init[2],
                   xi0 = init[3], censoring = censoring, parallel = "multicore", ncpus = ncpus)
                 CI.pwm.delta <- boot::boot.ci(boot.out = fit.pwm.boot, index = 1, type = "perc")$perc[4:5]
                 CI.pwm.sigma <- boot::boot.ci(boot.out = fit.pwm.boot, index = 2, type = "perc")$perc[4:5]
                 CI.pwm.xi <- boot::boot.ci(boot.out = fit.pwm.boot, index = 3, type = "perc")$perc[4:5]
                 CIs.pwm <- cbind(CI.pwm.delta, CI.pwm.sigma, CI.pwm.xi)
             }
-            degp2.pwm <- degp2(x = x, type = 2, delta = fit.pwm[1], sigma = fit.pwm[2], xi = fit.pwm[3])
-            degp2s <- c(degp2s, degp2.pwm)
+            dextgp.pwm <- dextgp(x = x, type = 2, delta = fit.pwm[1], sigma = fit.pwm[2], xi = fit.pwm[3])
+            dextgps <- c(dextgps, dextgp.pwm)
             if (plots) {
-                qegp2.pwm <- qegp2(p = c(1:length(data))/(length(data) + 1), type = 2, delta = fit.pwm[1], sigma = fit.pwm[2], xi = fit.pwm[3])
-                qegp2s <- c(qegp2s, qegp2.pwm)
-                if (CI) {
-                  q.pwm.boot <- mapply(FUN = qegp2, p = list(c(1:length(data))/(length(data) + 1)), type = list(2), delta = as.list(fit.pwm.boot$t[,
+                qextgp.pwm <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 2, delta = fit.pwm[1], sigma = fit.pwm[2], xi = fit.pwm[3])
+                qextgps <- c(qextgps, qextgp.pwm)
+                if (confint) {
+                  q.pwm.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)),
+                                       type = list(2), delta = as.list(fit.pwm.boot$t[,
                     1]), sigma = as.list(fit.pwm.boot$t[, 2]), xi = as.list(fit.pwm.boot$t[, 3]))
                   q.pwm.L <- apply(q.pwm.boot, 1, quantile, 0.025, na.rm = TRUE)
                   q.pwm.U <- apply(q.pwm.boot, 1, quantile, 0.975, na.rm = TRUE)
                 }
             }
         } else if (model == 3) {
-            fit.pwm <- egp2.fit.pwm(x = data, type = 3, kappa0 = init[1], delta0 = init[2], sigma0 = init[3], xi0 = init[4], censoring = censoring)
-            if (CI) {
-                fit.pwm.boot <- boot::boot(data = data, statistic = egp2.fit.pwm.boot, R = R, type = 3, kappa0 = init[1], delta0 = init[2],
+            fit.pwm <- extgp.fit.pwm(x = data, type = 3, kappa0 = init[1], delta0 = init[2], sigma0 = init[3], xi0 = init[4], censoring = censoring)
+            if (confint) {
+                fit.pwm.boot <- boot::boot(data = data, statistic = extgp.fit.pwm.boot, R = R, type = 3, kappa0 = init[1], delta0 = init[2],
                   sigma0 = init[3], xi0 = init[4], censoring = censoring, parallel = "multicore", ncpus = ncpus)
                 CI.pwm.kappa <- boot::boot.ci(boot.out = fit.pwm.boot, index = 1, type = "perc")$perc[4:5]
                 CI.pwm.delta <- boot::boot.ci(boot.out = fit.pwm.boot, index = 2, type = "perc")$perc[4:5]
@@ -118,14 +125,14 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
                 CI.pwm.xi <- boot::boot.ci(boot.out = fit.pwm.boot, index = 4, type = "perc")$perc[4:5]
                 CIs.pwm <- cbind(CI.pwm.kappa, CI.pwm.delta, CI.pwm.sigma, CI.pwm.xi)
             }
-            degp2.pwm <- degp2(x = x, type = 3, kappa = fit.pwm[1], delta = fit.pwm[2], sigma = fit.pwm[3], xi = fit.pwm[4])
-            degp2s <- c(degp2s, degp2.pwm)
+            dextgp.pwm <- dextgp(x = x, type = 3, kappa = fit.pwm[1], delta = fit.pwm[2], sigma = fit.pwm[3], xi = fit.pwm[4])
+            dextgps <- c(dextgps, dextgp.pwm)
             if (plots) {
-                qegp2.pwm <- qegp2(p = c(1:length(data))/(length(data) + 1), type = 3, kappa = fit.pwm[1], delta = fit.pwm[2], sigma = fit.pwm[3],
+                qextgp.pwm <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 3, kappa = fit.pwm[1], delta = fit.pwm[2], sigma = fit.pwm[3],
                   xi = fit.pwm[4])
-                qegp2s <- c(qegp2s, qegp2.pwm)
-                if (CI) {
-                  q.pwm.boot <- mapply(FUN = qegp2, p = list(c(1:length(data))/(length(data) + 1)), type = list(3), kappa = as.list(fit.pwm.boot$t[,
+                qextgps <- c(qextgps, qextgp.pwm)
+                if (confint) {
+                  q.pwm.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(3), kappa = as.list(fit.pwm.boot$t[,
                     1]), delta = as.list(fit.pwm.boot$t[, 2]), sigma = as.list(fit.pwm.boot$t[, 3]), xi = as.list(fit.pwm.boot$t[,
                     4]))
                   q.pwm.L <- apply(q.pwm.boot, 1, quantile, 0.025, na.rm = TRUE)
@@ -133,10 +140,10 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
                 }
             }
         } else if (model == 4) {
-            fit.pwm <- egp2.fit.pwm(x = data, type = 4, prob0 = init[1], kappa0 = init[2], delta0 = init[3], sigma0 = init[4], xi0 = init[5],
+            fit.pwm <- extgp.fit.pwm(x = data, type = 4, prob0 = init[1], kappa0 = init[2], delta0 = init[3], sigma0 = init[4], xi0 = init[5],
                 censoring = censoring)
-            if (CI) {
-                fit.pwm.boot <- boot::boot(data = data, statistic = egp2.fit.pwm.boot, R = R, type = 4, prob0 = init[1], kappa0 = init[2],
+            if (confint) {
+                fit.pwm.boot <- boot::boot(data = data, statistic = extgp.fit.pwm.boot, R = R, type = 4, prob0 = init[1], kappa0 = init[2],
                   delta0 = init[3], sigma0 = init[4], xi0 = init[5], censoring = censoring, parallel = "multicore", ncpus = ncpus)
                 CI.pwm.prob <- boot::boot.ci(boot.out = fit.pwm.boot, index = 1, type = "perc")$perc[4:5]
                 CI.pwm.kappa <- boot::boot.ci(boot.out = fit.pwm.boot, index = 2, type = "perc")$perc[4:5]
@@ -145,14 +152,14 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
                 CI.pwm.xi <- boot::boot.ci(boot.out = fit.pwm.boot, index = 5, type = "perc")$perc[4:5]
                 CIs.pwm <- cbind(CI.pwm.prob, CI.pwm.kappa, CI.pwm.delta, CI.pwm.sigma, CI.pwm.xi)
             }
-            degp2.pwm <- degp2(x = x, type = 4, prob = fit.pwm[1], kappa = fit.pwm[2], delta = fit.pwm[3], sigma = fit.pwm[4], xi = fit.pwm[5])
-            degp2s <- c(degp2s, degp2.pwm)
+            dextgp.pwm <- dextgp(x = x, type = 4, prob = fit.pwm[1], kappa = fit.pwm[2], delta = fit.pwm[3], sigma = fit.pwm[4], xi = fit.pwm[5])
+            dextgps <- c(dextgps, dextgp.pwm)
             if (plots) {
-                qegp2.pwm <- qegp2(p = c(1:length(data))/(length(data) + 1), type = 4, prob = fit.pwm[1], kappa = fit.pwm[2], delta = fit.pwm[3],
+                qextgp.pwm <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 4, prob = fit.pwm[1], kappa = fit.pwm[2], delta = fit.pwm[3],
                   sigma = fit.pwm[4], xi = fit.pwm[5])
-                qegp2s <- c(qegp2s, qegp2.pwm)
-                if (CI) {
-                  q.pwm.boot <- mapply(FUN = qegp2, p = list(c(1:length(data))/(length(data) + 1)), type = list(4), prob = as.list(fit.pwm.boot$t[,
+                qextgps <- c(qextgps, qextgp.pwm)
+                if (confint) {
+                  q.pwm.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(4), prob = as.list(fit.pwm.boot$t[,
                     1]), kappa = as.list(fit.pwm.boot$t[, 2]), delta = as.list(fit.pwm.boot$t[, 3]), sigma = as.list(fit.pwm.boot$t[,
                     4]), xi = as.list(fit.pwm.boot$t[, 5]))
                   q.pwm.L <- apply(q.pwm.boot, 1, quantile, 0.025, na.rm = TRUE)
@@ -164,54 +171,54 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
 
     if (any(method == "mle")) {
         if (model == 1) {
-            fit.mle <- egp2.fit.ml(x = data, type = 1, kappa0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring, rounded = rounded)
-            if (CI) {
-                fit.mle.boot <- boot::boot(data = data, statistic = egp2.fit.ml.boot, R = R, type = 1, kappa0 = init[1], sigma0 = init[2],
+            fit.mle <- extgp.fit.ml(x = data, type = 1, kappa0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring, rounded = rounded)
+            if (confint) {
+                fit.mle.boot <- boot::boot(data = data, statistic = extgp.fit.ml.boot, R = R, type = 1, kappa0 = init[1], sigma0 = init[2],
                   xi0 = init[3], censoring = censoring, rounded = rounded, parallel = "multicore", ncpus = ncpus)
                 CI.mle.kappa <- boot::boot.ci(boot.out = fit.mle.boot, index = 1, type = "perc")$perc[4:5]
                 CI.mle.sigma <- boot::boot.ci(boot.out = fit.mle.boot, index = 2, type = "perc")$perc[4:5]
                 CI.mle.xi <- boot::boot.ci(boot.out = fit.mle.boot, index = 3, type = "perc")$perc[4:5]
                 CIs.mle <- cbind(CI.mle.kappa, CI.mle.sigma, CI.mle.xi)
             }
-            degp2.mle <- degp2(x = x, type = 1, kappa = fit.mle[1], sigma = fit.mle[2], xi = fit.mle[3])
-            degp2s <- c(degp2s, degp2.mle)
+            dextgp.mle <- dextgp(x = x, type = 1, kappa = fit.mle[1], sigma = fit.mle[2], xi = fit.mle[3])
+            dextgps <- c(dextgps, dextgp.mle)
             if (plots) {
-                qegp2.mle <- qegp2(p = c(1:length(data))/(length(data) + 1), type = 1, kappa = fit.mle[1], sigma = fit.mle[2], xi = fit.mle[3])
-                qegp2s <- c(qegp2s, qegp2.mle)
-                if (CI) {
-                  q.mle.boot <- mapply(FUN = qegp2, p = list(c(1:length(data))/(length(data) + 1)), type = list(1), kappa = as.list(fit.mle.boot$t[,
+                qextgp.mle <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 1, kappa = fit.mle[1], sigma = fit.mle[2], xi = fit.mle[3])
+                qextgps <- c(qextgps, qextgp.mle)
+                if (confint) {
+                  q.mle.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(1), kappa = as.list(fit.mle.boot$t[,
                     1]), sigma = as.list(fit.mle.boot$t[, 2]), xi = as.list(fit.mle.boot$t[, 3]))
                   q.mle.L <- apply(q.mle.boot, 1, quantile, 0.025, na.rm = TRUE)
                   q.mle.U <- apply(q.mle.boot, 1, quantile, 0.975, na.rm = TRUE)
                 }
             }
         } else if (model == 2) {
-            fit.mle <- egp2.fit.ml(x = data, type = 2, delta0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring, rounded = rounded)
-            if (CI) {
-                fit.mle.boot <- boot::boot(data = data, statistic = egp2.fit.ml.boot, R = R, type = 2, delta0 = init[1], sigma0 = init[2],
+            fit.mle <- extgp.fit.ml(x = data, type = 2, delta0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring, rounded = rounded)
+            if (confint) {
+                fit.mle.boot <- boot::boot(data = data, statistic = extgp.fit.ml.boot, R = R, type = 2, delta0 = init[1], sigma0 = init[2],
                   xi0 = init[3], censoring = censoring, rounded = rounded, parallel = "multicore", ncpus = ncpus)
                 CI.mle.delta <- boot::boot.ci(boot.out = fit.mle.boot, index = 1, type = "perc")$perc[4:5]
                 CI.mle.sigma <- boot::boot.ci(boot.out = fit.mle.boot, index = 2, type = "perc")$perc[4:5]
                 CI.mle.xi <- boot::boot.ci(boot.out = fit.mle.boot, index = 3, type = "perc")$perc[4:5]
                 CIs.mle <- cbind(CI.mle.delta, CI.mle.sigma, CI.mle.xi)
             }
-            degp2.mle <- degp2(x = x, type = 2, delta = fit.mle[1], sigma = fit.mle[2], xi = fit.mle[3])
-            degp2s <- c(degp2s, degp2.mle)
+            dextgp.mle <- dextgp(x = x, type = 2, delta = fit.mle[1], sigma = fit.mle[2], xi = fit.mle[3])
+            dextgps <- c(dextgps, dextgp.mle)
             if (plots) {
-                qegp2.mle <- qegp2(p = c(1:length(data))/(length(data) + 1), type = 2, delta = fit.mle[1], sigma = fit.mle[2], xi = fit.mle[3])
-                qegp2s <- c(qegp2s, qegp2.mle)
-                if (CI) {
-                  q.mle.boot <- mapply(FUN = qegp2, p = list(c(1:length(data))/(length(data) + 1)), type = list(2), delta = as.list(fit.mle.boot$t[,
+                qextgp.mle <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 2, delta = fit.mle[1], sigma = fit.mle[2], xi = fit.mle[3])
+                qextgps <- c(qextgps, qextgp.mle)
+                if (confint) {
+                  q.mle.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(2), delta = as.list(fit.mle.boot$t[,
                     1]), sigma = as.list(fit.mle.boot$t[, 2]), xi = as.list(fit.mle.boot$t[, 3]))
                   q.mle.L <- apply(q.mle.boot, 1, quantile, 0.025, na.rm = TRUE)
                   q.mle.U <- apply(q.mle.boot, 1, quantile, 0.975, na.rm = TRUE)
                 }
             }
         } else if (model == 3) {
-            fit.mle <- egp2.fit.ml(x = data, type = 3, kappa0 = init[1], delta0 = init[2], sigma0 = init[3], xi0 = init[4], censoring = censoring,
+            fit.mle <- extgp.fit.ml(x = data, type = 3, kappa0 = init[1], delta0 = init[2], sigma0 = init[3], xi0 = init[4], censoring = censoring,
                 rounded = rounded)
-            if (CI) {
-                fit.mle.boot <- boot::boot(data = data, statistic = egp2.fit.ml.boot, R = R, type = 3, kappa0 = init[1], delta0 = init[2],
+            if (confint) {
+                fit.mle.boot <- boot::boot(data = data, statistic = extgp.fit.ml.boot, R = R, type = 3, kappa0 = init[1], delta0 = init[2],
                   sigma0 = init[3], xi0 = init[4], censoring = censoring, rounded = rounded, parallel = "multicore", ncpus = ncpus)
                 CI.mle.kappa <- boot::boot.ci(boot.out = fit.mle.boot, index = 1, type = "perc")$perc[4:5]
                 CI.mle.delta <- boot::boot.ci(boot.out = fit.mle.boot, index = 2, type = "perc")$perc[4:5]
@@ -219,14 +226,14 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
                 CI.mle.xi <- boot::boot.ci(boot.out = fit.mle.boot, index = 4, type = "perc")$perc[4:5]
                 CIs.mle <- cbind(CI.mle.kappa, CI.mle.delta, CI.mle.sigma, CI.mle.xi)
             }
-            degp2.mle <- degp2(x = x, type = 3, kappa = fit.mle[1], delta = fit.mle[2], sigma = fit.mle[3], xi = fit.mle[4])
-            degp2s <- c(degp2s, degp2.mle)
+            dextgp.mle <- dextgp(x = x, type = 3, kappa = fit.mle[1], delta = fit.mle[2], sigma = fit.mle[3], xi = fit.mle[4])
+            dextgps <- c(dextgps, dextgp.mle)
             if (plots) {
-                qegp2.mle <- qegp2(p = c(1:length(data))/(length(data) + 1), type = 3, kappa = fit.mle[1], delta = fit.mle[2], sigma = fit.mle[3],
+                qextgp.mle <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 3, kappa = fit.mle[1], delta = fit.mle[2], sigma = fit.mle[3],
                   xi = fit.mle[4])
-                qegp2s <- c(qegp2s, qegp2.mle)
-                if (CI) {
-                  q.mle.boot <- mapply(FUN = qegp2, p = list(c(1:length(data))/(length(data) + 1)), type = list(3), kappa = as.list(fit.mle.boot$t[,
+                qextgps <- c(qextgps, qextgp.mle)
+                if (confint) {
+                  q.mle.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(3), kappa = as.list(fit.mle.boot$t[,
                     1]), delta = as.list(fit.mle.boot$t[, 2]), sigma = as.list(fit.mle.boot$t[, 3]), xi = as.list(fit.mle.boot$t[,
                     4]))
                   q.mle.L <- apply(q.mle.boot, 1, quantile, 0.025, na.rm = TRUE)
@@ -234,10 +241,10 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
                 }
             }
         } else if (model == 4) {
-            fit.mle <- egp2.fit.ml(x = data, type = 4, prob0 = init[1], kappa0 = init[2], delta0 = init[3], sigma0 = init[4], xi0 = init[5],
+            fit.mle <- extgp.fit.ml(x = data, type = 4, prob0 = init[1], kappa0 = init[2], delta0 = init[3], sigma0 = init[4], xi0 = init[5],
                 censoring = censoring, rounded = rounded)
-            if (CI) {
-                fit.mle.boot <- boot::boot(data = data, statistic = egp2.fit.ml.boot, R = R, type = 4, prob0 = init[1], kappa0 = init[2],
+            if (confint) {
+                fit.mle.boot <- boot::boot(data = data, statistic = extgp.fit.ml.boot, R = R, type = 4, prob0 = init[1], kappa0 = init[2],
                   delta0 = init[3], sigma0 = init[4], xi0 = init[5], censoring = censoring, rounded = rounded, parallel = "multicore",
                   ncpus = ncpus)
                 CI.mle.prob <- boot::boot.ci(boot.out = fit.mle.boot, index = 1, type = "perc")$perc[4:5]
@@ -247,14 +254,14 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
                 CI.mle.xi <- boot::boot.ci(boot.out = fit.mle.boot, index = 5, type = "perc")$perc[4:5]
                 CIs.mle <- cbind(CI.mle.prob, CI.mle.kappa, CI.mle.delta, CI.mle.sigma, CI.mle.xi)
             }
-            degp2.mle <- degp2(x = x, type = 4, prob = fit.mle[1], kappa = fit.mle[2], delta = fit.mle[3], sigma = fit.mle[4], xi = fit.mle[5])
-            degp2s <- c(degp2s, degp2.mle)
+            dextgp.mle <- dextgp(x = x, type = 4, prob = fit.mle[1], kappa = fit.mle[2], delta = fit.mle[3], sigma = fit.mle[4], xi = fit.mle[5])
+            dextgps <- c(dextgps, dextgp.mle)
             if (plots) {
-                qegp2.mle <- qegp2(p = c(1:length(data))/(length(data) + 1), type = 4, prob = fit.mle[1], kappa = fit.mle[2], delta = fit.mle[3],
+                qextgp.mle <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 4, prob = fit.mle[1], kappa = fit.mle[2], delta = fit.mle[3],
                   sigma = fit.mle[4], xi = fit.mle[5])
-                qegp2s <- c(qegp2s, qegp2.mle)
-                if (CI) {
-                  q.mle.boot <- mapply(FUN = qegp2, p = list(c(1:length(data))/(length(data) + 1)), type = list(4), prob = as.list(fit.mle.boot$t[,
+                qextgps <- c(qextgps, qextgp.mle)
+                if (confint) {
+                  q.mle.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(4), prob = as.list(fit.mle.boot$t[,
                     1]), kappa = as.list(fit.mle.boot$t[, 2]), delta = as.list(fit.mle.boot$t[, 3]), sigma = as.list(fit.mle.boot$t[,
                     4]), xi = as.list(fit.mle.boot$t[, 5]))
                   q.mle.L <- apply(q.mle.boot, 1, quantile, 0.025, na.rm = TRUE)
@@ -267,14 +274,14 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
     if (any(method == "pwm")) {
         if (any(method == "mle")) {
             fits <- list(pwm = fit.pwm, mle = fit.mle)
-            if (CI) {
+            if (confint) {
                 CIs <- list(pwm = CIs.pwm, mle = CIs.mle)
             } else {
                 CIs <- NULL
             }
         } else {
             fits <- list(pwm = fit.pwm)
-            if (CI & plots) {
+            if (confint & plots) {
                 CIs <- list(pwm = CIs.pwm)
             } else {
                 CIs <- NULL
@@ -283,7 +290,7 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
     } else {
         if (any(method == "mle")) {
             fits <- list(mle = fit.mle)
-            if (CI) {
+            if (confint) {
                 CIs <- list(mle = CIs.mle)
             } else {
                 CIs <- NULL
@@ -298,29 +305,30 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
         mat <- matrix(c(1:(1 + plots)), nrow = 1, ncol = 1 + plots, byrow = TRUE)
         layout(mat)
         par(mar = c(4, 4, 1, 1))
-        hist(data, breaks = c(0:30) * max(data + 10^-1)/30, freq = FALSE, xlim = range(x), xlab = "Rainfall amounts [mm]", ylab = "Density",
+        hist(data, breaks = c(0:30) * max(data + 10^-1)/30, freq = FALSE, xlim = range(x),
+             xlab = "Rainfall amounts [mm]", ylab = "Density",
             main = "", col = "lightgrey")
         dens <- density(data, from = 0)
         lines(dens$x, dens$y, col = "black")
         abline(v = censoring, col = "lightgrey")
 
         if (any(method == "pwm")) {
-            lines(x, degp2.pwm, col = "red", lty = 2)
+            lines(x, dextgp.pwm, col = "red", lty = 2)
         }
         if (any(method == "mle")) {
-            lines(x, degp2.mle, col = "blue")
+            lines(x, dextgp.mle, col = "blue")
         }
 
         if (any(method == "pwm")) {
-            plot(data, qegp2.pwm, asp = 1, xlab = "Empirical quantiles", ylab = "Fitted quantiles", ylim = range(qegp2s, na.rm = TRUE),
+            plot(data, qextgp.pwm, asp = 1, xlab = "Empirical quantiles", ylab = "Fitted quantiles", ylim = range(qextgps, na.rm = TRUE),
                 type = "n")
         } else {
             if (any(method == "mle")) {
-                plot(data, qegp2.mle, asp = 1, xlab = "Empirical quantiles", ylab = "Fitted quantiles", ylim = range(qegp2s, na.rm = TRUE),
+                plot(data, qextgp.mle, asp = 1, xlab = "Empirical quantiles", ylab = "Fitted quantiles", ylim = range(qextgps, na.rm = TRUE),
                   type = "n")
             }
         }
-        if (CI) {
+        if (confint) {
             if (any(method == "pwm")) {
                 polygon(x = c(sort(data), sort(data, decreasing = TRUE)), y = c(q.pwm.L, q.pwm.U[length(q.pwm.U):1]), col = rgb(1,
                   0, 0, alpha = 0.1), lty = 2, border = rgb(1, 0, 0, alpha = 0.5))
@@ -331,18 +339,29 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
             }
         }
         if (any(method == "pwm")) {
-            lines(sort(data), qegp2.pwm, lty = 2, type = "b", pch = 20, col = "red")
+            lines(sort(data), qextgp.pwm, lty = 2, type = "b", pch = 20, col = "red")
         }
         if (any(method == "mle")) {
-            lines(sort(data), qegp2.mle, lty = 1, type = "b", pch = 20, col = "blue")
+            lines(sort(data), qextgp.mle, lty = 1, type = "b", pch = 20, col = "blue")
         }
         abline(0, 1, col = "lightgrey")
     }
 
-    return(list(fit = fits, CI = CIs))
+    return(list(fit = fits, confint = CIs))
 }
 
-
+#' Fit an extended generalized Pareto distribution of Naveau et al.
+#'
+#' Deprecated function name to fit an extended generalized Pareto family. The user should call \code{\link[mev]{fit.extgp}} instead.
+#'
+#' @seealso \code{\link[mev]{fit.extgp}}
+#' @export
+#' @keywords internal
+#' @inheritParams fit.extgp
+egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring = c(0, Inf), rounded = 0, CI = FALSE, R = 1000, ncpus = 1, plots = TRUE) {
+  fit.extgp(data = data, model = model, method = method, init = init, censoring = censoring, rounded = rounded,
+            confint = CI, R = R, ncpus = ncpus, plots = plots)
+}
 ################################################################ ### Distribution/Density/Quantile/Random generator functions ### ###
 ### different types of distribution G(u):
 ### type=0: G(u)=u type=1: G(u)=u^kappa
@@ -355,9 +374,9 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
 #' @title Carrier distribution for the extended GP distributions of Naveau et al.
 #' @description Density, distribution function, quantile function and random number
 #' generation for the carrier distributions of the extended Generalized Pareto distributions.
-#' @name egp2.G
-#' @seealso \code{\link{egp2}}
-#' @param u vector of observations (\code{degp2.G}), probabilities (\code{qegp2.G}) or quantiles (\code{pegp2.G}), in \eqn{[0,1]}
+#' @name extgp.G
+#' @seealso \code{\link{extgp}}
+#' @param u vector of observations (\code{dextgp.G}), probabilities (\code{qextgp.G}) or quantiles (\code{pextgp.G}), in \eqn{[0,1]}
 #' @param prob mixture probability for model \code{type} \code{4}
 #' @param kappa shape parameter for \code{type} \code{1}, \code{3} and \code{4}
 #' @param delta additional parameter for \code{type} \code{2}, \code{3} and \code{4}
@@ -369,16 +388,16 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
 #' @param direct logical; which method to use for sampling in model of \code{type} \code{4}?
 #' @author  Raphael Huser and Philippe Naveau
 #'
-#' @section Usage: \code{pegp2.G(u, type=1,prob, kappa, delta)}
-#' @section Usage: \code{degp2.G(u,type=1, prob=NA, kappa=NA, delta=NA, log=FALSE)}
-#' @section Usage: \code{qegp2.G(u,type=1, prob=NA,kappa=NA,delta=NA)}
-#' @section Usage: \code{regp2.G(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALSE,censoring=c(0,1))}
+#' @section Usage: \code{pextgp.G(u, type=1,prob, kappa, delta)}
+#' @section Usage: \code{dextgp.G(u,type=1, prob=NA, kappa=NA, delta=NA, log=FALSE)}
+#' @section Usage: \code{qextgp.G(u,type=1, prob=NA,kappa=NA,delta=NA)}
+#' @section Usage: \code{rextgp.G(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALSE,censoring=c(0,1))}
 NULL
 
-#' @rdname egp2-functions
+#' @rdname extgp-functions
 #' @export
 #' @keywords internal
-pegp2.G <- function(u, type = 1, prob, kappa, delta) {
+pextgp.G <- function(u, type = 1, prob, kappa, delta) {
     if (!type %in% 1:5) {
         stop("Invalid `type' argument")
     }
@@ -405,10 +424,10 @@ pegp2.G <- function(u, type = 1, prob, kappa, delta) {
     }
 }
 
-#' @rdname egp2-functions
+#' @rdname extgp-functions
 #' @export
 #' @keywords internal
-degp2.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE) {
+dextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE) {
     if (!type %in% 1:5) {
         stop("Invalid `type' argument")
     }
@@ -451,10 +470,10 @@ degp2.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE)
     }
 }
 
-#' @rdname egp2-functions
+#' @rdname extgp-functions
 #' @export
 #' @keywords internal
-qegp2.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA) {
+qextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA) {
     if (!type %in% 1:5) {
         stop("Invalid `type' argument")
     }
@@ -478,7 +497,7 @@ qegp2.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA) {
         return(1 - qbeta(1 - u^(2/kappa), 1/delta, 2)^(1/delta))
     } else if (type == 4) {
         dummy.func <- function(u, p, prob = NA, kappa = NA, delta = NA) {
-            return(pegp2.G(u = u, prob = prob, kappa = kappa, delta = delta, type = 4) - p)
+            return(pextgp.G(u = u, prob = prob, kappa = kappa, delta = delta, type = 4) - p)
         }
         find.root <- function(u, prob = NA, kappa = NA, delta = NA) {
             return(uniroot(dummy.func, interval = c(0, 1), p = u, prob = prob, kappa = kappa, delta = delta)$root)
@@ -487,10 +506,10 @@ qegp2.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA) {
     }
 }
 
-#' @rdname egp2-functions
+#' @rdname extgp-functions
 #' @export
 #' @keywords internal
-regp2.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = NULL, direct = FALSE, censoring = c(0, 1)) {
+rextgp.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = NULL, direct = FALSE, censoring = c(0, 1)) {
     if (!type %in% 1:5) {
         stop("Invalid `type' argument")
     }
@@ -509,31 +528,31 @@ regp2.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = N
     }
     if (type != 4 | (type == 4 & direct)) {
         if (censoring[1] == 0 & censoring[2] == 1) {
-            return(qegp2.G(unifsamp, prob = prob, kappa = kappa, delta = delta, type = type))
+            return(qextgp.G(unifsamp, prob = prob, kappa = kappa, delta = delta, type = type))
         } else {
-            x.L <- pegp2.G(censoring[1], prob = prob, kappa = kappa, delta = delta, type = type)
-            x.U <- pegp2.G(censoring[2], prob = prob, kappa = kappa, delta = delta, type = type)
-            return(qegp2.G(x.L + (x.U - x.L) * unifsamp, prob = prob, kappa = kappa, delta = delta, type = type))
+            x.L <- pextgp.G(censoring[1], prob = prob, kappa = kappa, delta = delta, type = type)
+            x.U <- pextgp.G(censoring[2], prob = prob, kappa = kappa, delta = delta, type = type)
+            return(qextgp.G(x.L + (x.U - x.L) * unifsamp, prob = prob, kappa = kappa, delta = delta, type = type))
         }
     } else if (type == 4 & !direct) {
         if (censoring[1] == 0 & censoring[2] == 1) {
             components <- sample(x = c(1, 2), size = n, replace = TRUE, prob = c(prob, 1 - prob))
             res <- c()
-            res[components == 1] <- qegp2.G(unifsamp[components == 1], prob = NA, kappa = kappa, delta = NA, type = 1)
-            res[components == 2] <- qegp2.G(unifsamp[components == 2], prob = NA, kappa = delta, delta = NA, type = 1)
+            res[components == 1] <- qextgp.G(unifsamp[components == 1], prob = NA, kappa = kappa, delta = NA, type = 1)
+            res[components == 2] <- qextgp.G(unifsamp[components == 2], prob = NA, kappa = delta, delta = NA, type = 1)
             return(res)
         } else {
-            x.L <- pegp2.G(censoring[1], prob = prob, kappa = kappa, delta = delta, type = type)
-            x.U <- pegp2.G(censoring[2], prob = prob, kappa = kappa, delta = delta, type = type)
-            prop1 <- prob * (pegp2.G(censoring[2], prob = NA, kappa = kappa, delta = NA, type = 1) - pegp2.G(censoring[1], prob = NA,
+            x.L <- pextgp.G(censoring[1], prob = prob, kappa = kappa, delta = delta, type = type)
+            x.U <- pextgp.G(censoring[2], prob = prob, kappa = kappa, delta = delta, type = type)
+            prop1 <- prob * (pextgp.G(censoring[2], prob = NA, kappa = kappa, delta = NA, type = 1) - pextgp.G(censoring[1], prob = NA,
                 kappa = kappa, delta = NA, type = 1))
-            prop2 <- (1 - prob) * (pegp2.G(censoring[2], prob = NA, kappa = delta, delta = NA, type = 1) - pegp2.G(censoring[1], prob = NA,
+            prop2 <- (1 - prob) * (pextgp.G(censoring[2], prob = NA, kappa = delta, delta = NA, type = 1) - pextgp.G(censoring[1], prob = NA,
                 kappa = delta, delta = NA, type = 1))
             new.prob <- prop1/(prop1 + prop2)
             components <- sample(x = c(1, 2), size = n, replace = TRUE, prob = c(new.prob, 1 - new.prob))
             res <- c()
-            res[components == 1] <- qegp2.G(x.L + (x.U - x.L) * unifsamp[components == 1], prob = NA, kappa = kappa, delta = NA, type = 1)
-            res[components == 2] <- qegp2.G(x.L + (x.U - x.L) * unifsamp[components == 2], prob = NA, kappa = delta, delta = NA, type = 1)
+            res[components == 1] <- qextgp.G(x.L + (x.U - x.L) * unifsamp[components == 1], prob = NA, kappa = kappa, delta = NA, type = 1)
+            res[components == 2] <- qextgp.G(x.L + (x.U - x.L) * unifsamp[components == 2], prob = NA, kappa = delta, delta = NA, type = 1)
             return(res)
         }
     }
@@ -542,10 +561,10 @@ regp2.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = N
 
 ### different types of extended GP type=0:
 ### exact GP ---> 2 parameters (sigma,xi)
-### type=1: egp2 with G(u)=u^kappa ---> 3 parameters(kappa,sigma,xi)
-### type=2: egp2 with G(u)=1-V_delta((1-u)^delta) ---> 3 parameters (delta,sigma,xi)
-### type=3: egp2 with G(u)=(1-V_delta((1-u)^delta))^(kappa/2) ---> 4 parameters (kappa,delta,sigma,xi)
-### type=4: egp2 with mixture G(u)=p*u^kappa + (1-p)*u^delta ---> 5 parameters (p,kappa,delta,sigma,xi)
+### type=1: extgp with G(u)=u^kappa ---> 3 parameters(kappa,sigma,xi)
+### type=2: extgp with G(u)=1-V_delta((1-u)^delta) ---> 3 parameters (delta,sigma,xi)
+### type=3: extgp with G(u)=(1-V_delta((1-u)^delta))^(kappa/2) ---> 4 parameters (kappa,delta,sigma,xi)
+### type=4: extgp with mixture G(u)=p*u^kappa + (1-p)*u^delta ---> 5 parameters (p,kappa,delta,sigma,xi)
 
 #' @title Extended generalised Pareto families of Naveau et al. (2016)
 #'
@@ -561,7 +580,7 @@ regp2.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = N
 #' \item \code{type} 3 corresponds to a four parameters family, with carrier \deqn{G(u)=1-V_\delta((1-u)^\delta))^{\kappa/2}}.
 #' \item \code{type} 4 corresponds to a five parameter model (a mixture of \code{type} 2, with \eqn{G(u)=pu^\kappa + (1-p)*u^\delta}
 #' }
-#' @name egp2
+#' @name extgp
 #' @param q vector of quantiles
 #' @param x vector of observations
 #' @param p vector of probabilities
@@ -576,57 +595,57 @@ regp2.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = N
 #' @param unifsamp sample of uniform; if provided, the data will be used in place of new uniform random variates
 #' @param censoring numeric vector of length 2 containing the lower and upper bound for censoring
 #'
-#' @section Usage: \code{pegp2(q, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1)}
-#' @section Usage: \code{degp2(x, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1, log=FALSE)}
-#' @section Usage: \code{qegp2(p, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1)}
-#' @section Usage: \code{regp2(n, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1, unifsamp=NULL, censoring=c(0,Inf))}
+#' @section Usage: \code{pextgp(q, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1)}
+#' @section Usage: \code{dextgp(x, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1, log=FALSE)}
+#' @section Usage: \code{qextgp(p, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1)}
+#' @section Usage: \code{rextgp(n, prob=NA, kappa=NA, delta=NA, sigma=NA, xi=NA, type=1, unifsamp=NULL, censoring=c(0,Inf))}
 #' @author  Raphael Huser and Philippe Naveau
 #' @references Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.
 NULL
 
 
-#' EGP functions
+#' Extended GP functions
 #'
-#' These functions are documented in \code{\link{egp2}} and in \code{\link{egp2.G}} for the carrier distributions supported in the unit interval.
-#' @name egp2-functions
+#' These functions are documented in \code{\link{extgp}} and in \code{\link{extgp.G}} for the carrier distributions supported in the unit interval.
+#' @name extgp-functions
 #' @export
-#' @seealso \code{\link{egp2}}, \code{\link{egp2.G}}
+#' @seealso \code{\link{extgp}}, \code{\link{extgp.G}}
 #' @keywords internal
-pegp2 <- function(q, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1) {
-    return(pegp2.G(pgpd(q, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type))
+pextgp <- function(q, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1) {
+    return(pextgp.G(pgpd(q, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type))
 }
 
-#' @rdname egp2-functions
+#' @rdname extgp-functions
 #' @export
 #' @keywords internal
-degp2 <- function(x, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, log = FALSE) {
+dextgp <- function(x, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, log = FALSE) {
     if (log == FALSE) {
-        return(degp2.G(pgpd(x, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type) * dgpd(x, scale = sigma,
+        return(dextgp.G(pgpd(x, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type) * dgpd(x, scale = sigma,
             shape = xi))
     } else {
-        return(degp2.G(pgpd(x, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type, log = TRUE) + dgpd(x,
+        return(dextgp.G(pgpd(x, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type, log = TRUE) + dgpd(x,
             scale = sigma, shape = xi, log = TRUE))
     }
 }
 
-#' @rdname egp2-functions
+#' @rdname extgp-functions
 #' @export
 #' @keywords internal
-qegp2 <- function(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1) {
-    return(qgpd(qegp2.G(p, prob = prob, kappa = kappa, delta = delta, type = type), scale = sigma, shape = xi))
+qextgp <- function(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1) {
+    return(qgpd(qextgp.G(p, prob = prob, kappa = kappa, delta = delta, type = type), scale = sigma, shape = xi))
 }
 
-#' @rdname egp2-functions
+#' @rdname extgp-functions
 #' @export
 #' @keywords internal
-regp2 <- function(n, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, unifsamp = NULL, censoring = c(0, Inf)) {
+rextgp <- function(n, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, unifsamp = NULL, censoring = c(0, Inf)) {
     if (censoring[1] == 0 & censoring[2] == Inf) {
-        return(qgpd(regp2.G(n, prob = prob, kappa = kappa, delta = delta, type = type, unifsamp, censoring = c(0, 1)), scale = sigma,
+        return(qgpd(rextgp.G(n, prob = prob, kappa = kappa, delta = delta, type = type, unifsamp, censoring = c(0, 1)), scale = sigma,
             shape = xi))
     } else {
         H.L <- pgpd(censoring[1], loc = 0, scale = sigma, shape = xi)
         H.U <- pgpd(censoring[2], loc = 0, scale = sigma, shape = xi)
-        return(qgpd(regp2.G(n, prob = prob, kappa = kappa, delta = delta, type = type, unifsamp, censoring = c(H.L, H.U)), scale = sigma,
+        return(qgpd(rextgp.G(n, prob = prob, kappa = kappa, delta = delta, type = type, unifsamp, censoring = c(H.L, H.U)), scale = sigma,
             shape = xi))
     }
 }
@@ -634,14 +653,14 @@ regp2 <- function(n, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, typ
 
 ######################### ### Inference via PWM ### ###
 
-egp2.pwm <- function(orders, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, censoring = c(0, Inf), empiric = FALSE,
+extgp.pwm <- function(orders, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, censoring = c(0, Inf), empiric = FALSE,
     unifsamp = NULL, NbSamples = 10^4, N = 200) {
     H.L <- ifelse(censoring[1] > 0, pgpd(censoring[1], loc = 0, scale = sigma, shape = xi), 0)
     H.U <- ifelse(censoring[2] < Inf, pgpd(censoring[2], loc = 0, scale = sigma, shape = xi), 1)
 
-    F.L <- ifelse(censoring[1] > 0, pegp2(censoring[1], prob = prob, kappa = kappa, delta = delta, sigma = sigma, xi = xi, type = type),
+    F.L <- ifelse(censoring[1] > 0, pextgp(censoring[1], prob = prob, kappa = kappa, delta = delta, sigma = sigma, xi = xi, type = type),
         0)
-    F.U <- ifelse(censoring[2] < Inf, pegp2(censoring[2], prob = prob, kappa = kappa, delta = delta, sigma = sigma, xi = xi, type = type),
+    F.U <- ifelse(censoring[2] < Inf, pextgp(censoring[2], prob = prob, kappa = kappa, delta = delta, sigma = sigma, xi = xi, type = type),
         1)
     prob.LU <- F.U - F.L
 
@@ -701,9 +720,9 @@ egp2.pwm <- function(orders, prob = NA, kappa = NA, delta = NA, sigma = NA, xi =
             unifsamp <- runif(NbSamples)
         }
         if (censoring[1] == 0 & censoring[2] == Inf) {
-            V <- regp2.G(length(unifsamp), prob, kappa, delta, type, unifsamp, direct = TRUE, censoring = c(0, 1))
+            V <- rextgp.G(length(unifsamp), prob, kappa, delta, type, unifsamp, direct = TRUE, censoring = c(0, 1))
         } else {
-            V <- regp2.G(length(unifsamp), prob, kappa, delta, type, unifsamp, direct = TRUE, censoring = c(H.L, H.U))
+            V <- rextgp.G(length(unifsamp), prob, kappa, delta, type, unifsamp, direct = TRUE, censoring = c(H.L, H.U))
         }
         X <- qgpd(V, scale = sigma, shape = xi)
         res <- c()
@@ -714,7 +733,7 @@ egp2.pwm <- function(orders, prob = NA, kappa = NA, delta = NA, sigma = NA, xi =
     }
 }
 
-egp2.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf), empiric = FALSE,
+extgp.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf), empiric = FALSE,
     unifsamp = NULL, NbSamples = 10^4) {
     Fn = ecdf(x)
     inds <- x > censoring[1] & x < censoring[2]
@@ -731,7 +750,7 @@ egp2.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigm
             thetahat <- c(sigmahat, xihat)
         } else {
             fct <- function(theta, x) {
-                pwm.theor <- egp2.pwm(orders = c(0:1), sigma = theta[1], xi = theta[2], type = 0, censoring = censoring, empiric = empiric,
+                pwm.theor <- extgp.pwm(orders = c(0:1), sigma = theta[1], xi = theta[2], type = 0, censoring = censoring, empiric = empiric,
                   unifsamp = unifsamp, NbSamples = NbSamples)
                 pwm.empir <- c(mu0hat, mu1hat)
                 return(matrix(pwm.theor - pwm.empir, ncol = 2))
@@ -744,7 +763,7 @@ egp2.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigm
         return(thetahat)
     } else if (type == 1) {
         fct <- function(theta, x) {
-            pwm.theor <- egp2.pwm(orders = c(0:2), kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1, censoring = censoring,
+            pwm.theor <- extgp.pwm(orders = c(0:2), kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1, censoring = censoring,
                 empiric = empiric, unifsamp = unifsamp, NbSamples = NbSamples)
             pwm.empir <- c(mu0hat, mu1hat, mu2hat)
             return(matrix(pwm.theor - pwm.empir, ncol = 3))
@@ -756,7 +775,7 @@ egp2.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigm
         return(thetahat)
     } else if (type == 2) {
         fct <- function(theta, x) {
-            pwm.theor <- egp2.pwm(orders = c(0:2), delta = theta[1], sigma = theta[2], xi = theta[3], type = 2, censoring = censoring,
+            pwm.theor <- extgp.pwm(orders = c(0:2), delta = theta[1], sigma = theta[2], xi = theta[3], type = 2, censoring = censoring,
                 empiric = empiric, unifsamp = unifsamp, NbSamples = NbSamples)
             pwm.empir <- c(mu0hat, mu1hat, mu2hat)
             return(matrix(pwm.theor - pwm.empir, ncol = 3))
@@ -768,7 +787,7 @@ egp2.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigm
         return(thetahat)
     } else if (type == 3) {
         fct <- function(theta, x) {
-            pwm.theor <- egp2.pwm(orders = c(0:3), kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4], type = 3,
+            pwm.theor <- extgp.pwm(orders = c(0:3), kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4], type = 3,
                 censoring = censoring, empiric = empiric, unifsamp = unifsamp, NbSamples = NbSamples)
             pwm.empir <- c(mu0hat, mu1hat, mu2hat, mu3hat)
             return(matrix(pwm.theor - pwm.empir, ncol = 4))
@@ -781,12 +800,12 @@ egp2.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigm
         return(thetahat)
     } else if (type == 4) {
         fct <- function(theta, x) {
-            pwm.theor <- egp2.pwm(orders = c(0:4), prob = theta[1], kappa = theta[2], delta = theta[2] + theta[3], sigma = theta[4],
+            pwm.theor <- extgp.pwm(orders = c(0:4), prob = theta[1], kappa = theta[2], delta = theta[2] + theta[3], sigma = theta[4],
                 xi = theta[5], type = 4, censoring = censoring, empiric = empiric, unifsamp = unifsamp, NbSamples = NbSamples)
             pwm.empir <- c(mu0hat, mu1hat, mu2hat, mu3hat, mu4hat)
             return(matrix(pwm.theor - pwm.empir, ncol = 5))
         }
-        res0 <- egp2.fit.pwm(x[x > quantile(x, 0.9)] - quantile(x, 0.9), type = 0)
+        res0 <- extgp.fit.pwm(x[x > quantile(x, 0.9)] - quantile(x, 0.9), type = 0)
         if (is.na(prob0)) {
             prob0 <- 0.5
         }
@@ -816,16 +835,16 @@ egp2.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigm
 }
 
 
-egp2.fit.pwm.boot <- function(data, i, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf),
+extgp.fit.pwm.boot <- function(data, i, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf),
     empiric = FALSE, unifsamp = NULL, NbSamples = 10^4) {
-    return(egp2.fit.pwm(data[i], type = type, prob0 = prob0, kappa0 = kappa0, delta0 = delta0, sigma0 = sigma0, xi0 = xi0, censoring = censoring,
+    return(extgp.fit.pwm(data[i], type = type, prob0 = prob0, kappa0 = kappa0, delta0 = delta0, sigma0 = sigma0, xi0 = xi0, censoring = censoring,
         empiric = empiric, unifsamp = unifsamp, NbSamples = NbSamples))
 }
 
 
 ######################## ### Inference via ML ### ###
 
-egp2.nll <- function(theta, x, censoring, rounded, type) {
+extgp.nll <- function(theta, x, censoring, rounded, type) {
     x.cens1 <- x[x < censoring[1]]
     x.cens2 <- x[x > censoring[2]]
     x.not.cens <- x[x >= censoring[1] & x <= censoring[2]]
@@ -833,12 +852,12 @@ egp2.nll <- function(theta, x, censoring, rounded, type) {
         if (theta[1] <= 0 | theta[2] <= 10^(-6) | theta[2] > 0.99) {
             return(Inf)
         } else {
-            censor1 <- ifelse(censoring[1] > 0, pegp2(censoring[1], sigma = theta[1], xi = theta[2], type = 0), 0)
-            censor2 <- ifelse(censoring[2] < Inf, pegp2(censoring[2], sigma = theta[1], xi = theta[2], type = 0), 1)
+            censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], sigma = theta[1], xi = theta[2], type = 0), 0)
+            censor2 <- ifelse(censoring[2] < Inf, pextgp(censoring[2], sigma = theta[1], xi = theta[2], type = 0), 1)
             contrib.cens1 <- ifelse(length(x.cens1) > 0, length(x.cens1) * log(censor1), 0)
             contrib.cens2 <- ifelse(length(x.cens2) > 0, length(x.cens2) * log(1 - censor2), 0)
-            contrib.not.cens <- ifelse(rounded == 0, sum(degp2(x.not.cens, sigma = theta[1], xi = theta[2], type = 0, log = TRUE),
-                na.rm = TRUE), sum(log(pegp2(x.not.cens + rounded, sigma = theta[1], xi = theta[2], type = 0) - pegp2(x.not.cens,
+            contrib.not.cens <- ifelse(rounded == 0, sum(dextgp(x.not.cens, sigma = theta[1], xi = theta[2], type = 0, log = TRUE),
+                na.rm = TRUE), sum(log(pextgp(x.not.cens + rounded, sigma = theta[1], xi = theta[2], type = 0) - pextgp(x.not.cens,
                 sigma = theta[1], xi = theta[2], type = 0))))
 
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
@@ -847,15 +866,15 @@ egp2.nll <- function(theta, x, censoring, rounded, type) {
         if (theta[1] <= 0 | theta[2] <= 0 | theta[3] <= 10^(-6) | theta[3] > 0.99) {
             return(Inf)
         } else {
-            censor1 <- ifelse(censoring[1] > 0, pegp2(censoring[1], kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1),
+            censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1),
                 0)
-            censor2 <- ifelse(censoring[2] < Inf, pegp2(censoring[2], kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1),
+            censor2 <- ifelse(censoring[2] < Inf, pextgp(censoring[2], kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1),
                 1)
             contrib.cens1 <- ifelse(length(x.cens1) > 0, length(x.cens1) * log(censor1), 0)
             contrib.cens2 <- ifelse(length(x.cens2) > 0, length(x.cens2) * log(1 - censor2), 0)
-            contrib.not.cens <- ifelse(rounded == 0, sum(degp2(x.not.cens, kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1,
-                log = TRUE), na.rm = TRUE), sum(log(pegp2(x.not.cens + rounded, kappa = theta[1], sigma = theta[2], xi = theta[3],
-                type = 1) - pegp2(x.not.cens, kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1))))
+            contrib.not.cens <- ifelse(rounded == 0, sum(dextgp(x.not.cens, kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1,
+                log = TRUE), na.rm = TRUE), sum(log(pextgp(x.not.cens + rounded, kappa = theta[1], sigma = theta[2], xi = theta[3],
+                type = 1) - pextgp(x.not.cens, kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1))))
 
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
         }
@@ -863,15 +882,15 @@ egp2.nll <- function(theta, x, censoring, rounded, type) {
         if (theta[1] <= 0 | theta[1] > 100 | theta[2] <= 0 | theta[3] <= 10^(-6) | theta[3] > 0.99) {
             return(Inf)
         } else {
-            censor1 <- ifelse(censoring[1] > 0, pegp2(censoring[1], delta = theta[1], sigma = theta[2], xi = theta[3], type = 2),
+            censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], delta = theta[1], sigma = theta[2], xi = theta[3], type = 2),
                 0)
-            censor2 <- ifelse(censoring[2] < Inf, pegp2(censoring[2], delta = theta[1], sigma = theta[2], xi = theta[3], type = 2),
+            censor2 <- ifelse(censoring[2] < Inf, pextgp(censoring[2], delta = theta[1], sigma = theta[2], xi = theta[3], type = 2),
                 1)
             contrib.cens1 <- ifelse(length(x.cens1) > 0, length(x.cens1) * log(censor1), 0)
             contrib.cens2 <- ifelse(length(x.cens2) > 0, length(x.cens2) * log(1 - censor2), 0)
-            contrib.not.cens <- ifelse(rounded == 0, sum(degp2(x.not.cens, delta = theta[1], sigma = theta[2], xi = theta[3], type = 2,
-                log = TRUE), na.rm = TRUE), sum(log(pegp2(x.not.cens + rounded, delta = theta[1], sigma = theta[2], xi = theta[3],
-                type = 2) - pegp2(x.not.cens, delta = theta[1], sigma = theta[2], xi = theta[3], type = 2))))
+            contrib.not.cens <- ifelse(rounded == 0, sum(dextgp(x.not.cens, delta = theta[1], sigma = theta[2], xi = theta[3], type = 2,
+                log = TRUE), na.rm = TRUE), sum(log(pextgp(x.not.cens + rounded, delta = theta[1], sigma = theta[2], xi = theta[3],
+                type = 2) - pextgp(x.not.cens, delta = theta[1], sigma = theta[2], xi = theta[3], type = 2))))
 
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
         }
@@ -879,15 +898,15 @@ egp2.nll <- function(theta, x, censoring, rounded, type) {
         if (theta[1] <= 0 | theta[2] <= 0 | theta[2] > 100 | theta[3] <= 0 | theta[4] <= 10^(-6) | theta[4] > 0.99) {
             return(Inf)
         } else {
-            censor1 <- ifelse(censoring[1] > 0, pegp2(censoring[1], kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
+            censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
                 type = 3), 0)
-            censor2 <- ifelse(censoring[2] < Inf, pegp2(censoring[2], kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
+            censor2 <- ifelse(censoring[2] < Inf, pextgp(censoring[2], kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
                 type = 3), 1)
             contrib.cens1 <- ifelse(length(x.cens1) > 0, length(x.cens1) * log(censor1), 0)
             contrib.cens2 <- ifelse(length(x.cens2) > 0, length(x.cens2) * log(1 - censor2), 0)
-            contrib.not.cens <- ifelse(rounded == 0, sum(degp2(x.not.cens, kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
-                type = 3, log = TRUE), na.rm = TRUE), sum(log(pegp2(x.not.cens + rounded, kappa = theta[1], delta = theta[2], sigma = theta[3],
-                xi = theta[4], type = 3) - pegp2(x.not.cens, kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
+            contrib.not.cens <- ifelse(rounded == 0, sum(dextgp(x.not.cens, kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
+                type = 3, log = TRUE), na.rm = TRUE), sum(log(pextgp(x.not.cens + rounded, kappa = theta[1], delta = theta[2], sigma = theta[3],
+                xi = theta[4], type = 3) - pextgp(x.not.cens, kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
                 type = 3))))
 
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
@@ -897,15 +916,15 @@ egp2.nll <- function(theta, x, censoring, rounded, type) {
             theta[3] < theta[2]) {
             return(Inf)
         } else {
-            censor1 <- ifelse(censoring[1] > 0, pegp2(censoring[1], prob = theta[1], kappa = theta[2], delta = theta[3], sigma = theta[4],
+            censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], prob = theta[1], kappa = theta[2], delta = theta[3], sigma = theta[4],
                 xi = theta[5], type = 4), 0)
-            censor2 <- ifelse(censoring[2] < Inf, pegp2(censoring[2], prob = theta[1], kappa = theta[2], delta = theta[3], sigma = theta[4],
+            censor2 <- ifelse(censoring[2] < Inf, pextgp(censoring[2], prob = theta[1], kappa = theta[2], delta = theta[3], sigma = theta[4],
                 xi = theta[5], type = 4), 1)
             contrib.cens1 <- ifelse(length(x.cens1) > 0, length(x.cens1) * log(censor1), 0)
             contrib.cens2 <- ifelse(length(x.cens2) > 0, length(x.cens2) * log(1 - censor2), 0)
-            contrib.not.cens <- ifelse(rounded == 0, sum(degp2(x.not.cens, prob = theta[1], kappa = theta[2], delta = theta[3], sigma = theta[4],
-                xi = theta[5], type = 4, log = TRUE), na.rm = TRUE), sum(log(pegp2(x.not.cens + rounded, prob = theta[1], kappa = theta[2],
-                delta = theta[3], sigma = theta[4], xi = theta[5], type = 4) - pegp2(x.not.cens, prob = theta[1], kappa = theta[2],
+            contrib.not.cens <- ifelse(rounded == 0, sum(dextgp(x.not.cens, prob = theta[1], kappa = theta[2], delta = theta[3], sigma = theta[4],
+                xi = theta[5], type = 4, log = TRUE), na.rm = TRUE), sum(log(pextgp(x.not.cens + rounded, prob = theta[1], kappa = theta[2],
+                delta = theta[3], sigma = theta[4], xi = theta[5], type = 4) - pextgp(x.not.cens, prob = theta[1], kappa = theta[2],
                 delta = theta[3], sigma = theta[4], xi = theta[5], type = 4))))
 
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
@@ -913,11 +932,11 @@ egp2.nll <- function(theta, x, censoring, rounded, type) {
     }
 }
 
-egp2.fit.ml <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf), rounded = 0.1,
+extgp.fit.ml <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf), rounded = 0.1,
     print = FALSE) {
     if (type == 0) {
         theta0 <- c(sigma0, xi0)
-        opt <- optim(par = theta0, fn = egp2.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
+        opt <- optim(par = theta0, fn = extgp.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
             control = list(maxit = 1000), hessian = FALSE)
         if (print) {
             print(opt)
@@ -927,7 +946,7 @@ egp2.fit.ml <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma
         return(thetahat)
     } else if (type == 1) {
         theta0 <- c(kappa0, sigma0, xi0)
-        opt <- optim(par = theta0, fn = egp2.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
+        opt <- optim(par = theta0, fn = extgp.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
             control = list(maxit = 1000), hessian = FALSE)
         if (print) {
             print(opt)
@@ -937,7 +956,7 @@ egp2.fit.ml <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma
         return(thetahat)
     } else if (type == 2) {
         theta0 <- c(delta0, sigma0, xi0)
-        opt <- optim(par = theta0, fn = egp2.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
+        opt <- optim(par = theta0, fn = extgp.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
             control = list(maxit = 1000), hessian = FALSE)
         if (print) {
             print(opt)
@@ -947,7 +966,7 @@ egp2.fit.ml <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma
         return(thetahat)
     } else if (type == 3) {
         theta0 <- c(kappa0, delta0, sigma0, xi0)
-        opt <- optim(par = theta0, fn = egp2.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
+        opt <- optim(par = theta0, fn = extgp.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
             control = list(maxit = 1000), hessian = FALSE)
         if (print) {
             print(opt)
@@ -957,7 +976,7 @@ egp2.fit.ml <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma
         return(thetahat)
     } else if (type == 4) {
         theta0 <- c(prob0, kappa0, delta0, sigma0, xi0)
-        opt <- optim(par = theta0, fn = egp2.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
+        opt <- optim(par = theta0, fn = extgp.nll, x = x, censoring = censoring, rounded = rounded, type = type, method = "Nelder-Mead",
             control = list(maxit = 1000), hessian = FALSE)
         if (print) {
             print(opt)
@@ -968,9 +987,9 @@ egp2.fit.ml <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma
     }
 }
 
-egp2.fit.ml.boot <- function(data, i, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf),
+extgp.fit.ml.boot <- function(data, i, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf),
     rounded = 0.1, print = FALSE) {
-    return(egp2.fit.ml(data[i], type = type, prob0 = prob0, kappa0 = kappa0, delta0 = delta0, sigma0 = sigma0, xi0 = xi0, censoring = censoring,
+    return(extgp.fit.ml(data[i], type = type, prob0 = prob0, kappa0 = kappa0, delta0 = delta0, sigma0 = sigma0, xi0 = xi0, censoring = censoring,
         rounded = rounded, print = print))
 }
 

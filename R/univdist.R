@@ -105,17 +105,18 @@ NULL
 gpd.ll <- function(par, dat, tol = 1e-05) {
     sigma = par[1]
     xi = par[2]
+    n <- length(dat)
     if (abs(xi) > tol) {
       if(xi > -1){
         #Most scenarios
-        as.vector(-length(dat) * log(sigma) - (1 + 1/xi) * sum(log(pmax(1 + xi/sigma * dat, 0))))
+        as.vector(-n * log(sigma) - (1 + 1/xi) * sum(log(pmax(1 + xi/sigma * dat, 0))))
       } else if(isTRUE(all.equal(xi, -1, check.attributes = FALSE))){
         -n*log(max(dat))
       } else{
        -Inf
       }
     } else {
-      as.vector(-length(dat) * log(sigma) - sum(dat)/sigma)
+      as.vector(-n * log(sigma) - sum(dat)/sigma)
     }
 }
 

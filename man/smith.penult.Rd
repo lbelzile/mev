@@ -4,8 +4,8 @@
 \alias{smith.penult}
 \title{Smith's penultimate approximations}
 \usage{
-smith.penult(family, method = c("bm", "pot"), u, qu, m,
-  returnList = TRUE, ...)
+smith.penult(family, method = c("bm", "pot"), u, qu, m, returnList = TRUE,
+  ...)
 }
 \arguments{
 \item{family}{the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}}

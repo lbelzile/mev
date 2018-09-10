@@ -110,8 +110,8 @@ NumericMatrix mvrnorm_chol(int n, NumericVector mu, arma::mat Sigma_chol){
 //' @param Mu mean vector. Will set the dimension
 //' @param Xmat covariance matrix, of same dimension as \code{Mu} (and square matrix).
 //' No sanity check is performed to validate that the matrix is symmetric, so use at own risk
-//'
-//' @return an n sample from a multivariate Normal distribution
+//' @keywords internal
+//' @return an \code{n} sample from a multivariate Normal distribution
 //'
 // [[Rcpp::export(.mvrnorm_arma)]]
 arma::mat mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat, bool eigen = true){
@@ -238,6 +238,7 @@ arma::vec dmvnorm_chol_arma(arma::mat x,  arma::rowvec mean,  arma::mat chol_sig
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param theta a one-dimensional parameter for the logistic model, strictly greater than 1.
 //'
+//' @keywords internal
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPlog)]]
 NumericVector rPlog (int d, int index, NumericVector theta){
@@ -263,6 +264,7 @@ NumericVector rPlog (int d, int index, NumericVector theta){
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param theta a one-dimensional parameter for the negative logistic model
 //'
+//' @keywords internal
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPneglog)]]
 NumericVector rPneglog (int d, int index, NumericVector theta){
@@ -284,6 +286,7 @@ NumericVector rPneglog (int d, int index, NumericVector theta){
 //' @param alpha a \eqn{d \times n} dimensional vector of positive parameter values for the Dirichlet vector
 //' @param weight a \code{m} vector of mixture weights, which sum to 1
 //' @return a \code{d}-vector from \eqn{P_x}
+//' @keywords internal
 //[[Rcpp::export(.rPdirmix)]]
 NumericVector rPdirmix (int d, int index, NumericMatrix alpha, NumericVector weight){
   IntegerVector int_seq = seq_len(d) - 1;
@@ -313,6 +316,7 @@ NumericVector rPdirmix (int d, int index, NumericMatrix alpha, NumericVector wei
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param alpha a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector
 //' @return a \code{d}-vector from \eqn{P_x}
+//' @keywords internal
 //[[Rcpp::export(.rPbilog)]]
 NumericVector rPbilog(int d, int index, NumericVector alpha){
   NumericVector alpha_star = rep(1.0, d);
@@ -359,7 +363,7 @@ NumericVector rPexstud_old (int index, arma::mat sigma, NumericVector al){
 //' @param Sigma a positive semi-definite correlation matrix
 //' @param cholesky Cholesky root of transformed correlation matrix
 //' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
-//'
+//' @keywords internal
 //' @return a \code{d}-vector from \eqn{P_x}
 // [[Rcpp::export(.rPexstud)]]
 NumericVector rPexstud (int index, arma::mat cholesky, arma::mat sigma, NumericVector al){
@@ -391,6 +395,7 @@ NumericVector rPexstud (int index, arma::mat cholesky, arma::mat sigma, NumericV
 //' @param Sigma a covariance matrix formed from the symmetric square matrix of coefficients \eqn{\lambda^2}
 //' @param cholesky the Cholesky root of \code{Sigma}
 //' @return a \code{d}-vector from \eqn{P_x}
+//' @keywords internal
 //[[Rcpp::export(.rPHuslerReiss)]]
 NumericVector rPHuslerReiss (int index, arma::mat cholesky, arma::mat Sigma){
   if(index < 0 || index >= Sigma.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
@@ -439,7 +444,7 @@ NumericVector rPHuslerReiss_old (int index, arma::mat Lambda){
 //'
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param Sigma a positive definite covariance matrix
-//'
+//' @keywords internal
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPBrownResnick)]]
 NumericVector rPBrownResnick (int index, arma::mat Sigma_chol, NumericMatrix Sigma){
@@ -491,7 +496,7 @@ NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param Sigma_chol the Cholesky root of the covariance matrix
 //' @param loc location matrix
-//'
+//' @keywords internal
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPSmith)]]
 NumericVector rPSmith (int index, arma::mat Sigma_chol, arma::mat loc){
@@ -524,7 +529,7 @@ NumericVector rPSmith (int index, arma::mat Sigma_chol, arma::mat loc){
 //' @param alpha a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector, or
 //' \eqn{d+1} if the last entry is the index of regular variation of the model, a constant in \code{(0, 1]}
 //' @param irv should the usual model (\code{FALSE}) or the general scaled version (\code{TRUE}) be used
-//'
+//' @keywords internal
 //' @return a \code{d}-vector from \eqn{P_x}
 //[[Rcpp::export(.rPdir)]]
 NumericVector rPdir(int d, int index, NumericVector alpha, bool irv = false){
@@ -564,9 +569,9 @@ NumericVector rPdir(int d, int index, NumericVector alpha, bool irv = false){
 //'
 //' @param n sample size
 //' @param theta a one-dimensional parameter
-//'
-//'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-//'\emph{Biometrika}, \bold{103}(2), 303--317.
+//' @keywords internal
+//' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+//' \emph{Biometrika}, \bold{103}(2), 303--317.
 //'
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 //[[Rcpp::export(.rlogspec)]]
@@ -594,9 +599,9 @@ NumericMatrix rlogspec (int n, int d, NumericVector theta){
 //'
 //' @param n sample size
 //' @param theta a one-dimensional parameter
-//'
-//'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-//'\emph{Biometrika}, \bold{103}(2), 303--317.
+//' @keywords internal
+//' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+//' \emph{Biometrika}, \bold{103}(2), 303--317.
 //'
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 //[[Rcpp::export(.rneglogspec)]]
@@ -621,7 +626,7 @@ NumericMatrix rneglogspec (int n, int d, NumericVector theta){
 //' @param d dimension of the 1-sample
 //' @param alpha a \eqn{d \times n} dimensional vector of positive parameter values for the Dirichlet vector
 //' @param weight a \code{m} vector of mixture weights, which sum to 1
-//'
+//' @keywords internal
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 //[[Rcpp::export(.rdirmixspec)]]
 NumericMatrix rdirmixspec (int n, int d, NumericMatrix alpha, NumericVector weight){
@@ -662,7 +667,7 @@ NumericMatrix rdirmixspec (int n, int d, NumericMatrix alpha, NumericVector weig
 //'
 //' @references Boldi (2009). A note on the representation of parametric models
 //' for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
-//'
+//' @keywords internal
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rbilogspec)]]
 NumericMatrix rbilogspec(int n, NumericVector alpha){
@@ -691,7 +696,7 @@ NumericMatrix rbilogspec(int n, NumericVector alpha){
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param Sigma a positive semi-definite covariance matrix with unit variance
 //' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
-//'
+//' @keywords internal
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rexstudspec)]]
 NumericMatrix rexstudspec(int n, arma::mat sigma, NumericVector al){
@@ -718,7 +723,7 @@ NumericMatrix rexstudspec(int n, arma::mat sigma, NumericVector al){
 //'
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 //' @param Lambda an symmetric square matrix of coefficients \eqn{\lambda^2}
-//'
+//' @keywords internal
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rhrspec)]]
 NumericMatrix rhrspec(int n, arma::mat Lambda){
@@ -771,9 +776,9 @@ NumericMatrix rhrspec(int n, arma::mat Lambda){
 //' @param Sigma_chol Cholesky root of \code{Sigma}
 //' @param Sigma \code{d}-dimensional covariance matrix
 //'
-//'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-//'\emph{Biometrika}, \bold{103}(2), 303--317.
-//'
+//' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+//' \emph{Biometrika}, \bold{103}(2), 303--317.
+//' @keywords internal
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rbrspec)]]
 NumericMatrix rbrspec (int n, arma::mat Sigma_chol, NumericMatrix Sigma){
@@ -803,9 +808,9 @@ NumericMatrix rbrspec (int n, arma::mat Sigma_chol, NumericMatrix Sigma){
 //' @param Sigma_chol Cholesky decomposition of the \code{d}-dimensional covariance matrix (upper triangular)
 //' @param loc location matrix
 //'
-//'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-//'\emph{Biometrika}, \bold{103}(2), 303--317.
-//'
+//' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+//' \emph{Biometrika}, \bold{103}(2), 303--317.
+//' @keywords internal
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 // [[Rcpp::export(.rsmithspec)]]
 NumericMatrix rsmithspec(int n, arma::mat Sigma_chol, arma::mat loc){
@@ -839,7 +844,7 @@ NumericMatrix rsmithspec(int n, arma::mat Sigma_chol, arma::mat loc){
 //' @param alpha vector of Dirichlet parameters of dimension \code{d}, or \eqn{d+1} vector with the \code{d} Dirichlet parameters and an index of regular variation in \eqn{[0, 1]}
 //' @param rho index of regular variation
 //' @param irv should the usual model (\code{FALSE}) or the general scaled version (\code{TRUE}) be used
-//'
+//' @keywords internal
 //' @references Boldi (2009). A note on the representation of parametric models
 //' for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
 //'
@@ -956,7 +961,7 @@ void check_args(int d, NumericVector param, int model, NumericMatrix Sigma, arma
 //' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Conditionally negative definite
 //' matrix of parameters for the Huesler--Reiss model. Default matrix for compatibility
 //' @param loc matrix of location for Smith model.
-//'
+//' @keywords internal
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevA1)]]
 NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix Sigma,
@@ -1044,7 +1049,7 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
 //' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
 //' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 //' @param loc matrix of location for Smith model.
-//'
+//' @keywords internal
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevA2)]]
 NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix Sigma,
@@ -1185,10 +1190,10 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
 //' of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility
 //' @param loc matrix of locations for the Smith model
 //'
-//'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-//'\emph{Biometrika}, \bold{103}(2), 303--317.
+//' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+//' \emph{Biometrika}, \bold{103}(2), 303--317.
 //' @references Boldi (2009). A note on the representation of parametric models for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
-//'
+//' @keywords internal
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevspec_cpp)]]
 NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericMatrix Sigma,
@@ -1262,7 +1267,7 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
 //' \emph{Extremes}, \bold{6}(1), 49--60.
 //' @references Joe, H. (1990). Families of min-stable multivariate exponential and multivariate
 //' extreme value distributions, \bold{9}, 75--81.
-//'
+//' @keywords internal
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rmevasy)]]
 NumericMatrix rmevasy(int n, int d, NumericVector para, LogicalMatrix asym,
@@ -1311,7 +1316,7 @@ return samp;
 //' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
 //' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 //' @param loc matrix of location for Smith model.
-//'
+//' @keywords internal
 //' @return a \code{n} by \code{d} matrix containing the sample
 // [[Rcpp::export(.rPsite)]]
 NumericMatrix rPsite(int n, int j, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {

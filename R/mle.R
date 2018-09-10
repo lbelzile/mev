@@ -60,7 +60,7 @@ gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "N
   if(missing(p) && "quant" %in% args){
     stop("Argument `p` missing for `quant`")
   }
-  if(missing(N) && anp(c("Nmean", "Nquant") %in% args)){
+  if(missing(N) && any(c("Nmean", "Nquant") %in% args)){
     stop("Argument `N` missing for `Nquant` or `Nmean`")
   }
   fitted <- fit.gev(xdat = xdat)
@@ -325,7 +325,7 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
 
   ))))
   if(is.character(mle)){
-   error("Optimization routine for the GEV did not converge.")
+   stop("Optimization routine for the GEV did not converge.")
   }
   #Extract information and store
   fitted <- list()
@@ -649,7 +649,7 @@ plot.mev_pp <- function(x, which = 1:2, main = "Quantile-quantile plot", xlab = 
   }
 
   if(show[2]){
-    limqq <- c(threshold, max(c(quant[n], dat[n])))
+    limqq <- c(x$threshold, max(c(quant[n], dat[n])))
     matplot(quant, cbind(qq_confint_lim, dat), main = main[2], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = limqq, xlim = limqq,
             lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)

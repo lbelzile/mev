@@ -8,8 +8,9 @@ Description: Exact simulation from max-stable processes and multivariate extreme
 License: GPL-3
 BugReports: https://github.com/lbelzile/mev/issues
 URL: https://github.com/lbelzile/mev/
-Imports: alabama, boot, evd, gmm, methods, nleqslv, nloptr, Rcpp (>= 0.11.6), stats, revdbayes, TruncatedNormal (>= 1.1)
-Suggests: cobs, knitr, mvPot (>= 0.1.3)
+Imports: alabama, boot, evd, methods, nleqslv, nloptr, Rcpp (>= 0.11.6), stats, TruncatedNormal (>= 1.1)
+Suggests: cobs, knitr, mvPot (>= 0.1.3), mvtnorm, gmm, revdbayes
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.0
 VignetteBuilder: knitr
+Encoding: UTF-8

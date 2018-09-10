@@ -72,39 +72,39 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
         j <- bins[i]
         if (riskf == "max") {
             if (model == "xstud") {
-                ang[-j, (accu + 1L):(accu + tabu[i])] <- pmax(TruncatedNormal::mvrandt(n = tabu[i], l = rep(-Inf, D - 1), u = rep(1, 
-                  D - 1), df = df + 1, Sig = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1)), 
+                ang[-j, (accu + 1L):(accu + tabu[i])] <- pmax(TruncatedNormal::mvrandt(n = tabu[i], l = rep(-Inf, D - 1), u = rep(1,
+                  D - 1), df = df + 1, Sig = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1)),
                   0)^df
             } else if (model == "br") {
                 if (!is.null(Lambda)) {
-                  ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], l = rep(-Inf, D - 1), u = 2 * 
+                  ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], l = rep(-Inf, D - 1), u = 2 *
                     Lambda[j, -j], Sig = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j])) - 2 * Lambda[j, -j])
                 } else if (!is.null(Sigma)) {
                   me <- diag(Sigma)[-j]/2 + Sigma[j, j]/2 - Sigma[j, -j]
                   Ti <- T1
                   Ti[, c(1L, j)] <- T1[, c(j, 1L)]
-                  ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], l = rep(-Inf, D - 1), u = -me, 
+                  ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], l = rep(-Inf, D - 1), u = -me,
                     Sig = Ti %*% Sigma %*% t(Ti)) + me)
                 }
             }
         } else if (riskf == "min") {
             if (model == "xstud") {
-                ang[-j, (accu + 1L):(accu + tabu[i])] <- pmax(TruncatedNormal::mvrandt(n = tabu[i], u = rep(Inf, D - 1), l = rep(1, 
-                  D - 1), df = df + 1, Sig = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1)), 
+                ang[-j, (accu + 1L):(accu + tabu[i])] <- pmax(TruncatedNormal::mvrandt(n = tabu[i], u = rep(Inf, D - 1), l = rep(1,
+                  D - 1), df = df + 1, Sig = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1)),
                   0)^df
             } else if (model == "br") {
                 if (!is.null(Lambda)) {
-                  ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], u = rep(Inf, D - 1), Sig = 2 * 
+                  ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], u = rep(Inf, D - 1), Sig = 2 *
                     (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]), l = 2 * Lambda[j, -j]) - 2 * Lambda[j, -j])
                 } else if (!is.null(Sigma)) {
                   me <- diag(Sigma)[-j]/2 + Sigma[j, j]/2 - Sigma[j, -j]
                   Ti <- T1
                   Ti[, c(1L, j)] <- T1[, c(j, 1L)]
-                  ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], u = rep(Inf, D - 1), l = -me, 
+                  ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], u = rep(Inf, D - 1), l = -me,
                     Sig = Ti %*% Sigma %*% t(Ti)) + me)
                 }
             }
-            
+
         }
         accu <- accu + tabu[i]
     }
@@ -165,7 +165,7 @@ rparpcshr <- function(n, u, alpha, Sigma, m) {
     for (i in 1:length(tabu)) {
         j <- bins[i]
         Qjinv <- solve(Q[-j, -j])
-        ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], l = rep(-Inf, D - 1), u = c(-Qjinv %*% 
+        ang[-j, (accu + 1L):(accu + tabu[i])] <- exp(TruncatedNormal::mvrandn(n = tabu[i], l = rep(-Inf, D - 1), u = c(-Qjinv %*%
             Lst[-j, ]), Sig = Qjinv) + c(Qjinv %*% Lst[-j, ]))
         accu <- accu + tabu[i]
     }
@@ -210,7 +210,7 @@ rparpcshr <- function(n, u, alpha, Sigma, m) {
 #' expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = 'br', method = 'mvPot')
 #' Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], '+') - Vmat[-1, -1]
 #' expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = 'br', method = 'mvPot')
-expme <- function(z, Sigma = NULL, Lambda = NULL, m = NULL, df = NULL, model = c("hr", "br", "xstud"), method = c("mvPot", "TruncatedNormal", 
+expme <- function(z, Sigma = NULL, Lambda = NULL, m = NULL, df = NULL, model = c("hr", "br", "xstud"), method = c("mvPot", "TruncatedNormal",
     "mvtnorm")) {
     model <- match.arg(model[1], choices = c("hr", "br", "xstud"))
     method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
@@ -265,6 +265,17 @@ expmeBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNormal
 }
 
 expmeXS <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNormal")) {
+  if (method == "mvtnorm") {
+    if (!requireNamespace("mvtnorm", quietly = TRUE)) {
+      warning("`mvtnorm` package is not installed.")
+      method <- "TruncatedNormal"
+    }
+  } else if (method == "mvPot") {
+    if (!requireNamespace("mvPot", quietly = TRUE)) {
+      warning("`mvPot` package is not installed.")
+      method <- "TruncatedNormal"
+    }
+  }
     D <- length(z)
     stopifnot(ncol(Sigma) == D | nrow(Sigma) == D | df > 0)
     if (!isTRUE(all.equal(as.vector(diag(Sigma)), rep(1, D)))) {
@@ -280,6 +291,17 @@ expmeXS <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNorma
 
 weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")) {
     method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    if (method == "mvtnorm") {
+      if (!requireNamespace("mvtnorm", quietly = TRUE)) {
+        warning("`mvtnorm` package is not installed.")
+        method <- "TruncatedNormal"
+      }
+    } else if (method == "mvPot") {
+      if (!requireNamespace("mvPot", quietly = TRUE)) {
+        warning("`mvPot` package is not installed.")
+        method <- "TruncatedNormal"
+      }
+    }
     D <- ncol(Q)
     weights <- rep(0, D)
     if (method == "mvPot") {
@@ -287,9 +309,9 @@ weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")
     }
     for (j in 1:D) {
         Qmiinv <- solve(Q[-j, -j])
-        weights[j] <- det(Qmiinv)^(0.5) * exp(0.5 * t(L[-j]) %*% Qmiinv %*% L[-j])[1] * switch(method, mvtnorm = mvtnorm::pmvnorm(upper = c(-Qmiinv %*% 
-            L[-j]), sigma = Qmiinv), mvPot = mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = c(-Qmiinv %*% L[-j]), cov = Qmiinv, 
-            genVec = genVec$genVec)[1], TruncatedNormal = TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = c(-Qmiinv %*% 
+        weights[j] <- det(Qmiinv)^(0.5) * exp(0.5 * t(L[-j]) %*% Qmiinv %*% L[-j])[1] * switch(method, mvtnorm = mvtnorm::pmvnorm(upper = c(-Qmiinv %*%
+            L[-j]), sigma = Qmiinv), mvPot = mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = c(-Qmiinv %*% L[-j]), cov = Qmiinv,
+            genVec = genVec$genVec)[1], TruncatedNormal = TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = c(-Qmiinv %*%
             L[-j]), Sig = Qmiinv)$prob)
     }
     return(weights)
@@ -298,6 +320,17 @@ weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")
 
 weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
     method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    if (method == "mvtnorm") {
+      if (!requireNamespace("mvtnorm", quietly = TRUE)) {
+        warning("`mvtnorm` package is not installed.")
+        method <- "TruncatedNormal"
+      }
+    } else if (method == "mvPot") {
+      if (!requireNamespace("mvPot", quietly = TRUE)) {
+        warning("`mvPot` package is not installed.")
+        method <- "TruncatedNormal"
+      }
+    }
     riskf <- match.arg(riskf[1], choices = c("max", "min"))
     si <- switch(riskf, max = 1, min = -1)
     D <- length(z)
@@ -305,18 +338,18 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
     weights <- rep(0, D)
     if (method == "mvtnorm") {
         for (j in 1:D) {
-            weights[j] <- mvtnorm::pmvnorm(lower = rep(-Inf, D - 1), upper = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])), sigma = 2 * 
+            weights[j] <- mvtnorm::pmvnorm(lower = rep(-Inf, D - 1), upper = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])), sigma = 2 *
                 (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]))
         }
     } else if (method == "mvPot") {
         genVec <- mvPot::genVecQMC(p = 499, D - 1)
         for (j in 1:D) {
-            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])), 
+            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])),
                 cov = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]), genVec = genVec$genVec)[1]
         }
     } else if (method == "TruncatedNormal") {
         for (j in 1:D) {
-            weights[j] <- TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])), 
+            weights[j] <- TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])),
                 Sig = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]))$prob
         }
     }
@@ -325,6 +358,17 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
 
 weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
     method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    if (method == "mvtnorm") {
+      if (!requireNamespace("mvtnorm", quietly = TRUE)) {
+        warning("`mvtnorm` package is not installed.")
+        method <- "TruncatedNormal"
+      }
+    } else if (method == "mvPot") {
+      if (!requireNamespace("mvPot", quietly = TRUE)) {
+        warning("`mvPot` package is not installed.")
+        method <- "TruncatedNormal"
+      }
+    }
     riskf <- match.arg(riskf[1], choices = c("max", "min"))
     si <- switch(riskf, max = 1, min = -1)
     D <- length(z)
@@ -339,13 +383,13 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
             Ti[, (j - 1):j] <- Ti[, j:(j - 1)]
         }
         if (method == "mvtnorm") {
-            weights[j] <- mvtnorm::pmvnorm(lower = rep(-Inf, D - 1), upper = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 + Sigma[j, 
+            weights[j] <- mvtnorm::pmvnorm(lower = rep(-Inf, D - 1), upper = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 + Sigma[j,
                 j]/2 - Sigma[j, -j]), sigma = Ti %*% Sigma %*% t(Ti))
         } else if (method == "mvPot") {
-            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 + 
+            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 +
                 Sigma[j, j]/2 - Sigma[j, -j]), cov = Ti %*% Sigma %*% t(Ti), genVec = genVec$genVec)[1]
         } else if (method == "TruncatedNormal") {
-            weights[j] <- TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 + 
+            weights[j] <- TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 +
                 Sigma[j, j]/2 - Sigma[j, -j]), Sig = Ti %*% Sigma %*% t(Ti))$prob
         }
     }
@@ -354,6 +398,17 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
 
 weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
     method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    if (method == "mvtnorm") {
+      if (!requireNamespace("mvtnorm", quietly = TRUE)) {
+        warning("`mvtnorm` package is not installed.")
+        method <- "TruncatedNormal"
+      }
+    } else if (method == "mvPot") {
+      if (!requireNamespace("mvPot", quietly = TRUE)) {
+        warning("`mvPot` package is not installed.")
+        method <- "TruncatedNormal"
+      }
+    }
     riskf <- match.arg(riskf[1], choices = c("max", "min"))
     si <- switch(riskf, max = 1, min = -1)
     D <- nrow(Sigma)
@@ -361,18 +416,18 @@ weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "Truncated
     weights <- rep(0, D)
     if (method == "mvtnorm") {
         for (j in 1:D) {
-            weights[j] <- mvtnorm::pmvt(lower = rep(-Inf, D - 1), df = df + 1, upper = si * (exp((log(z[-j]) - log(z[j]))/df) - Sigma[-j, 
+            weights[j] <- mvtnorm::pmvt(lower = rep(-Inf, D - 1), df = df + 1, upper = si * (exp((log(z[-j]) - log(z[j]))/df) - Sigma[-j,
                 j]), sigma = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1))
         }
     } else if (method == "mvPot") {
         genVec <- mvPot::genVecQMC(p = 499, D - 1)
         for (j in 1:D) {
-            weights[j] <- mvPot::mvTProbQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (exp((log(z[-j]) - log(z[j]))/df) - Sigma[-j, 
+            weights[j] <- mvPot::mvTProbQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (exp((log(z[-j]) - log(z[j]))/df) - Sigma[-j,
                 j]), cov = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1), nu = df + 1, genVec = genVec$genVec)[1]
         }
     } else if (method == "TruncatedNormal") {
         for (j in 1:D) {
-            weights[j] <- TruncatedNormal::mvTqmc(l = rep(-Inf, D - 1), df = df + 1, n = 1e+05, u = si * (exp((log(z[-j]) - log(z[j]))/df) - 
+            weights[j] <- TruncatedNormal::mvTqmc(l = rep(-Inf, D - 1), df = df + 1, n = 1e+05, u = si * (exp((log(z[-j]) - log(z[j]))/df) -
                 Sigma[-j, j]), Sig = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1))$prob
         }
     }

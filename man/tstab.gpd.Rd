@@ -2,17 +2,17 @@
 % Please edit documentation in R/threshold.R
 \name{tstab.gpd}
 \alias{tstab.gpd}
-\title{Threshold stability plots for peaks-over-threshold}
+\title{Parameter stability plots for peaks-over-threshold}
 \usage{
-tstab.gpd(dat, thresh, confint = c("wald", "profile", "post"),
-  level = 0.95, plot = TRUE, ...)
+tstab.gpd(dat, thresh, method = c("wald", "profile", "post"), level = 0.95,
+  plot = TRUE, ...)
 }
 \arguments{
 \item{dat}{a vector of observations}
 
 \item{thresh}{a vector of candidate thresholds at which to compute the estimates.}
 
-\item{confint}{string indicating the method for computing confidence or credible intervals.
+\item{method}{string indicating the method for computing confidence or credible intervals.
 Must be one of \code{"wald"}, \code{"profile"} or \code{"post"}.}
 
 \item{level}{confidence level of the intervals. Default to 0.95.}
@@ -28,7 +28,7 @@ a list with components
 \item{\code{mle}:} matrix of modified scale and shape maximum likelihood estimates.
 \item{\code{lower}:} matrix of lower bounds for the confidence or credible intervals.
 \item{\code{upper}:} matrix of lower bounds for the confidence or credible intervals.
-\item{\code{confint}:} method for the confidence or coverage intervals.
+\item{\code{method}:} method for the confidence or coverage intervals.
 }
 
 plots of the modified scale and shape parameters, with pointwise confidence/credible intervals
@@ -45,7 +45,7 @@ The latter two methods better reflect the asymmetry of the estimates than the Wa
 \examples{
 dat <- abs(rnorm(10000))
 u <- qnorm(seq(0.9,0.99, by= 0.01))
-tstab.gpd(dat = dat, thresh = u, confint = "post")
+tstab.gpd(dat = dat, thresh = u, method = "post")
 }
 \seealso{
 \code{\link[ismev]{gpd.fitrange}}

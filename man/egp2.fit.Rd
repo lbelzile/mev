@@ -4,14 +4,13 @@
 \alias{egp2.fit}
 \title{Fit an extended generalized Pareto distribution of Naveau et al.}
 \usage{
-egp2.fit(data, model = 1, method = c("mle", "pwm"), init,
-  censoring = c(0, Inf), rounded = 0, CI = FALSE, R = 1000,
-  ncpus = 1, plots = TRUE)
+egp2.fit(data, model = 1, method = c("mle", "pwm"), init, censoring = c(0,
+  Inf), rounded = 0, CI = FALSE, R = 1000, ncpus = 1, plots = TRUE)
 }
 \arguments{
 \item{data}{data vector.}
 
-\item{model}{integer ranging from 0 to 4 indicating the model to select (see \code{\link{egp2}}).}
+\item{model}{integer ranging from 0 to 4 indicating the model to select (see \code{\link{extgp}}).}
 
 \item{method}{string; either \code{'mle'} for maximum likelihood, or \code{'pwm'} for probability weighted moments, or both.}
 
@@ -21,8 +20,6 @@ egp2.fit(data, model = 1, method = c("mle", "pwm"), init,
 
 \item{rounded}{numeric giving the instrumental precision (and rounding of the data), with default of 0.}
 
-\item{CI}{logical; should confidence interval be returned (percentile bootstrap).}
-
 \item{R}{integer; number of bootstrap replications.}
 
 \item{ncpus}{integer; number of CPUs for parallel calculations (default: 1).}
@@ -30,35 +27,9 @@ egp2.fit(data, model = 1, method = c("mle", "pwm"), init,
 \item{plots}{logical; whether to produce histogram and density plots.}
 }
 \description{
-This is a wrapper function to obtain PWM or MLE estimates for
-the extended GP models of Naveau et al. (2016) for rainfall intensities. The function calculates confidence intervals
-by means of nonparametric percentile bootstrap and returns histograms and QQ plots of
-the fitted distributions. The function handles both censoring and rounding.
-}
-\details{
-The different models include the following transformations:
-\itemize{
-\item \code{model} 0 corresponds to uniform carrier, \eqn{G(u)=u}.
-\item \code{model} 1 corresponds to a three parameters family, with carrier \eqn{G(u)=u^\kappa}.
-\item \code{model} 2 corresponds to a three parameters family, with carrier \eqn{G(u)=1-V_\delta((1-u)^\delta)}.
-\item \code{model} 3 corresponds to a four parameters family, with carrier \deqn{G(u)=1-V_\delta((1-u)^\delta))^{\kappa/2}}.
-\item \code{model} 4 corresponds to a five parameter model (a mixture of \code{type} 2, with \eqn{G(u)=pu^\kappa + (1-p)*u^\delta}
-}
-}
-\examples{
-\donttest{
-library(ismev)
-data(rain)
-egp2.fit(rain[rain>0], model=1, method='mle', init=c(0.9, gp.fit(rain,0, show=FALSE)$est),
- rounded=0.1,CI=TRUE, R=20)
-}
-}
-\references{
-Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.
+Deprecated function name to fit an extended generalized Pareto family. The user should call \code{\link[mev]{fit.extgp}} instead.
 }
 \seealso{
-\code{\link{egp.fit}}, \code{\link{egp}}, \code{\link{egp2}}
+\code{\link[mev]{fit.extgp}}
 }
-\author{
-Raphael Huser and Philippe Naveau
-}
+\keyword{internal}

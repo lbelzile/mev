@@ -1,4 +1,4 @@
-#' Threshold stability plots for peaks-over-threshold
+#' Parameter stability plots for peaks-over-threshold
 #'
 #' This function computes the maximum likelihood estimate
 #' at each provided threshold and plots the estimates (pointwise),
@@ -10,7 +10,7 @@
 #'
 #' @param dat a vector of observations
 #' @param thresh a vector of candidate thresholds at which to compute the estimates.
-#' @param confint string indicating the method for computing confidence or credible intervals.
+#' @param method string indicating the method for computing confidence or credible intervals.
 #' Must be one of \code{"wald"}, \code{"profile"} or \code{"post"}.
 #' @param level confidence level of the intervals. Default to 0.95.
 #' @param plot logical; should parameter stability plots be displayed? Default to \code{TRUE}.
@@ -21,24 +21,28 @@
 #' \item{\code{mle}:} matrix of modified scale and shape maximum likelihood estimates.
 #' \item{\code{lower}:} matrix of lower bounds for the confidence or credible intervals.
 #' \item{\code{upper}:} matrix of lower bounds for the confidence or credible intervals.
-#' \item{\code{confint}:} method for the confidence or coverage intervals.
+#' \item{\code{method}:} method for the confidence or coverage intervals.
 #' }
 #' @author Leo Belzile
 #' @seealso \code{\link[ismev]{gpd.fitrange}}
 #' @return plots of the modified scale and shape parameters, with pointwise confidence/credible intervals
 #' and an invisible data frame containing the threshold \code{thresh} and the modified scale and shape parameters.
-#' @importFrom revdbayes rpost_rcpp
-#' @importFrom revdbayes set_prior
-#' @importFrom revdbayes gp_norm
 #' @export
 #' @examples
 #' dat <- abs(rnorm(10000))
 #' u <- qnorm(seq(0.9,0.99, by= 0.01))
-#' tstab.gpd(dat = dat, thresh = u, confint = "post")
-tstab.gpd <- function(dat, thresh, confint = c("wald", "profile", "post"), level = 0.95, plot = TRUE, ...){
+#' tstab.gpd(dat = dat, thresh = u, method = "post")
+tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level = 0.95, plot = TRUE, ...){
   thresh <- unique(sort(thresh))
   stopifnot(length(level) == 1, level > 0, level < 1)
-  confint <- match.arg(confint[1], c("wald", "profile", "post"))
+  method <- match.arg(method[1], c("wald", "profile", "post"))
+  if (method == "post") {
+    if (!requireNamespace("revdbayes", quietly = TRUE)) {
+      stop("Package \"revdbayes\" needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
+  }
+
   alpha <- (1-level)
   if(length(thresh) < 2){
     stop("Invalid threshold: should be of length greater than 2")
@@ -51,7 +55,7 @@ tstab.gpd <- function(dat, thresh, confint = c("wald", "profile", "post"), level
   parmat <- matrix(0, ncol = np, nrow = nt)
   confintmat <- matrix(0, ncol = 2 * np, nrow = nt)
   #Some quantities for profile
-  if(confint == "profile"){
+  if(method == "profile"){
     xmax <- max(dat)
     pllsigmainv <- function(par, sigmat, dat, thresh){
       sigma <- sigmat + par*thresh
@@ -68,12 +72,12 @@ tstab.gpd <- function(dat, thresh, confint = c("wald", "profile", "post"), level
     parmat[i,] <- gpdu$estimate
     parmat[i,1] <- parmat[i,1] - parmat[i,2]*(thresh[i]-thresh[1])
     stderr.transfo <- sqrt(t(c(1, -thresh[i]+thresh[1])) %*% gpdu$vcov %*% c(1, -thresh[i]+thresh[1]))[1,1]
-   if(confint == "wald"){
+   if(method == "wald"){
     confintmat[i,3] <- gpdu$estimate['shape'] - gpdu$std.err['shape']*qnorm(1-alpha/2)
     confintmat[i,4] <- gpdu$estimate['shape'] + gpdu$std.err['shape']*qnorm(1-alpha/2)
     confintmat[i,1] <- parmat[i,1] - stderr.transfo * qnorm(1-alpha/2)
     confintmat[i,2] <- parmat[i,1] + stderr.transfo * qnorm(1-alpha/2)
-   } else if(confint == "profile"){
+   } else if(method == "profile"){
      profxi <- gpd.pll(param = "shape", mod = "profile", mle = gpdu$estimate, dat = gpdu$exceedances)
      confintmat[i,3:4] <- confint(profxi, level = level)[2:3]
      k <- 30L
@@ -92,7 +96,7 @@ tstab.gpd <- function(dat, thresh, confint = c("wald", "profile", "post"), level
      prof <- structure(list(psi = grid_psi, psi.max = parmat[i,1], pll = -prof_vals,
                             maxpll = -gpdu$nllh, std.err = stderr.transfo), class = "eprof")
      confintmat[i, 1:2] <- confint(prof, level = level)[2:3,1]
-   } else if(confint == "post"){
+   } else if(method == "post"){
     postsim <- suppressWarnings(revdbayes::rpost_rcpp(n = 1000, model = "gp", init_ests = gpdu$estimate,
                                      data = gpdu$exceedances, thresh = 0, trans = "BC",
                                      prior = revdbayes::set_prior(prior = "norm",
@@ -108,7 +112,7 @@ tstab.gpd <- function(dat, thresh, confint = c("wald", "profile", "post"), level
   upper <- confintmat[,c(2,4)]
   colnames(parmat) <- colnames(lower) <- colnames(upper) <-  c("modif. scale", "shape")
   ret <- structure(list(threshold = thresh, mle = parmat, lower = lower,
-                                    upper = upper, confint = confint, level = level), class = "mev_tsab.gpd")
+                                    upper = upper, method = method, level = level), class = "mev_tsab.gpd")
   if(plot){
     plot(ret, ...)
   }
@@ -131,7 +135,7 @@ plot.mev_tsab.gpd <- function(x, which = 1:2, ...){
     main <- c("Parameter stability plot","");
   }
   if(!"sub" %in% names_ell){
-   sub <- c(switch(x$confint,
+   sub <- c(switch(x$method,
                  wald = paste("Wald", x$level*100, "% pointwise confidence intervals"),
                  profile = paste("profile likelihood", x$level*100, "% pointwise confidence intervals"),
                  post = paste(x$level*100, "% pointwise credible intervals")), "")

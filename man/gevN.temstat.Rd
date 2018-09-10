@@ -26,6 +26,8 @@ gevN.dphi(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V)
 }
 \description{
 Vector implementing conditioning on approximate ancillary statistics for the TEM
+
+Canonical parameter in the local exponential family approximation
 }
 \seealso{
 \code{\link{gevN}}

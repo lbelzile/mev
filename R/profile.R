@@ -484,7 +484,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     xmin <- min(dat)
     xmax <- max(dat)
     # Find maximum likelihood estimates
-    mle <- gev.mle(dat = dat, args = args, q = q, N = N, p = p)
+    mle <- gev.mle(xdat = dat, args = args, q = q, N = N, p = p)
 
     # if(missing(psi) || is.null(psi) || is.na(psi)){ psi <- mle[param] } psi <- as.vector(psi)
 
@@ -1251,7 +1251,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
 
     # If maximum likelihood estimates are not provided, find them
     if (is.null(mle)) {
-        mle <- gpd.mle(dat = dat, args = args, m = m, N = N, p = p, q = q)
+        mle <- gpd.mle(xdat = dat, args = args, m = m, N = N, p = p, q = q)
     }
 
     # Extract the components, notably V for model `tem`. Keep other components for optimization
@@ -1983,7 +1983,7 @@ plot.fr <- function(x, ...) {
             0), panel.first = abline(h = -qchisq(c(0.95, 0.99), df = 1)/2, col = "grey", lwd = 0.7),
             lwd = 1.5, bty = "l")
         lines(fr$psi, -fr$rstar^2/2, col = "blue", lwd = 1.5)
-        legend(x = "bottomright", c(expression(paste("ℓ"["p"])), expression(paste("ℓ"["tem"]))),
+        legend(x = "bottomright", c(expression(paste("\u2113"["p"])), expression(paste("\u2113"["tem"]))),
             lty = c(1, 1), x.intersp = 0.2, lwd = 1.5, seg.len = 0.5, col = c("black", "blue"),
             bty = "n")
         # optional: add diagnostic panels

@@ -21,6 +21,10 @@ ldirfn <- function(param) {
     .Call('_mev_loocvdens', PACKAGE = 'mev', nu, ang, wts, loowts)
 }
 
+Zhang_Stephens <- function(x, init, adapt_sd = 0.1, adapt = TRUE, burnin = 1000L, niter = 10000L, thin = 1L, method = 1L) {
+    .Call('_mev_Zhang_Stephens', PACKAGE = 'mev', x, init, adapt_sd, adapt, burnin, niter, thin, method)
+}
+
 #' Random variate generation for Dirichlet distribution on \eqn{S_{d}}{Sd}
 #'
 #' A function to sample Dirichlet random variables, based on the representation as ratios of Gamma.
@@ -66,8 +70,8 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param Mu mean vector. Will set the dimension
 #' @param Xmat covariance matrix, of same dimension as \code{Mu} (and square matrix).
 #' No sanity check is performed to validate that the matrix is symmetric, so use at own risk
-#'
-#' @return an n sample from a multivariate Normal distribution
+#' @keywords internal
+#' @return an \code{n} sample from a multivariate Normal distribution
 #'
 .mvrnorm_arma <- function(n, Mu, Xmat, eigen = TRUE) {
     .Call('_mev_mvrnorm_arma', PACKAGE = 'mev', n, Mu, Xmat, eigen)
@@ -100,6 +104,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param theta a one-dimensional parameter for the logistic model, strictly greater than 1.
 #'
+#' @keywords internal
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPlog <- function(d, index, theta) {
     .Call('_mev_rPlog', PACKAGE = 'mev', d, index, theta)
@@ -112,6 +117,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param theta a one-dimensional parameter for the negative logistic model
 #'
+#' @keywords internal
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPneglog <- function(d, index, theta) {
     .Call('_mev_rPneglog', PACKAGE = 'mev', d, index, theta)
@@ -125,6 +131,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param alpha a \eqn{d \times n} dimensional vector of positive parameter values for the Dirichlet vector
 #' @param weight a \code{m} vector of mixture weights, which sum to 1
 #' @return a \code{d}-vector from \eqn{P_x}
+#' @keywords internal
 .rPdirmix <- function(d, index, alpha, weight) {
     .Call('_mev_rPdirmix', PACKAGE = 'mev', d, index, alpha, weight)
 }
@@ -136,6 +143,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param alpha a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector
 #' @return a \code{d}-vector from \eqn{P_x}
+#' @keywords internal
 .rPbilog <- function(d, index, alpha) {
     .Call('_mev_rPbilog', PACKAGE = 'mev', d, index, alpha)
 }
@@ -151,7 +159,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param Sigma a positive semi-definite correlation matrix
 #' @param cholesky Cholesky root of transformed correlation matrix
 #' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
-#'
+#' @keywords internal
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPexstud <- function(index, cholesky, sigma, al) {
     .Call('_mev_rPexstud', PACKAGE = 'mev', index, cholesky, sigma, al)
@@ -164,6 +172,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param Sigma a covariance matrix formed from the symmetric square matrix of coefficients \eqn{\lambda^2}
 #' @param cholesky the Cholesky root of \code{Sigma}
 #' @return a \code{d}-vector from \eqn{P_x}
+#' @keywords internal
 .rPHuslerReiss <- function(index, cholesky, Sigma) {
     .Call('_mev_rPHuslerReiss', PACKAGE = 'mev', index, cholesky, Sigma)
 }
@@ -177,7 +186,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param Sigma a positive definite covariance matrix
-#'
+#' @keywords internal
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPBrownResnick <- function(index, Sigma_chol, Sigma) {
     .Call('_mev_rPBrownResnick', PACKAGE = 'mev', index, Sigma_chol, Sigma)
@@ -189,7 +198,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param Sigma_chol the Cholesky root of the covariance matrix
 #' @param loc location matrix
-#'
+#' @keywords internal
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPSmith <- function(index, Sigma_chol, loc) {
     .Call('_mev_rPSmith', PACKAGE = 'mev', index, Sigma_chol, loc)
@@ -206,7 +215,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param alpha a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector, or
 #' \eqn{d+1} if the last entry is the index of regular variation of the model, a constant in \code{(0, 1]}
 #' @param irv should the usual model (\code{FALSE}) or the general scaled version (\code{TRUE}) be used
-#'
+#' @keywords internal
 #' @return a \code{d}-vector from \eqn{P_x}
 .rPdir <- function(d, index, alpha, irv = FALSE) {
     .Call('_mev_rPdir', PACKAGE = 'mev', d, index, alpha, irv)
@@ -218,9 +227,9 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @param n sample size
 #' @param theta a one-dimensional parameter
-#'
-#'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-#'\emph{Biometrika}, \bold{103}(2), 303--317.
+#' @keywords internal
+#' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+#' \emph{Biometrika}, \bold{103}(2), 303--317.
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rlogspec <- function(n, d, theta) {
@@ -233,9 +242,9 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @param n sample size
 #' @param theta a one-dimensional parameter
-#'
-#'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-#'\emph{Biometrika}, \bold{103}(2), 303--317.
+#' @keywords internal
+#' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+#' \emph{Biometrika}, \bold{103}(2), 303--317.
 #'
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rneglogspec <- function(n, d, theta) {
@@ -250,7 +259,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param d dimension of the 1-sample
 #' @param alpha a \eqn{d \times n} dimensional vector of positive parameter values for the Dirichlet vector
 #' @param weight a \code{m} vector of mixture weights, which sum to 1
-#'
+#' @keywords internal
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rdirmixspec <- function(n, d, alpha, weight) {
     .Call('_mev_rdirmixspec', PACKAGE = 'mev', n, d, alpha, weight)
@@ -265,7 +274,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @references Boldi (2009). A note on the representation of parametric models
 #' for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
-#'
+#' @keywords internal
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rbilogspec <- function(n, alpha) {
     .Call('_mev_rbilogspec', PACKAGE = 'mev', n, alpha)
@@ -276,7 +285,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param Sigma a positive semi-definite covariance matrix with unit variance
 #' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
-#'
+#' @keywords internal
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rexstudspec <- function(n, sigma, al) {
     .Call('_mev_rexstudspec', PACKAGE = 'mev', n, sigma, al)
@@ -286,7 +295,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #'
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
 #' @param Lambda an symmetric square matrix of coefficients \eqn{\lambda^2}
-#'
+#' @keywords internal
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rhrspec <- function(n, Lambda) {
     .Call('_mev_rhrspec', PACKAGE = 'mev', n, Lambda)
@@ -300,9 +309,9 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param Sigma_chol Cholesky root of \code{Sigma}
 #' @param Sigma \code{d}-dimensional covariance matrix
 #'
-#'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-#'\emph{Biometrika}, \bold{103}(2), 303--317.
-#'
+#' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+#' \emph{Biometrika}, \bold{103}(2), 303--317.
+#' @keywords internal
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rbrspec <- function(n, Sigma_chol, Sigma) {
     .Call('_mev_rbrspec', PACKAGE = 'mev', n, Sigma_chol, Sigma)
@@ -316,9 +325,9 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param Sigma_chol Cholesky decomposition of the \code{d}-dimensional covariance matrix (upper triangular)
 #' @param loc location matrix
 #'
-#'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-#'\emph{Biometrika}, \bold{103}(2), 303--317.
-#'
+#' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+#' \emph{Biometrika}, \bold{103}(2), 303--317.
+#' @keywords internal
 #' @return an \code{n} by \code{d} sample from the spectral distribution
 .rsmithspec <- function(n, Sigma_chol, loc) {
     .Call('_mev_rsmithspec', PACKAGE = 'mev', n, Sigma_chol, loc)
@@ -335,7 +344,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param alpha vector of Dirichlet parameters of dimension \code{d}, or \eqn{d+1} vector with the \code{d} Dirichlet parameters and an index of regular variation in \eqn{[0, 1]}
 #' @param rho index of regular variation
 #' @param irv should the usual model (\code{FALSE}) or the general scaled version (\code{TRUE}) be used
-#'
+#' @keywords internal
 #' @references Boldi (2009). A note on the representation of parametric models
 #' for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
 #'
@@ -360,7 +369,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Conditionally negative definite
 #' matrix of parameters for the Huesler--Reiss model. Default matrix for compatibility
 #' @param loc matrix of location for Smith model.
-#'
+#' @keywords internal
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rmevA1 <- function(n, d, para, model, Sigma, loc) {
     .Call('_mev_rmevA1', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
@@ -380,7 +389,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
 #' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 #' @param loc matrix of location for Smith model.
-#'
+#' @keywords internal
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rmevA2 <- function(n, d, para, model, Sigma, loc) {
     .Call('_mev_rmevA2', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
@@ -400,10 +409,10 @@ mvrnorm <- function(n, mu, Sigma) {
 #' of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility
 #' @param loc matrix of locations for the Smith model
 #'
-#'@references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
-#'\emph{Biometrika}, \bold{103}(2), 303--317.
+#' @references Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes,
+#' \emph{Biometrika}, \bold{103}(2), 303--317.
 #' @references Boldi (2009). A note on the representation of parametric models for multivariate extremes. \emph{Extremes} \bold{12}, 211--218.
-#'
+#' @keywords internal
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rmevspec_cpp <- function(n, d, para, model, Sigma, loc) {
     .Call('_mev_rmevspec_cpp', PACKAGE = 'mev', n, d, para, model, Sigma, loc)
@@ -424,7 +433,7 @@ mvrnorm <- function(n, mu, Sigma) {
 #' \emph{Extremes}, \bold{6}(1), 49--60.
 #' @references Joe, H. (1990). Families of min-stable multivariate exponential and multivariate
 #' extreme value distributions, \bold{9}, 75--81.
-#'
+#' @keywords internal
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rmevasy <- function(n, d, para, asym, ncompo, Sigma, model) {
     .Call('_mev_rmevasy', PACKAGE = 'mev', n, d, para, asym, ncompo, Sigma, model)
@@ -444,14 +453,10 @@ mvrnorm <- function(n, mu, Sigma) {
 #' (5) \code{extstud}, (6) \code{br}, (7) \code{ct} and \code{sdir}, (8) \code{smith} and (9) \code{hr}.
 #' @param Sigma covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility
 #' @param loc matrix of location for Smith model.
-#'
+#' @keywords internal
 #' @return a \code{n} by \code{d} matrix containing the sample
 .rPsite <- function(n, j, d, para, model, Sigma, loc) {
     .Call('_mev_rPsite', PACKAGE = 'mev', n, j, d, para, model, Sigma, loc)
-}
-
-Zhang_Stephens <- function(x, init, adapt_sd = 0.1, adapt = TRUE, burnin = 1000L, niter = 10000L, thin = 1L, method = 1L) {
-    .Call('_mev_Zhang_Stephens', PACKAGE = 'mev', x, init, adapt_sd, adapt, burnin, niter, thin, method)
 }
 
 # Register entry points for exported C++ functions

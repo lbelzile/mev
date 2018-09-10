@@ -1,23 +1,23 @@
-.returnAng <- function(ang, R, Rnorm = c("l1", "l2", "linf"), wgt = c("Empirical", "Euclidean"), region = c("sum", 
+.returnAng <- function(ang, R, Rnorm = c("l1", "l2", "linf"), wgt = c("Empirical", "Euclidean"), region = c("sum",
     "min", "max")) {
     # Other cases supported
     ang <- as.matrix(ang)
     if (region == "sum") {
         if (wgt == "Euclidean") {
             if (Rnorm == "l1") {
-                return(list(ang = ang, rad = R, wts = as.vector(.EuclideanWeights(ang, rep(1/(ncol(ang) + 
+                return(list(ang = ang, rad = R, wts = as.vector(.EuclideanWeights(ang, rep(1/(ncol(ang) +
                   1), ncol(ang))))))
             } else {
-                return(list(ang = ang, rad = R, wts = as.vector(.EuclideanWeights(ang - cbind(ang[, -1], 
+                return(list(ang = ang, rad = R, wts = as.vector(.EuclideanWeights(ang - cbind(ang[, -1],
                   ang[, 1]), rep(0, ncol(ang))))))
                 # as.vector(.EuclideanWeights(ang,rep(1/(ncol(ang)+1), ncol(ang))))))
             }
         } else if (wgt == "Empirical") {
             if (Rnorm == "l1") {
-                scel.fit <- .emplik_intern(z = ang, thresh = 1e-10, mu = rep(1/(ncol(ang) + 1), ncol(ang)), 
+                scel.fit <- .emplik_intern(z = ang, thresh = 1e-10, mu = rep(1/(ncol(ang) + 1), ncol(ang)),
                   lam = rep(0, ncol(ang)), eps = 1/nrow(ang), itermax = 10000L)
             } else {
-                scel.fit <- .emplik_intern(z = ang - cbind(ang[, -1], ang[, 1]), thresh = 1e-10, mu = rep(0, 
+                scel.fit <- .emplik_intern(z = ang - cbind(ang[, -1], ang[, 1]), thresh = 1e-10, mu = rep(0,
                   ncol(ang)), lam = rep(0, ncol(ang)), eps = 1/nrow(ang), itermax = 5000L)
             }
             if (scel.fit$conv) {
@@ -28,7 +28,7 @@
             }
         }
     } else {
-        aw <- switch(region, min = apply(cbind(ang, 1 - rowSums(ang)), 1, max), max = apply(cbind(ang, 
+        aw <- switch(region, min = apply(cbind(ang, 1 - rowSums(ang)), 1, max), max = apply(cbind(ang,
             1 - rowSums(ang)), 1, min), sum = rep(1, nrow(ang)))
         # b <- (ang-1/(ncol(ang)+1))/aw
         b <- (ang - cbind(ang[, -1], ang[, 1]))/aw
@@ -84,7 +84,7 @@
 #' x <- rmev(n=25, d=3, param=0.5, model='log')
 #' wts <- angmeas(x=x, th=0, Rnorm='l1', Anorm='l1', marg='Frechet', wgt='Empirical')
 #' wts2 <- angmeas(x=x, Rnorm='l2', Anorm='l2', marg='Pareto', th=0)
-angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf", "arctan"), marg = c("Frechet", 
+angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf", "arctan"), marg = c("Frechet",
     "Pareto"), wgt = c("Empirical", "Euclidean"), region = c("sum", "min", "max"), is.angle = FALSE) {
     if (!is.matrix(x)) {
         x <- rbind(x, deparse.level = 0L)
@@ -103,10 +103,10 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
     region <- match.arg(region[1], c("sum", "min", "max"))
     if (!is.angle) {
         # Use only complete cases x <- na.omit(x) Margins are transformed to unit Frechet/Pareto (PIT)
-        S <- switch(marg, Frechet = -1/log(na.omit(apply(x, 2, rank, na.last = "keep", ties.method = "random")/(nrow(x) + 
-            1))), Pareto = 1/(1 - na.omit(apply(x, 2, rank, na.last = "keep", ties.method = "random")/(nrow(x) + 
+        S <- switch(marg, Frechet = -1/log(na.omit(apply(x, 2, rank, na.last = "keep", ties.method = "random")/(nrow(x) +
+            1))), Pareto = 1/(1 - na.omit(apply(x, 2, rank, na.last = "keep", ties.method = "random")/(nrow(x) +
             1))))
-        
+
         # Obtain radius
         R <- switch(Rnorm, l1 = rowSums(S), l2 = apply(S, 1, function(x) {
             sqrt(sum(x^2))
@@ -117,7 +117,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
         S <- S[ordR, ]
         # Order radius
         R <- R[ordR]
-        
+
         # Check conditions for different regions
         if (region != "sum") {
             if (ncol(S) != length(th)) {
@@ -149,9 +149,9 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
             }
             above <- floor(th * length(R)):length(R)  #works because observations are ordered
         }
-        
-        
-        
+
+
+
         if (length(above) < 5) {
             warning("Less than five observations above the chosen threshold")
         }
@@ -163,7 +163,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
             }
             ang <- atan(S[, 2]/S[, 1])
         } else {
-            ang <- switch(Anorm, l1 = S[, -ncol(S), drop = FALSE]/rowSums(S), l2 = S[, -ncol(S), drop = FALSE]/apply(S, 
+            ang <- switch(Anorm, l1 = S[, -ncol(S), drop = FALSE]/rowSums(S), l2 = S[, -ncol(S), drop = FALSE]/apply(S,
                 1, function(x) {
                   sqrt(sum(x^2))
                 }), linf = S[, -ncol(S), drop = FALSE]/apply(S, 1, max))
@@ -179,9 +179,13 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
 }
 
 #' Weighted empirical distribution function
+#'
+#' Compute an empirical distribution function with weights \code{w} at each of \code{x}
 #' @param x observations
 #' @param w weights
 #' @param ord logical indicating whether x values are already ordered. Default to \code{FALSE}
+#' @return a function of class \code{ecdf}
+#' @keywords internal
 .wecdf <- function(x, w) {
     # Adapted from spatstat (c) Adrian Baddeley and Rolf Turner
     stopifnot(length(x) == length(w))  #also returns error if x is multidimensional
@@ -189,7 +193,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
     x <- x[!nbg]
     w <- w[!nbg]
     n <- length(x)
-    if (n < 1) 
+    if (n < 1)
         stop("'x' must have 1 or more non-missing values")
     ox <- order(x)
     x <- x[ox]
@@ -198,7 +202,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
     xmatch <- factor(match(x, vals), levels = seq_along(vals))
     wmatch <- tapply(w, xmatch, sum)
     wmatch[is.na(wmatch)] <- 0
-    rval <- approxfun(vals, cumsum(wmatch), method = "constant", yleft = 0, yright = sum(wmatch), f = 0, 
+    rval <- approxfun(vals, cumsum(wmatch), method = "constant", yleft = 0, yright = sum(wmatch), f = 0,
         ties = "ordered")
     class(rval) <- c("ecdf", "stepfun", class(rval))
     assign("nobs", n, envir = environment(rval))
@@ -261,7 +265,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
 #'  \item \code{ndec} Newton decrement.
 #'  \item \code{gradnorm} norm of gradient of log empirical likelihood.
 #' }
-emplik <- function(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)), eps = 1/nrow(dat), M = 1e+30, 
+emplik <- function(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)), eps = 1/nrow(dat), M = 1e+30,
     thresh = 1e-30, itermax = 100) {
     if (is.infinite(M)) {
         M = 1e+30
@@ -292,8 +296,8 @@ emplik <- function(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)), eps = 1
 #' set.seed(123)
 #' x <- rmev(n=250, d=2, param=0.5, model='log')
 #' out <- angmeasdir(x=x, th=0, Rnorm='l1', Anorm='l1', marg='Frechet', wgt='Empirical')
-angmeasdir <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf", "arctan"), 
-    marg = c("Frechet", "Pareto"), wgt = c("Empirical", "Euclidean"), region = c("sum", "min", "max"), 
+angmeasdir <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf", "arctan"),
+    marg = c("Frechet", "Pareto"), wgt = c("Empirical", "Euclidean"), region = c("sum", "min", "max"),
     is.angle = FALSE) {
     Rnorm <- match.arg(Rnorm, c("l1", "l2", "linf"))
     Anorm <- match.arg(Anorm, c("l1", "l2", "linf", "arctan"))
@@ -301,17 +305,17 @@ angmeasdir <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2
     wgt <- match.arg(wgt, c("Empirical", "Euclidean"))
     region <- match.arg(region, c("sum", "min", "max"))[1]
     # Obtain angles and weights
-    angmeasure <- angmeas(x = x, th = th, Rnorm = Rnorm, Anorm = Anorm, marg = marg, wgt = wgt, region = region, 
+    angmeasure <- angmeas(x = x, th = th, Rnorm = Rnorm, Anorm = Anorm, marg = marg, wgt = wgt, region = region,
         is.angle = is.angle)
     n <- length(angmeasure$wts)
     # d <- ncol(angmeasure$ang) + 1
     loowts <- matrix(0, ncol = n, nrow = n)
     for (i in 1:n) {
-        loowts[i, -i] <- .returnAng(ang = angmeasure$ang[-i, , drop = FALSE], R = NULL, Rnorm = Rnorm, 
+        loowts[i, -i] <- .returnAng(ang = angmeasure$ang[-i, , drop = FALSE], R = NULL, Rnorm = Rnorm,
             wgt = wgt, region = region)$wts
     }
     angles <- cbind(angmeasure$ang, 1 - rowSums(angmeasure$ang))
-    optnu <- optimize(f = .loocvdens, ang = angles, wts = angmeasure$wts, loowts = loowts, lower = 1e-08, 
+    optnu <- optimize(f = .loocvdens, ang = angles, wts = angmeasure$wts, loowts = loowts, lower = 1e-08,
         upper = 2000, maximum = FALSE, tol = 1e-05)
     return(invisible(list(nu = optnu$minimum, dirparmat = optnu$minimum * angles, wts = angmeasure$wts)))
 }

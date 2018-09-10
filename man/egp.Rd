@@ -12,6 +12,8 @@
 
 \item{model}{a string indicating which extended family to fit}
 
+\item{show}{logical; if \code{TRUE}, print the results of the optimization}
+
 \item{p}{extreme event probability; \code{p} must be greater than the rate of exceedance for the calculation to make sense. See \bold{Details}.}
 
 \item{plot}{boolean indicating whether or not to plot the return levels}

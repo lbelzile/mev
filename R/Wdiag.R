@@ -103,7 +103,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
             M <- length(xdat[xdat > thresh])
         }  #why M=nat/3 as default?
     if (is.null(par)) {
-            ppf <- fit.pp(xdat = xdat, thresh = quantile(xdat, q1), npp = length(xdat)/M, show = FALSE)
+            ppf <- fit.pp(xdat = xdat, threshold = quantile(xdat, q1), npp = length(xdat)/M, show = FALSE)
             par <- ppf$estimate
     }
     J1 <- .Joint_MLE_NHPP(x = xdat, u = u, k = k, q1 = q1, q2 = q2, par = par, M = M)
@@ -313,6 +313,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 #' \item mle vector of MLEs above the supplied thresholds
 #' \item cov joint asymptotic covariance matrix of these MLEs
 #' }
+#' @keywords internal
 .Joint_MLE_Expl <- function(x, u = NULL, k, q1, q2 = 1, param) {
     if (!is.element(param, c("InvRate", "Rate"))) {
         stop("param should be one of InvRate or Rate")
@@ -378,6 +379,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 #' \item Cov.sig joint asymptotic covariance matrix of MLEs for \eqn{\sigma}
 #' \item Cov.xi joint asymptotic covariance matrix of MLEs for \eqn{\xi}
 #' }
+#' @keywords internal
 .Joint_MLE_NHPP <- function(x, u = NULL, k, q1, q2 = 1, par, M) {
     if (!is.null(u)) {
         k <- length(u)
@@ -476,7 +478,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 #'@param k number of columns (the number of rows is \code{k-1})
 #'
 #'@return a \code{k-1} x \code{k} contrast matrix
-#'
+#'@keywords internal
 .C1 <- function(k) {
     C <- diag(x = 1, nrow = k - 1, ncol = k)
     C[row(C) + 1 == col(C)] <- -1

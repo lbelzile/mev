@@ -46,7 +46,7 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
     if ("delta" == confint) {
         gpfit_min_par <- gp.fit(sp, threshold = 0)
         chibar_est <- as.vector((2 * gpfit_min_par$est[2] - 1))
-        return(c(Estimate = chibar_est, `Lower CI` = chibar_est - qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2]), 
+        return(c(Estimate = chibar_est, `Lower CI` = chibar_est - qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2]),
             `Upper CI` = chibar_est + qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2])))
     } else {
         confint_profile <- 2 * confint(gpd.pll(param = "shape", psi = NA, dat = sp, mod = "tem"), level = level) - 1
@@ -89,7 +89,7 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
     })
     # Estimate of eta at w = 1/2
     x <- 1/(1 - qu)
-    eta <- gp.fit(apply(sp, 1, min), threshold = x)$est["shape"]
+    eta <- fit.gpd(apply(sp, 1, min), threshold = x)$estimate["shape"]
     # Angles
     if (any(c(w < 0, w > 1, length(unique(w)) != length(w)))) {
         stop("Invalid argument `w` to angextrapo")
@@ -101,7 +101,7 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
     return(list(w = w, g = g, eta = eta))
 }
 
-################## 
+##################
 #' Estimation of the bivariate lambda function of Wadsworth and Tawn (2013)
 #'
 #' @param dat an \eqn{n} by \eqn{2} matrix of multivariate observations
@@ -117,8 +117,6 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 #' which are adjusted post-inference.
 #'
 #' @importFrom utils capture.output
-#' @importFrom revdbayes rpost
-#' @importFrom revdbayes set_prior
 #' @importFrom evd fpot
 #' @importFrom graphics segments
 #' @return a plot of the lambda function if \code{plot=TRUE}, plus an invisible list with components
@@ -147,9 +145,10 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
         1/(mean(log(dat[dat > thresh])) - log(thresh))
     }
     if (method == "bayes") {
-        if (!requireNamespace("revdbayes")) {
-            stop("Package `revdbayes` is not installed.")
-        }
+      if (!requireNamespace("revdbayes", quietly = TRUE)) {
+        stop("Package \"revdbayes\" needed for this function to work. Please install it.",
+             call. = FALSE)
+      }
     }
     # Transform variables to the exponential scale
     Xexp <- t(apply(dat, 2, function(x) {
@@ -174,8 +173,8 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
                 pot_stval0 <- mev::gp.fit(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu))$estimate
                 if (pot_stval0[2] < 1 || pot_stval0[2] > 1/max(c(1 - w, w))) {
                   # If values are not within the allowed interval, fit GP fixing the shape to a legit value
-                  pot_stval <- try(evd::fpot(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu), shape = (xi <- max(1 + 0.001, 
-                    min(v[2], 1/max(c(1 - w, w)) - 0.001, na.rm = TRUE))), std.err = FALSE, method = "Brent", lower = pot_stval0[1]/5, 
+                  pot_stval <- try(evd::fpot(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu), shape = (xi <- max(1 + 0.001,
+                    min(v[2], 1/max(c(1 - w, w)) - 0.001, na.rm = TRUE))), std.err = FALSE, method = "Brent", lower = pot_stval0[1]/5,
                     upper = pot_stval0[1] * 10))
                   # Make sure that the result is valid and optim converged
                   if (!is.character(pot_stval)) {
@@ -188,12 +187,12 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
                 }
                 # Generate independent samples from the posterior Catch and sink error messages, print statements and warnings - invalid input is
                 # removed anyway and cast to NA if needs be
-                invisible(utils::capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp", data = ang_weighted_dat, 
-                  thresh = quantile(ang_weighted_dat, qu), prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1, 
+                invisible(utils::capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp", data = ang_weighted_dat,
+                  thresh = quantile(ang_weighted_dat, qu), prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1,
                     max_xi = 1/max(c(1 - w, w))), init_ests = start, trans = "BC")), silent = TRUE)))
                 if (is.character(postsamp)) {
-                  invisible(capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp", data = ang_weighted_dat, 
-                    thresh = quantile(ang_weighted_dat, qu), prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1, 
+                  invisible(capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp", data = ang_weighted_dat,
+                    thresh = quantile(ang_weighted_dat, qu), prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1,
                       max_xi = 1/max(c(1 - w, w))), init_ests = start)), silent = TRUE)))
                 }
                 if (is.character(postsamp)) {
@@ -206,9 +205,9 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
         }
     })
     if (method %in% c("hill", "mle")) {
-        lower <- pmax(c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5), pmin(1, lambda_seq[1, ] - qnorm(0.975) * lambda_seq[2, 
+        lower <- pmax(c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5), pmin(1, lambda_seq[1, ] - qnorm(0.975) * lambda_seq[2,
             ]))
-        upper <- pmax(c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5), pmin(1, lambda_seq[1, ] + qnorm(0.975) * lambda_seq[2, 
+        upper <- pmax(c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5), pmin(1, lambda_seq[1, ] + qnorm(0.975) * lambda_seq[2,
             ]))
         pe <- pmax(c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5), pmin(1, lambda_seq[1, ]))
     } else if (method == "bayes") {
@@ -217,7 +216,7 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
         pe <- lambda_seq[2, ]
     }
     if (plot) {
-        plot(type = "n", x = 0.5, y = 1, xlim = c(0, 1), ylim = c(0.5, 1), xlab = expression(omega), ylab = expression(lambda(omega)), 
+        plot(type = "n", x = 0.5, y = 1, xlim = c(0, 1), ylim = c(0.5, 1), xlab = expression(omega), ylab = expression(lambda(omega)),
             bty = "l")
         segments(x1 = 0.5, x0 = 0, y1 = 0.5, y0 = 1, col = "gray")
         segments(x1 = 0.5, x0 = 1, y1 = 0.5, y0 = 1, col = "gray")

@@ -3,10 +3,9 @@
 \name{fit.egp}
 \alias{fit.egp}
 \alias{tstab.egp}
-\title{Fit of extended GP models and parameter stability plots}
+\title{Parameter stability plot and maximum likelihood routine for extended GP models}
 \usage{
-fit.egp(xdat, thresh, model = c("egp1", "egp2", "egp3"), init,
-  show = FALSE)
+fit.egp(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE)
 
 tstab.egp(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3,
   umin, umax, nint)
@@ -19,6 +18,8 @@ tstab.egp(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3,
 \item{model}{a string indicating which extended family to fit}
 
 \item{init}{vector of initial values, with \eqn{\log(\kappa)}{log(\kappa)} and \eqn{\log(\sigma)}{log(\sigma)}; can be omitted.}
+
+\item{show}{logical; if \code{TRUE}, print the results of the optimization}
 
 \item{plots}{vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots}
 
@@ -45,7 +46,8 @@ using maximum likelihood estimation.
 \examples{
 xdat <- evd::rgpd(n = 100, loc = 0, scale = 1, shape = 0.5)
 fitted <- fit.egp(xdat = xdat, thresh = 1, model = "egp2", show = TRUE)
-tstab.egp(xdat = xdat
+thresh <- evd::qgpd(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
+tstab.egp(xdat = xdat, thresh = thresh, model = "egp2", plots = 1:3)
 }
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.

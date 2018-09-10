@@ -604,6 +604,14 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 #'
 #' This function calculates the posterior predictive density at points x
 #' based on a matrix of posterior density parameters
+#'
+#' @param x \code{n} vector of points
+#' @param posterior \code{n} by \code{3} matrix of posterior samples
+#' @param Nyr number of years to extrapolate
+#' @param type string indicating whether to return the posterior \code{density} or the \code{quantile}.
+#' @param vector of values for the posterior predictive density or quantile at x
+#' @export
+#' @keywords internal
 .gev.postpred <- function(x, posterior, Nyr = 100, type = c("density", "quantile")) {
     rowMeans(cbind(apply(rbind(posterior), 1, function(par) {
         switch(type, density = evd::dgev(x = x, loc = par[1] - par[2] * (1 - Nyr^par[3])/par[3], scale = par[2] * Nyr^par[3], shape = par[3]),

@@ -21,6 +21,7 @@
 #' @param thresh threshold value
 #' @param par parameter vector (\eqn{\kappa}, \eqn{\sigma},\eqn{\xi}).
 #' @param model a string indicating which extended family to fit
+#' @param show logical; if \code{TRUE}, print the results of the optimization
 #' @param p extreme event probability; \code{p} must be greater than the rate of exceedance for the calculation to make sense. See \bold{Details}.
 #' @param plot boolean indicating whether or not to plot the return levels
 #' @importFrom grDevices rainbow
@@ -143,7 +144,7 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
     return(retlev)
 }
 
-#' Fit of extended GP models and parameter stability plots
+#' Parameter stability plot and maximum likelihood routine for extended GP models
 #'
 #' \code{fit.egp} is a numerical optimization routine to fit the extended generalised Pareto models of Papastathopoulos and Tawn (2013),
 #' using maximum likelihood estimation.
@@ -168,7 +169,8 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
 #' @examples
 #' xdat <- evd::rgpd(n = 100, loc = 0, scale = 1, shape = 0.5)
 #' fitted <- fit.egp(xdat = xdat, thresh = 1, model = "egp2", show = TRUE)
-#' tstab.egp(xdat = xdat
+#' thresh <- evd::qgpd(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
+#' tstab.egp(xdat = xdat, thresh = thresh, model = "egp2", plots = 1:3)
 fit.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE) {
     if (!(model %in% c("egp1", "egp2", "egp3")) || length(model) != 1) {
         stop("Invalid model  argument: must be one of `egp1', `egp2' or `egp3'.")
@@ -255,11 +257,12 @@ print.mev_egp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   invisible(x)
 }
 
-
+#' Deprecated function for parameter stability plots
+#'
 #' @export
 #' @keywords internal
 egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3, umin, umax, nint){
-  tstab.egp(xdat = xdat, thresh = thresh, model = model, plots = plots, umin = umin, umax = umax, nint)
+  tstab.egp(xdat = xdat, thresh = thresh, model = model, plots = plots, umin = umin, umax = umax, nint = nint)
 }
 
 #' @inheritParams egp

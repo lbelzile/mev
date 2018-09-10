@@ -3,6 +3,7 @@
 \name{egp-function}
 \alias{egp-function}
 \alias{egp.ll}
+\alias{egp-function}
 \alias{egp.retlev}
 \title{Extended generalised Pareto families of Papastathopoulos and Tawn (functions)}
 \usage{

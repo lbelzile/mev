@@ -1,6 +1,8 @@
-#' Estimator of the extremal coefficient
+#' Estimators of the extremal coefficient
 #'
-#' This function returns a matrix with the Schlather and Tawn estimator of extremal coefficient
+#' These functions estimate the extremal coefficient using an approxiate sample from the Frechet distribution.
+#'
+#' @details This function returns a matrix with the Schlather and Tawn estimator of extremal coefficient
 #' based on the extremal index of pairs of max-stable vectors. The likelihood of the naive estimator for a pair of two sites \eqn{A} is
 #' \deqn{ \mathrm{card}\left\{ j: \max_{i \in A} X_i^{(j)}\bar{X}_i)>z \right\} \log(\theta_A) - \theta_A \sum_{j=1}^n \left[ \max \left\{z, \max_{i \in A} (X_i^{(j)}\bar{X}_i)\right\}\right]^{-1},}
 #'where \eqn{\bar{X}_i = n^{-1} \sum_{j=1}^n 1/X_i^{(j)}} is the harmonic mean and \eqn{z} is a threshold on the unit Frechet scale.
@@ -62,7 +64,8 @@
 #' extcoefbr<- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
 #' lines(extcoefbr[,'h'], extcoefbr[,'extcoef'], type = 'l', col = 'orange', lwd = 2)
 #' }
-extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"), prob = 0, which.plot = c("schlather", "fmado"), tikz = FALSE) {
+extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"), prob = 0,
+                    which.plot = c("schlather", "fmado"), tikz = FALSE) {
 
     estimator <- match.arg(estimator, c("schlather", "fmado"), several.ok = TRUE)
     which.plot <- match.arg(which.plot, c("schlather", "fmado"), several.ok = TRUE)
@@ -154,17 +157,21 @@ extcoef <- function(dat, loc, thresh, estimator = c("schlather", "fmado"), prob 
     return(invisible(reslist))
 }
 
-#' Pairwise extremal coefficient estimate of Smith
-#'
-#' Suppose \eqn{Z(x)} is  a max-stable vector with unit Frechet distribution. Then
+
+#' @details Consider the pairwise extremal coefficient estimate of Smith. Suppose \eqn{Z(x)} is  a max-stable vector with unit Frechet distribution. Then
 #'  \eqn{1/Z} is unit exponential and \eqn{1/\max(Z(s_1), Z(s_2))} is exponential
 #'  with rate \eqn{\theta = \max(Z(s_1), Z(s_2))}.
 #'  The extremal index for the pair can therefore be calculated using the reciprocal mean.
-#'
+#'  If \code{method = "parametric"}, a parametric GEV model is fitted to each column of \code{dat} using maximum likelihood
+#'  estimation and transformed back using the probability integral transform. If \code{method = "nonparametric"},
+#'  using the empirical distribution function. The latter is the default, as it is appreciatly faster.
 #' @param dat an \code{n} by \code{d} matrix of maximas for \code{d} variables
 #' @param loc \code{d} by \code{D} matrix of coordinates; default to \code{NULL}
+#' @param method string indicating which method to use to transform the margins. See \bold{Details}
 #' @param standardize logical; should observations be transformed to unit Frechet scale? Default is to transform
 #' @references R. J. Erhardt, R. L. Smith (2012), Approximate Bayesian computing for spatial extremes, \emph{Computational Statistics and Data Analysis}, \bold{56}, pp.1468--1481.
+#' @rdname extcoef
+#' @export
 #' @examples
 #' loc <- 10*cbind(runif(20), runif(20))
 #' di <- as.matrix(dist(loc))

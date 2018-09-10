@@ -4,8 +4,8 @@
 \alias{smith.penult.fn}
 \title{Smith's third penultimate approximation}
 \usage{
-smith.penult.fn(loc, scale, shape, eps, rho = NULL, method = c("bm",
-  "pot"), mdaGumbel = FALSE, ...)
+smith.penult.fn(loc, scale, shape, eps, rho = NULL, method = c("bm", "pot"),
+  mdaGumbel = FALSE, ...)
 }
 \arguments{
 \item{loc}{location parameter returned by \code{\link{smith.penult}} or threshold vector}

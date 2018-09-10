@@ -4,8 +4,7 @@
 \alias{gev.bcor}
 \title{Bias correction for GEV distribution}
 \usage{
-gev.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs",
-  "exp"))
+gev.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp"))
 }
 \arguments{
 \item{par}{parameter vector (\code{scale}, \code{shape})}

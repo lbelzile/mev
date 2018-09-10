@@ -191,6 +191,47 @@ RcppExport SEXP _mev_loocvdens(SEXP nuSEXP, SEXP angSEXP, SEXP wtsSEXP, SEXP loo
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// Zhang_Stephens
+List Zhang_Stephens(NumericVector x, NumericVector init, NumericVector adapt_sd, bool adapt, int burnin, int niter, int thin, int method);
+static SEXP _mev_Zhang_Stephens_try(SEXP xSEXP, SEXP initSEXP, SEXP adapt_sdSEXP, SEXP adaptSEXP, SEXP burninSEXP, SEXP niterSEXP, SEXP thinSEXP, SEXP methodSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type init(initSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type adapt_sd(adapt_sdSEXP);
+    Rcpp::traits::input_parameter< bool >::type adapt(adaptSEXP);
+    Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
+    Rcpp::traits::input_parameter< int >::type niter(niterSEXP);
+    Rcpp::traits::input_parameter< int >::type thin(thinSEXP);
+    Rcpp::traits::input_parameter< int >::type method(methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(Zhang_Stephens(x, init, adapt_sd, adapt, burnin, niter, thin, method));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _mev_Zhang_Stephens(SEXP xSEXP, SEXP initSEXP, SEXP adapt_sdSEXP, SEXP adaptSEXP, SEXP burninSEXP, SEXP niterSEXP, SEXP thinSEXP, SEXP methodSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_mev_Zhang_Stephens_try(xSEXP, initSEXP, adapt_sdSEXP, adaptSEXP, burninSEXP, niterSEXP, thinSEXP, methodSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // rdir
 NumericMatrix rdir(int n, NumericVector alpha, bool normalize);
 static SEXP _mev_rdir_try(SEXP nSEXP, SEXP alphaSEXP, SEXP normalizeSEXP) {
@@ -1439,47 +1480,6 @@ RcppExport SEXP _mev_rPsite(SEXP nSEXP, SEXP jSEXP, SEXP dSEXP, SEXP paraSEXP, S
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// Zhang_Stephens
-List Zhang_Stephens(NumericVector x, NumericVector init, NumericVector adapt_sd, bool adapt, int burnin, int niter, int thin, int method);
-static SEXP _mev_Zhang_Stephens_try(SEXP xSEXP, SEXP initSEXP, SEXP adapt_sdSEXP, SEXP adaptSEXP, SEXP burninSEXP, SEXP niterSEXP, SEXP thinSEXP, SEXP methodSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type init(initSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type adapt_sd(adapt_sdSEXP);
-    Rcpp::traits::input_parameter< bool >::type adapt(adaptSEXP);
-    Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
-    Rcpp::traits::input_parameter< int >::type niter(niterSEXP);
-    Rcpp::traits::input_parameter< int >::type thin(thinSEXP);
-    Rcpp::traits::input_parameter< int >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(Zhang_Stephens(x, init, adapt_sd, adapt, burnin, niter, thin, method));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _mev_Zhang_Stephens(SEXP xSEXP, SEXP initSEXP, SEXP adapt_sdSEXP, SEXP adaptSEXP, SEXP burninSEXP, SEXP niterSEXP, SEXP thinSEXP, SEXP methodSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_mev_Zhang_Stephens_try(xSEXP, initSEXP, adapt_sdSEXP, adaptSEXP, burninSEXP, niterSEXP, thinSEXP, methodSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
 
 // validate (ensure exported C++ functions exist before calling them)
 static int _mev_RcppExport_validate(const char* sig) { 
@@ -1490,6 +1490,7 @@ static int _mev_RcppExport_validate(const char* sig) {
         signatures.insert("NumericVector(*.Pickands_emp)(NumericVector,NumericVector,NumericVector)");
         signatures.insert("double(*ldirfn)(NumericVector)");
         signatures.insert("NumericVector(*.loocvdens)(double,NumericMatrix,NumericVector,NumericMatrix)");
+        signatures.insert("List(*Zhang_Stephens)(NumericVector,NumericVector,NumericVector,bool,int,int,int,int)");
         signatures.insert("NumericMatrix(*rdir)(int,NumericVector,bool)");
         signatures.insert("NumericMatrix(*mvrnorm)(int,NumericVector,NumericMatrix)");
         signatures.insert("NumericMatrix(*.mvrnorm_chol)(int,NumericVector,arma::mat)");
@@ -1524,7 +1525,6 @@ static int _mev_RcppExport_validate(const char* sig) {
         signatures.insert("NumericMatrix(*.rmevspec_cpp)(int,int,NumericVector,int,NumericMatrix,arma::mat)");
         signatures.insert("NumericMatrix(*.rmevasy)(int,int,NumericVector,LogicalMatrix,IntegerVector,NumericMatrix,int)");
         signatures.insert("NumericMatrix(*.rPsite)(int,int,int,NumericVector,int,NumericMatrix,arma::mat)");
-        signatures.insert("List(*Zhang_Stephens)(NumericVector,NumericVector,NumericVector,bool,int,int,int,int)");
     }
     return signatures.find(sig) != signatures.end();
 }
@@ -1536,6 +1536,7 @@ RcppExport SEXP _mev_RcppExport_registerCCallable() {
     R_RegisterCCallable("mev", "_mev_.Pickands_emp", (DL_FUNC)_mev_Pickands_emp_try);
     R_RegisterCCallable("mev", "_mev_ldirfn", (DL_FUNC)_mev_ldirfn_try);
     R_RegisterCCallable("mev", "_mev_.loocvdens", (DL_FUNC)_mev_loocvdens_try);
+    R_RegisterCCallable("mev", "_mev_Zhang_Stephens", (DL_FUNC)_mev_Zhang_Stephens_try);
     R_RegisterCCallable("mev", "_mev_rdir", (DL_FUNC)_mev_rdir_try);
     R_RegisterCCallable("mev", "_mev_mvrnorm", (DL_FUNC)_mev_mvrnorm_try);
     R_RegisterCCallable("mev", "_mev_.mvrnorm_chol", (DL_FUNC)_mev_mvrnorm_chol_try);
@@ -1570,7 +1571,6 @@ RcppExport SEXP _mev_RcppExport_registerCCallable() {
     R_RegisterCCallable("mev", "_mev_.rmevspec_cpp", (DL_FUNC)_mev_rmevspec_cpp_try);
     R_RegisterCCallable("mev", "_mev_.rmevasy", (DL_FUNC)_mev_rmevasy_try);
     R_RegisterCCallable("mev", "_mev_.rPsite", (DL_FUNC)_mev_rPsite_try);
-    R_RegisterCCallable("mev", "_mev_Zhang_Stephens", (DL_FUNC)_mev_Zhang_Stephens_try);
     R_RegisterCCallable("mev", "_mev_RcppExport_validate", (DL_FUNC)_mev_RcppExport_validate);
     return R_NilValue;
 }
@@ -1581,6 +1581,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mev_Pickands_emp", (DL_FUNC) &_mev_Pickands_emp, 3},
     {"_mev_ldirfn", (DL_FUNC) &_mev_ldirfn, 1},
     {"_mev_loocvdens", (DL_FUNC) &_mev_loocvdens, 4},
+    {"_mev_Zhang_Stephens", (DL_FUNC) &_mev_Zhang_Stephens, 8},
     {"_mev_rdir", (DL_FUNC) &_mev_rdir, 3},
     {"_mev_mvrnorm", (DL_FUNC) &_mev_mvrnorm, 3},
     {"_mev_mvrnorm_chol", (DL_FUNC) &_mev_mvrnorm_chol, 3},
@@ -1615,7 +1616,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mev_rmevspec_cpp", (DL_FUNC) &_mev_rmevspec_cpp, 6},
     {"_mev_rmevasy", (DL_FUNC) &_mev_rmevasy, 7},
     {"_mev_rPsite", (DL_FUNC) &_mev_rPsite, 7},
-    {"_mev_Zhang_Stephens", (DL_FUNC) &_mev_Zhang_Stephens, 8},
     {"_mev_RcppExport_registerCCallable", (DL_FUNC) &_mev_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };
