@@ -45,7 +45,11 @@ The latter two methods better reflect the asymmetry of the estimates than the Wa
 \examples{
 dat <- abs(rnorm(10000))
 u <- qnorm(seq(0.9,0.99, by= 0.01))
+tstab.gpd(dat = dat, thresh = u)
+\dontrun{
+tstab.gpd(dat = dat, thresh = u, method = "profile")
 tstab.gpd(dat = dat, thresh = u, method = "post")
+}
 }
 \seealso{
 \code{\link[ismev]{gpd.fitrange}}

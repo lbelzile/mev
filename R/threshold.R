@@ -31,7 +31,11 @@
 #' @examples
 #' dat <- abs(rnorm(10000))
 #' u <- qnorm(seq(0.9,0.99, by= 0.01))
+#' tstab.gpd(dat = dat, thresh = u)
+#' \dontrun{
+#' tstab.gpd(dat = dat, thresh = u, method = "profile")
 #' tstab.gpd(dat = dat, thresh = u, method = "post")
+#' }
 tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level = 0.95, plot = TRUE, ...){
   thresh <- unique(sort(thresh))
   stopifnot(length(level) == 1, level > 0, level < 1)

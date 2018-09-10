@@ -50,7 +50,7 @@ gpd.mle <- function(xdat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmea
 #' @return named vector with maximum likelihood estimated parameter values for arguments \code{args}
 #' @examples
 #' dat <- evd::rgev(n = 100, shape = 0.2)
-#' gev.mle(dat = dat, N = 100, p = 0.01, q = 0.5)
+#' gev.mle(xdat = dat, N = 100, p = 0.01, q = 0.5)
 gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), N, p, q) {
   args <- match.arg(args, c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), several.ok = TRUE)
 
