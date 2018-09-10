@@ -5,7 +5,8 @@
 \alias{tstab.egp}
 \title{Parameter stability plot and maximum likelihood routine for extended GP models}
 \usage{
-fit.egp(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE)
+fit.egp(xdat, thresh, model = c("egp1", "egp2", "egp3"), init,
+  show = FALSE)
 
 tstab.egp(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3,
   umin, umax, nint)

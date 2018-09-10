@@ -199,6 +199,7 @@ fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC
 #' Values other than \code{0} indicate that the algorithm likely did not converge (in particular 1 and 50).
 #' \item \code{counts} components taken from the list returned by \code{\link[stats]{optim}}.
 #' }
+#' @export
 #' @examples
 #' data(eskrain)
 #' pp_mle <- fit.pp(eskrain, threshold = 30, np = 6201)
@@ -279,6 +280,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
 #'
 #' This function returns an object of class \code{mev_gev}, with default methods for printing and quantile-quantile plots.
 #' @inheritParams gp.fit
+#' @export
 #' @importFrom alabama auglag
 #' @param start numeric vector of starting values
 #' @param method string indicating the outer optimization routine for the augmented Lagrangian. One of \code{nlminb} or \code{BFGS}.
@@ -298,6 +300,8 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
   xdat <- na.omit(as.vector(xdat))
   method <- match.arg(method[1], choices = c("nlminb","BFGS"))
   n <- length(xdat)
+  xmax <- max(xdat)
+  xmin <- min(xdat)
   if(is.null(start)){
   #Optimization routine, with default starting values
   in2 <- sqrt(6 * var(xdat))/pi
@@ -310,8 +314,6 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
    stopifnot(length(start)==3)
     spar <- as.vector(start)
   }
-  xmax <- max(xdat)
-  xmin <- min(xdat)
   mle <- try(suppressWarnings(alabama::auglag(par = spar, fn = function(par) {
     -gev.ll(par, dat = xdat)
   }, gr = function(par) {

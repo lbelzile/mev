@@ -4,8 +4,8 @@
 \alias{gev.pll}
 \title{Profile log-likelihood for the generalized extreme value distribution}
 \usage{
-gev.pll(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
-  mod = "profile", dat, N = NULL, p = NULL, q = NULL,
+gev.pll(psi, param = c("loc", "scale", "shape", "quant", "Nmean",
+  "Nquant"), mod = "profile", dat, N = NULL, p = NULL, q = NULL,
   correction = TRUE, ...)
 }
 \arguments{

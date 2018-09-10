@@ -4,7 +4,8 @@
 \alias{lambdadep}
 \title{Estimation of the bivariate lambda function of Wadsworth and Tawn (2013)}
 \usage{
-lambdadep(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot = TRUE)
+lambdadep(dat, qu = 0.95, method = c("hill", "mle", "bayes"),
+  plot = TRUE)
 }
 \arguments{
 \item{dat}{an \eqn{n} by \eqn{2} matrix of multivariate observations}

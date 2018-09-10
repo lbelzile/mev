@@ -14,7 +14,8 @@
 \usage{
 pextgp.G(u, type = 1, prob, kappa, delta)
 
-dextgp.G(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE)
+dextgp.G(u, type = 1, prob = NA, kappa = NA, delta = NA,
+  log = FALSE)
 
 qextgp.G(u, type = 1, prob = NA, kappa = NA, delta = NA)
 

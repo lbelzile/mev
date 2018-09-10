@@ -4,7 +4,8 @@
 \alias{egp.fit}
 \title{Fit of extended GP models and parameter stability plots}
 \usage{
-egp.fit(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE)
+egp.fit(xdat, thresh, model = c("egp1", "egp2", "egp3"), init,
+  show = FALSE)
 }
 \description{
 This function is an alias of \code{\link{fit.egp}}.

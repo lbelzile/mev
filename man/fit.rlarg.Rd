@@ -4,7 +4,8 @@
 \alias{fit.rlarg}
 \title{Maximum likelihood estimates of point process for the r-largest observations}
 \usage{
-fit.rlarg(xdat, start = NULL, method = c("nlminb", "BFGS"), show = FALSE)
+fit.rlarg(xdat, start = NULL, method = c("nlminb", "BFGS"),
+  show = FALSE)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}

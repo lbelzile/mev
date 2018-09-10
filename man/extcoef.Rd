@@ -5,8 +5,8 @@
 \alias{extcoef.smith}
 \title{Estimators of the extremal coefficient}
 \usage{
-extcoef(dat, loc, thresh, estimator = c("schlather", "fmado"), prob = 0,
-  which.plot = c("schlather", "fmado"), tikz = FALSE)
+extcoef(dat, loc, thresh, estimator = c("schlather", "fmado"),
+  prob = 0, which.plot = c("schlather", "fmado"), tikz = FALSE)
 
 extcoef.smith(dat, loc = NULL, standardize = TRUE,
   method = c("nonparametric", "parametric"))

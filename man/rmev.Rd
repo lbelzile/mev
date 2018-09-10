@@ -4,9 +4,10 @@
 \alias{rmev}
 \title{Exact simulations of multivariate extreme value distributions}
 \usage{
-rmev(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "aneglog",
-  "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir",
-  "dirmix"), alg = c("ef", "sm"), weights, vario, loc, grid = FALSE, ...)
+rmev(n, d, param, asy, sigma, model = c("log", "alog", "neglog",
+  "aneglog", "bilog", "negbilog", "hr", "br", "xstud", "smith",
+  "schlather", "ct", "sdir", "dirmix"), alg = c("ef", "sm"), weights,
+  vario, loc, grid = FALSE, ...)
 }
 \arguments{
 \item{n}{number of observations}

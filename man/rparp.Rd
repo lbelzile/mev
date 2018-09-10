@@ -5,9 +5,9 @@
 \title{Simulation from R-Pareto processes}
 \usage{
 rparp(n, shape = 1, riskf = c("sum", "site", "max", "min"),
-  siteindex = NULL, d, param, sigma, model = c("log", "neglog", "bilog",
-  "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir",
-  "dirmix"), weights, vario, loc, ...)
+  siteindex = NULL, d, param, sigma, model = c("log", "neglog",
+  "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct",
+  "sdir", "dirmix"), weights, vario, loc, ...)
 }
 \arguments{
 \item{n}{number of observations}
