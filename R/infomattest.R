@@ -49,7 +49,7 @@ infomat.test <- function(x, q, K, plot = TRUE) {
         stop("Invalid vector of probabilities specified")
     }
     # Define functions
-    
+
     ll.gap <- function(par, Ck, N0) {
         if (missing(N0)) {
             N0 <- sum(Ck == 0)
@@ -84,7 +84,7 @@ infomat.test <- function(x, q, K, plot = TRUE) {
     Tn <- function(par, Ck, N0) {
         length(Ck) * (Jn(par, Ck, N0) - In(par, Ck, N0))^2/Vn(par, Ck, N0)
     }
-    
+
     # Interexceedance time Define containers
     IMT <- llval <- mles <- matrix(0, ncol = K, nrow = length(q))
     # Exceedance values
@@ -103,7 +103,7 @@ infomat.test <- function(x, q, K, plot = TRUE) {
             Ck <- ((length(exceeds[[ind]]) + 1)/length(x)) * pmax(exceeds[[ind]] - k, 0)
             N0 <- sum(Ck == 0)  #Interclusters
             schi <- sum(Ck)
-            
+
             N <- length(exceeds[[ind]]) + 1
             Nc = N - 1 - N0
             mle <- (schi + N - 1 + Nc - sqrt((schi + N - 1 + Nc)^2 - 8 * Nc * schi))/(2 * schi)
@@ -115,15 +115,15 @@ infomat.test <- function(x, q, K, plot = TRUE) {
         }
         pvals <- 1 - pchisq(IMT, df = 1)
     }
-    
+
     if (plot) {
         cols <- colorRampPalette(colors = c("red", "white", "blue"), bias = 4.5, space = "rgb")(100)
-        image(x = q, y = seq(0.5, K + 0.5, by = 1), z = ceiling(100 * pvals), breaks = 1:101, col = cols, ylab = "K", main = "Information Matrix Test", 
+        image(x = q, y = seq(0.5, K + 0.5, by = 1), z = ceiling(100 * pvals), breaks = 1:101, col = cols, ylab = "K", main = "Information Matrix Test",
             xlab = "quantile", lab = c(length(q), K, 3))
         allpos <- expand.grid(1:length(q), 1:K)
-        text(x = q[allpos[, 1]], y = allpos[, 2], labels = round(IMT, 2), col = c(rep("black", 50), rep("white", 50))[ceiling(100 * 
+        text(x = q[allpos[, 1]], y = allpos[, 2], labels = round(IMT, 2), col = c(rep("black", 50), rep("white", 50))[ceiling(100 *
             pvals)])  #
-        text(x = q[allpos[, 1]], y = allpos[, 2], labels = paste0("(", round(pvals, 2), ")"), cex = 0.75, pos = 1, col = c(rep("black", 
+        text(x = q[allpos[, 1]], y = allpos[, 2], labels = paste0("(", round(pvals, 2), ")"), cex = 0.75, pos = 1, col = c(rep("black",
             50), rep("white", 50))[ceiling(100 * pvals)])  #
         mtext(side = 3, line = 0, text = "Test statistic (p-value)", adj = 1)
     }
@@ -136,7 +136,7 @@ infomat.test <- function(x, q, K, plot = TRUE) {
 #' The function implements the maximum likelihood estimator and iteratively reweigthed least
 #' square estimators of Suveges (2007)  as well as the intervals estimator. The implementation
 #' differs from the presentation of the paper in that an iteration limit is enforced to make sure
-#' the iterative procedure terminates. sMultiple thresholds can be supplied
+#' the iterative procedure terminates. Multiple thresholds can be supplied.
 #'
 #' The iteratively reweighted least square is a procedure based on the gaps of exceedances \eqn{S_n=T_n-1}{Tn-1}
 #' The model is first fitted to non-zero gaps, which are rescaled to have unit exponential scale. The slope

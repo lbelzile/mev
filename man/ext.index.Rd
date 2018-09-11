@@ -25,7 +25,7 @@ a vector or matrix of estimated extremal index of dimension \code{length(method)
 The function implements the maximum likelihood estimator and iteratively reweigthed least
 square estimators of Suveges (2007)  as well as the intervals estimator. The implementation
 differs from the presentation of the paper in that an iteration limit is enforced to make sure
-the iterative procedure terminates. sMultiple thresholds can be supplied
+the iterative procedure terminates. Multiple thresholds can be supplied.
 }
 \details{
 The iteratively reweighted least square is a procedure based on the gaps of exceedances \eqn{S_n=T_n-1}{Tn-1}

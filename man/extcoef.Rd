@@ -2,71 +2,71 @@
 % Please edit documentation in R/extcoef.R
 \name{extcoef}
 \alias{extcoef}
-\alias{extcoef.smith}
 \title{Estimators of the extremal coefficient}
 \usage{
-extcoef(dat, loc, thresh, estimator = c("schlather", "fmado"),
-  prob = 0, which.plot = c("schlather", "fmado"), tikz = FALSE)
-
-extcoef.smith(dat, loc = NULL, standardize = TRUE,
-  method = c("nonparametric", "parametric"))
+extcoef(dat, loc = NULL, thresh = NULL, estimator = c("schlather",
+  "smith", "fmado"), standardize = TRUE, method = c("nonparametric",
+  "parametric"), prob = 0, plot = TRUE)
 }
 \arguments{
 \item{dat}{an \code{n} by \code{D} matrix of unit Frechet observations}
 
-\item{loc}{\code{d} by \code{D} matrix of location coordinates}
+\item{loc}{an optional \code{d} by \code{D} matrix of location coordinates}
 
-\item{thresh}{threshold parameter (dafault is to keep all data if \code{prob = 0}.}
+\item{thresh}{threshold parameter (default is to keep all data if \code{prob = 0}).}
 
-\item{estimator}{string indicating which model estimates to compute, one of \code{schlather} or \code{fmado}.}
-
-\item{prob}{probability of not exceeding threshold \code{thresh}}
-
-\item{which.plot}{string indicating which model estimates to plot, one of \code{schlather} or \code{fmado}. Can be abbreviated.}
-
-\item{tikz}{logical indicating whether output be formatted to use with \code{tikzDevice} package? Default to \code{FALSE}.}
+\item{estimator}{string indicating which model estimates to compute, one of \code{smith}, \code{schlather} or \code{fmado}.}
 
 \item{standardize}{logical; should observations be transformed to unit Frechet scale? Default is to transform}
 
 \item{method}{string indicating which method to use to transform the margins. See \bold{Details}}
 
-\item{dat}{an \code{n} by \code{d} matrix of maximas for \code{d} variables}
-
-\item{loc}{\code{d} by \code{D} matrix of coordinates; default to \code{NULL}}
+\item{prob}{probability of not exceeding threshold \code{thresh}}
 }
 \value{
-an invisible list with components \code{dist}, \code{schlather}, \code{fmado} and \code{binned}. The first three are \code{n} vectors, while \code{binned} is a matrix with 2 columns containing the binned distance \code{h} and the binned extremal coefficient.
+an invisible list with vectors \code{dist} if \code{loc} is non-null or else a matrix of pairwise indices,
+ \code{extcoef} and the supplied \code{estimator}, \code{fmado} and \code{binned}. If \code{estimator == "schlather"}, an additional matrix with 2 columns containing the binned distance \code{h} and the binned extremal coefficient.
 }
 \description{
-These functions estimate the extremal coefficient using an approxiate sample from the Frechet distribution.
+These functions estimate the extremal coefficient using an approximate sample
+from the Frechet distribution.
 }
 \details{
-This function returns a matrix with the Schlather and Tawn estimator of extremal coefficient
-based on the extremal index of pairs of max-stable vectors. The likelihood of the naive estimator for a pair of two sites \eqn{A} is
-\deqn{ \mathrm{card}\left\{ j: \max_{i \in A} X_i^{(j)}\bar{X}_i)>z \right\} \log(\theta_A) - \theta_A \sum_{j=1}^n \left[ \max \left\{z, \max_{i \in A} (X_i^{(j)}\bar{X}_i)\right\}\right]^{-1},}
-where \eqn{\bar{X}_i = n^{-1} \sum_{j=1}^n 1/X_i^{(j)}} is the harmonic mean and \eqn{z} is a threshold on the unit Frechet scale.
-The search for the maximum likelihood estimate for every pair \eqn{A} is restricted to the interval \eqn{[1,2]}.
-The Schlather estimator is not self-consistent. A binned version of the extremal coefficient cloud is also reported and superimposed on the graph.
-
-Additionally, a poor man's version of the F-madogram estimator is returned alongside with the Schlather and Tawn estimates.
-If \code{estimator = c('schlather', 'fmado')} and \code{plot = TRUE}, both data clouds are plotted alongside one another.
-
-The F-madogram estimator is
-\deqn{\nu(h) = \frac{1}{2} \mathsf{E} |F(Z(x+h))-F(Z(x))|.}
-We can write the extremal coefficient as
-\deqn{\theta(h) = \frac{1+2\nu(h)}{1-2\nu(h)},}
-leading to a non-parametric pairwise estimator. The empirical cloud of estimates is obtained by using a rank-based
-approximation to the distribution function \eqn{F}.
-
-The implementation only uses complete pairs to calculate the relative ranks. Both estimators are coded in plain R and computations are not optimized. The estimation time can therefore be significant for large data sets.
-
-Consider the pairwise extremal coefficient estimate of Smith. Suppose \eqn{Z(x)} is  a max-stable vector with unit Frechet distribution. Then
+The \bold{Smith} estimator: suppose \eqn{Z(x)} is simple max-stable vector
+(i.e., with unit Frechet marginals). Then
  \eqn{1/Z} is unit exponential and \eqn{1/\max(Z(s_1), Z(s_2))} is exponential
- with rate \eqn{\theta = \max(Z(s_1), Z(s_2))}.
+ with rate \eqn{\theta = \max\{Z(s_1), Z(s_2)\}}.
  The extremal index for the pair can therefore be calculated using the reciprocal mean.
- If \code{method = "parametric"}, a parametric GEV model is fitted to each column of \code{dat} using maximum likelihood
+
+The \bold{Schlather and Tawn} estimator: the likelihood of the naive estimator for a pair
+of two sites \eqn{A} is
+\deqn{ \mathrm{card}\left\{ j: \max_{i \in A} X_i^{(j)}\bar{X}_i)>z \right\}
+\log(\theta_A) - \theta_A \sum_{j=1}^n \left[ \max \left\{z, \max_{i \in A}
+(X_i^{(j)}\bar{X}_i)\right\}\right]^{-1},}
+where \eqn{\bar{X}_i = n^{-1} \sum_{j=1}^n 1/X_i^{(j)}} is the harmonic mean and \eqn{z}
+is a threshold on the unit Frechet scale.
+The search for the maximum likelihood estimate for every pair \eqn{A}
+ is restricted to the interval \eqn{[1,3]}. A binned version of the extremal coefficient cloud is also returned.
+The Schlather estimator is not self-consistent.
+
+The \bold{F-madogram} estimator is a non-parametric estimate based on a stationary process
+\eqn{Z}; the extremal coefficient satisfies
+\deqn{\theta(h)=\frac{1+2\nu(h)}{1-2\nu(h)},}
+where
+\deqn{\nu(h) = \frac{1}{2} \mathsf{E}[|F(Z(s+h)-F(Z(s))|]}
+The implementation only uses complete pairs to calculate the relative ranks.
+
+All estimators are coded in plain R and computations are not optimized. The estimation
+time can therefore be significant for large data sets. If there are no missing observations,
+the routine in \code{\link[SpatialExtremes]{fmadogram}} should be prefered as it is
+noticeably faster.
+
+The data will typically consist of max-stable vectors or block maxima.
+Both of the Smith and the Schlather--Tawn estimators require unit Frechet margins; the margins will be standardized
+to the unit Frechet scale, either parametrically or nonparametrically.
+If \code{method = "parametric"}, a parametric GEV model is fitted to each column of \code{dat} using maximum likelihood
  estimation and transformed back using the probability integral transform. If \code{method = "nonparametric"},
- using the empirical distribution function. The latter is the default, as it is appreciatly faster.
+ using the empirical distribution function. The latter is the default, as it is appreciably faster.
 }
 \examples{
 \dontrun{
@@ -100,11 +100,12 @@ BR.extcoeffun <- function(h, vario, ...){
 }
 extcoefbr<- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
 lines(extcoefbr[,'h'], extcoefbr[,'extcoef'], type = 'l', col = 'orange', lwd = 2)
-}
+
 loc <- 10*cbind(runif(20), runif(20))
 di <- as.matrix(dist(loc))
 dat <- rmev(n = 1000, d = 20, param = 3, sigma = exp(-di/2), model = 'xstud')
-res <- extcoef.smith(dat = dat, loc = loc)
+res <- extcoef(dat = dat, loc = loc, estimator = "smith")
+}
 }
 \references{
 Schlather, M. and J. Tawn (2003). A dependence measure for multivariate and spatial extremes, \emph{Biometrika}, \bold{90}(1), pp.139--156.
