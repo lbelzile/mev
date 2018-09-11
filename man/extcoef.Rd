@@ -22,10 +22,12 @@ extcoef(dat, loc = NULL, thresh = NULL, estimator = c("schlather",
 \item{method}{string indicating which method to use to transform the margins. See \bold{Details}}
 
 \item{prob}{probability of not exceeding threshold \code{thresh}}
+
+\item{plot}{logical; should cloud of pairwise empirical estimates be plotted? Default to \code{TRUE}.}
 }
 \value{
-an invisible list with vectors \code{dist} if \code{loc} is non-null or else a matrix of pairwise indices,
- \code{extcoef} and the supplied \code{estimator}, \code{fmado} and \code{binned}. If \code{estimator == "schlather"}, an additional matrix with 2 columns containing the binned distance \code{h} and the binned extremal coefficient.
+an invisible list with vectors \code{dist} if \code{loc} is non-null or else a matrix of pairwise indices \code{ind},
+ \code{extcoef} and the supplied \code{estimator}, \code{fmado} and \code{binned}. If \code{estimator == "schlather"}, an additional matrix with 2 columns containing the binned distance \code{binned} with the \code{h} and the binned extremal coefficient.
 }
 \description{
 These functions estimate the extremal coefficient using an approximate sample

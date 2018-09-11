@@ -51,6 +51,7 @@
 #' @param standardize logical; should observations be transformed to unit Frechet scale? Default is to transform
 #' @param prob probability of not exceeding threshold \code{thresh}
 #' @param thresh threshold parameter (default is to keep all data if \code{prob = 0}).
+#' @param plot logical; should cloud of pairwise empirical estimates be plotted? Default to \code{TRUE}.
 #' @return an invisible list with vectors \code{dist} if \code{loc} is non-null or else a matrix of pairwise indices \code{ind},
 #'  \code{extcoef} and the supplied \code{estimator}, \code{fmado} and \code{binned}. If \code{estimator == "schlather"}, an additional matrix with 2 columns containing the binned distance \code{binned} with the \code{h} and the binned extremal coefficient.
 #' @examples

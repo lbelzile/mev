@@ -39,7 +39,7 @@
 #' @seealso \code{\link{egp.fit}}, \code{\link{egp}}, \code{\link{extgp}}
 #' @references Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data(rain, package = "ismev")
 #' fit.extgp(rain[rain>0], model=1, method = 'mle', init = c(0.9, gp.fit(rain, 0)$est),
 #'  rounded = 0.1, confint = TRUE, R = 20)
