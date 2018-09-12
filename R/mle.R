@@ -380,9 +380,8 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
 #' xdat <- rrlarg(n = 10, loc = 0, scale = 1, shape = 0.1, r = 4)
 #' fit.rlarg(xdat)
 fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE){
-  xdat <- na.omit(xdat)
+  xdat <- as.matrix(na.omit(xdat))
   method <- match.arg(method[1], choices = c("nlminb","BFGS"))
-  n <- nrow(xdat)
   r <- ncol(xdat)
   if(which.min(xdat[1,]) != r){
     stop("Input should be ordered from smallest to largest in each row")
@@ -392,13 +391,20 @@ xmax <- max(xdat); xmin <- min(xdat)
 if(is.null(start)){
   in2 <- sqrt(6 * var(xdat[,1]))/pi
   in1 <- mean(xdat[,1]) - 0.57722 * in2
-  spar <- c(in1, in2, 0.1)
-  if(spar[2] + spar[3] * (xmin - spar[1]) <= 0){
-   spar[2] <- abs(spar[3]*(xmin-spar[1])) - 1e-5
+  shape <- fit.gev(xdat[,1])$estimate[3]
+  spar <- c(in1, in2, shape)
+  if(spar[3] > 0 && (spar[2] + spar[3] * (xmin - spar[1]) <= 0)){
+   spar[2] <- abs(spar[3]*(xmin - spar[1]))*1.1
+  } else if(spar[3] < 0 && (spar[2] + spar[3] * (xmax - spar[1]) <= 0)){
+    spar[2] <- abs(spar[3]*(xmax - spar[1]))*1.1
   }
 } else{
   stopifnot(length(start)==3)
   spar <- as.vector(start)
+  if((spar[3] > 0 && spar[2] + spar[3] * (xmin - spar[1]) <= 0) ||
+     (spar[3] < 0 && spar[2] + spar[3] * (xmax - spar[1]) <= 0)){
+    stop("Invalid starting values in `start`")
+  }
 }
 mle <- try(suppressWarnings(alabama::auglag(par = spar,
   fn = function(par) {
@@ -407,7 +413,7 @@ mle <- try(suppressWarnings(alabama::auglag(par = spar,
   -rlarg.score(par, dat = xdat)
 }, hin = function(par) {
   c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
-}, control.outer = list(method = method, trace = FALSE),
+}, control.outer = list(method = method, trace = FALSE, NMinit = TRUE),
 control.optim = switch(method,
                        nlminb = list(iter.max = 300L, rel.tol = 1e-10, step.min = 1e-10),
                        BFGS = list(iter.max = 300L, rel.tol = 1e-10)

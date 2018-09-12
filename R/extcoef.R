@@ -210,15 +210,16 @@ plot.mev_extcoef <- function(x, ...){
       tikz <- FALSE
     }
     ymax <- 1.1*min(max(c(2.1,x$extcoef)), 3)
+    xmax <- 1.02*max(x$dist)
     if (x$estimator == "schlather"){
         graphics::plot(x$dist, x$extcoef, xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
-            bty = "l", cex = 0.8, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, ymax), yaxs = "i")
+            bty = "l", cex = 0.8, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, ymax), yaxs = "i", xaxs = "i", xlim = c(0, xmax))
           lines(x$binned[, 1], x$binned[, 2], col = 2, lwd = 2)
     } else{
       graphics::plot(x$dist, x$extcoef, xlab = ifelse(tikz, "$h$", "h"),
                      ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
                      bty = "l", cex = 0.8, col = grDevices::rgb(0, 0, 0, alpha = 0.5),
-                     ylim = c(1, ymax), yaxs = "i")
+                     ylim = c(1, ymax), yaxs = "i", xaxs = "i", xlim = c(0, xmax))
 
     }
     abline(h = 2, col = "grey")
