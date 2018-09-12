@@ -158,7 +158,7 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
                   nu <- sum(abs(Y[, 1] - Y[, 2]))/(2 * nrow(Y)^2)
                   theta_vals[k] <- (1 + 2 * nu)/(1 - 2 * nu)
                 } else if(estimator == "smith"){
-                  theta_vals[k] <- 1/mean(1/apply(fr[,c(i, j)], 1, max))
+                  theta_vals[k] <- 1/mean(1/apply(na.omit(fr[,c(i, j)]), 1, max))
                 }
             }
        }
@@ -209,16 +209,16 @@ plot.mev_extcoef <- function(x, ...){
     } else{
       tikz <- FALSE
     }
-
+    ymax <- 1.1*min(max(c(2.1,x$extcoef)), 3)
     if (x$estimator == "schlather"){
         graphics::plot(x$dist, x$extcoef, xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
-            bty = "l", cex = 0.8, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, 2.1), yaxs = "i")
-          lines(x$binned[,1], x$binned[,2], col = 2, lwd = 2)
+            bty = "l", cex = 0.8, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, ymax), yaxs = "i")
+          lines(x$binned[, 1], x$binned[, 2], col = 2, lwd = 2)
     } else{
       graphics::plot(x$dist, x$extcoef, xlab = ifelse(tikz, "$h$", "h"),
                      ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
                      bty = "l", cex = 0.8, col = grDevices::rgb(0, 0, 0, alpha = 0.5),
-                     ylim = c(1, 2.1), yaxs = "i")
+                     ylim = c(1, ymax), yaxs = "i")
 
     }
     abline(h = 2, col = "grey")
