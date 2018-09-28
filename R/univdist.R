@@ -1626,8 +1626,7 @@ gevN.score <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
 #' @inheritParams gevN
 #' @keywords internal
 #' @export
-gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "quantile"), N, q = 0.5,
-    nobs <- length(dat)) {
+gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "quantile"), N, q = 0.5,  nobs = length(dat)) {
     method <- match.arg(method)
     par <- as.vector(par)
     mu = par[1]

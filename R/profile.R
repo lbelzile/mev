@@ -76,19 +76,25 @@
 #' @param object an object of class \code{eprof}, normally the output of \link{gpd.pll} or \link{gev.pll}.
 #' @param parm a specification of which parameters are to be given confidence intervals,
 #' either a vector of numbers or a vector of names. If missing, all parameters are considered.
-#' @param level confidence level, with default 0.95
+#' @param level	confidence level, with default value of 0.95
+#' @param prob percentiles, with default giving symmetric 95% confidence intervals
 #' @param ... additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.
+#' @param print should a summary be printed. Default to TRUE
 #' @return a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
 #' @export
-confint.eprof <- function(object, parm, level = 0.95, ...) {
+confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1-level)/2), print = TRUE, ...) {
+  if(diff(prob) != level){
+   warning("Incompatible arguments: `level` does not match `prob`.")
+  }
     args <- list(...)
     if ("warn" %in% names(args) && is.logical(args$warn)) {
         warn <- args$warn
     } else {
         warn <- TRUE
     }
-    if (length(level) != 1) {
-        stop("Only one level is a time is handled")
+    if (length(prob) != 2) {
+        stop("`prob` must be a vector of size 2")
+      prob <- sort(prob)
     }
     if (missing(parm)) {
         parm <- NULL
@@ -127,7 +133,8 @@ confint.eprof <- function(object, parm, level = 0.95, ...) {
     if (length(ind) == 0) {
         stop("Invalid `parm` argument.")
     }
-    conf <- NULL
+    qulev <- qnorm(1-prob)
+    conf <- matrix(ncol = 4, nrow = 3)
     for (i in ind) {
         if (i == 1) {
             if (is.null(object$pll) && is.null(object$r)) {
@@ -144,18 +151,18 @@ confint.eprof <- function(object, parm, level = 0.95, ...) {
                 fit.r <- cobs::cobs(x = object$r, y = object$psi, constraint = "decrease",
                   lambda = 0, ic = "SIC", pointwise = cbind(0, 0, object$normal[1]), knots.add = TRUE,
                   repeat.delete.add = TRUE, print.mesg = FALSE, print.warn = FALSE)
-                pr <- predict(fit.r, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))[,2]
+                pr <- predict(fit.r, c(0, qulev))[,2]
             } else {
                 fit.r <- stats::smooth.spline(x = na.omit(cbind(object$r, object$psi)), cv = FALSE)
-                pr <- predict(fit.r, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))$y
+                pr <- predict(fit.r, c(0, qulev))$y
                 pr[1] <- object$normal[1]
             }
-            conf <- cbind(conf, pr)
+            conf[,i] <- pr
             if (warn) {
-                if (!any(object$r > sqrt(qchisq(level, 1)))) {
+                if (!any(object$r > qnorm(prob[1]))) {
                   warning("Extrapolating the lower confidence interval for the profile likelihood ratio test")
                 }
-                if (!any(object$r < -sqrt(qchisq(level, 1)))) {
+                if (!any(object$r < qnorm(prob[2]))) {
                   warning("Extrapolating the upper confidence interval for the profile likelihood ratio test")
                 }
             }
@@ -167,23 +174,22 @@ confint.eprof <- function(object, parm, level = 0.95, ...) {
                 fit.rst <- cobs::cobs(x = object$rstar, y = object$psi, constraint = "decrease",
                   lambda = 0, ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
                   print.warn = FALSE)
-                prst <- predict(fit.rst, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))[,
-                  2]
+                prst <- predict(fit.rst, c(0, qulev))[,2]
             } else {
                 fit.rst <- stats::smooth.spline(x = na.omit(cbind(object$rstar, object$psi)),
                   cv = FALSE)
-                prst <- predict(fit.rst, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))$y
+                prst <- predict(fit.rst, c(0, qulev))$y
             }
             if (!is.null(object$tem.psimax)) {
                 prst[1] <- object$tem.psimax
             }
-            conf <- cbind(conf, prst)
+          conf[,i] <- prst
             # lines(x=object$rstar,fit.rst$fitted,col=2,pch=19)
             if (warn) {
-                if (!any(object$rstar > sqrt(qchisq(level, 1)))) {
+                if (!any(object$rstar > qulev[2])) {
                   warning("Extrapolating the adjusted lower confidence interval for rstar.")
                 }
-                if (!any(object$rstar < -sqrt(qchisq(level, 1)))) {
+                if (!any(object$rstar < qulev[1])) {
                   warning("Extrapolating the adjusted upper confidence interval for rstar")
                 }
             }
@@ -196,17 +202,16 @@ confint.eprof <- function(object, parm, level = 0.95, ...) {
                   object$tem.maxpll)), y = object$psi, constraint = "decrease", lambda = 0,
                   ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
                   print.warn = FALSE)
-                ptem <- predict(fit.mtem, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level,
-                  1))))[, 2]
+                ptem <- predict(fit.mtem, c(0, qulev))[, 2]
             } else {
                 fit.mtem <- stats::smooth.spline(x = na.omit(cbind(sign(object$tem.mle - object$psi) *
                   sqrt(-2 * (object$tem.pll - object$tem.maxpll)), object$psi)), cv = FALSE)
-                ptem <- predict(fit.mtem, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level,
-                  1))))$y
+                ptem <- predict(fit.mtem, c(0, qulev))$y
             }
             ptem[1] <- object$tem.mle
-            conf <- cbind(conf, ptem)
-        } else if (i == 4) {
+            conf[,i] <- ptem
+            #TODO add warnings about extrapolation
+           } else if (i == 4) {
             if (is.null(object$empcov.pll)) {
                 break
             }
@@ -215,25 +220,23 @@ confint.eprof <- function(object, parm, level = 0.95, ...) {
                   (object$empcov.pll - object$empcov.maxpll)), y = object$psi, constraint = "decrease",
                   lambda = 0, ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
                   print.warn = FALSE)
-                pempcov <- predict(fit.mempcov, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level,
-                  1))))[, 2]
+                pempcov <- predict(fit.mempcov, c(0.5, qulev))[, 2]
             } else {
                 fit.mempcov <- stats::smooth.spline(x = na.omit(cbind(sign(object$empcov.mle -
                   object$psi) * sqrt(-2 * (object$empcov.pll - object$empcov.maxpll)), object$psi)),
                   cv = FALSE)
-                pempcov <- predict(fit.mempcov, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level,
-                  1))))$y
+                pempcov <- predict(fit.mempcov, c(0.5, qulev))$y
             }
             pempcov[1] <- object$empcov.mle
-            conf <- cbind(conf, pempcov)
+            conf[,i] <- pempcov
         }
     }
     if (!is.null(conf)) {
-        colnames(conf) <- c("Profile LRT", "TEM", "Modif. (TEM)", "Modif. (emp. cov.)")[ind]
+        colnames(conf) <- c("Profile", "TEM", "Severini (TEM)", "Severini (emp. cov.)")
         rownames(conf) <- c("Estimate", "Lower CI", "Upper CI")
         #Check output makes sense - lower CI is lower than estimate
         #and similarly upper CI is above estimate
-        wrong_below <- which(conf[2,]>conf[1,])
+        wrong_below <- which(conf[2,] > conf[1,])
         if(length(wrong_below)>0){
          conf[2,][wrong_below] <- NA
         }
@@ -241,7 +244,33 @@ confint.eprof <- function(object, parm, level = 0.95, ...) {
         if(length(wrong_above)>0){
           conf[3,][wrong_above] <- NA
         }
-        return(conf)
+        if(print){
+          cat("Point estimate for the parameter of interest psi:\n")
+          cat("Maximum likelihood          :", round(object$psi.max, 3), "\n")
+          if(2 %in% ind){
+          cat("Tangent exponential model   :", round(object$tem.psimax, 3), "\n")
+          }
+          if(3 %in% ind){
+          cat("Severini's profile (TEM)    :", round(object$tem.psimax, 3), "\n")
+          }
+          if(4 %in% ind){
+          cat("Severini's profile (empcov) :", round(object$tem.psimax, 3), "\n")
+          }
+          cat("\n")
+          cat("Confidence intervals, levels :", prob, "\n")
+          cat("Wald intervals               :", round(object$psi.max+sort(qulev)*object$std.error, 3), "\n")
+          cat("Profile likelihood           :", round(conf[2:3,1], 3), "\n")
+          if(2 %in% ind){
+          cat("Tangent exponential model    :", round(conf[2:3,2], 3), "\n")
+          }
+          if(3 %in% ind){
+          cat("Severini's profile (TEM)     :", round(conf[2:3,3], 3), "\n")
+          }
+          if(4 %in% ind){
+          cat("Severini's profile (empcov)  :", round(conf[2:3,4], 3), "\n")
+          }
+        }
+        return(invisible(conf[,ind]))
     }
 }
 
@@ -431,17 +460,18 @@ plot.eprof <- function(x, ...) {
 #' @export
 #' @examples
 #' \dontrun{
+#' set.seed(123)
 #' dat <- evd::rgev(n = 100, loc = 0, scale = 2, shape = 0.3)
-#' gev.pll(psi = seq(-0.5,1, by=0.01), param = 'shape', dat = dat)
-#' gev.pll(psi = seq(-3, 3, length = 50), param = 'loc', dat = dat)
-#' gev.pll(psi = seq(10, 30, by = 0.1), param = 'quant', dat = dat, p = 0.01)
+#' gev.pll(psi = seq(0,0.5, length = 50), param = 'shape', dat = dat)
+#' gev.pll(psi = seq(-1.5, 1.5, length = 50), param = 'loc', dat = dat)
+#' gev.pll(psi = seq(10, 40, by = 0.1), param = 'quant', dat = dat, p = 0.01)
 #' gev.pll(psi = seq(12, 100, by=1), param = 'Nmean', N = 100, dat = dat)
 #' gev.pll(psi = seq(12, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
 gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
                     mod = "profile", dat, N = NULL, p = NULL, q = NULL, correction = TRUE, ...) {
 
-    oldpar <- param <- match.arg(param, c("loc", "scale", "shape", "quant", "Nmean", "Nquant"))[1]
+    oldpar <- param <- match.arg(param)
     mod <- match.arg(mod, c("profile","tem", "modif"), several.ok = TRUE)
     # Parametrization profiling over quant over scale is more numerically stable
     if (param == "quant") {
@@ -547,14 +577,14 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                   stop("Could not find starting values for optimization routine")
                 }
             }
-            opt <- nloptr::sbplx(x0 = x0, fn = function(par) {
+            opt <- suppressMessages(nloptr::sbplx(x0 = x0, fn = function(par) {
                 -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
-            })
-            opt2 <- nloptr::slsqp(x0 = opt$par, fn = function(par) {
+            }))
+            opt2 <- suppressMessages(nloptr::slsqp(x0 = opt$par, fn = function(par) {
                 -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
             }, gr = function(par) {
                 -gev.score(c(par[1], sigmat, par[2]), dat = dat)[-2]
-            })
+            }))
             if (opt2$convergence > 0) {
                 return(c(opt2$par, opt2$value))
             } else {
@@ -562,7 +592,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             }
         }
         constr.mle.loc <- function(mut, dat = dat) {
-            opt <- suppressWarnings(nloptr::auglag(x0 = c(mad(dat, constant = 1), 0.1), fn = function(par) {
+            opt <- suppressMessages(suppressWarnings(nloptr::auglag(x0 = c(mad(dat, constant = 1), 0.1), fn = function(par) {
                 val <- -gev.ll(c(mut, par[1:2]), dat = dat)
                 ifelse(is.infinite(val), 1e+10, val)
             }, gr = function(par) {
@@ -570,7 +600,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             }, hin = function(par) {
                 ifelse(par[2] <= 0, par[1] + par[2] * (xmax - mut), par[1] + par[2] * (xmin -
                   mut))
-            }, localsolver = "SLSQP"))
+            }, localsolver = "SLSQP")))
             if (opt$convergence > 0) {
                 return(c(opt$par, opt$value))
             } else {
@@ -624,15 +654,17 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                   start.loc <- start.scale/xit + xmin + 0.001
                 }
             }
-            opt <- try(suppressWarnings(nloptr::auglag(x0 = c(start.loc, start.scale), fn = function(par) {
+            opt <- try(suppressMessages(suppressWarnings(
+              nloptr::auglag(x0 = c(start.loc, start.scale), fn = function(par) {
                 val <- -gev.ll(c(par[1:2], xit), dat = dat)
                 ifelse(is.infinite(val) || is.na(val), 1e+10, val)
             }, hin = function(par) {
                 ifelse(xit <= 0, par[2] + xit * (xmax - par[1]), par[2] + xit * (xmin - par[1]))
-            }, localsolver = "SLSQP")))
+            }, localsolver = "SLSQP"))))
             if (!is.character(opt)) {
                 if (opt$convergence > 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
-                  opt2 <- suppressWarnings(nloptr::slsqp(x0 = opt$par, fn = function(par) {
+                  opt2 <- suppressMessages(suppressWarnings(
+                    nloptr::slsqp(x0 = opt$par, fn = function(par) {
                     val <- -gev.ll(c(par[1:2], xit), dat = dat)
                     ifelse(is.infinite(val) || is.na(val), 1e+10, val)
                   }, gr = function(par) {
@@ -640,7 +672,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                   }, hin = function(par) {
                     ifelse(xit <= 0, par[2] + xit * (xmax - par[1]), par[2] + xit * (xmin -
                       par[1]))
-                  }))
+                  })))
                   return(c(opt2$par, opt2$value))
                 }
             }
@@ -684,9 +716,9 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             drop = FALSE], psi))
         # Profile log likelihood values for psi
         profll <- -lambda[, 3]
+        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
         if ("tem" %in% mod) {
             # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
-            r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
             phi.mle <- gev.phi(par = mle, dat = dat, V = V)
             q2num <- ifelse(ind%%2 == 0, -1, 1) * apply(pars, 1, function(par) {
                 det(rbind(c(c(phi.mle) - gev.phi(par = par, dat = dat, V = V)), gev.dphi(par = par,
@@ -807,8 +839,8 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         pars <- cbind(psi, evals[, 1:2, drop = FALSE])
         # Profile log likelihood values for psi
         profll <- evals[, 3]  # apply(pars, 1, function(par){gevr.ll(par = par, dat = dat, p = p)})
+        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
         if ("tem" %in% mod) {
-            r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
             phi.mle <- gevr.phi(par = mle, dat = dat, V = V, p = p)
             q2num <- apply(pars, 1, function(par) {
                 det(rbind(c(c(phi.mle) - gevr.phi(par = par, dat = dat, V = V, p = p)), gevr.dphi(par = par,
@@ -908,7 +940,6 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                 lower = max(1e-05, mle[1] - std.error), upper = mle[1] + std.error, control = list(fnscale = -1))
         }
     } else if (param %in% c("Nquant", "Nmean")) {
-
         qty <- switch(param, Nquant = "quantile", Nmean = "mean")
         maxll <- gevN.ll(mle, dat = dat, N = N, q = q, qty = qty)
         std.error <- sqrt(solve(gevN.infomat(par = mle, dat = dat, method = "exp", N = N, q = q,
@@ -940,7 +971,8 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             if (!is.character(opt)) {
                 # if(opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e10))){
                 if (opt$convergence > 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
-                  opt2 <- suppressWarnings(nloptr::slsqp(x0 = opt$par, fn = function(par) {
+                  opt2 <- suppressMessages(suppressWarnings(
+                    nloptr::slsqp(x0 = opt$par, fn = function(par) {
                     val <- -gevN.ll(par = c(par[1], zt, par[2]), dat = dat, q = q, qty = qty,
                       N = N)
                     ifelse(is.infinite(val) || is.na(val), 1e+10, val)
@@ -950,7 +982,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                     sigma <- switch(qty, quantile = (zt - par[1]) * par[2]/(N^par[2] * (log(1/q))^(-par[2]) -
                       1), mean = (zt - par[1]) * par[2]/(N^par[2] * gamma(1 - par[2]) - 1))
                     c(sigma, sigma + par[2] * (xmax - par[1]), sigma + par[2] * (xmin - par[1]))
-                  }))
+                  })))
                   if (!is.character(opt2)) {
                     if (opt2$convergence > 0 && !isTRUE(all.equal(opt2$value, 1e+10))) {
                       return(c(opt2$par, opt2$value))
@@ -981,8 +1013,8 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         pars <- cbind(lambda[, 1, drop = FALSE], psi, lambda[, 2, drop = FALSE])
         # Profile log likelihood values for psi
         profll <- -lambda[, 3]
+        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
         if ("tem" %in% mod) {
-            r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
             phi.mle <- gevN.phi(par = mle, dat = dat, V = V, N = N, q = q, qty = qty)
             q2num <- apply(pars, 1, function(par) {
                 -det(rbind(c(c(phi.mle) - gevN.phi(par = par, dat = dat, V = V, N = N, q = q,
@@ -1115,10 +1147,9 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     }
     # Return profile likelihood and quantities of interest (modified likelihoods)
     colnames(pars) <- names(mle)
-    ans <- list(mle = mle, pars = pars, psi.max = as.vector(mle[oldpar]), param = oldpar, std.error = std.error,
-        psi = psi, pll = profll, maxpll = maxll)
+    ans <- list(mle = mle, pars = pars, psi.max = as.vector(mle[param]), param = oldpar, std.error = std.error,
+        psi = psi, pll = profll, maxpll = maxll, r = r)
     if ("tem" %in% mod) {
-        ans$r <- r
         ans$q <- qcor
         ans$rstar <- rstar
         ans$normal <- c(ans$psi.max, ans$std.error)
@@ -1209,7 +1240,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
     mod = "profile", mle = NULL, dat, m = NULL, N = NULL, p = NULL, q = NULL, correction = TRUE,
     ...) {
-    param <- match.arg(param, c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"))
+    param <- match.arg(param)
     mod <- match.arg(mod, c("profile", "tem", "modif"), several.ok = TRUE)
     # Arguments for parametrization of the log likelihood
     if (param == "shape") {
@@ -1310,9 +1341,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         profll <- apply(pars, 1, function(par) {
             gpd.ll(par = par, dat = dat)
         })
-
+        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
         if ("tem" %in% mod) {
-            r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
             phi.mle <- gpd.phi(par = mle, dat = dat, V = V)
             q2num <- apply(pars, 1, function(par) {
                 det(rbind(c(c(phi.mle) - gpd.phi(par = par, dat = dat, V = V)), gpd.dphi(par = par,
@@ -1425,8 +1455,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         profll <- apply(pars, 1, function(par) {
             gpd.ll(par = par, dat = dat)
         })
+        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
         if ("tem" %in% mod) {
-            r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
             phi.mle <- gpd.phi(par = mle, dat = dat, V = V)
             q2num <- apply(pars, 1, function(par) {
                 det(rbind(gpd.dphi(par = par, dat = dat, V = V)[-2, ], c(c(phi.mle) - gpd.phi(par = par,
@@ -1518,9 +1548,9 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         std.error <- sqrt(solve(gpdr.infomat(par = mle, dat = dat, method = "exp", m = m))[1,
             1])
         constr.mle.quant <- function(quant) {
-            nloptr::sbplx(x0 = 0.01, function(lambda, psi, m) {
+            suppressMessages(nloptr::sbplx(x0 = 0.01, function(lambda, psi, m) {
                 -gpdr.ll(par = c(psi, lambda), dat = dat, m = m)
-            }, psi = quant, m = m, lower = -1, upper = 5)$par
+            }, psi = quant, m = m, lower = -1, upper = 5)$par)
         }
 
 
@@ -1549,8 +1579,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         profll <- apply(pars, 1, function(par) {
             gpdr.ll(par = par, dat = dat, m = m)
         })
+        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
         if ("tem" %in% mod) {
-            r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
             phi.mle <- gpdr.phi(par = mle, dat = dat, m = m, V = V)
             q2num <- apply(pars, 1, function(par) {
                 det(rbind(c(c(phi.mle) - gpdr.phi(par = par, dat = dat, V = V, m = m)), gpdr.dphi(par = par,
@@ -1670,8 +1700,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             gpde.ll(par = par, dat = dat, m = m)
         })
         profll[profll == 1e+10] <- NA
+        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
         if ("tem" %in% mod) {
-            r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
             phi.mle <- gpde.phi(par = mle, dat = dat, m = m, V = V)
             q2num <- apply(pars, 1, function(par) {
                 det(rbind(c(c(phi.mle) - gpde.phi(par = par, dat = dat, V = V, m = m)), gpde.dphi(par = par,
@@ -1756,9 +1786,9 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         maxll <- gpdN.ll(mle, dat = dat, N = N)
         std.error <- sqrt(solve(gpdN.infomat(par = mle, dat = dat, method = "exp", N = N))[1])
         constr.mle.Nmean <- function(Nmeant) {
-            nloptr::sbplx(x0 = 0.01, function(lambda, psi, N) {
+            suppressMessages(nloptr::sbplx(x0 = 0.01, function(lambda, psi, N) {
                 -gpdN.ll(par = c(psi, lambda), dat = dat, N = N)
-            }, psi = Nmeant, N = N, lower = -1 + 1e-10, upper = 1 - 1e-10)$par
+            }, psi = Nmeant, N = N, lower = -1 + 1e-10, upper = 1 - 1e-10)$par)
         }
         # Missing psi vector
         if (missing(psi) || is.null(psi) || is.na(psi)) {
@@ -1809,8 +1839,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         profll <- apply(pars, 1, function(par) {
             gpdN.ll(par = par, dat = dat, N = N)
         })
+        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
         if ("tem" %in% mod) {
-            r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
             phi.mle <- gpdN.phi(par = mle, dat = dat, N = N, V = V)
             q2num <- apply(pars, 1, function(par) {
                 det(rbind(c(c(phi.mle) - gpdN.phi(par = par, dat = dat, V = V, N = N)), gpdN.dphi(par = par,
@@ -1894,9 +1924,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     # Return profile likelihood and quantities of interest (modified likelihoods)
     colnames(pars) <- names(mle)
     ans <- list(mle = mle, pars = pars, psi.max = as.vector(mle[param]), param = param, std.error = std.error,
-        psi = psi, pll = profll, maxpll = maxll)
+        psi = psi, pll = profll, maxpll = maxll, r = r)
     if ("tem" %in% mod) {
-        ans$r <- r
         ans$q <- qcor
         ans$rstar <- rstar
         ans$normal <- c(ans$psi.max, ans$std.error)
@@ -2096,95 +2125,6 @@ spline.corr <- function(fr) {
     return(fr)
 }
 
-#' Confidence intervals for profile likelihood derived from TEM
-#'
-#' This function uses spline interpolation to derive \code{level} confidence intervals
-#' using the output of either \link{gev.tem} or \link{gpd.tem}.
-#'
-#' @param object an object of class \code{fr}, normally the output of \link{gpd.tem} or \link{gev.tem}.
-#' @param parm a specification of which parameters are to be given confidence intervals, either a vector of numbers or a vector of names. If missing, all parameters are considered.
-#' @param level confidence level, with default 0.95
-#' @param ... additional arguments passed to functions. Providing a logical \code{warn = FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.
-#' @return a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on \code{r} and \code{rstar}
-#' @export
-confint.fr <- function(object, parm, level = 0.95, ...) {
-    args <- list(...)
-    if ("warn" %in% names(args) && is.logical(args$warn)) {
-        warn <- args$warn
-    } else {
-        warn <- TRUE
-    }
-    # plot(object$psi~object$r)
-    if (missing(parm)) {
-        ind <- c(1, 2)
-    } else if (is.numeric(parm)) {
-        ind <- c(1, 2)[c(1, 2) %in% parm]
-    } else {
-        ind <- c(1, 2)[c("r", "rstar") %in% parm]
-    }
-    if (length(ind) == 0) {
-        stop("Invalid `parm` argument.")
-    }
-    if (1 %in% ind) {
-        if (requireNamespace("cobs", quietly = TRUE)) {
-            fit.r <- cobs::cobs(x = object$r, y = object$psi, constraint = "none", lambda = 0,
-                ic = "SIC", pointwise = cbind(0, 0, object$normal[1]), knots.add = TRUE, repeat.delete.add = TRUE,
-                print.mesg = FALSE, print.warn = FALSE)
-            pr <- predict(fit.r, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))[, 2]
-        } else {
-            fit.r <- stats::smooth.spline(x = na.omit(cbind(object$r, object$psi)), cv = FALSE)
-            pr <- predict(fit.r, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))$y
-            pr[1] <- object$normal[1]
-        }
-        # lines(object$r, fit.r$fitted, col = 2)
-        if (warn) {
-            if (!any(object$r > sqrt(qchisq(level, 1)))) {
-                warning("Extrapolating the lower confidence interval for psi")
-            }
-            if (!any(object$r < -sqrt(qchisq(level, 1)))) {
-                warning("Extrapolating the upper confidence interval for psi")
-            }
-        }
-    }
-    if (2 %in% ind) {
-        # plot(object$psi~object$rstar)
-        if (requireNamespace("cobs", quietly = TRUE)) {
-            fit.rst <- cobs::cobs(x = object$rstar, y = object$psi, constraint = "none", lambda = 0,
-                ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
-                print.warn = FALSE)
-            prst <- predict(fit.rst, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))[,
-                2]
-        } else {
-            fit.rst <- stats::smooth.spline(x = na.omit(cbind(object$rstar, object$psi)), cv = FALSE)
-            prst <- predict(fit.rst, c(0, sqrt(qchisq(level, 1)), -sqrt(qchisq(level, 1))))$y
-        }
-        # lines(x = object$rstar, fit.rst$fitted, col = 2, pch = 19)
-        if (warn) {
-            if (!any(object$r > sqrt(qchisq(level, 1)))) {
-                warning("Extrapolating the adjusted lower confidence interval for psi.")
-            }
-            if (!any(object$r < -sqrt(qchisq(level, 1)))) {
-                warning("Extrapolating the adjusted upper confidence interval for psi")
-            }
-        }
-    }
-
-    if (all(c(1, 2) %in% ind)) {
-        conf <- cbind(pr, prst)
-        colnames(conf) <- c("r", "rstar")
-        rownames(conf) <- c("Estimate", "Lower CI", "Upper CI")
-        return(conf)
-    } else if (1 %in% ind) {
-        names(pr) <- c("Estimate", "Lower CI", "Upper CI")
-        return(pr)
-    } else if (2 %in% ind) {
-        names(prst) <- c("Estimate", "Lower CI", "Upper CI")
-        return(prst)
-    }
-
-}
-
-
 
 #' Tangent exponential model approximation for the GEV distribution
 #'
@@ -2232,6 +2172,7 @@ confint.fr <- function(object, parm, level = 0.95, ...) {
 #' }
 gev.tem <- function(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), dat, psi = NULL,
     p = NULL, q = 0.5, N = NULL, n.psi = 50, plot = TRUE, correction = TRUE) {
+
     if (param %in% c("VaR", "retlev"))
         {
             param <- "quant"

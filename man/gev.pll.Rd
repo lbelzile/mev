@@ -71,10 +71,11 @@ For the latter, the penalization is based on the TEM or an empirical covariance 
 }
 \examples{
 \dontrun{
+set.seed(123)
 dat <- evd::rgev(n = 100, loc = 0, scale = 2, shape = 0.3)
-gev.pll(psi = seq(-0.5,1, by=0.01), param = 'shape', dat = dat)
-gev.pll(psi = seq(-3, 3, length = 50), param = 'loc', dat = dat)
-gev.pll(psi = seq(10, 30, by = 0.1), param = 'quant', dat = dat, p = 0.01)
+gev.pll(psi = seq(0,0.5, length = 50), param = 'shape', dat = dat)
+gev.pll(psi = seq(-1.5, 1.5, length = 50), param = 'loc', dat = dat)
+gev.pll(psi = seq(10, 40, by = 0.1), param = 'quant', dat = dat, p = 0.01)
 gev.pll(psi = seq(12, 100, by=1), param = 'Nmean', N = 100, dat = dat)
 gev.pll(psi = seq(12, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 }
