@@ -96,11 +96,11 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
         stop("Threshold must be specified by a probability in [0,1)")
     }
     # Match arguments
-    Rnorm <- match.arg(Rnorm[1], c("l1", "l2", "linf"))
-    Anorm <- match.arg(Anorm[1], c("l1", "l2", "linf", "arctan"))
-    marg <- match.arg(marg[1], c("Frechet", "Pareto"))
-    wgt <- match.arg(wgt[1], c("Euclidean", "Empirical"))
-    region <- match.arg(region[1], c("sum", "min", "max"))
+    Rnorm <- match.arg(Rnorm)
+    Anorm <- match.arg(Anorm)
+    marg <- match.arg(marg)
+    wgt <- match.arg(wgt)
+    region <- match.arg(region)
     if (!is.angle) {
         # Use only complete cases x <- na.omit(x) Margins are transformed to unit Frechet/Pareto (PIT)
         S <- switch(marg, Frechet = -1/log(na.omit(apply(x, 2, rank, na.last = "keep", ties.method = "random")/(nrow(x) +
@@ -299,11 +299,11 @@ emplik <- function(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)), eps = 1
 angmeasdir <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf", "arctan"),
     marg = c("Frechet", "Pareto"), wgt = c("Empirical", "Euclidean"), region = c("sum", "min", "max"),
     is.angle = FALSE) {
-    Rnorm <- match.arg(Rnorm, c("l1", "l2", "linf"))
-    Anorm <- match.arg(Anorm, c("l1", "l2", "linf", "arctan"))
-    marg <- match.arg(marg, c("Frechet", "Pareto"))
-    wgt <- match.arg(wgt, c("Empirical", "Euclidean"))
-    region <- match.arg(region, c("sum", "min", "max"))[1]
+    Rnorm <- match.arg(Rnorm)
+    Anorm <- match.arg(Anorm)
+    marg <- match.arg(marg)
+    wgt <- match.arg(wgt)
+    region <- match.arg(region)
     # Obtain angles and weights
     angmeasure <- angmeas(x = x, th = th, Rnorm = Rnorm, Anorm = Anorm, marg = marg, wgt = wgt, region = region,
         is.angle = is.angle)
@@ -319,4 +319,3 @@ angmeasdir <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2
         upper = 2000, maximum = FALSE, tol = 1e-05)
     return(invisible(list(nu = optnu$minimum, dirparmat = optnu$minimum * angles, wts = angmeasure$wts)))
 }
-

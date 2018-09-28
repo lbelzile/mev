@@ -66,7 +66,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     plots = c("LRT", "WN", "PS"), UseQuantiles = TRUE, pmar = c(5.5, 7, 3, 3), ...) {
     old.par <- par(no.readonly = TRUE)
     on.exit(par(old.par))
-    model <- match.arg(model, c("nhpp", "exp", "invexp"))
+    model <- match.arg(model)
     if (ncol(as.matrix(xdat)) == 2 && model %in% c("exp", "invexp")) {
         xdat <- -log(1 - apply(xdat, 2, function(y) {
             rank(y, ties.method = "average")/(length(y) + 1)
@@ -484,4 +484,3 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     C[row(C) + 1 == col(C)] <- -1
     return(C)
 }
-

@@ -36,8 +36,8 @@
 #' rparpcs(n = 10, Sigma = cov2cor(Sigma), df = 3, model = 'xstud')
 #' }
 rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "xstud"), riskf = c("max", "min"), shape = 1) {
-    model <- match.arg(model[1], choices = c("br", "xstud"))
-    riskf <- match.arg(riskf[1], choices = c("max", "min"))
+    model <- match.arg(model)
+    riskf <- match.arg(riskf)
     stopifnot(shape > 0)
     if (model == "xstud") {
         if (is.null(df)) {
@@ -212,8 +212,8 @@ rparpcshr <- function(n, u, alpha, Sigma, m) {
 #' expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = 'br', method = 'mvPot')
 expme <- function(z, Sigma = NULL, Lambda = NULL, m = NULL, df = NULL, model = c("hr", "br", "xstud"), method = c("mvPot", "TruncatedNormal",
     "mvtnorm")) {
-    model <- match.arg(model[1], choices = c("hr", "br", "xstud"))
-    method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    model <- match.arg(model)
+    method <- match.arg(method)
     if (method == "mvtnorm") {
         if (!requireNamespace("mvtnorm", quietly = TRUE)) {
             warning("`mvtnorm` package is not installed.")
@@ -290,7 +290,7 @@ expmeXS <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNorma
 }
 
 weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")) {
-    method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    method <- match.arg(method)
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
         warning("`mvtnorm` package is not installed.")
@@ -319,7 +319,7 @@ weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")
 
 
 weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
-    method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    method <- match.arg(method)
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
         warning("`mvtnorm` package is not installed.")
@@ -331,7 +331,7 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
         method <- "TruncatedNormal"
       }
     }
-    riskf <- match.arg(riskf[1], choices = c("max", "min"))
+    riskf <- match.arg(riskf)
     si <- switch(riskf, max = 1, min = -1)
     D <- length(z)
     stopifnot(ncol(Lambda) == D | nrow(Lambda) == D)
@@ -357,7 +357,7 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
 }
 
 weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
-    method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    method <- match.arg(method)
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
         warning("`mvtnorm` package is not installed.")
@@ -369,7 +369,7 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
         method <- "TruncatedNormal"
       }
     }
-    riskf <- match.arg(riskf[1], choices = c("max", "min"))
+    riskf <- match.arg(riskf)
     si <- switch(riskf, max = 1, min = -1)
     D <- length(z)
     stopifnot(ncol(Sigma) == D | nrow(Sigma) == D)
@@ -397,7 +397,7 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
 }
 
 weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
-    method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    method <- match.arg(method)
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
         warning("`mvtnorm` package is not installed.")
@@ -409,7 +409,7 @@ weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "Truncated
         method <- "TruncatedNormal"
       }
     }
-    riskf <- match.arg(riskf[1], choices = c("max", "min"))
+    riskf <- match.arg(riskf)
     si <- switch(riskf, max = 1, min = -1)
     D <- nrow(Sigma)
     stopifnot(nrow(Sigma) == length(z))
@@ -433,4 +433,3 @@ weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "Truncated
     }
     return(weights)
 }
-

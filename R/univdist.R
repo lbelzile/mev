@@ -160,7 +160,7 @@ gpd.score <- function(par, dat) {
 #' @export
 #' @keywords internal
 gpd.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) {
-    method <- match.arg(method[1], choices = c("obs","exp"))
+    method <- match.arg(method)
     sigma <- as.vector(par[1])
     xi <- as.vector(par[2])
     if (method == "obs") {
@@ -294,7 +294,7 @@ gev.score <- function(par, dat) {
 #' @export
 #' @keywords internal
 gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) {
-    method <- match.arg(method[1], choices = c("obs","exp"))
+    method <- match.arg(method)
     par <- as.vector(par)
     if (method == "exp") {
         # (Expected) Fisher information does not depend on location parameter
@@ -644,7 +644,7 @@ gpde.score <- function(par, dat, m) {
 #' @keywords internal
 #' @export
 gpde.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(dat)) {
-    method <- match.arg(method, c("obs", "exp"))  #default to observed information
+    method <- match.arg(method)  #default to observed information
     es = as.vector(par[1])
     xi = as.vector(par[2])
     if(missing(m)){
@@ -1069,7 +1069,7 @@ gevr.score <- function(par, dat, p) {
 #' @keywords internal
 #' @export
 gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(dat)) {
-    method <- match.arg(method, c("obs", "exp"))
+    method <- match.arg(method)
     z = par[1]
     sigma = par[2]
     xi = par[3]
@@ -1519,7 +1519,7 @@ NULL
 #' @keywords internal
 #' @export
 gevN.ll <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
-    qty <- match.arg(qty, c("mean", "quantile"))
+    qty <- match.arg(qty)
     mu = par[1]
     z = par[2]
     xi = as.vector(par[3])
@@ -1542,7 +1542,7 @@ gevN.ll <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
 #' @keywords internal
 #' @export
 gevN.score <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
-    qty <- match.arg(qty, c("mean", "quantile"))
+    qty <- match.arg(qty)
     mu = par[1]
     z = par[2]
     xi = par[3]
@@ -1627,7 +1627,8 @@ gevN.score <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
 #' @keywords internal
 #' @export
 gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "quantile"), N, q = 0.5,
-    nobs = length(dat)) {
+    nobs <- length(dat)) {
+    method <- match.arg(method)
     par <- as.vector(par)
     mu = par[1]
     z = par[2]
@@ -1635,7 +1636,7 @@ gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "qu
     logN = log(N)
     log1q = log(1/q)
     loglog1q = log(log1q)
-    qty <- match.arg(qty, c("mean", "quantile"))[1]
+    qty <- match.arg(qty)
     xizero <- isTRUE(all.equal(xi, 0, tolerance = 1e-05))
     euler_gamma <- 0.57721566490153231044
     zeta3 <- 1.2020569031595944587
@@ -1980,7 +1981,7 @@ gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "qu
 #' @export
 gevN.Vfun <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
     # Quantiles, profiling by substituting sigma by zq
-    qty <- match.arg(qty, c("mean", "quantile"))
+    qty <- match.arg(qty)
     mu = par[1]
     z = par[2]
     xi = par[3]
@@ -2011,7 +2012,7 @@ gevN.Vfun <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
 #' @keywords internal
 #' @export
 gevN.phi <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V) {
-    qty <- match.arg(qty, c("mean", "quantile"))
+    qty <- match.arg(qty)
     mu = par[1]
     z = par[2]
     xi = par[3]
@@ -2032,7 +2033,7 @@ gevN.phi <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V) {
 #' @keywords internal
 #' @export
 gevN.dphi <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V) {
-    qty <- match.arg(qty, c("mean", "quantile"))
+    qty <- match.arg(qty)
     mu = par[1]
     z = par[2]
     xi = par[3]
@@ -2445,7 +2446,7 @@ pp.score <- function(par, dat, u, np = 1){
 #' @rdname pp
 #' @keywords internal
 pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = length(dat)) {
-  method <- match.arg(method[1], choices = c("obs","exp"))
+  method <- match.arg(method)
   if(method == "obs"){
   dat <- as.vector(dat)
   if(sum(dat >u) != length(dat)){
@@ -2511,4 +2512,3 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
 }
 
 }
-

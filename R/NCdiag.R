@@ -52,7 +52,7 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
   #------------------------------------------------------------------------------#
   # 1. Fit GP distribution to excesses of u[i], i=1, ..., n_u #
   #------------------------------------------------------------------------------#
-  GP.fit <- match.arg(arg = GP.fit, choices = c("Grimshaw", "nlm", "optim", "ismev"))
+  GP.fit <- match.arg(GP.fit)
   z <- list()  # list to store the results
   z$thresh <- u  # all thresholds
   z$nexc <- unlist(lapply(u, function(y) {
@@ -506,4 +506,3 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
   #
   exp.info
 }
-

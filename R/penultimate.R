@@ -426,7 +426,7 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
         indQ <- names(ellips) %in% formalArgs(quantF)
     }
     fn.arg <- ellips[which(indf * (indf == indF) == 1)]
-    method <- match.arg(method[1], c("bm","pot"))
+    method <- match.arg(method)
     # Distribution function, density and density derivative
     densFn <- function(x) {
         do.call(densF, c(x = x, fn.arg))

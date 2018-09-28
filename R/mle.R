@@ -298,7 +298,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
 #' }
 fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE){
   xdat <- na.omit(as.vector(xdat))
-  method <- match.arg(method[1], choices = c("nlminb","BFGS"))
+  method <- match.arg(method)
   n <- length(xdat)
   xmax <- max(xdat)
   xmin <- min(xdat)
@@ -381,7 +381,7 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
 #' fit.rlarg(xdat)
 fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE){
   xdat <- as.matrix(na.omit(xdat))
-  method <- match.arg(method[1], choices = c("nlminb","BFGS"))
+  method <- match.arg(method)
   r <- ncol(xdat)
   if(which.min(xdat[1,]) != r){
     stop("Input should be ordered from smallest to largest in each row")

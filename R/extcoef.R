@@ -97,10 +97,10 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
                     standardize = TRUE, method = c("nonparametric", "parametric"),
                     prob = 0, plot = TRUE) {
     stopifnot(is.matrix(dat), ncol(dat) >= 2)
-    estimator <- match.arg(estimator[1], c("schlather", "smith", "fmado"))
+    estimator <- match.arg(estimator)
     #Transform margins to unit Frechet
     if(standardize && estimator != "fmado"){
-      method <- match.arg(method[1], choices = c("parametric", "nonparametric"))
+      method <- match.arg(method)
       fr <- matrix(0, ncol = ncol(dat), nrow = nrow(dat))
       if(method == "nonparametric"){
         for(j in 1:ncol(dat)){

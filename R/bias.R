@@ -380,13 +380,13 @@ gev.Fscore <- function(par, dat, method = "obs") {
 #' gpd.bcor(par,dat, 'firth') #observed information
 #' gpd.bcor(par,dat, 'firth','exp')
 gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp")) {
-    corr <- match.arg(corr, c("subtract", "firth"))
+    corr <- match.arg(corr)
+    method <- match.arg(method)
     # Basic bias correction - substract bias at MLE parbc=par-bias(par) Other bias correction - find bias corrected that solves
     # implicit eqn parbc=par-bias(parbc)
     if (length(par) != 2) {
         stop("Invalid `par` argument.")
     }
-    corr <- match.arg(corr, c("subtract", "firth"))
     # Basic bias correction - substract bias at MLE parbc=par-bias(par) bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
     # Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
     bcor <- function(par, dat) {
@@ -422,7 +422,7 @@ gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
         return(rep(NA, 2))
     }
     bcorF <- function(par, dat, method = c("obs", "exp")) {
-        method <- match.arg(method[1], c("obs", "exp"))
+        method <- match.arg(method)
         if (par[2] < 0) {
             mdat <- max(dat)
         } else {
@@ -499,7 +499,7 @@ gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 #' gev.bcor(par,dat, 'firth') #observed information
 #' gev.bcor(par,dat, 'firth','exp')
 gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp")) {
-    corr <- match.arg(corr, c("subtract", "firth"))
+    corr <- match.arg(corr)
     # Basic bias correction - substract bias at MLE parbc=par-bias(par) bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
     # Other bias correction - find bias corrected that solves implicit eqn parbc=par-bias(parbc)
     bcor <- function(par, dat) {
@@ -549,7 +549,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
     }
 
     bcorF <- function(par, dat, method = c("obs", "exp")) {
-        method <- match.arg(method[1], c("obs", "exp"))
+        method <- match.arg(method)
         maxdat <- max(dat)
         mindat <- min(dat)
         st.opt <- par
@@ -642,7 +642,7 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
     mu <- par[1]
     sigma <- par[2]
     xi <- par[3]
-    type <- match.arg(type, c("retlev", "median", "mean"))[1]
+    type <- match.arg(type)
     # Check whether arguments are well defined
     if (type == "retlev") {
         stopifnot(p >= 0, p < 1)

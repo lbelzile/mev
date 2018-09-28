@@ -35,7 +35,7 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
     if (ncol(dat) < 2) {
         stop("The method is valid for multivariate data only.")
     }
-    confint <- match.arg(arg = confint[1], choices = c("delta", "profile", "tem"))
+    confint <- match.arg(arg = confint)
     # Transform variables to standard Pareto margin
     sp <- apply(dat, 2, function(x) {
         1/(1 - rank(x, na.last = "keep", ties.method = "average")/(length(x) + 1))

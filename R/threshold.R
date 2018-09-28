@@ -39,7 +39,7 @@
 tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level = 0.95, plot = TRUE, ...){
   thresh <- unique(sort(thresh))
   stopifnot(length(level) == 1, level > 0, level < 1)
-  method <- match.arg(method[1], c("wald", "profile", "post"))
+  method <- match.arg(method)
   if (method == "post") {
     if (!requireNamespace("revdbayes", quietly = TRUE)) {
       stop("Package \"revdbayes\" needed for this function to work. Please install it.",

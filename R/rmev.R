@@ -677,7 +677,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
 #' rparp(n=10, riskf = 'max', vario=vario,loc=grid.loc, model='br')
 rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min"), siteindex = NULL, d, param, sigma, model = c("log", "neglog",
     "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
-    riskf <- match.arg(riskf, c("site", "sum", "max", "min"), several.ok = TRUE)[1]
+    riskf <- match.arg(riskf)
     if (is.null(siteindex) && riskf == "site") {
         stop("For exceedances of site, the user needs to provide an index between 1 and d")
     }
