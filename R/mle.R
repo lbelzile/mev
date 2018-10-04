@@ -383,20 +383,24 @@ fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FA
   xdat <- as.matrix(na.omit(xdat))
   method <- match.arg(method)
   r <- ncol(xdat)
-  if(which.min(xdat[1,]) != r){
-    stop("Input should be ordered from smallest to largest in each row")
+  if(which.max(xdat[1,]) != 1){
+    stop("Input should be ordered from largest to smallest in each row")
   }
 #Optimization routine, with default starting values
 xmax <- max(xdat); xmin <- min(xdat)
 if(is.null(start)){
-  in2 <- sqrt(6 * var(xdat[,1]))/pi
-  in1 <- mean(xdat[,1]) - 0.57722 * in2
-  shape <- fit.gev(xdat[,1])$estimate[3]
-  spar <- c(in1, in2, shape)
-  if(spar[3] > 0 && (spar[2] + spar[3] * (xmin - spar[1]) <= 0)){
-   spar[2] <- abs(spar[3]*(xmin - spar[1]))*1.1
-  } else if(spar[3] < 0 && (spar[2] + spar[3] * (xmax - spar[1]) <= 0)){
-    spar[2] <- abs(spar[3]*(xmax - spar[1]))*1.1
+    if(nrow(xdat) > 15L){ # Fit a generalized extreme value distribution to largest
+    in2 <- sqrt(6 * var(xdat[,1]))/pi
+    in1 <- mean(xdat[,1]) - 0.57722 * in2
+    shape <- fit.gev(xdat[,1])$estimate[3]
+    spar <- c(in1, in2, shape)
+    if(spar[3] > 0 && (spar[2] + spar[3] * (xmin - spar[1]) <= 0)){
+     spar[2] <- abs(spar[3]*(xmin - spar[1]))*1.1
+    } else if(spar[3] < 0 && (spar[2] + spar[3] * (xmax - spar[1]) <= 0)){
+      spar[2] <- abs(spar[3]*(xmax - spar[1]))*1.1
+    }
+  } else {
+    spar <- fit.pp(as.vector(xdat), threshold = xmin, np = 1)$estimate
   }
 } else{
   stopifnot(length(start)==3)
@@ -569,8 +573,12 @@ plot.mev_gev <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
 # @param ... additional argument passed to \code{matplot}.
 #' @export
 plot.mev_rlarg <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...) {
-  ppdat <- (1+x$estimate[3]*(x$xdat-x$estimate[1])/x$estimate[2])^(-1/x$estimate[3])
-  dat <- sort(as.vector(cbind(ppdat[,1], t(apply(ppdat, 1, diff)))))
+  ppdat <- (1+x$estimate[3]*(as.matrix(x$xdat)-x$estimate[1])/x$estimate[2])^(-1/x$estimate[3])
+  if(ncol(ppdat) == 1){
+    dat <- as.vector(ppdat)
+  } else{
+    dat <- sort(as.vector(c(ppdat[,1], apply(ppdat, 1, diff))))
+  }
   n <- length(dat)
   if (!is.numeric(which) || any(which < 1) || any(which > 2)){
     stop("`which' must be in 1:2")
