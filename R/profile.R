@@ -1172,6 +1172,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     } else {
         class(ans) <- "eprof"
     }
+    ans$family <- "gev"
     ans
 }
 
@@ -1238,10 +1239,20 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' gpd.pll(psi = seq(15, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
 gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
-    mod = "profile", mle = NULL, dat, m = NULL, N = NULL, p = NULL, q = NULL, correction = TRUE,
+    mod = "profile", mle = NULL, dat, m = NULL, N = NULL, p = NULL, q = NULL, correction = TRUE, threshold = NULL,
     ...) {
     param <- match.arg(param)
     mod <- match.arg(mod, c("profile", "tem", "modif"), several.ok = TRUE)
+    #If there is a threshold
+    if(!is.null(threshold)){
+      stopifnot(is.numeric(threshold), length(threshold) == 1)
+      if(min(dat) < threshold){
+       dat <- dat[dat>threshold] - threshold
+      }
+      dat <- dat - threshold
+    } else {
+     threshold <- 0
+    }
     # Arguments for parametrization of the log likelihood
     if (param == "shape") {
         args <- c("scale", "shape")
@@ -1947,6 +1958,11 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     } else {
         class(ans) <- "eprof"
     }
+    if(param %in% c("Nmean", "Nquant", "quant", "ES")){
+      ans$psi <- ans$psi + threshold
+    }
+    ans$family <- "gpd"
+    ans$threshold <- threshold
     ans
 }
 
