@@ -305,7 +305,7 @@ plot.eprof <- function(x, ...) {
     }
 
     if(is.null(args$ylim)){
-      ylim <- c(min(unlist(lapply(lik, min, na.rm = TRUE))), 0)
+      ylim <- c(max(-8, min(unlist(lapply(lik, min, na.rm = TRUE)))), 0)
     } else{
      ylim <- args$ylim
     }
@@ -1208,6 +1208,8 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' \item{\code{psi}:} vector of parameter \eqn{psi} given in \code{psi}
 #' \item{\code{pll}:} values of the profile log likelihood at \code{psi}
 #' \item{\code{maxpll}:} value of maximum profile log likelihood
+#' \item{\code{family}:} a string indicating "gpd"
+#' \item{\code{threshold}:} value of the threshold, by default zero
 #' }
 #' In addition, if \code{mod} includes \code{tem}
 #' \itemize{
@@ -1290,7 +1292,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     }
     xmin <- min(dat)
     xmax <- max(dat)
-
+    shiftres <- param %in% c("Nmean", "Nquant", "VaR", "quant", "ES")
     # If maximum likelihood estimates are not provided, find them
     if (is.null(mle)) {
         mle <- gpd.mle(xdat = dat, args = args, m = m, N = N, p = p, q = q)
@@ -1582,6 +1584,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             lo <- ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[1], lo)
             hi <- ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[1], hi)
             psi <- seq(lo, hi, length = 55)
+        } else{
+           psi <- psi - threshold
         }
 
 
@@ -1703,6 +1707,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             if (mle[1] + 2 * std.error < hi) {
                 psi <- c(psi, seq(mle[1] + 2 * std.error, hi, length = 20))
             }
+        } else{
+          psi <- psi - threshold
         }
 
         pars <- cbind(psi, sapply(psi, constr.mle.es))
@@ -1797,9 +1803,17 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         maxll <- gpdN.ll(mle, dat = dat, N = N)
         std.error <- sqrt(solve(gpdN.infomat(par = mle, dat = dat, method = "exp", N = N))[1])
         constr.mle.Nmean <- function(Nmeant) {
-            suppressMessages(nloptr::sbplx(x0 = 0.01, function(lambda, psi, N) {
+            suppressWarnings(alabama::auglag(par = 0.01, function(lambda, psi, N) {
                 -gpdN.ll(par = c(psi, lambda), dat = dat, N = N)
-            }, psi = Nmeant, N = N, lower = -1 + 1e-10, upper = 1 - 1e-10)$par)
+            }, gr = function(lambda, psi, N) {
+               -gpdN.score(par = c(psi, lambda), dat = dat, N = N)[2]
+            },
+            hin = function(lambda, psi, N){
+              sigma = ifelse(abs(lambda > 1e-8),
+                             psi * lambda/(exp(lgamma(N + 1) + lgamma(-lambda + 1) - lgamma(N - lambda + 1)) - 1),
+                             psi / (0.57721566490153231044 + psigamma(N + 1)))
+              if(lambda >= 0){c(1e-8, sigma, 1-lambda, lambda + 1)} else{ c(- sigma/lambda - xmax, sigma, 1 - lambda, lambda + 1)}},
+            psi = Nmeant, N = N, control.outer = list(trace = FALSE))$par)
         }
         # Missing psi vector
         if (missing(psi) || is.null(psi) || is.na(psi)) {
@@ -1836,7 +1850,10 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             #hi <- ifelse(is.na(hi), spline(x = highvals, y = psirangehigh, xout = -4)$y, hi)
             psi <- as.vector(c(spline(x=c(lowvals, 0), y = c(psirangelow, mle[1]), xout = seq(-4, -0.1, length = 15))$y, mle[1],
                      spline(x=c(0, highvals), y = c(mle[1], psirangehigh), xout = seq(-0.1, highvals[length(highvals)], length = 20))$y))
+        } else{
+          psi <- psi - threshold
         }
+
         if (any(as.vector(psi) < 0)) {
             warning("Negative Nmean values provided.")
             psi <- psi[psi > 0]
@@ -1936,20 +1953,30 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     colnames(pars) <- names(mle)
     ans <- list(mle = mle, pars = pars, psi.max = as.vector(mle[param]), param = param, std.error = std.error,
         psi = psi, pll = profll, maxpll = maxll, r = r)
+    # Shift by threshold if non-null
+    if(shiftres){
+      ans$psi <- ans$psi + threshold
+      ans$mle[1] <- ans$psimax <- ans$mle[1] + threshold
+      ans$pars[,1] <- ans$pars[,1] + threshold
+    }
+
     if ("tem" %in% mod) {
         ans$q <- qcor
         ans$rstar <- rstar
+        ans$tem.psimax <- as.vector(tem.max) + ifelse(shiftres, threshold, 0)
         ans$normal <- c(ans$psi.max, ans$std.error)
         if (correction && length(psi) > 10) {
             ans <- spline.corr(ans)
         }
-        ans$tem.psimax <- as.vector(tem.max)
+
     }
     if ("modif" %in% mod) {
         ans$tem.mle <- ifelse(param == "shape", tem.mle[2], tem.mle[1])
+        if(shiftres){ ans$tem.mle[1] <- ans$tem.mle[1] + threshold }
         ans$tem.pll <- proflltem
         ans$tem.maxpll <- as.vector(tem.mle.opt$value)
         ans$empcov.mle <- ifelse(param == "shape", empcov.mle[2], empcov.mle[1])
+        if(shiftres){ ans$empcov.mle[1] <- ans$empcov.mle[1] + threshold }
         ans$empcov.pll <- as.vector(profllempcov)
         ans$empcov.maxpll <- as.vector(empcov.mle.opt$value)
     }
@@ -1958,12 +1985,10 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     } else {
         class(ans) <- "eprof"
     }
-    if(param %in% c("Nmean", "Nquant", "quant", "ES")){
-      ans$psi <- ans$psi + threshold
-    }
     ans$family <- "gpd"
     ans$threshold <- threshold
-    ans
+    return(ans)
+
 }
 
 
