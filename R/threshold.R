@@ -37,6 +37,11 @@
 #' tstab.gpd(dat = dat, thresh = u, method = "post")
 #' }
 tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level = 0.95, plot = TRUE, ...){
+  args <- list(...)
+  if(missing(dat) && !is.null(args$xdat)){
+    dat <- args$xdat
+  }
+  dat <- as.vector(dat)
   thresh <- unique(sort(thresh))
   stopifnot(length(level) == 1, level > 0, level < 1)
   method <- match.arg(method)
@@ -83,7 +88,7 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
     confintmat[i,2] <- parmat[i,1] + stderr.transfo * qnorm(1-alpha/2)
    } else if(method == "profile"){
      profxi <- gpd.pll(param = "shape", mod = "profile", mle = gpdu$estimate, dat = gpdu$exceedances)
-     confintmat[i,3:4] <- confint(profxi, level = level)[2:3]
+     confintmat[i,3:4] <- confint(profxi, level = level, print = FALSE)[2:3]
      k <- 30L
      prof_vals <- rep(0, k)
      xi_sigma_vals <- rep(0, k)
@@ -99,7 +104,7 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
       }
      prof <- structure(list(psi = grid_psi, psi.max = parmat[i,1], pll = -prof_vals,
                             maxpll = -gpdu$nllh, std.err = stderr.transfo), class = "eprof")
-     confintmat[i, 1:2] <- confint(prof, level = level)[2:3,1]
+     confintmat[i, 1:2] <- confint(prof, level = level, print = FALSE)[2:3]
    } else if(method == "post"){
     postsim <- suppressWarnings(revdbayes::rpost_rcpp(n = 1000, model = "gp", init_ests = gpdu$estimate,
                                      data = gpdu$exceedances, thresh = 0, trans = "BC",

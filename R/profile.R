@@ -1320,8 +1320,11 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         maxll <- gpd.ll(mle, dat = dat)
         std.error <- sqrt(solve(gpd.infomat(par = mle, dat = dat, method = "exp"))[1, 1])
         constr.mle.scale <- function(sigmat) {
-            as.vector(evd::fpot(x = dat, threshold = 0, model = "gpd", std.err = FALSE, scale = sigmat,
-                method = "Brent", lower = max(-1, -sigmat/xmax), upper = min(10, sigmat/xmin))$estimate)
+            as.vector(suppressWarnings(optim(par = 0.01,
+                                      fn = function(par, scale){
+                -gpd.ll(par = c(scale, par), dat = dat)},
+                              method = "Brent", lower = max(-1, -sigmat/xmax),
+                              upper = min(10, sigmat/xmin), scale = sigmat)$par))
         }
 
         # Missing psi vector
@@ -1439,15 +1442,13 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         maxll <- gpd.ll(mle, dat = dat)
         std.error <- sqrt(solve(gpd.infomat(par = mle, dat = dat, method = "exp"))[2, 2])
         constr.mle.shape <- function(xit) {
-            as.vector(suppressWarnings(evd::fpot(x = dat, threshold = 0, model = "gpd", std.err = FALSE,
-                shape = xit, method = "Brent", lower = ifelse(xit < 0, abs(xit) * xmax + 1e-05,
-                  1e-05), upper = 1e+10)$estimate))
+          as.vector(suppressWarnings(optim(par = 2 * abs(xit) * xmax, fn = function(par, shape){-gpd.ll(par = c(par, shape), dat = dat)},
+              method = "Brent", shape = xit, lower = ifelse(xit < 0, abs(xit) * xmax + 1e-05, 1e-05), upper = 1e+10)$par))
         }
-
         # Missing psi vector
         if (missing(psi) || is.null(psi) || is.na(psi)) {
-            psirangelow <- seq(ifelse(mle[2] < 0, -7, -5), -1.5, length = 10) * std.error +
-                mle[2]
+            psirangelow <- seq(ifelse(mle[2] < 0, -7, -5), -1.5, length = 10) * std.error +  mle[2]
+            psirangelow <- psirangelow[psirangelow > -1]
             lowvals <- sapply(psirangelow, function(par) {
                 gpd.ll(c(constr.mle.shape(par), par), dat = dat)
             }) - maxll
