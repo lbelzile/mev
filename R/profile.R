@@ -71,16 +71,17 @@
 
 #' Confidence intervals for profile likelihood objects
 #'
-#' This function uses spline interpolation to derive \code{level} confidence intervals.
+#' Computes confidence intervals for the parameter psi for profile likelihood objects.
+#' This function uses spline interpolation to derive \code{level} confidence intervals
 #'
 #' @param object an object of class \code{eprof}, normally the output of \link{gpd.pll} or \link{gev.pll}.
 #' @param parm a specification of which parameters are to be given confidence intervals,
 #' either a vector of numbers or a vector of names. If missing, all parameters are considered.
 #' @param level	confidence level, with default value of 0.95
-#' @param prob percentiles, with default giving symmetric 95% confidence intervals
+#' @param prob percentiles, with default giving symmetric 95\% confidence intervals
 #' @param ... additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.
-#' @param print should a summary be printed. Default to TRUE
-#' @return a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
+#' @param print should a summary be printed. Default to \code{TRUE}.
+#' @return returns a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
 #' @export
 confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1-level)/2), print = TRUE, ...) {
   if(diff(prob) != level){

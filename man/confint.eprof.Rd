@@ -15,15 +15,16 @@ either a vector of numbers or a vector of names. If missing, all parameters are 
 
 \item{level}{confidence level, with default value of 0.95}
 
-\item{prob}{percentiles, with default giving symmetric 95% confidence intervals}
+\item{prob}{percentiles, with default giving symmetric 95\% confidence intervals}
 
-\item{print}{should a summary be printed. Default to TRUE}
+\item{print}{should a summary be printed. Default to \code{TRUE}.}
 
 \item{...}{additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.}
 }
 \value{
-a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
+returns a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
 }
 \description{
-This function uses spline interpolation to derive \code{level} confidence intervals.
+Computes confidence intervals for the parameter psi for profile likelihood objects.
+This function uses spline interpolation to derive \code{level} confidence intervals
 }

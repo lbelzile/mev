@@ -6,7 +6,7 @@
 \usage{
 gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
   "Nquant"), mod = "profile", mle = NULL, dat, m = NULL, N = NULL,
-  p = NULL, q = NULL, correction = TRUE, ...)
+  p = NULL, q = NULL, correction = TRUE, threshold = NULL, ...)
 }
 \arguments{
 \item{psi}{parameter vector over which to profile (unidimensional)}
@@ -41,6 +41,8 @@ a list with components
 \item{\code{psi}:} vector of parameter \eqn{psi} given in \code{psi}
 \item{\code{pll}:} values of the profile log likelihood at \code{psi}
 \item{\code{maxpll}:} value of maximum profile log likelihood
+\item{\code{family}:} a string indicating "gpd"
+\item{\code{threshold}:} value of the threshold, by default zero
 }
 In addition, if \code{mod} includes \code{tem}
 \itemize{
