@@ -1,4 +1,4 @@
-#' Eskdalemuir Observatory daily rainfall
+#' Eskdalemuir Observatory Daily Rainfall
 #'
 #' This dataset contains exceedances of 30mm for daily
 #' cumulated rainfall observations over the period 1970-1986.
@@ -13,8 +13,39 @@
 #' @source Met Office.
 NULL
 
+#' Venice Sea Levels
+#'
+#' The \code{venice} data contains the 10 largest yearly sea levels (in cm)
+#' from 1887 until 2017. Only the yearly maximum is available for 1922
+#' and the six largest observations for 1936.
+#'
+#' @format a data frame with 131 rows and 11 columns containing the year of the measurement (first column)
+#' and ordered 10-largest yearly observations, reported in decreasing order from largest (\code{r1}) to smallest (\code{r10}).
+#'
+#' @note Smith (1986) notes that the annual maxima seems to fluctuate around a constant sea level
+#' up to 1930 or so, after which there is potential linear trend. Records of threshold exceedances above
+#' 80 cm (reported on the website) indicate that observations are temporally clustered.
+#'
+#' The observations from 1931 until 1981 can be found in
+#' Table 1 in Smith (1986), who reported data from Pirazzoli (1982).
+#' The values from 1983 until 2017 were extracted by Anthony Davison from the City
+#' of Venice website (accessed October 2018).
+#' and are licensed under CC BY-NC-SA 3.0. The Venice City website indicates
+#' that later measurements were recorded by an instrument located in Punta Salute.
+#'
+#'
+#' @references Smith, R. L. (1986) Extreme value theory based on the \emph{r}
+#' largest annual events. \emph{Journal of Hydrology} \bold{86}, 27–43.
+#' @references Pirazzoli, P., 1982. Maree estreme a Venezia (periodo 1872-1981). \emph{Acqua Aria} \bold{10}, 1023-1039.
+#' @references  Coles, S. G. (2001) \emph{An Introduction to Statistical Modelling of Extreme Values}. London: Springer.
+#' @source City of Venice, Historical archive <http://archive.comune.venezia.it/flex/cm/pages/ServeBLOB.php/L/EN/IDPagina/3045>. Last accessed October 2018.
+#' @name venice
+#' @seealso \code{\link[ismev]{venice}}
+#' @docType data
+NULL
 
-#' Best 200 times of women 1500m track
+
+#' Best 200 times of Women 1500m Track
 #'
 #' 200 all-time best performance (in seconds) of women 1500-meter run.
 #' @format a vector of size 200

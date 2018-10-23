@@ -3,7 +3,7 @@
 \docType{data}
 \name{w1500ml}
 \alias{w1500ml}
-\title{Best 200 times of women 1500m track}
+\title{Best 200 times of Women 1500m Track}
 \format{a vector of size 200}
 \source{
 <http://www.alltime-athletics.com/w_1500ok.htm>, accessed 14.08.2018

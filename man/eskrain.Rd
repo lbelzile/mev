@@ -3,7 +3,7 @@
 \docType{data}
 \name{eskrain}
 \alias{eskrain}
-\title{Eskdalemuir Observatory daily rainfall}
+\title{Eskdalemuir Observatory Daily Rainfall}
 \format{a vector with 93 daily cumulated rainfall measurements exceeding 30mm.}
 \source{
 Met Office.
