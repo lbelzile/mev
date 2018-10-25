@@ -2017,7 +2017,7 @@ plot.fr <- function(x, ...) {
             whichPlot <- list(...)$which
             whichPlot <- (1:4)[c(1:4 %in% whichPlot)]
         } else if ("all" %in% names(list(...))) {
-            if (!is.logical(all[1])) {
+            if (!is.logical(all)) {
                 stop("Invalid `all' parameter")
             }
             if (list(...)$all) {
@@ -2035,7 +2035,7 @@ plot.fr <- function(x, ...) {
     }
 
     fr <- x
-    xl <- fr$param
+    xl <- ifelse(is.null(fr$param), expression(psi), fr$param)
 
     if (1 %in% whichPlot) {
         plot(fr$psi, fr$r, type = "l", xlab = xl, ylab = "Value of pivot", ylim = c(-4, 4),
@@ -2055,7 +2055,7 @@ plot.fr <- function(x, ...) {
             0), panel.first = abline(h = -qchisq(c(0.95, 0.99), df = 1)/2, col = "grey", lwd = 0.7),
             lwd = 1.5, bty = "l")
         lines(fr$psi, -fr$rstar^2/2, col = "blue", lwd = 1.5)
-        legend(x = "bottomright", c(expression(paste("\u2113"["p"])), expression(paste("\u2113"["tem"]))),
+        legend(x = "bottomright", c("profile","tem"),
             lty = c(1, 1), x.intersp = 0.2, lwd = 1.5, seg.len = 0.5, col = c("black", "blue"),
             bty = "n")
         # optional: add diagnostic panels
@@ -2075,10 +2075,13 @@ plot.fr <- function(x, ...) {
     }
     # lower right: log(q/r)/r as a function of r (should be smooth)
     if (4 %in% whichPlot) {
-        plot(fr$r, fr$rstar, type = "l", xlab = "Likelihood root r", ylab = expression(paste("Modified root r"^"*")),
+        fit.r <- stats::smooth.spline(x = na.omit(cbind(fr$r, fr$rstar)), cv = FALSE)
+        pr <- predict(fit.r, 0)$y
+      plot(fr$r, fr$rstar-fr$r, type = "l", xlab = "Likelihood root r", ylab = expression(paste("Correction factor log(q/r)/r")),
             panel.first = {
                 abline(h = 0, col = "grey", lwd = 0.7)
                 abline(v = 0, col = "grey", lwd = 0.7)
+                abline(v = pr, col = "grey", lwd = 0.7, lty = 2)
             }, lwd = 1.5, bty = "l")
     }
 
