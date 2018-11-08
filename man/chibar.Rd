@@ -22,7 +22,7 @@ a named vector of length 3 containing the point estimate, the lower and the uppe
 \description{
 The function fits a generalized Pareto distribution to minima of Pareto variates,
 using the representation \deqn{\Pr(\min(X) > x) = \frac{L(x)}{x^{1/\eta}},}
-where \eqn{\bar{\chi}=2\eta-1}. The data is transformed to the unit Pareto scale and
+where \eqn{\bar{\chi}=2\eta-1}. The data are transformed to the unit Pareto scale and
 a generalized Pareto variable is fitted to the minimum. The parameter \eqn{eta} corresponds to the shape of the latter.
 The confidence intervals can be based either on the delta-method, a profile likelihood or a tangent exponential model approximation.
 }

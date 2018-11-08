@@ -98,10 +98,10 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
                     prob = 0, plot = TRUE) {
     stopifnot(is.matrix(dat), ncol(dat) >= 2)
     estimator <- match.arg(estimator)
+    fr <- dat
     #Transform margins to unit Frechet
     if(standardize && estimator != "fmado"){
       method <- match.arg(method)
-      fr <- matrix(0, ncol = ncol(dat), nrow = nrow(dat))
       if(method == "nonparametric"){
         for(j in 1:ncol(dat)){
           nj <- sum(!is.na(dat[, j])) + 1L

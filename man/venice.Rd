@@ -22,8 +22,8 @@ up to 1930 or so, after which there is potential linear trend. Records of thresh
 The observations from 1931 until 1981 can be found in
 Table 1 in Smith (1986), who reported data from Pirazzoli (1982).
 The values from 1983 until 2017 were extracted by Anthony Davison from the City
-of Venice website (accessed October 2018).
-and are licensed under CC BY-NC-SA 3.0. The Venice City website indicates
+of Venice website (accessed October 2018) and are licensed under the CC BY-NC-SA 3.0 license.
+The Venice City website indicates
 that later measurements were recorded by an instrument located in Punta Salute.
 }
 \references{
