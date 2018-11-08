@@ -18,7 +18,8 @@
 #' is a threshold on the unit Frechet scale.
 #' The search for the maximum likelihood estimate for every pair \eqn{A}
 #'  is restricted to the interval \eqn{[1,3]}. A binned version of the extremal coefficient cloud is also returned.
-#' The Schlather estimator is not self-consistent.
+#' The Schlather estimator is not self-consistent. The Schlather and Tawn estimator includes as special case
+#' the Smith estimator if we do not censor the data (\code{p = 0}) and do not standardize observations by their harmonic mean.
 #'
 #'
 #' The \bold{F-madogram} estimator is a non-parametric estimate based on a stationary process
@@ -35,7 +36,7 @@
 #'
 #' The data will typically consist of max-stable vectors or block maxima.
 #' Both of the Smith and the Schlather--Tawn estimators require unit Frechet margins; the margins will be standardized
-#' to the unit Frechet scale, either parametrically or nonparametrically.
+#' to the unit Frechet scale, either parametrically or nonparametrically unless \code{standardize = FALSE}.
 #' If \code{method = "parametric"}, a parametric GEV model is fitted to each column of \code{dat} using maximum likelihood
 #'  estimation and transformed back using the probability integral transform. If \code{method = "nonparametric"},
 #'  using the empirical distribution function. The latter is the default, as it is appreciably faster.
@@ -123,7 +124,7 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
       }
     #Compute harmonic mean, reweight estimators
     harmo_mean <- apply(1/fr, 2, mean, na.rm = TRUE)
-    transfo_fr <- t(t(fr) * harmo_mean)
+    transfo_fr <- fr %*% diag(harmo_mean)
     }
     N <- ncol(dat) * (ncol(dat) - 1)/2
     theta_vals <- rep(0, N)
@@ -145,9 +146,9 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
                   ind_vals[k,] <- c(i, j)
                 }
                 if (estimator == "schlather") {
-                  X <- as.vector(apply((na.omit(fr[, c(i, j)])), 1, max))
+                  X <- as.vector(apply((na.omit(transfo_fr[, c(i, j)])), 1, max))
                   if (length(X) > 1) {
-                  theta_vals[k] <- optim(par = 1.5, fn = nll, method = "Brent", X = X, lower = 1, upper = 3, thresh = thresh)$par
+                    theta_vals[k] <- sum(X > thresh)/sum(1/pmax(thresh, X))
                   } else{
                   theta_vals[k] <- NA
                   }
@@ -167,6 +168,11 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
     if(!is.null(loc)){
       theta_vals <- theta_vals[order(dist_vals)]
       if(estimator == "schlather"){
+        if(any(theta_vals > 3)){
+         theta_vals[theta_vals > 3] <- 3
+        } else if(any(theta_vals < 1)){
+          theta_vals[theta_vals < 1] <- 1
+        }
         overlap_size <- overlap_size[order(dist_vals)]
       }
       dist_vals <- sort(dist_vals)
