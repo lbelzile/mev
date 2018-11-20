@@ -289,7 +289,8 @@ expmeXS <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNorma
     sum(weights/z)
 }
 
-weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")) {
+weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal"), ...) {
+    ellipsis <- list(...)
     method <- match.arg(method)
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
@@ -305,20 +306,36 @@ weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")
     D <- ncol(Q)
     weights <- rep(0, D)
     if (method == "mvPot") {
-        genVec <- mvPot::genVecQMC(p = 499, D - 1)
+      if(!is.null(ellipsis$prime)){
+        prime <- ellipsis$prime
+      } else{
+        prime <- 499L
+      }
+      if(!is.null(ellipsis$genvec)){
+        stopifnot(length(ellipsis$genVec) > D-1)
+        genVec <- ellipsis$genvec[1:(D-1)]
+      } else{
+        genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
+      }
+      if(is.null(ellipsis$nrep)){
+        nrep <- 10L
+      } else{
+        nrep <- as.integer(ellipsis$nrep)
+      }
     }
     for (j in 1:D) {
         Qmiinv <- solve(Q[-j, -j])
         weights[j] <- det(Qmiinv)^(0.5) * exp(0.5 * t(L[-j]) %*% Qmiinv %*% L[-j])[1] * switch(method, mvtnorm = mvtnorm::pmvnorm(upper = c(-Qmiinv %*%
-            L[-j]), sigma = Qmiinv), mvPot = mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = c(-Qmiinv %*% L[-j]), cov = Qmiinv,
-            genVec = genVec$genVec)[1], TruncatedNormal = TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = c(-Qmiinv %*%
+            L[-j]), sigma = Qmiinv), mvPot = mvPot::mvtNormQuasiMonteCarlo(p = prime, upperBound = c(-Qmiinv %*% L[-j]), cov = Qmiinv,
+            genVec = genVec, nrep = nrep)[1], TruncatedNormal = TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = c(-Qmiinv %*%
             L[-j]), Sig = Qmiinv)$prob)
     }
     return(weights)
 }
 
 
-weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
+weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min"), ...) {
+    ellipsis <- list(...)
     method <- match.arg(method)
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
@@ -342,10 +359,25 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
                 (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]))
         }
     } else if (method == "mvPot") {
-        genVec <- mvPot::genVecQMC(p = 499, D - 1)
+      if(!is.null(ellipsis$prime)){
+        prime <- ellipsis$prime
+      } else{
+        prime <- 499L
+      }
+      if(!is.null(ellipsis$genvec)){
+        stopifnot(length(ellipsis$genVec) > D-1)
+        genVec <- ellipsis$genvec[1:(D-1)]
+      } else{
+        genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
+      }
+      if(is.null(ellipsis$nrep)){
+        nrep <- 10L
+      } else{
+        nrep <- as.integer(ellipsis$nrep)
+      }
         for (j in 1:D) {
-            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])),
-                cov = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]), genVec = genVec$genVec)[1]
+            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = prime, upperBound = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])),
+                cov = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]), genVec = genVec,  nrep = nrep)[1]
         }
     } else if (method == "TruncatedNormal") {
         for (j in 1:D) {
@@ -356,7 +388,8 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
     return(weights)
 }
 
-weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
+weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min"), ...) {
+    ellipsis <- list(...)
     method <- match.arg(method)
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
@@ -376,7 +409,22 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
     weights <- rep(0, D)
     Ti <- cbind(rep(-1, D - 1), diag(D - 1))
     if (method == "mvPot") {
-        genVec <- mvPot::genVecQMC(p = 499, D - 1)
+      if(!is.null(ellipsis$prime)){
+        prime <- ellipsis$prime
+      } else{
+        prime <- 499L
+      }
+      if(!is.null(ellipsis$genvec)){
+        stopifnot(length(ellipsis$genVec) > D-1)
+        genVec <- ellipsis$genvec[1:(D-1)]
+      } else{
+        genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
+      }
+      if(is.null(ellipsis$nrep)){
+        nrep <- 10L
+      } else{
+        nrep <- as.integer(ellipsis$nrep)
+      }
     }
     for (j in 1:D) {
         if (j > 1) {
@@ -386,8 +434,8 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
             weights[j] <- mvtnorm::pmvnorm(lower = rep(-Inf, D - 1), upper = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 + Sigma[j,
                 j]/2 - Sigma[j, -j]), sigma = Ti %*% Sigma %*% t(Ti))
         } else if (method == "mvPot") {
-            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 +
-                Sigma[j, j]/2 - Sigma[j, -j]), cov = Ti %*% Sigma %*% t(Ti), genVec = genVec$genVec)[1]
+                weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = prime, upperBound = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 +
+                Sigma[j, j]/2 - Sigma[j, -j]), cov = Ti %*% Sigma %*% t(Ti), genVec = genVec, nrep = nrep)[1]
         } else if (method == "TruncatedNormal") {
             weights[j] <- TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = si * (log(z[-j]/z[j]) + diag(Sigma)[-j]/2 +
                 Sigma[j, j]/2 - Sigma[j, -j]), Sig = Ti %*% Sigma %*% t(Ti))$prob
@@ -396,7 +444,8 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
     return(weights)
 }
 
-weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min")) {
+weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "TruncatedNormal"), riskf = c("max", "min"), ...) {
+    ellipsis <- list(...)
     method <- match.arg(method)
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
@@ -420,10 +469,25 @@ weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "Truncated
                 j]), sigma = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1))
         }
     } else if (method == "mvPot") {
-        genVec <- mvPot::genVecQMC(p = 499, D - 1)
+      if(!is.null(ellipsis$prime)){
+        prime <- ellipsis$prime
+      } else{
+        prime <- 499L
+      }
+      if(!is.null(ellipsis$genvec)){
+        stopifnot(length(ellipsis$genVec) > D-1)
+        genVec <- ellipsis$genvec[1:(D-1)]
+      } else{
+        genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
+      }
+      if(is.null(ellipsis$nrep)){
+        nrep <- 10L
+      } else{
+        nrep <- as.integer(ellipsis$nrep)
+      }
         for (j in 1:D) {
-            weights[j] <- mvPot::mvTProbQuasiMonteCarlo(p = genVec$primeP, upperBound = si * (exp((log(z[-j]) - log(z[j]))/df) - Sigma[-j,
-                j]), cov = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1), nu = df + 1, genVec = genVec$genVec)[1]
+            weights[j] <- mvPot::mvTProbQuasiMonteCarlo(p = prime, upperBound = si * (exp((log(z[-j]) - log(z[j]))/df) - Sigma[-j,
+                j]), cov = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE])/(df + 1), nu = df + 1, genVec = genVec, nrep = nrep)[1]
         }
     } else if (method == "TruncatedNormal") {
         for (j in 1:D) {
