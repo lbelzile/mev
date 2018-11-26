@@ -312,7 +312,7 @@ weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")
         prime <- 499L
       }
       if(!is.null(ellipsis$genvec)){
-        stopifnot(length(ellipsis$genVec) > D-1)
+        stopifnot(length(ellipsis$genvec) >= D-1)
         genVec <- ellipsis$genvec[1:(D-1)]
       } else{
         genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
@@ -365,7 +365,7 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
         prime <- 499L
       }
       if(!is.null(ellipsis$genvec)){
-        stopifnot(length(ellipsis$genVec) > D-1)
+        stopifnot(length(ellipsis$genvec) >= D-1)
         genVec <- ellipsis$genvec[1:(D-1)]
       } else{
         genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
@@ -415,7 +415,7 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
         prime <- 499L
       }
       if(!is.null(ellipsis$genvec)){
-        stopifnot(length(ellipsis$genVec) > D-1)
+        stopifnot(length(ellipsis$genvec) >= D-1)
         genVec <- ellipsis$genvec[1:(D-1)]
       } else{
         genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
@@ -475,7 +475,7 @@ weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "Truncated
         prime <- 499L
       }
       if(!is.null(ellipsis$genvec)){
-        stopifnot(length(ellipsis$genVec) > D-1)
+        stopifnot(length(ellipsis$genvec) >= D-1)
         genVec <- ellipsis$genvec[1:(D-1)]
       } else{
         genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec

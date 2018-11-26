@@ -29,6 +29,8 @@ gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
 
 \item{correction}{logical indicating whether to use \code{spline.corr} to smooth the tem approximation.}
 
+\item{threshold}{numerical threshold above which to fit the generalized Pareto distribution}
+
 \item{...}{additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.}
 }
 \value{

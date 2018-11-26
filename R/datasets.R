@@ -50,12 +50,35 @@ NULL
 #' 200 all-time best performance (in seconds) of women 1500-meter run.
 #' @format a vector of size 200
 #' @source <http://www.alltime-athletics.com/w_1500ok.htm>, accessed 14.08.2018
-#' @name w1500ml
+#' @name w1500m
 #' @docType data
 NULL
 
+#' Maiquetia Daily Rainfall
+#'
+#' Daily cumulated rainfall (in mm) at Maiquetia airport, Venezuela.
+#' The observations cover the period from January 1961 to December 1999.
+#' The original series had missing days in February 1996 (during which there were
+#' 2 days with 1hr each of light rain) and January 1998 (no rain). These were replaced by zeros.
+#'
+#' @format a vector of size 14244 containing daily rainfall (in mm),
+#' @source J.R. Cordova and M. González, accessed 25.11.2018 from <https://rss.onlinelibrary.wiley.com/hub/journal/14679876/series-c-datasets>
+#' @name maiquetia
+#' @references Coles, S. and L.R. Pericchi (2003). Anticipating Catastrophes through Extreme Value Modelling, \emph{Applied Statistics}, \bold{52}(4), 405-416.
+#' @references  Coles, S., Pericchi L.R. and S. Sisson (2003). A fully probabilistic approach to extreme rainfall modeling, \emph{Journal of Hydrology}, \bold{273}, 35-50.
+#' @docType data
+#' @examples
+#' \dontrun{
+#' attach(maiquetia)
+#' day <- seq.Date(from = as.Date("1961-01-01"), to = as.Date("1999-12-31"), by = "day")
+#' nzrain <- maiquetia[year(day) < 1999 & maiquetia > 0]
+#' fit.gpd(nzrain, threshold = 60, show = TRUE)
+#' detach(maiquetia)
+#' }
+NULL
 
-#' River Nidd dataset
+
+#' River Nidd Flow
 #'
 #' The data consists of exceedances over the threshold 65 cubic meter per second of the River Nidd at Hunsingore Weir, for 35 years of data between 1934 and 1969.
 #'

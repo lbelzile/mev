@@ -1305,7 +1305,7 @@ gpdN.ll <- function(par, dat, N) {
     xi = par[2]
     z = par[1]
     euler_gamma = 0.57721566490153231044
-    sigma = ifelse(abs(xi > 1e-8),
+    sigma = ifelse(abs(xi) > 1e-8,
                    z * xi/(exp(lgamma(N + 1) + lgamma(-xi + 1) - lgamma(N - xi + 1)) - 1),
                    z / (euler_gamma + psigamma(N + 1)))
     gpd.ll(par = c(sigma, xi), dat = dat)

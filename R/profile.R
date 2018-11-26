@@ -1198,6 +1198,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' @param p tail probability, equivalent to \eqn{1/m}. Required only for \code{args} \code{quant}.
 #' @param q level of quantile for N-block maxima. Required only for \code{args} \code{Nquant}.
 #' @param correction logical indicating whether to use \code{spline.corr} to smooth the tem approximation.
+#' @param threshold numerical threshold above which to fit the generalized Pareto distribution
 #' @param ... additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.
 #'
 #' @return a list with components
@@ -1251,8 +1252,9 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
       stopifnot(is.numeric(threshold), length(threshold) == 1)
       if(min(dat) < threshold){
        dat <- dat[dat>threshold] - threshold
-      }
+      } else {
       dat <- dat - threshold
+      }
     } else {
      threshold <- 0
     }
@@ -1298,7 +1300,6 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     if (is.null(mle)) {
         mle <- gpd.mle(xdat = dat, args = args, m = m, N = N, p = p, q = q)
     }
-
     # Extract the components, notably V for model `tem`. Keep other components for optimization
     Vprovided <- FALSE
     extra.args <- list(...)

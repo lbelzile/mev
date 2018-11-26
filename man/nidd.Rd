@@ -3,7 +3,7 @@
 \docType{data}
 \name{nidd}
 \alias{nidd}
-\title{River Nidd dataset}
+\title{River Nidd Flow}
 \format{a vector of size 154}
 \source{
 Natural Environment Research Council (1975). \emph{Flood Studies Report}, volume 4.  pp. 235--236.
