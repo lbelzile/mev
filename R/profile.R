@@ -1254,7 +1254,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
        dat <- dat[dat>threshold] - threshold
       } else {
       dat <- dat - threshold
-      }
+     }
     } else {
      threshold <- 0
     }
@@ -1295,7 +1295,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     }
     xmin <- min(dat)
     xmax <- max(dat)
-    shiftres <- param %in% c("Nmean", "Nquant", "VaR", "quant", "ES")
+    shiftres <- param %in% c("Nmean", "Nquant", "VaR", "quant")
     # If maximum likelihood estimates are not provided, find them
     if (is.null(mle)) {
         mle <- gpd.mle(xdat = dat, args = args, m = m, N = N, p = p, q = q)
@@ -1589,6 +1589,9 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             psi <- seq(lo, hi, length = 55)
         } else{
            psi <- psi - threshold
+           if(any(psi < 0)){
+             stop("Invalid psi sequence: rescaled psi for quantiles must be positive")
+           }
         }
 
 
@@ -1710,9 +1713,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             if (mle[1] + 2 * std.error < hi) {
                 psi <- c(psi, seq(mle[1] + 2 * std.error, hi, length = 20))
             }
-        } else{
-          psi <- psi - threshold
         }
+        # Do not remove threshold for expected shortfall
 
         pars <- cbind(psi, sapply(psi, constr.mle.es))
         # Profile log likelihood values for psi
@@ -1959,7 +1961,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     # Shift by threshold if non-null
     if(shiftres){
       ans$psi <- ans$psi + threshold
-      ans$mle[1] <- ans$psimax <- ans$mle[1] + threshold
+      ans$mle[1] <- ans$psi.max <- ans$mle[1] + threshold
       ans$pars[,1] <- ans$pars[,1] + threshold
     }
 
