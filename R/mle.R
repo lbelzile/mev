@@ -462,7 +462,7 @@ invisible(fitted)
 # @param ... additional argument passed to \code{matplot}.
 #' @importFrom evd qgpd
 #' @export
-plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...) {
+plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", add = TRUE, ...) {
   if (!is.vector(x$exceedances)) {
     stop("Object `x` does not contain `exceedances`, or else the latter is not a vector")
   }
@@ -471,11 +471,13 @@ plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
   }
   show <- rep(FALSE, 2)
   show[which] <- TRUE
-  old.par <- par(no.readonly = TRUE)
-  if(sum(show) == 2){
-    par(mfrow = c(1,2), mar = c(5,5,4,1))
+  if(!add){
+    old.par <- par(no.readonly = TRUE)
+    if(sum(show) == 2){
+      par(mfrow = c(1,2), mar = c(5,5,4,1))
+    }
+    on.exit(par(old.par))
   }
-  on.exit(par(old.par))
   if (missing(main)) {
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else{
@@ -495,14 +497,14 @@ plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
                         evd::pgpd(dat, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
                         ), main = main[1], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = c(0,1), xlim = c(0,1),
-            lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)
+            lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ..., add = FALSE)
   }
 
   if(show[2]){
     limqq <- c(0, max(c(quant[n], dat[n])))
     matplot(quant, cbind(qq_confint_lim, dat), main = main[2], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = limqq, xlim = limqq,
-          lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)
+          lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ..., add = FALSE)
   }
 
   matlim <- cbind(quant, qq_confint_lim)
