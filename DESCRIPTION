@@ -1,15 +1,15 @@
 Package: mev
 Type: Package
 Title: Multivariate Extreme Value Distributions
-Version: 1.11.9
-Date: 2018-09-11
+Version: 1.11.10
+Date: 2018-12-03
 Authors@R: c(person(given="Leo", family="Belzile", role = c("aut", "cre"), email = "belzilel@gmail.com"), person(given="Jennifer L.", family="Wadsworth", role=c("aut")), person(given="Paul J.", family="Northrop", role=c("aut")), person(given="Scott D.", family="Grimshaw", role=c("aut")), person(given="Jin", family="Zhang", role=c("ctb")), person(given="Michael A.", family="Stephens", role=c("ctb")), person(given="Art B.", family="Owen", role=c("ctb")), person(given="Raphael", family="Huser", role=c("aut")))
 Description: Exact simulation from max-stable processes and multivariate extreme value distributions for various parametric models. Threshold selection methods.
 License: GPL-3
 BugReports: https://github.com/lbelzile/mev/issues
 URL: https://github.com/lbelzile/mev/
 Imports: alabama, boot, evd, methods, nleqslv, nloptr, Rcpp (>= 0.11.6), stats, TruncatedNormal (>= 1.1)
-Suggests: cobs, knitr, mvPot (>= 0.1.3), mvtnorm, gmm, revdbayes, ismev
+Suggests: cobs, knitr, mvPot (>= 0.1.5), mvtnorm, gmm, revdbayes, ismev
 LinkingTo: Rcpp, RcppArmadillo
 LazyData: true
 RoxygenNote: 6.1.1

@@ -19,8 +19,8 @@
 #' vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
 #' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
 #' rparp(n=10, riskf = 'max', vario=vario,loc=grid.loc, model='br')
-rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min"), siteindex = NULL, d, param, sigma, model = c("log", "neglog",
-                                                                                                                     "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
+rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), siteindex = NULL, d, param, sigma, model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
+  stopifnot(shape > 0)
   riskf <- match.arg(riskf)
   if (is.null(siteindex) && riskf == "site") {
     stop("For exceedances of site, the user needs to provide an index between 1 and d")
@@ -206,8 +206,8 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min"), siteinde
     }
     return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod,
                                                                          Sigma = sigma, loc = loc))
-  } else if (riskf %in% c("max", "min")) {
-    ustar <- ifelse(riskf == "max", 1, d)
+  } else if (riskf %in% c("max", "min", "l2")) {
+    ustar <- switch(riskf, max = 1, min = d, l2 = 1)
     ind <- 0L
     ntotsim <- 0L
     ntotacc <- 0L
@@ -216,11 +216,10 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min"), siteinde
     while (ind < n) {
       candidate <- evd::rgpd(n = nsim, loc = 1, scale = 1, shape = shape) * .rmevspec_cpp(n = nsim, d = d, para = param, model = mod,
                                                                                           Sigma = sigma, loc = loc)/ustar
-      accept <- switch(riskf, max = apply(candidate, 1, function(x) {
-        max(x) > 1
-      }), min = apply(candidate, 1, function(x) {
-        min(x) > 1
-      }))
+      accept <- switch(riskf,
+                       max = apply(candidate, 1, function(x) { max(x) > 1 }),
+                       min = apply(candidate, 1, function(x) { min(x) > 1 }),
+                       l2 = apply(candidate, 1, function(x) { sum(x^2) > 1 }))
       sum_accept <- sum(accept)
       ntotacc <- ntotacc + sum_accept
       ntotsim <- ntotsim + nsim
@@ -248,11 +247,13 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min"), siteinde
 
 #' Simulation from generalized R-Pareto processes
 #'
-#' @details For \code{riskf=max} and \code{riskf=min}, the procedure uses rejection sampling based on Pareto variates
-#' sampled from \code{sum} and may be slow if \code{d} is large.
+#' The generalized R-Pareto process is supported on \code{(B - A / shape, Inf)} if \code{shape > 0},
+#' or \code{(-Inf, B - A / shape)} for negative shape parameters, conditional on \eqn{(X-r(B))/r(A)>0}.
+#' The standard Pareto process corresponds to \code{A = B = rep(1, d)}.
+#'
 #'
 #' @inheritParams rmev
-#' @param shape shape tail index of Pareto variable
+#' @param shape shape parameter of the generalized Pareto variable
 #' @param riskf string indicating the risk functional.
 #' @param siteindex integer between 1 and d specifying the index of the site or variable
 #' @param A scale vector
@@ -261,17 +262,16 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min"), siteinde
 #' \code{accept.rate} if the procedure uses rejection sampling.
 #' @export
 #' @examples
-#' rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5, model = 'log', A = c(1,2,3), B = c(2,3,4))
-#' rgparp(n = 10, riskf = 'min', d = 3, param = 2.5, model = 'neglog')
-#' rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5), model = 'bilog')
-#' rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5), model = 'sdir')
+#' rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5, model = 'log', A = c(1, 2, 3), B = c(2, 3, 4))
+#' rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5), A = 1:4, B = 1:4, model = 'bilog')
+#' rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5), A = 1:3, B = 1:3, model = 'sdir')
 #' vario <- function(x, scale = 0.5, alpha = 0.8){ scale*x^alpha }
 #' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#' rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc, model = 'br', A = )
-rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), siteindex = NULL, d, A, B, param, sigma,
-                  model = c("log", "neglog","bilog", "negbilog", "hr", "br",
-                            "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
+#' rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc, model = 'br', A = runif(16), B = rnorm(16))
+rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), siteindex = NULL, d, A, B, param, sigma, model = c("log", "neglog","bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
   riskf <- match.arg(riskf)
+  shape <- as.vector(shape[1])
+  stopifnot(is.numeric(shape))
   if (is.null(siteindex) && riskf == "site") {
     stop("For exceedances of site, the user needs to provide an index between 1 and d")
   }
@@ -469,13 +469,19 @@ rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), s
   rA <- switch(riskf, sum = sum(A), max = max(A), min = min(A), site = A[siteindex], l2 = sqrt(sum(A^2)))
   B <- B - rB #identifiability constraint r(B) = 0, r(B) is the threshold
   A <- A / rA #identifiability constraint r(A) = 1, r(A) is scale of GP
-
+  # Process becomes after simulation with A, B return rA*X + rB
   #Compute threshold for the l1 norm
+  us <- 0
   if(riskf %in% c("max", "l2", "sum")){
-    ustar <- min(1 - shape * B / A)
+    ustar <- ifelse(shape == 0,
+                    min(exp(( us - B) / A)),
+                    min((1 + shape * (us - B) / A)^(1/shape)))
   } else if(riskf == "min"){
-    ustar <- sum(1 - shape * B / A)
-  } else if(riskf == "site"){ #for this, simulate directly from angular measure P0
+    ustar <- ifelse(shape == 0,
+                    sum(exp(( us - B) / A)),
+                    sum((1 - shape * (B - us) / A)^(1/shape)))
+  } else if(riskf == "site"){
+    #for this, simulate directly from angular measure P0
     ustar <- 1
   }
   #Algorithm 1
@@ -488,14 +494,21 @@ rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), s
     samp <- matrix(0, nrow = n, ncol = d)
     while (ind < n) {
       candidate <- ustar / runif(nsim) * .rmevspec_cpp(n = nsim, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
-      for(j in 1:d){
-       candidate[,j] <- (candidate[,j]^shape - 1) / shape * A[j] + B[j]
+      if(!isTRUE(all.equal(shape, 0))){
+        for(j in 1:d){
+          candidate[,j] <- (candidate[,j]^shape - 1) / shape * A[j] + B[j]
+        }
+      } else{
+        for(j in 1:d){
+          candidate[,j]  <- A[j] * log(candidate[,j]) + B[j]
+        }
       }
       accept <- switch(riskf,
-                       max = apply(candidate, 1, function(x) { max(x) > 1  }),
-                       min = apply(candidate, 1, function(x) { min(x) > 1  }),
-                       l2 =  apply(candidate, 1, function(x) { sum(x^2) > 1}),
-                       sum = apply(candidate( 1, function(x) { sum(x) > 1})))
+                       site = apply(candidate, 1, function(x){ x[siteindex] > us}),
+                       max = apply(candidate, 1, function(x) { max(x) > us}),
+                       min = apply(candidate, 1, function(x) { min(x) > us}),
+                       l2 =  apply(candidate, 1, function(x) { sum(x^2) > us}),
+                       sum = apply(candidate, 1, function(x) { sum(x) > us}))
       sum_accept <- sum(accept)
       ntotacc <- ntotacc + sum_accept
       ntotsim <- ntotsim + nsim
@@ -515,17 +528,20 @@ rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), s
     samp <- rA * samp + rB
     attr(samp, "accept.rate") <- ntotacc/ntotsim
     return(samp)
-  } else if (riskf == "site") {
-    #Acceptance rate is 1
-    samp <- ustar / runif(n)  * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod,
-                                                                         Sigma = sigma, loc = loc)
-    for(j in 1:d){
-      samp[,j] <- (samp[,j]^shape - 1) / shape * A[j] + B[j]
-    }
-    samp <- evd::rgpd(n = n, loc = rB, scale = rA, shape = shape) * samp / samp[, siteindex]
+  } else {
+     #Acceptance rate is 1
+     samp <- 1 / runif(n) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
+     if(!isTRUE(all.equal(shape, 0))){
+     for(j in 1:d){
+       samp[,j] <- (samp[,j]^shape - 1) / shape * A[j] +  B[j]
+     }
+     } else{
+       for(j in 1:d){
+        samp[,j]  <- A[j] * log(samp[,j]) + B[j]
+       }
+     }
+    samp <- rA * samp + rB
     attr(samp, "accept.rate") <- 1
     return(samp)
-  } else {
-    stop("Model not implemented")
   }
 }
