@@ -17,7 +17,7 @@ gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
 
 \item{mle}{maximum likelihood estimate in \eqn{(\psi, \xi)} parametrization if \eqn{\psi \neq \xi} and \eqn{(\sigma, \xi)} otherwise (optional).}
 
-\item{dat}{sample vector of excesses}
+\item{dat}{sample vector of excesses, unless \code{threshold} is provided (in which case user provides original data)}
 
 \item{m}{number of observations of interest for return levels. Required only for \code{args} values \code{'VaR'} or \code{'ES'}}
 

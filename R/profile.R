@@ -1192,7 +1192,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' @param param string indicating the parameter to profile over
 #' @param mod string indicating the model. See \bold{Details}.
 #' @param mle maximum likelihood estimate in \eqn{(\psi, \xi)} parametrization if \eqn{\psi \neq \xi} and \eqn{(\sigma, \xi)} otherwise (optional).
-#' @param dat sample vector of excesses
+#' @param dat sample vector of excesses, unless \code{threshold} is provided (in which case user provides original data)
 #' @param m number of observations of interest for return levels. Required only for \code{args} values \code{'VaR'} or \code{'ES'}
 #' @param N size of block over which to take maxima. Required only for \code{args} \code{Nmean} and \code{Nquant}.
 #' @param p tail probability, equivalent to \eqn{1/m}. Required only for \code{args} \code{quant}.

@@ -229,7 +229,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
           ind <- ind + sum_accept
           nsim <- min(1e+06, ceiling(1.25 * (nsim/sum_accept) * (n - ind)))
         } else {
-          samp[(ind + 1L):n, ] <- candidate[accept, ][1:(n - ind), ]
+          samp[(ind + 1L):n, ] <- as.matrix(candidate[accept, ])[1:(n - ind), ]
           ind <- n
         }
       } else {
@@ -268,7 +268,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
 #' vario <- function(x, scale = 0.5, alpha = 0.8){ scale*x^alpha }
 #' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
 #' rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc, model = 'br', A = runif(16), B = rnorm(16))
-rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), siteindex = NULL, d, A, B, param, sigma, model = c("log", "neglog","bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
+rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "max", "min", "l2"), siteindex = NULL, d, A, B, param, sigma, model = c("log", "neglog","bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
   riskf <- match.arg(riskf)
   shape <- as.vector(shape[1])
   stopifnot(is.numeric(shape))
@@ -465,13 +465,13 @@ rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), s
       stop("Invalid site index")
     }
   }
-  rB <- switch(riskf, sum = sum(B), max = max(B), min = min(B), site = B[siteindex], l2 = sqrt(sum(B^2)))
-  rA <- switch(riskf, sum = sum(A), max = max(A), min = min(A), site = A[siteindex], l2 = sqrt(sum(A^2)))
-  B <- B - rB #identifiability constraint r(B) = 0, r(B) is the threshold
-  A <- A / rA #identifiability constraint r(A) = 1, r(A) is scale of GP
+  #rB <- switch(riskf, sum = sum(B), max = max(B), min = min(B), site = B[siteindex], l2 = sqrt(sum(B^2)))
+  #rA <- switch(riskf, sum = sum(A), max = max(A), min = min(A), site = A[siteindex], l2 = sqrt(sum(A^2)))
+  #B <- B - rB #identifiability constraint r(B) = 0, r(B) is the threshold
+  #A <- A / rA #identifiability constraint r(A) = 1, r(A) is scale of GP
   # Process becomes after simulation with A, B return rA*X + rB
   #Compute threshold for the l1 norm
-  us <- 0
+  us <- thresh
   if(riskf %in% c("max", "l2", "sum")){
     ustar <- ifelse(shape == 0,
                     min(exp(( us - B) / A)),
@@ -483,14 +483,18 @@ rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), s
   } else if(riskf == "site"){
     #for this, simulate directly from angular measure P0
     ustar <- 1
+  } else if(riskf == "mean"){
+    ustar <- ifelse(shape == 0,
+                    min(exp(( us - B) / A))/d,
+                    min((1 + shape * (us - B) / A)^(1/shape))/d)
   }
   #Algorithm 1
   # Nonlinear risk functionals
-  if (riskf %in% c("sum", "max", "min", "l2")) {
+  if (riskf %in% c("sum", "mean", "max", "min", "l2")) {
     ind <- 0L
     ntotsim <- 0L
     ntotacc <- 0L
-    nsim <- ceiling(ifelse(n < 10, 4 * n, n))
+    nsim <- ceiling(ifelse(n < 10, 10 * n, n))
     samp <- matrix(0, nrow = n, ncol = d)
     while (ind < n) {
       candidate <- ustar / runif(nsim) * .rmevspec_cpp(n = nsim, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
@@ -508,24 +512,25 @@ rgparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), s
                        max = apply(candidate, 1, function(x) { max(x) > us}),
                        min = apply(candidate, 1, function(x) { min(x) > us}),
                        l2 =  apply(candidate, 1, function(x) { sum(x^2) > us}),
-                       sum = apply(candidate, 1, function(x) { sum(x) > us}))
+                       sum = apply(candidate, 1, function(x) { sum(x) > us}),
+                       mean = apply(candidate, 1, function(x) { mean(x) > us}))
       sum_accept <- sum(accept)
       ntotacc <- ntotacc + sum_accept
       ntotsim <- ntotsim + nsim
       if (sum_accept > 0) {
         if (sum_accept < (n - ind)) {
-          samp[(ind + 1L):(ind + sum_accept), ] <- candidate[accept, ]
+          samp[(ind + 1L):(ind + sum_accept), ] <- candidate[accept, , drop = FALSE]
           ind <- ind + sum_accept
           nsim <- min(1e+06, ceiling(1.25 * (nsim/sum_accept) * (n - ind)))
         } else {
-          samp[(ind + 1L):n, ] <- candidate[accept, ][1:(n - ind), ]
+          samp[(ind + 1L):n, ] <- candidate[accept, ,drop = FALSE][1:(n - ind), , drop = FALSE]
           ind <- n
         }
       } else {
         nsim <- min(1e+06, ceiling(1.25 * nsim))
       }
     }
-    samp <- rA * samp + rB
+    #samp <- rA * samp + rB
     attr(samp, "accept.rate") <- ntotacc/ntotsim
     return(samp)
   } else {
