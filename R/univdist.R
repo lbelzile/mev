@@ -2184,7 +2184,6 @@ NULL
 #'
 #' @param par a vector of location, scale and shape parameter
 #' @param dat an \code{n} by \code{r} matrix of observations, ordered from largest to smallest in each row.
-#' @importFrom stats approx
 #' @export
 #' @keywords internal
 rlarg.ll <- function(par, dat){

@@ -4,7 +4,6 @@
 #' \code{interpret.fbvpot} was adapted to deal with the output of a call to
 #' \code{\link[evd]{fbvpot}} from the \pkg{evd} and to handle families other than the logistic distribution.
 #' The likelihood derivation comes from expression 2.10 in Smith et al. (1997).
-#' @importFrom stats pbeta
 #' @importFrom evd pbvevd
 #' @seealso \code{\link[evir]{interpret.gpdbiv}}
 #' @author Leo Belzile, adapting original S code by Alexander McNeil
@@ -41,7 +40,7 @@ ibvpot <- function(fitted, q, silent = FALSE) {
     if (!all(c("shape1", "scale1", "shape2", "scale2") %in% names(fitted$param))) {
         stop("Invalid arguments for `param'. Missing marginal parameters.")
     }
-    if (length(fitted$pat) != 2 || length(fitted$threshold) != 2 || !is.numeric(fitted$threshold) || any(fitted$pat > 1) || any(fitted$pat < 
+    if (length(fitted$pat) != 2 || length(fitted$threshold) != 2 || !is.numeric(fitted$threshold) || any(fitted$pat > 1) || any(fitted$pat <
         0)) {
         stop("Invalid input for `pat' or `threshold' vector.")
     }
@@ -65,20 +64,20 @@ ibvpot <- function(fitted, q, silent = FALSE) {
             rho <- fitted$param["rho"]
             a1 <- fitted$param["alpha"]
             a2 <- fitted$param["beta"]
-            Ups <- exp((lbeta(a1, a2 + rho) + log(q[2]))/rho)/(exp((lbeta(a1, a2 + rho) + log(q[2]))/rho) + exp((lbeta(a1 + rho, a2) + 
+            Ups <- exp((lbeta(a1, a2 + rho) + log(q[2]))/rho)/(exp((lbeta(a1, a2 + rho) + log(q[2]))/rho) + exp((lbeta(a1 + rho, a2) +
                 log(q[1]))/rho))
             exp(pbeta(Ups, a2, a1 + rho, log.p = T) - log(q[1])) + exp(pbeta(1 - Ups, a1, a2 + rho, log.p = T) - log(q[2]))
         }
     } else {
         Vfuncf <- function(q, fitted) {
-            f <- switch(fitted$model, log = pbvevd(q = q, model = "log", dep = fitted$param["dep"], mar1 = c(1, 1, 1)), alog = pbvevd(q = q, 
-                model = "alog", dep = fitted$param["dep"], asy = fitted$param[c("asy1", "asy2")], mar1 = c(1, 1, 1)), hr = pbvevd(q = q, 
-                model = "hr", dep = fitted$param["dep"], mar1 = c(1, 1, 1)), neglog = pbvevd(q = q, model = "neglog", dep = fitted$param["dep"], 
-                mar1 = c(1, 1, 1)), aneglog = pbvevd(q = q, model = "aneglog", dep = fitted$param["dep"], asy = fitted$param[c("asy1", 
-                "asy2")], mar1 = c(1, 1, 1)), bilog = pbvevd(q = q, model = "bilog", alpha = fitted$param["alpha"], beta = fitted$param["beta"], 
-                mar1 = c(1, 1, 1)), negbilog = pbvevd(q = q, model = "negbilog", alpha = fitted$param["alpha"], beta = fitted$param["beta"], 
-                mar1 = c(1, 1, 1)), ct = pbvevd(q = q, model = "ct", alpha = fitted$param["alpha"], beta = fitted$param["beta"], mar1 = c(1, 
-                1, 1)), amix = pbvevd(q = q, model = "amix", alpha = fitted$param["alpha"], beta = fitted$param["beta"], mar1 = c(1, 
+            f <- switch(fitted$model, log = pbvevd(q = q, model = "log", dep = fitted$param["dep"], mar1 = c(1, 1, 1)), alog = pbvevd(q = q,
+                model = "alog", dep = fitted$param["dep"], asy = fitted$param[c("asy1", "asy2")], mar1 = c(1, 1, 1)), hr = pbvevd(q = q,
+                model = "hr", dep = fitted$param["dep"], mar1 = c(1, 1, 1)), neglog = pbvevd(q = q, model = "neglog", dep = fitted$param["dep"],
+                mar1 = c(1, 1, 1)), aneglog = pbvevd(q = q, model = "aneglog", dep = fitted$param["dep"], asy = fitted$param[c("asy1",
+                "asy2")], mar1 = c(1, 1, 1)), bilog = pbvevd(q = q, model = "bilog", alpha = fitted$param["alpha"], beta = fitted$param["beta"],
+                mar1 = c(1, 1, 1)), negbilog = pbvevd(q = q, model = "negbilog", alpha = fitted$param["alpha"], beta = fitted$param["beta"],
+                mar1 = c(1, 1, 1)), ct = pbvevd(q = q, model = "ct", alpha = fitted$param["alpha"], beta = fitted$param["beta"], mar1 = c(1,
+                1, 1)), amix = pbvevd(q = q, model = "amix", alpha = fitted$param["alpha"], beta = fitted$param["beta"], mar1 = c(1,
                 1, 1)))
             return(-log(f))
         }
@@ -94,16 +93,16 @@ ibvpot <- function(fitted, q, silent = FALSE) {
         1 - lambda1 * exp(-log(1 + (xi1 * (x - u1))/sigma1)/xi1)
     }
     bivsurv <- function(x, y, u1, lambda1, xi1, sigma1, u2, lambda2, xi2, sigma2, marg, newfunc, vfunc) {
-        1 - marg(x, u1, lambda1, xi1, sigma1) - marg(y, u2, lambda2, xi2, sigma2) + newfunc(x, y, u1, lambda1, xi1, sigma1, u2, lambda2, 
+        1 - marg(x, u1, lambda1, xi1, sigma1) - marg(y, u2, lambda2, xi2, sigma2) + newfunc(x, y, u1, lambda1, xi1, sigma1, u2, lambda2,
             xi2, sigma2, vfunc)
     }
-    if (fitted$threshold[1] > q[1]) 
+    if (fitted$threshold[1] > q[1])
         stop("Point below x threshold")
-    if (fitted$threshold[2] > q[2]) 
+    if (fitted$threshold[2] > q[2])
         stop("Point below y threshold")
     p1 <- 1 - marg(q[1], fitted$threshold[1], fitted$pat[1], fitted$param["scale1"], fitted$param["shape1"])  #u, lambda, scale, shape
     p2 <- 1 - marg(q[2], fitted$threshold[2], fitted$pat[2], fitted$param["scale2"], fitted$param["shape2"])
-    p12 <- bivsurv(q[1], q[2], fitted$threshold[1], fitted$pat[1], fitted$param["scale1"], fitted$param["shape1"], fitted$threshold[2], 
+    p12 <- bivsurv(q[1], q[2], fitted$threshold[1], fitted$pat[1], fitted$param["scale1"], fitted$param["shape1"], fitted$threshold[2],
         fitted$pat[2], fitted$param["scale2"], fitted$param["shape2"], marg, bivcdf, Vfuncf)
     if (!silent) {
         cat("Bivariate POT model:", fitted$model, "\n")
@@ -119,5 +118,5 @@ ibvpot <- function(fitted, q, silent = FALSE) {
     output <- as.numeric(c(p1, p2, p12, p1 * p2, p12/p1, p12/p2))
     names(output) <- c("p(1)", "p(2)", "p(1,2)", "p(1)p(2)", "p(2|1)", "p(1|2)")
     invisible(output)
-    
+
 }

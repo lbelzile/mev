@@ -2109,7 +2109,6 @@ plot.fr <- function(x, ...) {
 #'
 #' @return an object of class \code{fr}, containing as additional arguments \code{spline} and a modified \code{rstar} argument.
 #' @export
-#' @importFrom stats smooth.spline
 spline.corr <- function(fr) {
     # Step 1: fit a smoothing spline to rstar If fit failed for some values (for example when
     # shape forced to be < 1) Remove those values

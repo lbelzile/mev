@@ -195,7 +195,6 @@ rparpcshr <- function(n, u, alpha, Sigma, m) {
 #' @export
 #' @importFrom TruncatedNormal mvNqmc
 #' @importFrom TruncatedNormal mvTqmc
-#' @importFrom stats rWishart
 #' @examples
 #' #Extremal Student
 #' Sigma <- stats::rWishart(n = 1, df = 20, Sigma = diag(10))[,,1]

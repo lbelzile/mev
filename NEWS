@@ -7,17 +7,17 @@ New:
 * 'rparp' now has attributes to give acceptance rate of accept/reject procedure.
 * Exponent measure estimators `extcoef`
 * New method for robust OBRE estimates of GP parameters
-* Functions `fit.gev`,`fit.gpd`, `fit.rlarg` and `fit.pp`
+* Functions `fit.gev`,`fit.gpd`, `fit.rlarg` and `fit.pp` for maximum likelihood estimation
 * Default printing and plot optims (p-p and q-q plots) for mev_ objects
 * Changes to optimization routine for pp  in `W.diag` function, use of expected information matrix, change to default tuning parameter
-* Datasets
+* New datasets: eskrain, italcent, maiquetia, nidd, padova, venice, w1500m, zurichrain
 
 Fixes:
-* scaling of Brown-Resnick is now consistent with literature (half of semivariogram)
-* Incorrect degrees of freedom argument in C++ code for 'rmev' with extremal Student family
-* rparp now has a hard bound to ensure the vector of simulated vectors fits in memory.
+* Scaling of Brown-Resnick is now consistent with literature (half of semivariogram)
+* Degrees of freedom argument in C++ code for 'rmev' with extremal Student family were incorrect
+* 'rparp' now has a hard bound to ensure the vector of simulated vectors fits in memory.
 * Change to Grimshaw routine to ensure shape not less than -1, constrained optimization method
-* Information matrix, score for GEV now interpolate in a neighborhood of zero to preserve continuity and avoid numerical overflow.
+* Information matrix, score for GEV now interpolated in a neighborhood of zero to preserve continuity and avoid numerical overflow.
 * Information matrix of GEV: scale factor off. All scores and information matrix have been checked and limits as xi -> 0  implemented.
 
 Changes:
