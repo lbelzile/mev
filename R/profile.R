@@ -144,6 +144,8 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
             if (is.null(object$r)) {
                 # no r object, but must have pll + maxpll
                 object$r <- sign(object$psi.max - object$psi) * sqrt(2 * (object$maxpll - object$pll))
+            } else{
+             object$r[is.infinite(object$r)] <- NA
             }
             if (is.null(object$normal)) {
                 object$normal <- c(object$psi.max, object$std.error)
@@ -1464,6 +1466,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             lo <- ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[2], lo)
             hi <- ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[2], hi)
             psi <- seq(lo, hi, length = 55)
+            psi <- psi[psi>-1]
         }
 
         pars <- cbind(sapply(psi, constr.mle.shape), psi)

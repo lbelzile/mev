@@ -255,23 +255,28 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
 #' @inheritParams rmev
 #' @param shape shape parameter of the generalized Pareto variable
 #' @param riskf string indicating the risk functional.
+#' @param thresh univariate threshold for the exceedances of risk functional
 #' @param siteindex integer between 1 and d specifying the index of the site or variable
 #' @param A scale vector
-#' @param B location vector; the threshold corresponds to riskf(B)
+#' @param B location vector
 #' @return an \code{n} by \code{d} sample from the generalized R-Pareto process, with \code{attributes}
 #' \code{accept.rate} if the procedure uses rejection sampling.
 #' @export
 #' @examples
-#' rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5, model = 'log', A = c(1, 2, 3), B = c(2, 3, 4))
-#' rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5), A = 1:4, B = 1:4, model = 'bilog')
-#' rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5), A = 1:3, B = 1:3, model = 'sdir')
+#' rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5,
+#'    model = 'log', A = c(1, 2, 3), B = c(2, 3, 4))
+#' rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5),
+#'    A = 1:4, B = 1:4, model = 'bilog')
+#' rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5),
+#'    A = 1:3, B = 1:3, model = 'sdir')
 #' vario <- function(x, scale = 0.5, alpha = 0.8){ scale*x^alpha }
 #' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#' rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc, model = 'br', A = runif(16), B = rnorm(16))
+#' rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc,
+#'    model = 'br', A = runif(16), B = rnorm(16))
 rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "max", "min", "l2"), siteindex = NULL, d, A, B, param, sigma, model = c("log", "neglog","bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
   riskf <- match.arg(riskf)
-  shape <- as.vector(shape[1])
-  stopifnot(is.numeric(shape))
+  #shape <- as.vector(shape[1])
+  #stopifnot(is.numeric(shape))
   if (is.null(siteindex) && riskf == "site") {
     stop("For exceedances of site, the user needs to provide an index between 1 and d")
   }
@@ -449,12 +454,19 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
   if(missing(A)){
     stop("Missing scale function")
   } else {
+    if(length(A) == 1){
+      A <- rep(A, length.out = d)
+    }
     stopifnot(length(A) == d, all(A > 0))
   }
   if(missing(B)){
     stop("Missing location function")
   } else{
+    if(length(B) == 1){
+      B <- rep(B, length.out = d)
+    } else{
    stopifnot(length(B) == d)
+    }
   }
 
   if (riskf == "site") {
@@ -471,22 +483,37 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
   #A <- A / rA #identifiability constraint r(A) = 1, r(A) is scale of GP
   # Process becomes after simulation with A, B return rA*X + rB
   #Compute threshold for the l1 norm
+  shape <- rep(shape, length.out = d)
   us <- thresh
-  if(riskf %in% c("max", "l2", "sum")){
-    ustar <- ifelse(shape == 0,
-                    min(exp(( us - B) / A)),
-                    min((1 + shape * (us - B) / A)^(1/shape)))
+  stopifnot(length(us) == 1L)
+  if(riskf %in% c("max", "l2", "sum", "mean")){
+    if(isTRUE(all(ifelse(shape < 0, -A/shape+B < us, FALSE)))){
+     stop("Invalid input: the threshold selected is above the upper endpoint of all of the marginal distributions.")
+    }
   } else if(riskf == "min"){
-    ustar <- ifelse(shape == 0,
-                    sum(exp(( us - B) / A)),
-                    sum((1 - shape * (B - us) / A)^(1/shape)))
+    if(isTRUE(any(ifelse(shape < 0, -A/shape+B < us, FALSE)))){
+      stop("Invalid input: the threshold selected is above the upper endpoint of some the marginal distributions.")
+    }
+  } else if(riskf == "site"){
+   if(shape[siteindex] < 0 && -A[siteindex]/shape[siteindex]+B[siteindex] < us){
+     stop("Invalid input: the threshold selected is above the upper endpoint of the marginal distribution at the selected site.")
+   }
+  }
+  if(riskf %in% c("max", "l2", "sum")){
+    ustar <- min(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
+                    exp(( us - B) / A),
+                    (1 + shape * (us - B) / A)^(1/shape)), na.rm = TRUE)
+  } else if(riskf == "min"){
+    ustar <- sum(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
+                    exp(( us - B) / A),
+                    (1 + shape * (us - B) / A)^(1/shape)))
   } else if(riskf == "site"){
     #for this, simulate directly from angular measure P0
     ustar <- 1
-  } else if(riskf == "mean"){
-    ustar <- ifelse(shape == 0,
-                    min(exp(( us - B) / A))/d,
-                    min((1 + shape * (us - B) / A)^(1/shape))/d)
+  } else if(riskf == "mean"){ # difference vs max is 1/d factor
+    ustar <- min(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
+                        exp(( us - B) / A),
+                        (1 + shape * (us - B) / A)^(1/shape)), na.rm = TRUE)/d
   }
   #Algorithm 1
   # Nonlinear risk functionals
@@ -498,12 +525,10 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
     samp <- matrix(0, nrow = n, ncol = d)
     while (ind < n) {
       candidate <- ustar / runif(nsim) * .rmevspec_cpp(n = nsim, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
-      if(!isTRUE(all.equal(shape, 0))){
         for(j in 1:d){
-          candidate[,j] <- (candidate[,j]^shape - 1) / shape * A[j] + B[j]
-        }
-      } else{
-        for(j in 1:d){
+          if(!isTRUE(all.equal(shape[j], 0))){
+          candidate[,j] <- (candidate[,j]^shape[j] - 1) / shape[j] * A[j] + B[j]
+        } else{
           candidate[,j]  <- A[j] * log(candidate[,j]) + B[j]
         }
       }
@@ -536,16 +561,14 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
   } else {
      #Acceptance rate is 1
      samp <- 1 / runif(n) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
-     if(!isTRUE(all.equal(shape, 0))){
      for(j in 1:d){
-       samp[,j] <- (samp[,j]^shape - 1) / shape * A[j] +  B[j]
-     }
+     if(!isTRUE(all.equal(shape[j], 0))){
+           samp[,j] <- (samp[,j]^shape[j] - 1) / shape[j] * A[j] +  B[j]
      } else{
-       for(j in 1:d){
         samp[,j]  <- A[j] * log(samp[,j]) + B[j]
        }
      }
-    samp <- rA * samp + rB
+    #samp <- rA * samp + rB
     attr(samp, "accept.rate") <- 1
     return(samp)
   }

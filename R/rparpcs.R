@@ -317,7 +317,7 @@ weightsHR <- function(z, L, Q, method = c("mvPot", "mvtnorm", "TruncatedNormal")
         genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
       }
       if(is.null(ellipsis$nrep)){
-        nrep <- 10L
+        nrep <- 1L
       } else{
         nrep <- as.integer(ellipsis$nrep)
       }
@@ -370,7 +370,7 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
         genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
       }
       if(is.null(ellipsis$nrep)){
-        nrep <- 10L
+        nrep <- 1L
       } else{
         nrep <- as.integer(ellipsis$nrep)
       }
@@ -420,7 +420,7 @@ weightsBR_WT <- function(z, Sigma, method = c("mvPot", "mvtnorm", "TruncatedNorm
         genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
       }
       if(is.null(ellipsis$nrep)){
-        nrep <- 10L
+        nrep <- 1L
       } else{
         nrep <- as.integer(ellipsis$nrep)
       }
@@ -480,7 +480,7 @@ weightsXstud <- function(z, Sigma, df, method = c("mvPot", "mvtnorm", "Truncated
         genVec <- mvPot::genVecQMC(p = prime, D - 1)$genVec
       }
       if(is.null(ellipsis$nrep)){
-        nrep <- 10L
+        nrep <- 1L
       } else{
         nrep <- as.integer(ellipsis$nrep)
       }

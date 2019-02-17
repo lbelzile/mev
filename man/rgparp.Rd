@@ -14,6 +14,8 @@ rgparp(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site",
 
 \item{shape}{shape parameter of the generalized Pareto variable}
 
+\item{thresh}{univariate threshold for the exceedances of risk functional}
+
 \item{riskf}{string indicating the risk functional.}
 
 \item{siteindex}{integer between 1 and d specifying the index of the site or variable}
@@ -22,7 +24,7 @@ rgparp(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site",
 
 \item{A}{scale vector}
 
-\item{B}{location vector; the threshold corresponds to riskf(B)}
+\item{B}{location vector}
 
 \item{param}{parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
 Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model. See \bold{Details}.}
@@ -50,10 +52,14 @@ or \code{(-Inf, B - A / shape)} for negative shape parameters, conditional on \e
 The standard Pareto process corresponds to \code{A = B = rep(1, d)}.
 }
 \examples{
-rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5, model = 'log', A = c(1, 2, 3), B = c(2, 3, 4))
-rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5), A = 1:4, B = 1:4, model = 'bilog')
-rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5), A = 1:3, B = 1:3, model = 'sdir')
+rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5,
+   model = 'log', A = c(1, 2, 3), B = c(2, 3, 4))
+rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5),
+   A = 1:4, B = 1:4, model = 'bilog')
+rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5),
+   A = 1:3, B = 1:3, model = 'sdir')
 vario <- function(x, scale = 0.5, alpha = 0.8){ scale*x^alpha }
 grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc, model = 'br', A = runif(16), B = rnorm(16))
+rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc,
+   model = 'br', A = runif(16), B = rnorm(16))
 }

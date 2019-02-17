@@ -29,7 +29,7 @@ a plot of the lambda function if \code{plot=TRUE}, plus an invisible list with c
 \item \code{w} the sequence of angles in (0,1) at which the \code{lambda} values are evaluated
 \item \code{lambda} point estimates of lambda
 \item \code{lower.confint} 95% confidence interval for lambda (lower bound)
-\item \code{lower.confint} 95% confidence interval for lambda (upper bound)
+\item \code{upper.confint} 95% confidence interval for lambda (upper bound)
 }
 }
 \description{

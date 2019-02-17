@@ -51,10 +51,8 @@
 #' @section Warning:
 #'As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
 #'
-#'The former implementation of \code{mev} assumed that the Brown-Resnick process was stationary (NOT intrinsically stationary).
-#'To obtain this, one must provide a covariance matrix \code{sigma}. Passing a semivariogram (which must now be parameterized by distance and not location) will give intrinsically stationary Brown-Resnick processes.
 #'
-#'The family of scaled Dirichlet is now parametrized by a parameter in \eqn{-\min(\alpha)} appended to the the \code{d} vector \code{param} containing the parameter \code{alpha}
+#'The family of scaled Dirichlet is now parametrized by a parameter in \eqn{-\min(\alpha)}{-min(\alpha)} appended to the the \code{d} vector \code{param} containing the parameter \code{alpha}
 #'of the Dirichlet model. Arguments \code{model='dir'} and \code{model='negdir'} are still supported internally, but not listed in the options.
 #'
 #' @return an \code{n} by \code{d} exact sample from the corresponding multivariate extreme value model

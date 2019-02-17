@@ -1,6 +1,7 @@
 mev v.1.12 (Release date: )
 ==============
 New:
+* Function 'taildep' is multivariate equivalent to 'evd::chiplot'
 * Function 'rparpcs' for simulating from elliptical Pareto processes associated with max
 * Exponent measure for Brown-Resnick and extremal Student model
 * 'spunif' for semi-parametric transform to uniform (tail modelled using GP)

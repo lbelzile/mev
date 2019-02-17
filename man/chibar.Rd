@@ -49,3 +49,4 @@ abline(h = 1, lty = 3, col = 'grey')
 \seealso{
 \code{\link[evd]{chiplot}} for empirical estimates of \eqn{\chi}{chi} and \eqn{\bar{\chi}}{chibar}.
 }
+\keyword{internal}

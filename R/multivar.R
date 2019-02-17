@@ -12,6 +12,7 @@
 #' @param level the confidence level required
 #' @return a named vector of length 3 containing the point estimate, the lower and the upper confidence intervals
 #' @seealso \code{\link[evd]{chiplot}} for empirical estimates of \eqn{\chi}{chi} and \eqn{\bar{\chi}}{chibar}.
+#' @keywords internal
 #' @examples
 #' \dontrun{
 #' set.seed(765)
@@ -32,7 +33,8 @@
 #' abline(h = 1, lty = 3, col = 'grey')
 #' }
 chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 0.95) {
-    if (ncol(dat) < 2) {
+  base::.Deprecated(new = ".chibar", package = "mev", msg = "The 'chibar' function is being depreceated. Use 'taildep' with 'depmeas = eta' to obtain estimates of 'chibar = 2*eta-1'")
+    if (ncol(as.matrix(dat)) < 2) {
         stop("The method is valid for multivariate data only.")
     }
     confint <- match.arg(arg = confint)
@@ -49,15 +51,11 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
         return(c(Estimate = chibar_est, `Lower CI` = chibar_est - qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2]),
             `Upper CI` = chibar_est + qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2])))
     } else {
-        confint_profile <- 2 * confint(gpd.pll(param = "shape", psi = NA, dat = sp, mod = "tem"), level = level) - 1
-        if ("profile" == confint) {
-            return(confint_profile[, 1])
-        }
-        if ("tem" == confint) {
-            return(confint_profile[, 2])
-        }
+        confint_profile <- 2 * confint(gpd.pll(param = "shape", psi = NA, dat = sp, mod = confint,), level = level, print = FALSE) - 1
+        return(switch(confint, profile = confint_profile, tem = confint_profile[,2]))
     }
 }
+
 
 #' Bivariate angular function for extrapolation based on rays
 #'
@@ -74,7 +72,7 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
 #' \itemize{
 #' \item{\code{w}: }{angles between zero and one}
 #' \item{\code{g}: }{scale function at a given value of \code{w}}
-#' \item{\code{eta}: }{Ledford and Tawn coefficient}
+#' \item{\code{eta}: }{Ledford and Tawn tail dependence coefficient}
 #' }
 #' @export
 #' @references Ledford, A.W. and J. A. Tawn (1996), Statistics for near independence in multivariate extreme values. \emph{Biometrika}, \bold{83}(1), 169--187.
@@ -124,7 +122,7 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 #' \item \code{w} the sequence of angles in (0,1) at which the \code{lambda} values are evaluated
 #' \item \code{lambda} point estimates of lambda
 #' \item \code{lower.confint} 95% confidence interval for lambda (lower bound)
-#' \item \code{lower.confint} 95% confidence interval for lambda (upper bound)
+#' \item \code{upper.confint} 95% confidence interval for lambda (upper bound)
 #' }
 #' @examples
 #' set.seed(12)

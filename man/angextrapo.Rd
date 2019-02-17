@@ -18,7 +18,7 @@ a list with elements
 \itemize{
 \item{\code{w}: }{angles between zero and one}
 \item{\code{g}: }{scale function at a given value of \code{w}}
-\item{\code{eta}: }{Ledford and Tawn coefficient}
+\item{\code{eta}: }{Ledford and Tawn tail dependence coefficient}
 }
 }
 \description{
