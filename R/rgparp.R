@@ -509,7 +509,7 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
                     (1 + shape * (us - B) / A)^(1/shape)))
   } else if(riskf == "site"){
     #for this, simulate directly from angular measure P0
-    ustar <- 1
+    ustar <- (1+shape*(us-B[siteindex])/A[siteindex])^(1/shape)
   } else if(riskf == "mean"){ # difference vs max is 1/d factor
     ustar <- min(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
                         exp(( us - B) / A),
@@ -560,7 +560,7 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
     return(samp)
   } else {
      #Acceptance rate is 1
-     samp <- 1 / runif(n) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
+     samp <- ustar / runif(n) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
      for(j in 1:d){
      if(!isTRUE(all.equal(shape[j], 0))){
            samp[,j] <- (samp[,j]^shape[j] - 1) / shape[j] * A[j] +  B[j]

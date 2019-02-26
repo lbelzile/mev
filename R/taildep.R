@@ -86,7 +86,7 @@ taildep <- function (data, u = NULL, nq = 40, qlim = c(0.8, 0.99), depmeas = c("
     u <- sort(u)
     nq <- length(u)
     if(min(u) < qlim2[1] || max(u) >  qlim2[2]){
-      stop("upper quantile limit is too high or lower quantile limit is too low")
+      warning("upper quantile limit is too high or lower quantile limit is too low")
     }
    }
 
