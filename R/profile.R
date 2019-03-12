@@ -80,11 +80,11 @@
 #' @param level	confidence level, with default value of 0.95
 #' @param prob percentiles, with default giving symmetric 95\% confidence intervals
 #' @param ... additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.
-#' @param print should a summary be printed. Default to \code{TRUE}.
+#' @param print should a summary be printed. Default to \code{FALSE}.
 #' @return returns a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
 #' @export
-confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1-level)/2), print = TRUE, ...) {
-  if(diff(prob) != level){
+confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1-level)/2), print = FALSE, ...) {
+  if(!isTRUE(all.equal(diff(prob),level, check.attributes = FALSE))){
    warning("Incompatible arguments: `level` does not match `prob`.")
   }
     args <- list(...)
@@ -185,6 +185,8 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
             }
             if (!is.null(object$tem.psimax)) {
                 prst[1] <- object$tem.psimax
+            } else{
+              object$tem.psimax <- prst[1]
             }
           conf[,i] <- prst
             # lines(x=object$rstar,fit.rst$fitted,col=2,pch=19)
@@ -254,10 +256,10 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
           cat("Tangent exponential model   :", round(object$tem.psimax, 3), "\n")
           }
           if(3 %in% ind){
-          cat("Severini's profile (TEM)    :", round(object$tem.psimax, 3), "\n")
+          cat("Severini's profile (TEM)    :", round(object$tem.mle, 3), "\n")
           }
           if(4 %in% ind){
-          cat("Severini's profile (empcov) :", round(object$tem.psimax, 3), "\n")
+          cat("Severini's profile (empcov) :", round(object$empcov.mle, 3), "\n")
           }
           cat("\n")
           cat("Confidence intervals, levels :", prob, "\n")
@@ -476,14 +478,13 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 
     oldpar <- param <- match.arg(param)
     mod <- match.arg(mod, c("profile","tem", "modif"), several.ok = TRUE)
-    # Parametrization profiling over quant over scale is more numerically stable
+    # Parametrization profiling for quant over scale is more numerically stable
     if (param == "quant") {
         stopifnot(!is.null(p))
         q <- 1 - p
         N = 1
         param <- "Nquant"
     }
-
     # Arguments for parametrization of the log likelihood
     if (param %in% c("loc", "scale", "shape")) {
         args <- c("loc", "scale", "shape")
@@ -501,14 +502,14 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         }
     }
     if (is.null(q)) {
-        if (param %in% c("Nquant")) {
+        if (param == "Nquant") {
             stop("Argument `q` missing. Procedure aborted")
         } else {
             q <- NA
         }
     }
     if (is.null(p)) {
-        if (param %in% c("quant")) {
+        if (param == "quant") {
             stop("Argument `p` missing. Procedure aborted")
         } else {
             p <- NA
@@ -1150,7 +1151,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     }
     # Return profile likelihood and quantities of interest (modified likelihoods)
     colnames(pars) <- names(mle)
-    ans <- list(mle = mle, pars = pars, psi.max = as.vector(mle[param]), param = oldpar, std.error = std.error,
+    ans <- list(mle = mle, pars = pars, psi.max = as.vector(mle[oldpar]), param = oldpar, std.error = std.error,
         psi = psi, pll = profll, maxpll = maxll, r = r)
     if ("tem" %in% mod) {
         ans$q <- qcor
@@ -1299,7 +1300,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     xmax <- max(dat)
     shiftres <- param %in% c("Nmean", "Nquant", "VaR", "quant")
     # If maximum likelihood estimates are not provided, find them
-    if (is.null(mle)) {
+    if (is.null(mle) || length(mle) != 2) {
         mle <- gpd.mle(xdat = dat, args = args, m = m, N = N, p = p, q = q)
     }
     # Extract the components, notably V for model `tem`. Keep other components for optimization
