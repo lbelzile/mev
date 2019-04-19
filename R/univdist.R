@@ -104,6 +104,9 @@ NULL
 #' @keywords internal
 gpd.ll <- function(par, dat, tol = 1e-05) {
     sigma = par[1]
+    if(sigma < 0){
+      return(-Inf)
+    }
     xi = par[2]
     n <- length(dat)
     if (abs(xi) > tol) {
@@ -161,6 +164,7 @@ gpd.score <- function(par, dat) {
 #' @keywords internal
 gpd.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) {
     method <- match.arg(method)
+    dat <- as.vector(dat)
     sigma <- as.vector(par[1])
     xi <- as.vector(par[2])
     if (method == "obs") {

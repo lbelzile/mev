@@ -19,7 +19,7 @@
 gpd.mle <- function(xdat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
                     m, N, p, q) {
   args <- match.arg(args, c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"), several.ok = TRUE)
-  fitted <- try(gp.fit(xdat = xdat, threshold = 0, method = "Grimshaw"))
+  fitted <- try(gp.fit(xdat = na.omit(as.vector(xdat)), threshold = 0, method = "Grimshaw"))
   sigma <- fitted$estimate[1]
   xi <- fitted$estimate[2]
   # Does not handle the case xi=0 because the optimizer does not return this value!
@@ -165,9 +165,9 @@ gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' fit.gpd(eskrain, threshold = 30, method = 'zs', show = TRUE)
 fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC = NULL, k = 4, tol = 1e-8){
  if(!method == "obre"){
-    gp.fit(xdat = xdat, threshold = threshold, method = method, show = show, MCMC = MCMC)
+    gp.fit(xdat = na.omit(as.vector(xdat)), threshold = threshold, method = method, show = show, MCMC = MCMC)
  } else{
-   .fit.gpd.rob(dat = xdat, thresh = threshold, show = show, k = k, tol = tol)
+   .fit.gpd.rob(dat = na.omit(as.vector(xdat)), thresh = threshold, show = show, k = k, tol = tol)
  }
 }
 
@@ -205,6 +205,7 @@ fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC
 #' pp_mle <- fit.pp(eskrain, threshold = 30, np = 6201)
 #' plot(pp_mle)
 fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
+  xdat <- as.vector(xdat)
   n <- length(xdat)
   if (missing(threshold) || length(threshold) != 1 || mode(threshold) !=  "numeric")
     stop("`threshold' must be a numeric value")
@@ -380,7 +381,7 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
 #' xdat <- rrlarg(n = 10, loc = 0, scale = 1, shape = 0.1, r = 4)
 #' fit.rlarg(xdat)
 fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE){
-  xdat <- as.matrix(na.omit(xdat))
+  xdat <- na.omit(as.matrix(xdat))
   method <- match.arg(method)
   r <- ncol(xdat)
   if(which.max(xdat[1,]) != 1){
