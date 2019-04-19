@@ -199,7 +199,8 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
     return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) * .rmevspec_cpp(n = n, d = d, para = param, model = mod, Sigma = sigma,
                                                                                loc = loc))
   } else if (riskf == "site") {
-    # Check now that siteindex corresponds to a particular site Dimension d could have been modified earlier for spatial models
+    # Check now that siteindex corresponds to a particular site
+    # Dimension d could have been modified earlier for spatial models
     siteindex <- as.integer(siteindex)
     if (siteindex < 1 || siteindex > d) {
       stop("Invalid site index")
@@ -499,11 +500,34 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
      stop("Invalid input: the threshold selected is above the upper endpoint of the marginal distribution at the selected site.")
    }
   }
-  if(riskf %in% c("max", "l2", "sum")){
+  if(riskf %in% c("max", "l2")){
     ustar <- min(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
                     exp(( us - B) / A),
                     (1 + shape * (us - B) / A)^(1/shape)), na.rm = TRUE)
-  } else if(riskf == "min"){
+  } else if(riskf %in% c("sum", "mean", "l2")){ #no bound for l2, contained in l1
+    if(riskf == "mean"){
+      riskf <- "sum"
+      us <- d*us
+    }
+    ustar <- 0
+    zeroshape <- sapply(shape, function(xi){isTRUE(all.equal(xi, 0))})
+    if(us - sum(B) < 0){
+      ustar <- d
+    } else if(all(shape <0)){
+    inter <- 1-(us-sum(B))/sum(A)*min(abs(shape))
+      if(inter > 0){
+      ustar <- d*inter^(-1/max(abs(shape)))
+      }
+    } else if(all(shape > 0)){
+      ustar <- (min(shape)*(us-sum(B))/sum(A)+1)^(1/max(shape))
+    } else if (all(zeroshape)){
+      ustar <- D*(exp((us-sum(B))/sum(A))^(1/d))
+    } else {
+      xiprime <- ifelse(zeroshape, 1, abs(shape))
+      ustar <- (min(xiprime)*(us-sum(B))/sum(A)+1)^(1/max(xiprime))/2
+    }
+    ustar <- max(d, ustar)
+    } else if(riskf == "min"){
     ustar <- sum(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
                     exp(( us - B) / A),
                     (1 + shape * (us - B) / A)^(1/shape)))
