@@ -17,6 +17,7 @@
 #' @param nmax maximum number of pairs. Default to 500L.
 #' @param B number of nonparametric bootstrap replications. Default to 1000L.
 #' @param ties.method string indicating the method for \code\link{[base]{rank}}}. Default to \code{random}.
+#' @param plot logical indicating whether a graph should be produced (default to \code{TRUE}).
 #' @return a Tukey probability-probability plot with 95% confidence intervals obtained using a nonparametric bootstrap
 #' @examples
 #' \dontrun{
@@ -27,7 +28,7 @@
 #' maxstabtest(dat, m = 2, nmax = 100)
 #' maxstabtest(dat, m = ncol(dat))
 #' }
-maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L, ties.method = "random"){
+maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L, ties.method = "random", plot = TRUE){
   if(is.null(dim(dat))){
     stop("`dat` should be an array or a matrix, with replicates")
   }
@@ -155,8 +156,8 @@ maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L, tie
       csamp[(n*(i-1)+1):(n*i)] <- apply(gdat[sample.int(n, n, replace = TRUE),indm[,i]], 1, max)
       csamp[(n*(i-1)+1):(n*i)] <- csamp[(n*(i-1)+1):(n*i)] -
         min(max(log(n)-log(sum(exp(-csamp[(n*(i-1)+1):(n*i)]))), 0), log(m))
-    }
     #}
+    }
     if(ntuples * n < 1000){
       bsamp[b,] <- sort(evd::pgumbel(csamp, loc = 0, scale = 1))
     } else{
@@ -165,9 +166,10 @@ maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L, tie
   }
   #Problem with size of matrix allocation, since we have ntuples * B * n elements in the matrix.
   quants <- t(apply(bsamp, 2, quantile, c(0.025,0.975)))
-  matplot(p, cbind(bsamp[1,], quants) - p, type = "l", lty = c(1,2,2),
-          col = c(1, "grey80","grey80"),ylim = c(max(-1,2*min(quants[,1]-p)),min(2*max(quants[,2]-p),1)),
+  estimate <- cbind(percentiles = bsamp[1,], lower = quants[,1], upper = quants[,2])
+  matplot(p, estimate - p, type = "l", lty = c(1,2,2),
+          col = c(1, "grey80","grey80"), ylim = c(max(-1, 1.2*min(estimate - p)), min(1.2*max(estimate - p),1)),
           panel.first = {abline(h=0)}, bty = "l",  xaxs = "i", ylab = "Probability difference")
-  return(invisible(list(p = p, estimate = cbind(percentiles = bsamp[1,], lower = quants[,1], upper = quants[,2]))))
+  return(invisible(list(p = p, estimate = estimate)))
 }
 
