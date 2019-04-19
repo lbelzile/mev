@@ -425,6 +425,7 @@ plot.eprof <- function(x, ...) {
 #' @param p tail probability. Required only for \code{param} \code{quant}.
 #' @param q probability level of quantile. Required only for \code{param} \code{Nquant}.
 #' @param correction logical indicating whether to use \code{spline.corr} to smooth the tem approximation.
+#' @param plot logical; should the profile likelihood be displayed? Default to \code{TRUE}
 #' @param ... additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.
 #'
 #' @return a list with components
@@ -474,7 +475,7 @@ plot.eprof <- function(x, ...) {
 #' gev.pll(psi = seq(12, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
 gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
-                    mod = "profile", dat, N = NULL, p = NULL, q = NULL, correction = TRUE, ...) {
+                    mod = "profile", dat, N = NULL, p = NULL, q = NULL, correction = TRUE, plot = TRUE, ...) {
 
     oldpar <- param <- match.arg(param)
     mod <- match.arg(mod, c("profile","tem", "modif"), several.ok = TRUE)
@@ -1177,7 +1178,10 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         class(ans) <- "eprof"
     }
     ans$family <- "gev"
-    ans
+    if(plot){
+      plot(ans)
+    }
+    return(invisible(ans))
 }
 
 #' Profile log-likelihood for the generalized Pareto distribution
@@ -1202,6 +1206,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' @param q level of quantile for N-block maxima. Required only for \code{args} \code{Nquant}.
 #' @param correction logical indicating whether to use \code{spline.corr} to smooth the tem approximation.
 #' @param threshold numerical threshold above which to fit the generalized Pareto distribution
+#' @param plot logical; should the profile likelihood be displayed? Default to \code{TRUE}
 #' @param ... additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.
 #'
 #' @return a list with components
@@ -1246,7 +1251,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' gpd.pll(psi = seq(15, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
 gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
-    mod = "profile", mle = NULL, dat, m = NULL, N = NULL, p = NULL, q = NULL, correction = TRUE, threshold = NULL,
+    mod = "profile", mle = NULL, dat, m = NULL, N = NULL, p = NULL, q = NULL, correction = TRUE, threshold = NULL, plot = TRUE,
     ...) {
     param <- match.arg(param)
     mod <- match.arg(mod, c("profile", "tem", "modif"), several.ok = TRUE)
@@ -1996,7 +2001,10 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     }
     ans$family <- "gpd"
     ans$threshold <- threshold
-    return(ans)
+    if(plot){
+     plot(ans)
+    }
+    return(invisible(ans))
 
 }
 
