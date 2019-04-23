@@ -509,24 +509,20 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
       riskf <- "sum"
       us <- d*us
     }
-    ustar <- 0
+    ustar <- d
     zeroshape <- sapply(shape, function(xi){isTRUE(all.equal(xi, 0))})
-    if(us - sum(B) < 0){
-      ustar <- d
-    } else if(all(shape <0)){
+   if(all(shape <0)){
     inter <- 1-(us-sum(B))/sum(A)*min(abs(shape))
       if(inter > 0){
-      ustar <- d*inter^(-1/max(abs(shape)))
+      ustar <- max(ustar, d*inter^(-1/max(abs(shape))))
       }
-    } else if(all(shape > 0)){
-      ustar <- (min(shape)*(us-sum(B))/sum(A)+1)^(1/max(shape))
-    } else if (all(zeroshape)){
-      ustar <- D*(exp((us-sum(B))/sum(A))^(1/d))
-    } else {
-      xiprime <- ifelse(zeroshape, 1, abs(shape))
-      ustar <- (min(xiprime)*(us-sum(B))/sum(A)+1)^(1/max(xiprime))/2
     }
-    ustar <- max(d, ustar)
+    if(!any(zeroshape)){
+      ustar <- max(ustar, (min(abs(shape))*(us-sum(B))/sum(A)+1)^(1/max(abs(shape))))
+    } else if (all(zeroshape)){
+      ustar <- max(ustar, D*(exp((us-sum(B))/sum(A))^(1/d)))
+    }
+
     } else if(riskf == "min"){
     ustar <- sum(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
                     exp(( us - B) / A),
