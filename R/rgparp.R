@@ -501,9 +501,13 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
    }
   }
   if(riskf %in% c("max", "l2")){
-    ustar <- min(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
+    ustar <- na.omit(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
                     exp(( us - B) / A),
-                    (1 + shape * (us - B) / A)^(1/shape)), na.rm = TRUE)
+                    (1 + shape * (us - B) / A)^(1/shape)))
+    if(length(ustar) == 0){stop("Threshold is outside the support of the marginal distributions.")
+      } else{
+       ustar <- min(ustar)
+      }
   } else if(riskf %in% c("sum", "mean", "l2")){ #no bound for l2, contained in l1
     if(riskf == "mean"){
       riskf <- "sum"
