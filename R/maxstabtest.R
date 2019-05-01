@@ -16,7 +16,7 @@
 #' @param dist distance matrix
 #' @param nmax maximum number of pairs. Default to 500L.
 #' @param B number of nonparametric bootstrap replications. Default to 1000L.
-#' @param ties.method string indicating the method for \code\link{[base]{rank}}}. Default to \code{random}.
+#' @param ties.method string indicating the method for \code{\link{[base]{rank}}}. Default to \code{random}.
 #' @param plot logical indicating whether a graph should be produced (default to \code{TRUE}).
 #' @return a Tukey probability-probability plot with 95% confidence intervals obtained using a nonparametric bootstrap
 #' @examples

@@ -39,7 +39,7 @@ expme(z = rep(1, ncol(Sigma)), Sigma = cov2cor(Sigma), df = 3, model = 'xstud')
 D <- 5L
 loc <- cbind(runif(D), runif(D))
 di <- as.matrix(dist(rbind(c(0, ncol(loc)), loc)))
-semivario <- function(d, alpha = 1.5, lambda = 1){(d/lambda)^alpha}
+semivario <- function(d, alpha = 1.5, lambda = 1){(d/lambda)^alpha / 2}
 Vmat <- semivario(di)
 Lambda <- Vmat[-1,-1]/2
 expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = 'br', method = 'mvPot')

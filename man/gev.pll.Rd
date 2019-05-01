@@ -6,7 +6,7 @@
 \usage{
 gev.pll(psi, param = c("loc", "scale", "shape", "quant", "Nmean",
   "Nquant"), mod = "profile", dat, N = NULL, p = NULL, q = NULL,
-  correction = TRUE, ...)
+  correction = TRUE, plot = TRUE, ...)
 }
 \arguments{
 \item{psi}{parameter vector over which to profile (unidimensional)}
@@ -24,6 +24,8 @@ gev.pll(psi, param = c("loc", "scale", "shape", "quant", "Nmean",
 \item{q}{probability level of quantile. Required only for \code{param} \code{Nquant}.}
 
 \item{correction}{logical indicating whether to use \code{spline.corr} to smooth the tem approximation.}
+
+\item{plot}{logical; should the profile likelihood be displayed? Default to \code{TRUE}}
 
 \item{...}{additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.}
 }

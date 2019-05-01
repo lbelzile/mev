@@ -6,7 +6,8 @@
 \usage{
 gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
   "Nquant"), mod = "profile", mle = NULL, dat, m = NULL, N = NULL,
-  p = NULL, q = NULL, correction = TRUE, threshold = NULL, ...)
+  p = NULL, q = NULL, correction = TRUE, threshold = NULL,
+  plot = TRUE, ...)
 }
 \arguments{
 \item{psi}{parameter vector over which to profile (unidimensional)}
@@ -30,6 +31,8 @@ gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
 \item{correction}{logical indicating whether to use \code{spline.corr} to smooth the tem approximation.}
 
 \item{threshold}{numerical threshold above which to fit the generalized Pareto distribution}
+
+\item{plot}{logical; should the profile likelihood be displayed? Default to \code{TRUE}}
 
 \item{...}{additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.}
 }

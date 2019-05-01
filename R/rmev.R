@@ -316,8 +316,8 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
             stop("Parameter matrix for the Husler-Reiss model is not conditionally negative definite")
         }
     }
-    mod <- switch(model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4, xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9,
-        isbr = 9)
+    mod <- switch(model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4,
+                  xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9, isbr = 9)
     if (model %in% c("alog", "aneglog")) {
         .rmevasy(n = n, d = d, para = param, asym = asym, ncompo = ncompo, Sigma = sigma, model = mod)
     } else {
@@ -332,12 +332,14 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
                 stop("The dimension of the input grid does not match (square) covariance matrix")
             }
             ncompo <- c(1)
-            array(t(switch(alg, ef = .rmevA2(n = n, d = d, para = param, model = mod, Sigma = sigma, locat), sm = .rmevA1(n = n, d = d,
-                para = param, model = mod, Sigma = sigma, locat))), dim = c(rep(npdim, ncol(loc)), n))
+            array(t(switch(alg,
+                           ef = .rmevA2(n = n, d = d, para = param, model = mod, Sigma = sigma, locat),
+                           sm = .rmevA1(n = n, d = d, para = param, model = mod, Sigma = sigma, locat))), dim = c(rep(npdim, ncol(loc)), n))
         } else {
             ncompo <- c(1)
-            switch(alg, ef = .rmevA2(n = n, d = d, para = param, model = mod, Sigma = sigma, locat), sm = .rmevA1(n = n, d = d, para = param,
-                model = mod, Sigma = sigma, locat))
+            switch(alg,
+                   ef = .rmevA2(n = n, d = d, para = param, model = mod, Sigma = sigma, locat),
+                   sm = .rmevA1(n = n, d = d, para = param, model = mod, Sigma = sigma, locat))
         }
     }
 }

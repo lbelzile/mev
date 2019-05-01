@@ -5,7 +5,7 @@
 \title{Confidence intervals for profile likelihood objects}
 \usage{
 \method{confint}{eprof}(object, parm, level = 0.95, prob = c((1 -
-  level)/2, 1 - (1 - level)/2), print = TRUE, ...)
+  level)/2, 1 - (1 - level)/2), print = FALSE, ...)
 }
 \arguments{
 \item{object}{an object of class \code{eprof}, normally the output of \link{gpd.pll} or \link{gev.pll}.}
@@ -17,7 +17,7 @@ either a vector of numbers or a vector of names. If missing, all parameters are 
 
 \item{prob}{percentiles, with default giving symmetric 95\% confidence intervals}
 
-\item{print}{should a summary be printed. Default to \code{TRUE}.}
+\item{print}{should a summary be printed. Default to \code{FALSE}.}
 
 \item{...}{additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.}
 }
