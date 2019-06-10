@@ -12,6 +12,7 @@ New:
 * Default printing and plot optims (p-p and q-q plots) for mev_ objects
 * Changes to optimization routine for pp  in `W.diag` function, use of expected information matrix, change to default tuning parameter
 * New datasets: eskrain, maiquetia, nidd, venice, w1500m
+
 Fixes:
 * Scaling of Brown-Resnick is now consistent with literature (half of semivariogram)
 * Degrees of freedom argument in C++ code for 'rmev' with extremal Student family were incorrect
@@ -19,6 +20,7 @@ Fixes:
 * Change to Grimshaw routine to ensure shape not less than -1, constrained optimization method
 * Information matrix, score for GEV now interpolated in a neighborhood of zero to preserve continuity and avoid numerical overflow.
 * Information matrix of GEV: scale factor off. All scores and information matrix have been checked and limits as xi -> 0  implemented.
+* ext.index number of exceedances off by one, causing Inf in weight vector for lm (thanks to @MCristinaMiranda). Warnings now silenced by default.
 
 Changes:
 * Removed dependency to `ismev`, `rootsolve` (replaced with `nleqslv` routine) and `numDeriv`.

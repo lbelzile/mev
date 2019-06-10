@@ -5,7 +5,7 @@
 \title{Extremal index estimators based on interexceedance time and gap of exceedances}
 \usage{
 ext.index(x, q = 0.95, method = c("wls", "mle", "intervals"),
-  plot = FALSE)
+  plot = FALSE, warn = FALSE)
 }
 \arguments{
 \item{x}{a vector containing of data points}
@@ -16,7 +16,9 @@ ext.index(x, q = 0.95, method = c("wls", "mle", "intervals"),
 for weighted least squares, \code{mle} for maximum likelihood estimation or \code{intervals}
 for the intervals estimator of Ferro and Segers (2003). Partial match is allowed.}
 
-\item{plot}{a boolean specifying whether to plot the extremal index as a function of \code{q}}
+\item{plot}{logical; if \code{TRUE}, plot the extremal index as a function of \code{q}}
+
+\item{warn}{logical; if \code{TRUE}, receive a warning when the sample size is too small}
 }
 \value{
 a vector or matrix of estimated extremal index of dimension \code{length(method)} by \code{length(q)}.

@@ -171,8 +171,9 @@ infomat.test <- function(x, q, K, plot = TRUE) {
 #' @param method a string specifying the chosen method. Must be either \code{wls}
 #' for weighted least squares, \code{mle} for maximum likelihood estimation or \code{intervals}
 #' for the intervals estimator of Ferro and Segers (2003). Partial match is allowed.
-#' @param plot a boolean specifying whether to plot the extremal index as a function of \code{q}
+#' @param plot logical; if \code{TRUE}, plot the extremal index as a function of \code{q}
 #' @return a vector or matrix of estimated extremal index of dimension \code{length(method)} by \code{length(q)}.
+#' @param warn logical; if \code{TRUE}, receive a warning when the sample size is too small
 #' @examples
 #' set.seed(234)
 #' #Moving maxima model with theta=0.5
@@ -182,7 +183,7 @@ infomat.test <- function(x, q, K, plot = TRUE) {
 #' q <- seq(0.9,0.99,by=0.01)
 #' ext.index(x=x,q=q,method=c('wls','mle'))
 #' @export
-ext.index <- function(x, q = 0.95, method = c("wls", "mle", "intervals"), plot = FALSE) {
+ext.index <- function(x, q = 0.95, method = c("wls", "mle", "intervals"), plot = FALSE, warn = FALSE) {
     method <- match.arg(method, c("wls", "mle", "intervals"), several.ok = TRUE)
     stopifnot(all(q < 1), all(q > 0))
     threshold <- quantile(x, q)
@@ -193,17 +194,17 @@ ext.index <- function(x, q = 0.95, method = c("wls", "mle", "intervals"), plot =
         exceeds <- c(diff(sapply(threshold, function(thresh) {
             which(x > thresh)
         }))) - 1
-        if (length(exceeds) < 50) {
+        if(warn && length(exceeds) < 50) {
             warning("Small sample size - estimates may be unreliable")
         }
-        N <- length(exceeds)
+        N <- length(exceeds) + 1
         chi <- sort(exceeds[which(exceeds > 0)])
         # Rescaled interexceedance time
         chi <- chi * length(exceeds)/length(x)
         Nc <- length(chi)
         if (method == "wls") {
             # Suveges (2007); see Ferro (2003) for explanations
-            xs <- -log((Nc:1)/(N + 1))  #theoretical quantiles
+            xs <- -log(1-(1:Nc)/(Nc+1))  #theoretical quantiles
             w <- cumsum(1/((N - 1):(N - Nc))^2)  #regression weights
             coefs <- lm(chi ~ xs, weights = w)$coef  #slope is 1/th, intercept log(th)/th,
             # plot(y=chi, x=xs,xlim=c(0,7),ylim=c(0,11));abline(coefs)
