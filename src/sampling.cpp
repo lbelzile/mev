@@ -945,8 +945,9 @@ void check_args(int d, NumericVector param, int model, NumericMatrix Sigma, arma
   }
 
 
-//' Multivariate extreme value distribution sampling algorithm
-//' corresponding to Algorithm 1 in Dombry, Engelke and Oesting (2016),
+//' Multivariate extreme value distribution sampling algorithm via angular measure
+//'
+//' This algorithm corresponds to Algorithm 1 in Dombry, Engelke and Oesting (2016),
 //' using the formulation of the Dirichlet mixture of Coles and Tawn (1991)
 //' as described and derived in Boldi (2009) for the bilogistic and extremal
 //' Dirichlet model. Models currently implemented include logistic, negative
@@ -1035,11 +1036,9 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
 }
 
 
-//' Multivariate extreme value distribution sampling algorithm
-//' corresponding to Algorithm 2 in Dombry, Engelke and Oesting (2016)
+//' Multivariate extreme value distribution sampling algorithm via extremal functions
 //'
-//' Models currently implemented include logistic and negative logistic, sampling
-//' from the extremal functions. This requires derivation of \eqn{P_x}
+//' Code implementing Algorithm 2 in Dombry, Engelke and Oesting (2016)
 //'
 //' @param n sample size
 //' @param d dimension of the multivariate distribution

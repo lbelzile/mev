@@ -2,8 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{.rmevA2}
 \alias{.rmevA2}
-\title{Multivariate extreme value distribution sampling algorithm
-corresponding to Algorithm 2 in Dombry, Engelke and Oesting (2016)}
+\title{Multivariate extreme value distribution sampling algorithm via extremal functions}
 \usage{
 .rmevA2(n, d, para, model, Sigma, loc)
 }
@@ -26,7 +25,6 @@ corresponding to Algorithm 2 in Dombry, Engelke and Oesting (2016)}
 a \code{n} by \code{d} matrix containing the sample
 }
 \description{
-Models currently implemented include logistic and negative logistic, sampling
-from the extremal functions. This requires derivation of \eqn{P_x}
+Code implementing Algorithm 2 in Dombry, Engelke and Oesting (2016)
 }
 \keyword{internal}

@@ -16,11 +16,9 @@ maxstabtest(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L,
 
 \item{B}{number of nonparametric bootstrap replications. Default to 1000L.}
 
-\item{ties.method}{string indicating the method for \code{\link{[base]{rank}}}. Default to \code{random}.}
+\item{ties.method}{string indicating the method for \code{\link[base]{rank}}. Default to \code{"random"}.}
 
 \item{plot}{logical indicating whether a graph should be produced (default to \code{TRUE}).}
-
-\item{dist}{distance matrix}
 }
 \value{
 a Tukey probability-probability plot with 95% confidence intervals obtained using a nonparametric bootstrap

@@ -21,6 +21,7 @@
 \DeclareMathOperator{\diag}{diag}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 <<setup, include=FALSE, cache=FALSE, echo=FALSE>>=
 library(knitr)
 ## set global chunk options

@@ -2,12 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{.rmevA1}
 \alias{.rmevA1}
-\title{Multivariate extreme value distribution sampling algorithm
-corresponding to Algorithm 1 in Dombry, Engelke and Oesting (2016),
-using the formulation of the Dirichlet mixture of Coles and Tawn (1991)
-as described and derived in Boldi (2009) for the bilogistic and extremal
-Dirichlet model. Models currently implemented include logistic, negative
-logistic, extremal Dirichlet and bilogistic MEV.}
+\title{Multivariate extreme value distribution sampling algorithm via angular measure}
 \usage{
 .rmevA1(n, d, para, model, Sigma, loc)
 }
@@ -31,8 +26,7 @@ matrix of parameters for the Huesler--Reiss model. Default matrix for compatibil
 a \code{n} by \code{d} matrix containing the sample
 }
 \description{
-Multivariate extreme value distribution sampling algorithm
-corresponding to Algorithm 1 in Dombry, Engelke and Oesting (2016),
+This algorithm corresponds to Algorithm 1 in Dombry, Engelke and Oesting (2016),
 using the formulation of the Dirichlet mixture of Coles and Tawn (1991)
 as described and derived in Boldi (2009) for the bilogistic and extremal
 Dirichlet model. Models currently implemented include logistic, negative

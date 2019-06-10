@@ -13,10 +13,9 @@
 #' @references Gabda, D.; Towe, R. Wadsworth, J. and J. Tawn, Discussion of ``Statistical Modeling of Spatial Extremes'' by A. C. Davison, S. A. Padoan and M. Ribatet. \emph{Statist. Sci.} \bold{27} (2012), no. 2, 189--192.
 #' @param dat matrix or array of max-stable observations, typically block maxima. The first dimension should consist of replicates
 #' @param m integer indicating how many tuples should be aggregated.
-#' @param dist distance matrix
 #' @param nmax maximum number of pairs. Default to 500L.
 #' @param B number of nonparametric bootstrap replications. Default to 1000L.
-#' @param ties.method string indicating the method for \code{\link{[base]{rank}}}. Default to \code{random}.
+#' @param ties.method string indicating the method for \code{\link[base]{rank}}. Default to \code{"random"}.
 #' @param plot logical indicating whether a graph should be produced (default to \code{TRUE}).
 #' @return a Tukey probability-probability plot with 95% confidence intervals obtained using a nonparametric bootstrap
 #' @examples

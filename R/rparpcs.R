@@ -203,7 +203,7 @@ rparpcshr <- function(n, u, alpha, Sigma, m) {
 #' D <- 5L
 #' loc <- cbind(runif(D), runif(D))
 #' di <- as.matrix(dist(rbind(c(0, ncol(loc)), loc)))
-#' semivario <- function(d, alpha = 1.5, lambda = 1){(d/lambda)^alpha}
+#' semivario <- function(d, alpha = 1.5, lambda = 1){(d/lambda)^alpha / 2}
 #' Vmat <- semivario(di)
 #' Lambda <- Vmat[-1,-1]/2
 #' expme(z <- rep(1, ncol(Lambda)), Lambda = Lambda, model = 'br', method = 'mvPot')
@@ -354,8 +354,7 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
     weights <- rep(0, D)
     if (method == "mvtnorm") {
         for (j in 1:D) {
-            weights[j] <- mvtnorm::pmvnorm(lower = rep(-Inf, D - 1), upper = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])), sigma = 2 *
-                (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]))
+            weights[j] <- mvtnorm::pmvnorm(lower = rep(-Inf, D - 1), upper = si * (Lambda[-j, j] + log(z[-j]) - log(z[j])), sigma =       (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]))
         }
     } else if (method == "mvPot") {
       if(!is.null(ellipsis$prime)){
@@ -375,13 +374,13 @@ weightsBR <- function(z, Lambda, method = c("mvPot", "mvtnorm", "TruncatedNormal
         nrep <- as.integer(ellipsis$nrep)
       }
         for (j in 1:D) {
-            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = prime, upperBound = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])),
-                cov = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]), genVec = genVec,  nrep = nrep)[1]
+            weights[j] <- mvPot::mvtNormQuasiMonteCarlo(p = prime, upperBound = si * (Lambda[-j, j] + log(z[-j]) - log(z[j])),
+                cov = (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]), genVec = genVec,  nrep = nrep)[1]
         }
     } else if (method == "TruncatedNormal") {
         for (j in 1:D) {
-            weights[j] <- TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = si * (2 * Lambda[-j, j] + log(z[-j]) - log(z[j])),
-                Sig = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]))$prob
+            weights[j] <- TruncatedNormal::mvNqmc(l = rep(-Inf, D - 1), n = 1e+05, u = si * (Lambda[-j, j] + log(z[-j]) - log(z[j])),
+                Sig = (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]))$prob
         }
     }
     return(weights)

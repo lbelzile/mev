@@ -44,14 +44,14 @@ a named list with elements
 }
 }
 \description{
-For data with unit Pareto margins, the coefficient of tail dependence \eqn{\eta} is defined  via \deqn{\Pr(\min(X) > x) = \frac{L(x)}{x^{1/\eta}},}
+For data with unit Pareto margins, the coefficient of tail dependence \eqn{\eta} is defined  via \deqn{\Pr(\min(X) > x) = L(x)x^{-1/\eta},}
 where \eqn{L(x)} is a slowly varying function; \eqn{0 < \eta}. Ignoring the latter, several estimators of \eqn{\eta} can be defined. In unit Pareto margins, \eqn{\eta} is a shape parameter that can be estimated by fitting a generalized Pareto distribution above a high threshold. In exponential margins, \eqn{\eta} is a scale parameter and the maximum likelihood estimator of the latter is the Hill estimator. Both methods are based on peaks-over-threshold and the user can choose between pointwise confidence confint obtained through a likelihood ratio test statistic (\code{"lrt"}) or the Wald statistic (\code{"wald"}).
 }
 \details{
 The most common approach for estimation is the empirical survival copula, by evaluating the proportion of sample minima with uniform margins that exceed a given \eqn{x}. An alternative estimator uses a smoothed estimator of the survival copula using Bernstein polynomial, resulting in the so-called \code{betacop} estimator. Approximate pointwise confidence confint for the latter are obtained by assuming the proportion of points is binomial.
 
 The coefficient of tail correlation \eqn{\chi} is
-\deqn{\chi = \lim_{u \to 1} \dfrac{\Pr(F_1(X_1)>u, \ldots, F_D(X_D)>u)}{1-u}.}
+\deqn{\chi = \lim_{u \to 1} \frac{\Pr(F_1(X_1)>u, \ldots, F_D(X_D)>u)}{1-u}.}
 Asymptotically independent vectors have \eqn{\chi = 0}. The estimator uses an estimator of the survival copula
 }
 \examples{
