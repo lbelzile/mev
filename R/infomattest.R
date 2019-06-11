@@ -186,19 +186,28 @@ infomat.test <- function(x, q, K, plot = TRUE) {
 ext.index <- function(x, q = 0.95, method = c("wls", "mle", "intervals"), plot = FALSE, warn = FALSE) {
     method <- match.arg(method, c("wls", "mle", "intervals"), several.ok = TRUE)
     stopifnot(all(q < 1), all(q > 0))
-    threshold <- quantile(x, q)
     q <- sort(q)
+    x <- as.vector(x)
+    threshold <- quantile(x, q)
     # Main function, to be called recursively
-    extmethods <- function(x = x, threshold = threshold[1], method = method) {
+    extmethods <- function(x = x, threshold = threshold, method = method) {
         # The gap of exceedances
-        exceeds <- c(diff(sapply(threshold, function(thresh) {
-            which(x > thresh)
-        }))) - 1
-        if(warn && length(exceeds) < 50) {
+        stopifnot(length(threshold) == 1L)
+        excind <- which(x > threshold)
+        if(length(excind) <= 1L){
+          warning("Not enough threshold exceedances to compute extremal index")
+          return(NA)
+        }
+        exceeds <- c(diff(excind)) - 1
+        if(warn && length(exceeds) < 25) {
             warning("Small sample size - estimates may be unreliable")
         }
-        N <- length(exceeds) + 1
+        N <- length(exceeds) + 1L
         chi <- sort(exceeds[which(exceeds > 0)])
+        if(length(chi) == 0){
+          warning("Only zero gaps given; return extremal index of `0`")
+         return(0)
+        }
         # Rescaled interexceedance time
         chi <- chi * length(exceeds)/length(x)
         Nc <- length(chi)
@@ -210,12 +219,20 @@ ext.index <- function(x, q = 0.95, method = c("wls", "mle", "intervals"), plot =
             # plot(y=chi, x=xs,xlim=c(0,7),ylim=c(0,11));abline(coefs)
             theta <- min(exp(coefs[1]/coefs[2]), 1)
             Nc.new <- Nc
+            if(Nc.new <= 1){
+              warning("Could not find a self-consistent estimate using weighted least squares.")
+              return(NA)
+            }
             trials <- 0
             while (floor(theta * (N - 1)) != Nc.new && trials < 30) {
                 trials <- trials + 1
                 Nc.new <- floor(theta * (N - 1))
+                if(Nc.new <= 1){
+                  warning("Could not find a self-consistent estimate using weighted least squares.")
+                  return(NA)
+                }
                 if (Nc.new > Nc) {
-                  # pad estimates from original fit
+                  # pad estimates from original fit with zeros
                   xs.new <- c(-log((Nc.new:(Nc + 1))/(N + 1)), xs)
                   chi.new <- c(rep(0, Nc.new - Nc), chi)
                   w.new <- c(cumsum(1/((N - Nc.new):(N - Nc - 1))^2), w)
