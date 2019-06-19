@@ -51,7 +51,7 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
         return(c(Estimate = chibar_est, `Lower CI` = chibar_est - qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2]),
             `Upper CI` = chibar_est + qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2])))
     } else {
-        confint_profile <- 2 * confint(gpd.pll(param = "shape", psi = NA, dat = sp, mod = confint,), level = level, print = FALSE) - 1
+        confint_profile <- 2 * confint(gpd.pll(param = "shape", psi = NA, dat = sp, mod = confint, plot = FALSE), level = level, print = FALSE) - 1
         return(switch(confint, profile = confint_profile, tem = confint_profile[,2]))
     }
 }

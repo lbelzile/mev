@@ -87,7 +87,7 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
     confintmat[i,1] <- parmat[i,1] - stderr.transfo * qnorm(1-alpha/2)
     confintmat[i,2] <- parmat[i,1] + stderr.transfo * qnorm(1-alpha/2)
    } else if(method == "profile"){
-     profxi <- gpd.pll(param = "shape", mod = "profile", mle = gpdu$estimate, dat = gpdu$exceedances)
+     profxi <- gpd.pll(param = "shape", mod = "profile", mle = gpdu$estimate, dat = gpdu$exceedances, plot = FALSE)
      confintmat[i,3:4] <- confint(profxi, level = level, print = FALSE)[2:3]
      k <- 30L
      prof_vals <- rep(0, k)
@@ -121,7 +121,7 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
   upper <- confintmat[,c(2,4)]
   colnames(parmat) <- colnames(lower) <- colnames(upper) <-  c("modif. scale", "shape")
   ret <- structure(list(threshold = thresh, mle = parmat, lower = lower,
-                                    upper = upper, method = method, level = level), class = "mev_tsab.gpd")
+                                    upper = upper, method = method, level = level), class = "mev_tstab.gpd")
   if(plot){
     plot(ret, ...)
   }
@@ -129,7 +129,7 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
 }
 
 #'@export
-plot.mev_tsab.gpd <- function(x, which = 1:2, ...){
+plot.mev_tstab.gpd <- function(x, which = 1:2, ...){
   oldpar <- par(no.readonly = TRUE)
   if(length(which) == 2){
     par(mfrow = c(2,1), mar = c(4,4.5,3,1))

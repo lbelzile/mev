@@ -113,7 +113,7 @@ taildep <- function (data, u = NULL, nq = 40, qlim = c(0.8, 0.99), depmeas = c("
     est_eta <- t(sapply(1/(1-u), function(th){
       if(sum(ps>th) > 15){
       fitu <- suppressWarnings(fit.gpd(ps, threshold = th))
-      prof <- try(suppressWarnings(gpd.pll(param = "shape", dat = ps, threshold = th, mod = "prof", mle = fitu$estimate)))
+      prof <- try(suppressWarnings(gpd.pll(param = "shape", dat = ps, threshold = th, mod = "prof", mle = fitu$estimate, plot = FALSE)))
       co <- try(suppressWarnings(confint(prof, prob = c((1-level)/2, (1+level)/2), print = FALSE)))
       if(!is.character(co)){
         return(co)
