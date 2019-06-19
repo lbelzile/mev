@@ -63,7 +63,7 @@ gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "N
   if(missing(N) && any(c("Nmean", "Nquant") %in% args)){
     stop("Argument `N` missing for `Nquant` or `Nmean`")
   }
-  fitted <- fit.gev(xdat = xdat)
+  fitted <- suppressWarnings(fit.gev(xdat = xdat))
   mu <- fitted$estimate[1]
   sigma <- fitted$estimate[2]
   xi <- fitted$estimate[3]
@@ -233,7 +233,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE){
  }
 
  # Starting value
- gppars <- fit.gpd(xdat = xdatu, threshold = threshold)$estimate
+ gppars <- suppressWarnings(fit.gpd(xdat = xdatu, threshold = threshold)$estimate)
  sigma_init <- gppars['scale']*(length(xdatu)/np)^(gppars['shape'])
  mu_init <-  threshold - sigma_init*(((length(xdatu)/np)^(-gppars['shape']))-1)/gppars['shape']
  # Optimization - basically started at MLE
@@ -393,7 +393,7 @@ if(is.null(start)){
     if(nrow(xdat) > 15L){ # Fit a generalized extreme value distribution to largest
     in2 <- sqrt(6 * var(xdat[,1]))/pi
     in1 <- mean(xdat[,1]) - 0.57722 * in2
-    shape <- fit.gev(xdat[,1])$estimate[3]
+    shape <- suppressWarnings(fit.gev(xdat[,1])$estimate[3])
     spar <- c(in1, in2, shape)
     if(spar[3] > 0 && (spar[2] + spar[3] * (xmin - spar[1]) <= 0)){
      spar[2] <- abs(spar[3]*(xmin - spar[1]))*1.1

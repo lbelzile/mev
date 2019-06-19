@@ -145,24 +145,25 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (unull) {
         qs <- seq(q1, q2, len = k + 1)[-(k + 1)]
     }
-
+    oldpar <- par(no.readonly = TRUE)
+    on.exit(par(oldpar))
     par(mfrow = c(length(plots), 1), las = 1, mar = pmar, pch = 19)
     if (is.element("LRT", plots)) {
         if (!UseQuantiles) {
             plot(qs, c(rep(NA, 2), nl[, 2]), xlab = "quantile", ylab = "LR statistic", main = paste("p-value:", pval), ...)
         } else {
-            plot(u[-c(k + 1)], c(rep(NA, 2), nl[, 2]), xlab = "threshold", ylab = "LR statistic", main = paste("p-value:", pval),
+            plot(u[-c(k + 1)], c(rep(NA, 2), nl[, 2]),  bty = "l", xlab = "threshold", ylab = "LR statistic", main = paste("p-value:", pval),
                 ...)
         }
     }
 
     if (is.element("WN", plots)) {
         if (!UseQuantiles) {
-            plot(qs, c(NA, wn), xlab = "quantile", ylab = "white noise", ...)
+            plot(qs, c(NA, wn), xlab = "quantile", ylab = "white noise", bty = "l", ...)
             abline(h = 0, col = 2)
             abline(v = mean(xdat <= ustar), col = 4)
         } else {
-            plot(u[-c(k + 1)], c(NA, wn), xlab = "threshold", ylab = "white noise", ...)
+            plot(u[-c(k + 1)], c(NA, wn), xlab = "threshold", ylab = "white noise", bty = "l",  ...)
             abline(h = 0, col = 2)
             abline(v = ustar, col = 4)
         }
@@ -171,12 +172,12 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (is.element("PS", plots)) {
         TradCI <- cbind(J1$mle[, 3] - qnorm(0.975) * sqrt(diag(J1$Cov.xi)), J1$mle[, 3] + qnorm(0.975) * sqrt(diag(J1$Cov.xi)))
         if (!UseQuantiles) {
-            plot(qs, J1$mle[, 3], ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "quantile", ylab = "shape", ...)
+            plot(qs, J1$mle[, 3], ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "quantile",  bty = "l", ylab = "shape", ...)
             lines(qs, TradCI[, 1], lty = 2)
             lines(qs, TradCI[, 2], lty = 2)
             abline(v = mean(xdat <= ustar), col = 4)
         } else {
-            plot(u[-(k + 1)], J1$mle[, 3], ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "threshold", ylab = "shape", ...)
+            plot(u[-(k + 1)], J1$mle[, 3], ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),  bty = "l", xlab = "threshold", ylab = "shape", ...)
             lines(u[-(k + 1)], TradCI[, 1], lty = 2)
             lines(u[-(k + 1)], TradCI[, 2], lty = 2)
             abline(v = ustar, col = 4)
@@ -195,7 +196,8 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (!unull) {
         k <- length(u)
     }
-
+    oldpar <- par(no.readonly = TRUE)
+    on.exit(par(oldpar))
     par(mfrow = c(length(plots), 1), mar = pmar, las = 1)
     J1 <- .Joint_MLE_Expl(x = x, u = u, k = k, q1 = q1, q2 = q2, param = param)
     warn <- any(eigen(J1$Cov)$val <= .Machine$double.eps)
@@ -237,19 +239,19 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 
     if (is.element("LRT", plots)) {
         if (unull && UseQuantiles) {
-            plot(qs, c(NA, NA, nl[, 2]), xlab = "Quantile", ylab = "LR statistic", main = paste("p-value:", pval), ...)
+            plot(qs, c(NA, NA, nl[, 2]), bty = "l", xlab = "Quantile", ylab = "LR statistic", main = paste("p-value:", pval), ...)
         } else {
-            plot(u[-c(k + 1)], c(NA, NA, nl[, 2]), xlab = "Threshold", ylab = "LR statistic", main = paste("p-value:", pval), ...)
+            plot(u[-c(k + 1)], c(NA, NA, nl[, 2]), bty = "l", xlab = "Threshold", ylab = "LR statistic", main = paste("p-value:", pval), ...)
         }
     }
 
     if (is.element("WN", plots)) {
         if (unull && UseQuantiles) {
-            plot(qs, c(NA, wn), xlab = "Quantile", ylab = "White noise", ...)
+            plot(qs, c(NA, wn), xlab = "Quantile", ylab = "White noise", bty = "l",...)
             abline(h = 0, col = 2)
             abline(v = mean(x <= ustar), col = 4)
         } else {
-            plot(u[-c(k + 1)], c(NA, wn), xlab = "Threshold", ylab = "White noise", ...)
+            plot(u[-c(k + 1)], c(NA, wn), xlab = "Threshold", ylab = "White noise", bty = "l", ...)
             abline(h = 0, col = 2)
             abline(v = ustar, col = 4)
         }
@@ -259,19 +261,19 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
         TradCI <- cbind(J1$mle - qnorm(0.975) * sqrt(diag(J1$Cov)), J1$mle + qnorm(0.975) * sqrt(diag(J1$Cov)))
         if (UseQuantiles) {
             if (param == "InvRate") {
-                plot(qs, J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Quantile", ylab = expression(hat(eta)), ...)
+                plot(qs, J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), bty = "l", xlab = "Quantile", ylab = expression(hat(eta)), ...)
             } else if (param == "Rate") {
-                plot(qs, J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Quantile", ylab = expression(hat(theta)), ...)
+                plot(qs, J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), bty = "l", xlab = "Quantile", ylab = expression(hat(theta)), ...)
             }
             lines(qs, TradCI[, 1], lty = 2)
             lines(qs, TradCI[, 2], lty = 2)
             abline(v = mean(x <= ustar), col = 4)
         } else {
             if (param == "InvRate") {
-                plot(u[-(k + 1)], J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Threshold", ylab = expression(hat(eta)),
+                plot(u[-(k + 1)], J1$mle, bty = "l", ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Threshold", ylab = expression(hat(eta)),
                   ...)
             } else if (param == "InvRate") {
-                plot(u[-(k + 1)], J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Threshold", ylab = expression(hat(theta)),
+                plot(u[-(k + 1)], J1$mle, bty = "l", ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Threshold", ylab = expression(hat(theta)),
                   ...)
             }
             lines(u[-(k + 1)], TradCI[, 1], lty = 2)

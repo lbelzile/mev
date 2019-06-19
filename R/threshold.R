@@ -106,8 +106,8 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
                             maxpll = -gpdu$nllh, std.err = stderr.transfo), class = "eprof")
      confintmat[i, 1:2] <- confint(prof, level = level, print = FALSE)[2:3]
    } else if(method == "post"){
-    postsim <- suppressWarnings(revdbayes::rpost_rcpp(n = 1000, model = "gp", init_ests = gpdu$estimate,
-                                     data = gpdu$exceedances, thresh = 0, trans = "BC",
+      postsim <- suppressWarnings(revdbayes::rpost_rcpp(n = 1000, model = "gp", init_ests = gpdu$estimate,
+                                     data = c(-1, gpdu$exceedances), trans = "BC",
                                      prior = revdbayes::set_prior(prior = "norm",
                                                                   model = "gp",
                                                                   mean = rep(0, 2),

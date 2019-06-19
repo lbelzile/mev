@@ -302,6 +302,8 @@ fit.extgp <- function(data, model = 1, method = c("mle", "pwm"), init, censoring
     }
 
     if (plots) {
+        oldpar <- par(no.readonly = TRUE)
+        on.exit(par(oldpar))
         mat <- matrix(c(1:(1 + plots)), nrow = 1, ncol = 1 + plots, byrow = TRUE)
         layout(mat)
         par(mar = c(4, 4, 1, 1))
