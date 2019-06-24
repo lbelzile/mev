@@ -47,7 +47,7 @@ Fukutome et al. (2015) propose an ad hoc automated procedure
 }
 }
 \examples{
-infomat.test(x <- evd::rgpd(n = 1000), q = seq(0.9,0.995,length=10), K <- 3)
+infomat.test(x <- evd::rgpd(n = 10000), q = seq(0.1, 0.9, length = 10), K <- 3)
 }
 \references{
 Fukutome, Liniger and Suveges (2015), Automatic threshold and run parameter selection: a climatology for extreme hourly precipitation in Switzerland. \emph{Theoretical and Applied Climatology}, \strong{120}(3), 403-416.

@@ -51,6 +51,7 @@ cover the range of options, but the fail may fit and return an error.
 }
 \examples{
 \dontrun{
+set.seed(1234)
 dat <- evd::rgev(n = 40, loc = 0, scale = 2, shape = -0.1)
 gev.tem('shape', dat = dat, plot = TRUE)
 gev.tem('quant', dat = dat, p = 0.01, plot = TRUE)

@@ -250,7 +250,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
 #' @param lam  starting values for Lagrange multiplier vector, default to zero vector
 #' @param eps  lower cutoff for \eqn{-\log}{-log}, with default \code{1/nrow(dat)}
 #' @param M upper cutoff for \eqn{-\log}{-log}.
-#' @param thresh  convergence threshold for log likelihood (default of \code{1e-30} is agressive)
+#' @param thresh  convergence threshold for log likelihood (default of \code{1e-30} is aggressive)
 #' @param itermax  upper bound on number of Newton steps.
 #' @export
 #' @author Art Owen, \code{C++} port by Leo Belzile
@@ -294,7 +294,7 @@ emplik <- function(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)), eps = 1
 #' @export
 #' @examples
 #' set.seed(123)
-#' x <- rmev(n=250, d=2, param=0.5, model='log')
+#' x <- rmev(n=100, d=2, param=0.5, model='log')
 #' out <- angmeasdir(x=x, th=0, Rnorm='l1', Anorm='l1', marg='Frechet', wgt='Empirical')
 angmeasdir <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", "linf", "arctan"),
     marg = c("Frechet", "Pareto"), wgt = c("Empirical", "Euclidean"), region = c("sum", "min", "max"),

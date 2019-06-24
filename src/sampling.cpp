@@ -1251,7 +1251,7 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
 
 
 
-//' Random samples from asymetric logistic distribution
+//' Random samples from asymmetric logistic distribution
 //'
 //' Simulation algorithm of Stephenson (2003), using exact-samples from the logistic
 //'

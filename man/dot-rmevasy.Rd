@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{.rmevasy}
 \alias{.rmevasy}
-\title{Random samples from asymetric logistic distribution}
+\title{Random samples from asymmetric logistic distribution}
 \usage{
 .rmevasy(n, d, para, asym, ncompo, Sigma, model)
 }

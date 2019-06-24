@@ -9,6 +9,42 @@
 
 using namespace Rcpp;
 
+// distg
+arma::mat distg(arma::mat loc, NumericVector scale, NumericVector rho);
+static SEXP _mev_distg_try(SEXP locSEXP, SEXP scaleSEXP, SEXP rhoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type loc(locSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type scale(scaleSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type rho(rhoSEXP);
+    rcpp_result_gen = Rcpp::wrap(distg(loc, scale, rho));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _mev_distg(SEXP locSEXP, SEXP scaleSEXP, SEXP rhoSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_mev_distg_try(locSEXP, scaleSEXP, rhoSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // EuclideanWeights
 arma::vec EuclideanWeights(arma::mat x, arma::rowvec mu);
 static SEXP _mev_EuclideanWeights_try(SEXP xSEXP, SEXP muSEXP) {
@@ -1485,6 +1521,7 @@ RcppExport SEXP _mev_rPsite(SEXP nSEXP, SEXP jSEXP, SEXP dSEXP, SEXP paraSEXP, S
 static int _mev_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
+        signatures.insert("arma::mat(*distg)(arma::mat,NumericVector,NumericVector)");
         signatures.insert("arma::vec(*.EuclideanWeights)(arma::mat,arma::rowvec)");
         signatures.insert("List(*.emplik_intern)(arma::mat,arma::colvec,arma::vec,double,double,double,int)");
         signatures.insert("NumericVector(*.Pickands_emp)(NumericVector,NumericVector,NumericVector)");
@@ -1531,6 +1568,7 @@ static int _mev_RcppExport_validate(const char* sig) {
 
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _mev_RcppExport_registerCCallable() { 
+    R_RegisterCCallable("mev", "_mev_distg", (DL_FUNC)_mev_distg_try);
     R_RegisterCCallable("mev", "_mev_.EuclideanWeights", (DL_FUNC)_mev_EuclideanWeights_try);
     R_RegisterCCallable("mev", "_mev_.emplik_intern", (DL_FUNC)_mev_emplik_intern_try);
     R_RegisterCCallable("mev", "_mev_.Pickands_emp", (DL_FUNC)_mev_Pickands_emp_try);
@@ -1576,6 +1614,7 @@ RcppExport SEXP _mev_RcppExport_registerCCallable() {
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_mev_distg", (DL_FUNC) &_mev_distg, 3},
     {"_mev_EuclideanWeights", (DL_FUNC) &_mev_EuclideanWeights, 2},
     {"_mev_emplik_intern", (DL_FUNC) &_mev_emplik_intern, 7},
     {"_mev_Pickands_emp", (DL_FUNC) &_mev_Pickands_emp, 3},

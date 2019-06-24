@@ -18,7 +18,7 @@ emplik(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)),
 
 \item{M}{upper cutoff for \eqn{-\log}{-log}.}
 
-\item{thresh}{convergence threshold for log likelihood (default of \code{1e-30} is agressive)}
+\item{thresh}{convergence threshold for log likelihood (default of \code{1e-30} is aggressive)}
 
 \item{itermax}{upper bound on number of Newton steps.}
 }

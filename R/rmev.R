@@ -22,8 +22,8 @@
 #' @param alg algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.
 #' @param model for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
 #' the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.
-#' @param vario semivariogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing
-#' @param loc \code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.
+#' @param vario semivariogram function whose first argument must be distance. Used only if provided in conjunction with \code{coord} and if \code{sigma} is missing
+#' @param coord \code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.
 #' @param weights vector of length \code{m} for the \code{m} mixture components. Must sum to one
 #' @param grid Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).
 #' @param ... additional arguments for the \code{vario} function
@@ -49,7 +49,7 @@
 #' for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the lag vector between sites and \eqn{r=1/\lambda} for the Husler--Reiss.
 #'
 #' @section Warning:
-#'As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
+#'As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjunction with variograms. The parametrization differs between the two models.
 #'
 #'
 #'The family of scaled Dirichlet is now parametrized by a parameter in \eqn{-\min(\alpha)}{-min(\alpha)} appended to the the \code{d} vector \code{param} containing the parameter \code{alpha}
@@ -69,34 +69,38 @@
 #'#NEW: Semi-variogram must take distance as argument
 #'semivario <- function(x, scale, alpha){ scale*x^alpha }
 #'#grid specification
-#'grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#'rmev(n=100, vario=semivario,loc=grid.loc, model='br', scale = 0.5, alpha = 1)
-#'vario2cov <- function(loc, semivario,...){
-#'  sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
-#'   semivario(sqrt(sum((loc[i,])^2)), ...) +
-#'   semivario(sqrt(sum((loc[j,])^2)), ...) -
-#'   semivario(sqrt(sum((loc[i,]-loc[j,])^2)), ...)))
+#'grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
+#'rmev(n=100, vario=semivario,coord=grid.coord, model='br', scale = 0.5, alpha = 1)
+#'vario2cov <- function(coord, semivario,...){
+#'  sapply(1:nrow(coord), function(i) sapply(1:nrow(coord), function(j)
+#'   semivario(sqrt(sum((coord[i,])^2)), ...) +
+#'   semivario(sqrt(sum((coord[j,])^2)), ...) -
+#'   semivario(sqrt(sum((coord[i,]-coord[j,])^2)), ...)))
 #' }
-#'rmev(n=100, sigma=vario2cov(grid.loc, semivario = semivario, scale = 0.5, alpha = 1), model='br')
+#'rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
 #'#Example with a grid (generating an array)
-#'rmev(n=10, sigma=cbind(c(2,1), c(1,3)), loc=cbind(runif(4), runif(4)),model='smith', grid=TRUE)
+#'rmev(n=10, sigma=cbind(c(2,1), c(1,3)), coord=cbind(runif(4), runif(4)), model='smith', grid=TRUE)
 #'## Example with Dirichlet mixture
 #'alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 #'rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model='dirmix')
 rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "aneglog", "bilog", "negbilog", "hr", "br", "xstud",
-    "smith", "schlather", "ct", "sdir", "dirmix"), alg = c("ef", "sm"), weights, vario, loc, grid = FALSE, ...) {
+    "smith", "schlather", "ct", "sdir", "dirmix"), alg = c("ef", "sm"), weights, vario, coord = NULL, grid = FALSE, ...) {
     # Create gridded values if specification is for random field discretization
-    if (!missing(loc)) {
-        loc <- as.matrix(loc)
-        if (ncol(loc) == 1)
+    ellips <- list(...)
+    if(is.null(coord) && !is.null(ellips$loc)){
+     coord <- ellips$loc
+    }
+    if (!is.null(coord)) {
+        coord <- as.matrix(coord)
+        if (ncol(coord) == 1)
             grid <- FALSE
         if (grid) {
-            if (all(sapply(1:ncol(loc), function(i) {
-                length(unique(loc[, i])) == nrow(loc)
+            if (all(sapply(1:ncol(coord), function(i) {
+                length(unique(coord[, i])) == nrow(coord)
             }))) {
-                loc <- matrix(unlist(expand.grid(apply(loc, 2, as.list))), ncol = ncol(loc))
+                coord <- matrix(unlist(expand.grid(apply(coord, 2, as.list))), ncol = ncol(coord))
             } else {
-                stop("Duplicate values in `loc' using `grid=TRUE' not allowed")
+                stop("Duplicate values in `coord' using `grid=TRUE' not allowed")
             }
         }
     }
@@ -127,12 +131,12 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
         stop("Invalid parameter")
     }
     # Check spatial requirements
-    if ((!missing(loc) || !missing(vario)) && !model %in% m3) {
+    if ((!is.null(coord) || !missing(vario)) && !model %in% m3) {
         if (model == "hr") {
             warning("Obsolete. Please use `model=br' instead of `hr' for spatial models.")
             model <- "br"
         } else {
-            warning("Unused arguments `vario' or `loc'; only implemented for Extremal student or Brown-Resnick process")
+            warning("Unused arguments `vario' or `coord'; only implemented for Extremal student or Brown-Resnick process")
         }
     }
     # One-parameter families
@@ -206,9 +210,9 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
         model = "sdir"
     } else if (model %in% m3) {
         # Smith, Brown-Resnick, extremal student
-        if (missing(sigma) && !missing(vario) && !missing(loc)) {
-            if (is.vector(loc))
-                loc <- matrix(loc, ncol = 1)  #1 dimensional process
+        if (missing(sigma) && !missing(vario) && !is.null(coord)) {
+            if (is.vector(coord))
+                coord <- matrix(coord, ncol = 1)  #1 dimensional process
             stopifnot(is.function(vario))
             if (model == "br") {
                 model = "isbr"
@@ -216,14 +220,14 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
                 if (vario(0, ...) > 1e-15) {
                   stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
                 }
-                semivario2mat <- function(loc, semivario, ...) {
-                  di <- as.matrix(dist(loc))  #fields::rdist(loc) is faster...
+                semivario2mat <- function(coord, semivario, ...) {
+                  di <- as.matrix(dist(coord))  #fields::rdist(coord) is faster...
                   covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
                   covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
                   covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
                   return(covmat)
                 }
-                sigma <- semivario2mat(loc, vario, ...)/2
+                sigma <- semivario2mat(coord, vario, ...)/2
                 # changed 08-03-2018 Matrix is half of Semivariogram, quarter of variogram
             }
         }
@@ -241,13 +245,13 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
         if (model == "xstud" && (missing(param) || length(param) != 1)) {
             stop("Degrees of freedom argument missing or invalid")
         }
-        if (model == "smith" && missing(loc))
+        if (model == "smith" && is.null(coord))
             stop("Location should be provided for the Smith model")
-        if (model == "smith" && ncol(as.matrix(loc)) != ncol(sigma)) {
+        if (model == "smith" && ncol(as.matrix(coord)) != ncol(sigma)) {
             stop("Covariance matrix of the Smith model should be
-           of the same dimension as dimension of location vector")
+           of the same dimension as the number of columns of the coordinates matrix.")
         }
-        d <- switch(model, xstud = ncol(sigma), br = ncol(sigma), smith = nrow(loc), isbr = ncol(sigma))
+        d <- switch(model, xstud = ncol(sigma), br = ncol(sigma), smith = nrow(coord), isbr = ncol(sigma))
         if (model %in% c("smith", "br", "isbr")) {
             param <- 0
         }
@@ -322,24 +326,24 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
         .rmevasy(n = n, d = d, para = param, asym = asym, ncompo = ncompo, Sigma = sigma, model = mod)
     } else {
         if (model != "smith") {
-            locat <- cbind(0)
+            coordat <- cbind(0)
         } else {
-            locat <- loc
+            coordat <- coord
         }
         if (model %in% m3 && grid == TRUE) {
-            npdim <- d^(1/ncol(loc))
+            npdim <- d^(1/ncol(coord))
             if (!all.equal(npdim, as.integer(npdim))) {
                 stop("The dimension of the input grid does not match (square) covariance matrix")
             }
             ncompo <- c(1)
             array(t(switch(alg,
-                           ef = .rmevA2(n = n, d = d, para = param, model = mod, Sigma = sigma, locat),
-                           sm = .rmevA1(n = n, d = d, para = param, model = mod, Sigma = sigma, locat))), dim = c(rep(npdim, ncol(loc)), n))
+                           ef = .rmevA2(n = n, d = d, para = param, model = mod, Sigma = sigma, coordat),
+                           sm = .rmevA1(n = n, d = d, para = param, model = mod, Sigma = sigma, coordat))), dim = c(rep(npdim, ncol(coord)), n))
         } else {
             ncompo <- c(1)
             switch(alg,
-                   ef = .rmevA2(n = n, d = d, para = param, model = mod, Sigma = sigma, locat),
-                   sm = .rmevA1(n = n, d = d, para = param, model = mod, Sigma = sigma, locat))
+                   ef = .rmevA2(n = n, d = d, para = param, model = mod, Sigma = sigma, coordat),
+                   sm = .rmevA1(n = n, d = d, para = param, model = mod, Sigma = sigma, coordat))
         }
     }
 }
@@ -386,29 +390,33 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
 #'#NEW: Variogram must take distance as argument
 #'vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
 #' #grid specification
-#' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#' rmevspec(n=100, vario=vario,loc=grid.loc, model='br')
+#' grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
+#' rmevspec(n=100, vario=vario,coord=grid.coord, model='br')
 #' ## Example with Dirichlet mixture
 #' alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 #' rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model='dirmix')
 #' @export
 rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather",
-    "ct", "sdir", "dirmix"), weights, vario, loc, grid = FALSE, ...) {
+    "ct", "sdir", "dirmix"), weights, vario, coord = NULL, grid = FALSE, ...) {
     models <- c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix", "negdir",
         "dir")
     model <- match.arg(model, models)[1]
     # Create gridded values if specification is for random field discretization
-    if (!missing(loc)) {
-        loc <- as.matrix(loc)
-        if (ncol(loc) == 1)
+    ellips <- list(...)
+    if(is.null(coord) && !is.null(ellips$loc)){
+        coord <- ellips$loc
+    }
+    if (!is.null(coord)) {
+        coord <- as.matrix(coord)
+        if (ncol(coord) == 1)
             grid = FALSE
         if (grid == TRUE) {
-            if (all(sapply(1:ncol(loc), function(i) {
-                length(unique(loc[, i])) == nrow(loc)
+            if (all(sapply(1:ncol(coord), function(i) {
+                length(unique(coord[, i])) == nrow(coord)
             }))) {
-                loc <- matrix(unlist(expand.grid(apply(loc, 2, as.list))), ncol = ncol(loc))
+                coord <- matrix(unlist(expand.grid(apply(coord, 2, as.list))), ncol = ncol(coord))
             } else {
-                stop("Duplicate values in `loc' using `grid=TRUE' not allowed")
+                stop("Duplicate values in `coord' using `grid=TRUE' not allowed")
             }
         }
     }
@@ -497,9 +505,9 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
         model = "sdir"
     } else if (model %in% m3) {
         # Smith, Brown-Resnick, extremal student
-        if (missing(sigma) && !missing(vario) && !missing(loc)) {
-            if (is.vector(loc))
-                loc <- matrix(loc, ncol = 1)  #1 dimensional process
+        if (missing(sigma) && !missing(vario) && !is.null(coord)) {
+            if (is.vector(coord))
+                coord <- matrix(coord, ncol = 1)  #1 dimensional process
             stopifnot(is.function(vario))
             if (model == "br") {
                 model = "isbr"
@@ -507,14 +515,14 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
                 if (vario(0, ...) > 1e-15) {
                   stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
                 }
-                semivario2mat <- function(loc, semivario, ...) {
-                  di <- as.matrix(dist(loc))  #fields::rdist(loc) is faster...
+                semivario2mat <- function(coord, semivario, ...) {
+                  di <- as.matrix(dist(coord))  #fields::rdist(coord) is faster...
                   covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
                   covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
                   covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
                   return(covmat)
                 }
-                sigma <- semivario2mat(loc, vario, ...)/2
+                sigma <- semivario2mat(coord, vario, ...)/2
                 # changed 08-03-2018 Matrix is half of Semivariogram, quarter of variogram
             }
         }
@@ -530,13 +538,13 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
         if (model == "xstud" && (missing(param) || length(param) != 1)) {
             stop("Degrees of freedom argument missing or invalid")
         }
-        if (model == "smith" && missing(loc))
+        if (model == "smith" && is.null(coord))
             stop("Location should be provided for the Smith model")
-        if (model == "smith" && ncol(as.matrix(loc)) != ncol(sigma)) {
+        if (model == "smith" && ncol(as.matrix(coord)) != ncol(sigma)) {
             stop("Covariance matrix of the Smith model should be
-           of the same dimension as dimension of location vector")
+           of the same dimension as the number of columns of the coordinate matrix.")
         }
-        d <- switch(model, xstud = ncol(sigma), br = ncol(sigma), smith = nrow(loc), isbr = ncol(sigma))
+        d <- switch(model, xstud = ncol(sigma), br = ncol(sigma), smith = nrow(coord), isbr = ncol(sigma))
         if (model %in% c("smith", "br", "isbr")) {
             param <- 0
         }
@@ -569,14 +577,14 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
         d <- ncol(sigma)
     }
     if (model != "smith") {
-        loc <- cbind(0)
+        coord <- cbind(0)
     }
     # Model
     mod <- switch(model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4, xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9,
         isbr = 9)
 
     # Generate from spectral measure
-    .rmevspec_cpp(n = n, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
+    .rmevspec_cpp(n = n, d = d, para = param, model = mod, Sigma = sigma, loc = coord)
 }
 
 
@@ -588,7 +596,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
 #' This function is extracted from the evd package and modified
 #' (C) Alec Stephenson
 #'
-#' @param asy a list of \eqn{2^d-1} assymetry components, as in Stephenson bvevd functions
+#' @param asy a list of \eqn{2^d-1} asymmetry components, as in Stephenson bvevd functions
 #' @param vector of \eqn{2^d-d-1} values for the dependence parameter
 #' @param d dimension of the model
 #' @param model, either \code{alog} for the asymmetric logistic or \code{aneglog}

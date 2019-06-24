@@ -44,7 +44,7 @@ taildep <- function (data, u = NULL, nq = 40, qlim = c(0.8, 0.99), depmeas = c("
   if(is.character(depmeas)){
     depmeas <- which(c("eta", "chi") %in% match.arg(depmeas, c("eta", "chi"), several.ok = TRUE))
   }
-  if((! length(depmeas) %in% c(1L, 2L)) || !(depmeas  %in% c(1L, 2L))){
+  if((! length(depmeas) %in% c(1L, 2L)) || !all(depmeas  %in% c(1L, 2L))){
     stop("Invalid argument for `depmeas`: must be either `eta`,`chi` or both.")
   }
   data <- as.matrix(data)

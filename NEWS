@@ -1,21 +1,22 @@
-mev v.1.12 (Release date: )
+mev v.1.12 (Release date: 2019-06-24)
 ==============
 New:
 * Function 'taildep' is multivariate equivalent to 'evd::chiplot'
 * Function 'rparpcs' for simulating from elliptical Pareto processes associated with max
+* 'rgparp' for simulation of generalized R Pareto processes
 * Exponent measure for Brown-Resnick and extremal Student model
 * 'spunif' for semi-parametric transform to uniform (tail modelled using GP)
 * 'rparp' now has attributes to give acceptance rate of accept/reject procedure.
-* Exponent measure estimators `extcoef`
+* Exponent measure estimators 'extcoef'
 * New method for robust OBRE estimates of GP parameters
-* Functions `fit.gev`,`fit.gpd`, `fit.rlarg` and `fit.pp` for maximum likelihood estimation
+* Functions 'fit.gev','fit.gpd', 'fit.rlarg' and 'fit.pp' for maximum likelihood estimation
 * Default printing and plot optims (p-p and q-q plots) for mev_ objects
-* Changes to optimization routine for pp  in `W.diag` function, use of expected information matrix, change to default tuning parameter
+* Changes to optimization routine for pp  in 'W.diag' function, use of expected information matrix, change to default tuning parameter
 * New datasets: eskrain, maiquetia, nidd, venice, w1500m
 
 Fixes:
 * Scaling of Brown-Resnick is now consistent with literature (half of semivariogram)
-* Degrees of freedom argument in C++ code for 'rmev' with extremal Student family were incorrect
+* Degrees of freedom argument in C++ code for 'rmev' with extremal Student family was incorrect
 * 'rparp' now has a hard bound to ensure the vector of simulated vectors fits in memory.
 * Change to Grimshaw routine to ensure shape not less than -1, constrained optimization method
 * Information matrix, score for GEV now interpolated in a neighborhood of zero to preserve continuity and avoid numerical overflow.
@@ -23,9 +24,10 @@ Fixes:
 * ext.index number of exceedances off by one, causing Inf in weight vector for lm (thanks to @MCristinaMiranda). Warnings now silenced by default.
 
 Changes:
-* Removed dependency to `ismev`, `rootsolve` (replaced with `nleqslv` routine) and `numDeriv`.
+* coordinates for rmev, rparp, etc. now use `coord` instead of `loc` to avoid confusion with location parameter in `rgparp`
+* Removed dependency to 'ismev', 'rootsolve' (replaced with 'nleqslv' routine) and 'numDeriv'.
 * Change to plot for profile log-likelihood methods
-* 'smith.penult' function has new arguments (backward compatible). The quantiles `u` are now returned for Smith penultimate approximations with `method = "pot"`
+* 'smith.penult' function has new arguments (backward compatible). The quantiles 'u' are now returned for Smith penultimate approximations with 'method = "pot"'
 
 
 mev v.1.11 (Release date: 2018-02-23)
@@ -38,7 +40,7 @@ New:
 * Functions 'gev.mle' and 'gpd.mle' for maximum likelihood estimates of transformed parameters
 * Functions 'gev.abias' and 'gpd.abias' for asymptotic bias of block maxima for fixed sample sizes or fixed thresholds
 Changes:
-* Functions 'rmev', 'rmevspec', etc. now only accept variogram functions `vario` that have distance as argument
+* Functions 'rmev', 'rmevspec', etc. now only accept variogram functions 'vario' that have distance as argument
 * Simulation from 'rmev' and 'rmevspec' faster to refactoring of code
 * Function 'smith.penult' now has a 'family' as argument for specifying distributions via a string
 * Function 'gev.tem' and 'gpd.tem' are now a wrapper for 'gev.pll' and 'gpd.pll', respectively. Routine should be more robust
@@ -54,12 +56,12 @@ mev v.1.10 (Release date: 2017-02-01)
 New:
 * Added 'negdir' model to rmev
 Changes:
-* Fixed argument matching in function `egp2`
+* Fixed argument matching in function 'egp2'
 
 mev v.1.9x
 ==============
 New:
-* Changes to angmeas to include different weighting if the region of interest is `max` or `min`
+* Changes to angmeas to include different weighting if the region of interest is 'max' or 'min'
 Changes:
 * Fixed bug affecting angmeas in the bivariate case that would cause the method to crash
 

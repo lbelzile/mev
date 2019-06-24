@@ -7,7 +7,7 @@
 .mvasym.check(asy, dep, d, model = c("alog", "aneglog"))
 }
 \arguments{
-\item{asy}{a list of \eqn{2^d-1} assymetry components, as in Stephenson bvevd functions}
+\item{asy}{a list of \eqn{2^d-1} asymmetry components, as in Stephenson bvevd functions}
 
 \item{d}{dimension of the model}
 

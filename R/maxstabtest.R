@@ -18,6 +18,7 @@
 #' @param ties.method string indicating the method for \code{\link[base]{rank}}. Default to \code{"random"}.
 #' @param plot logical indicating whether a graph should be produced (default to \code{TRUE}).
 #' @return a Tukey probability-probability plot with 95% confidence intervals obtained using a nonparametric bootstrap
+#' @export
 #' @examples
 #' \dontrun{
 #' dat <- mev::rmev(n = 250, d = 100, param = 0.5, model = "log")
@@ -27,7 +28,8 @@
 #' maxstabtest(dat, m = 2, nmax = 100)
 #' maxstabtest(dat, m = ncol(dat))
 #' }
-maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L, ties.method = "random", plot = TRUE){
+maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L,
+                        ties.method = "random", plot = TRUE){
   if(is.null(dim(dat))){
     stop("`dat` should be an array or a matrix, with replicates")
   }

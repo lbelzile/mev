@@ -521,7 +521,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     # Find maximum likelihood estimates
     mle <- gev.mle(xdat = dat, args = args, q = q, N = N, p = p)
 
-    # if(missing(psi) || is.null(psi) || is.na(psi)){ psi <- mle[param] } psi <- as.vector(psi)
+    # if(missing(psi) || any(is.null(psi)) || any(is.na(psi))){ psi <- mle[param] } psi <- as.vector(psi)
 
 
     # Extract the components, notably V for model `tem`. Keep other components for optimization
@@ -684,7 +684,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             return(rep(NA, 3))
         }
         # Missing psi vector
-        if (missing(psi) || is.null(psi) || is.na(psi)) {
+        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
             if (ind == 2) {
                 psirangelow <- unique(min(1e-05, seq(-4, -1.5, length = 10) * std.error + mle[param]))
             } else {
@@ -826,7 +826,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         }
 
         # Missing psi vector
-        if (missing(psi) || is.null(psi) || is.na(psi)) {
+        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
             psirangelow <- seq(-3, -1.5, length = 6) * std.error + mle[1]
             lowvals <- sapply(psirangelow, constr.mle.quant)[3, ] - maxll
             psirangehigh <- seq(1.5, 4, length = 10) * std.error + mle[1]
@@ -1000,7 +1000,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         }
 
         # Missing psi vector
-        if (missing(psi) || is.null(psi) || is.na(psi)) {
+        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
             psirangelow <- pmax(1e-05, seq(ifelse(mle[3] < 0, -3.5, -2.5), -0.5, length = 6) *
                 std.error + mle[2])
             lowvals <- -sapply(psirangelow, constr.mle.N, dat = dat)[3, ] - maxll
@@ -1338,7 +1338,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         }
 
         # Missing psi vector
-        if (missing(psi) || is.null(psi) || is.na(psi)) {
+        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
             psirangelow <- pmax(1e-05, seq(-3, -1.5, length = 6) * std.error + mle[1])
             lowvals <- sapply(psirangelow, function(par) {
                 gpd.ll(c(par, constr.mle.scale(par)), dat = dat)
@@ -1456,7 +1456,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
               method = "Brent", shape = xit, lower = ifelse(xit < 0, abs(xit) * xmax + 1e-05, 1e-05), upper = 1e+10)$par))
         }
         # Missing psi vector
-        if (missing(psi) || is.null(psi) || is.na(psi)) {
+        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
             psirangelow <- seq(ifelse(mle[2] < 0, -7, -5), -1.5, length = 10) * std.error +  mle[2]
             psirangelow <- psirangelow[psirangelow > -1]
             lowvals <- sapply(psirangelow, function(par) {
@@ -1580,7 +1580,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
 
 
         # Missing psi vector
-        if (missing(psi) || is.null(psi) || is.na(psi)) {
+        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
             psirangelow <- unique(pmax(mean(dat), seq(-3, -0.5, length = 12) * std.error +
                 mle[1]))
             lowvals <- sapply(psirangelow, function(par) {
@@ -1702,7 +1702,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         }
 
         # Missing psi vector
-        if (missing(psi) || is.null(psi) || is.na(psi)) {
+        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
             psirangelow <- unique(pmax(mean(dat), seq(-3, -0.1, length = 15) * std.error +
                 mle[1]))
             lowvals <- sapply(psirangelow, function(par) {
@@ -1830,7 +1830,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
             psi = Nmeant, N = N, control.outer = list(trace = FALSE))$par)
         }
         # Missing psi vector
-        if (missing(psi) || is.null(psi) || is.na(psi)) {
+        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
             #compute profile log-lik on a grid left and right of the MLE
             psirangelow <- unique(pmax(mean(dat), seq(-3, -0.25, length = 20) * std.error +
                 mle[1]))
@@ -2165,7 +2165,7 @@ spline.corr <- function(fr) {
 
     if (length(bad) > 0) {
         # Exclude those values if they are in the end of the distribution
-        bad <- bad[which(bad < 0.85 * length(departure) && bad > 0.15 * length(departure))]
+        bad <- bad[intersect(which(bad < 0.85 * length(departure)), which(bad > 0.15 * length(departure)))]
         # Remove outliers and fit again (with less smoothness)
     }
     if (length(bad) > 0) {
@@ -2221,6 +2221,7 @@ spline.corr <- function(fr) {
 #' @export
 #' @examples
 #' \dontrun{
+#' set.seed(1234)
 #' dat <- evd::rgev(n = 40, loc = 0, scale = 2, shape = -0.1)
 #' gev.tem('shape', dat = dat, plot = TRUE)
 #' gev.tem('quant', dat = dat, p = 0.01, plot = TRUE)
@@ -2272,7 +2273,7 @@ gev.tem <- function(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant
 #' @param q level of quantile for N-block maxima. Required only for \code{args} \code{Nquant}.
 #' @param dat sample vector for the GP distribution
 #' @param n.psi number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE
-#' @param plot logical indiating whether \code{plot.fr} should be called upon exit
+#' @param plot logical indicating whether \code{plot.fr} should be called upon exit
 #' @param correction logical indicating whether \link{spline.corr} should be called.
 #' @author Leo Belzile
 #' @return an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
@@ -2300,7 +2301,7 @@ gev.tem <- function(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant
 #' \dontrun{
 #' psi <- c(seq(2, 5, length = 15), seq(5, 35, length = 45))
 #' m4 <- gpd.tem(param = 'ES', dat = dat, m = 100, psi = psi, correction = FALSE)
-#' plot.fr(m4, which = c(2, 4))
+#' mev:::plot.fr(m4, which = c(2, 4))
 #' plot(fr4 <- spline.corr(m4))
 #' confint(m1)
 #' confint(m4, parm = 2, warn = FALSE)

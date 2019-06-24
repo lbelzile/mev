@@ -7,7 +7,7 @@
 rmev(n, d, param, asy, sigma, model = c("log", "alog", "neglog",
   "aneglog", "bilog", "negbilog", "hr", "br", "xstud", "smith",
   "schlather", "ct", "sdir", "dirmix"), alg = c("ef", "sm"), weights,
-  vario, loc, grid = FALSE, ...)
+  vario, coord = NULL, grid = FALSE, ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -28,9 +28,9 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 
 \item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
 
-\item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing}
+\item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjunction with \code{coord} and if \code{sigma} is missing}
 
-\item{loc}{\code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
+\item{coord}{\code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
 \item{grid}{Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).}
 
@@ -67,7 +67,7 @@ for the Brown--Resnick model  \eqn{2/r=\sqrt(2\gamma(h))} where \eqn{h} is the l
 }
 \section{Warning}{
 
-As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjonction with variograms. The parametrization differs between the two models.
+As of version 1.8 (August 16, 2016), there is a distinction between models \code{hr} and \code{br}. The latter is meant to be used in conjunction with variograms. The parametrization differs between the two models.
 
 
 The family of scaled Dirichlet is now parametrized by a parameter in \eqn{-\min(\alpha)}{-min(\alpha)} appended to the the \code{d} vector \code{param} containing the parameter \code{alpha}
@@ -82,17 +82,17 @@ rmev(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model='bilog', alg='sm')
 #NEW: Semi-variogram must take distance as argument
 semivario <- function(x, scale, alpha){ scale*x^alpha }
 #grid specification
-grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-rmev(n=100, vario=semivario,loc=grid.loc, model='br', scale = 0.5, alpha = 1)
-vario2cov <- function(loc, semivario,...){
- sapply(1:nrow(loc), function(i) sapply(1:nrow(loc), function(j)
-  semivario(sqrt(sum((loc[i,])^2)), ...) +
-  semivario(sqrt(sum((loc[j,])^2)), ...) -
-  semivario(sqrt(sum((loc[i,]-loc[j,])^2)), ...)))
+grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
+rmev(n=100, vario=semivario,coord=grid.coord, model='br', scale = 0.5, alpha = 1)
+vario2cov <- function(coord, semivario,...){
+ sapply(1:nrow(coord), function(i) sapply(1:nrow(coord), function(j)
+  semivario(sqrt(sum((coord[i,])^2)), ...) +
+  semivario(sqrt(sum((coord[j,])^2)), ...) -
+  semivario(sqrt(sum((coord[i,]-coord[j,])^2)), ...)))
 }
-rmev(n=100, sigma=vario2cov(grid.loc, semivario = semivario, scale = 0.5, alpha = 1), model='br')
+rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
 #Example with a grid (generating an array)
-rmev(n=10, sigma=cbind(c(2,1), c(1,3)), loc=cbind(runif(4), runif(4)),model='smith', grid=TRUE)
+rmev(n=10, sigma=cbind(c(2,1), c(1,3)), coord=cbind(runif(4), runif(4)), model='smith', grid=TRUE)
 ## Example with Dirichlet mixture
 alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model='dirmix')

@@ -21,7 +21,7 @@ vector of bias-corrected parameters
 }
 \description{
 Bias corrected estimates for the generalized extreme value distribution using
-Firth's modified score function or implicit bias substraction.
+Firth's modified score function or implicit bias subtraction.
 }
 \details{
 Method \code{subtract}solves

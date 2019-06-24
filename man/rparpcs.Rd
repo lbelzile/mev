@@ -44,9 +44,9 @@ if \code{Lambda} is provided by the user.
 \dontrun{
 #Brown-Resnick, Wadsworth and Tawn (2014) parametrization
 D <- 20L
-loc <- cbind(runif(D), runif(D))
+coord <- cbind(runif(D), runif(D))
 semivario <- function(d, alpha = 1.5, lambda = 1){0.5 * (d/lambda)^alpha}
-Lambda <- semivario(as.matrix(dist(loc))) / 2
+Lambda <- semivario(as.matrix(dist(coord))) / 2
 rparpcs(n = 10, Lambda = Lambda, model = 'br', shape = 0.1)
 #Extremal Student
 Sigma <- stats::rWishart(n = 1, df = 20, Sigma = diag(10))[,,1]

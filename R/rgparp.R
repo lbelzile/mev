@@ -12,14 +12,21 @@
 #' \code{accept.rate} if the procedure uses rejection sampling.
 #' @export
 #' @examples
-#' rparp(n=10, riskf = 'site', siteindex=2, d=3, param=2.5, model='log')
-#' rparp(n=10, riskf = 'min', d=3, param=2.5, model='neglog')
-#' rparp(n=10, riskf = 'max', d=4, param=c(0.2,0.1,0.9,0.5), model='bilog')
-#' rparp(n=10, riskf = 'sum', d=3, param=c(0.8,1.2,0.6, -0.5), model='sdir')
+#' rparp(n=10, riskf='site', siteindex=2, d=3, param=2.5, model='log')
+#' rparp(n=10, riskf='min', d=3, param=2.5, model='neglog')
+#' rparp(n=10, riskf='max', d=4, param=c(0.2,0.1,0.9,0.5), model='bilog')
+#' rparp(n=10, riskf='sum', d=3, param=c(0.8,1.2,0.6, -0.5), model='sdir')
 #' vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
-#' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#' rparp(n=10, riskf = 'max', vario=vario,loc=grid.loc, model='br')
-rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), siteindex = NULL, d, param, sigma, model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
+#' grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
+#' rparp(n=10, riskf='max', vario=vario, coord=grid.coord, model='br')
+rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"),
+                  siteindex = NULL, d, param, sigma,
+                  model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"),
+                  weights, vario, coord = NULL, ...) {
+  ellips <- list(...)
+  if(is.null(coord) && !is.null(ellips$loc)){
+    coord <- ellips$loc
+  }
   stopifnot(shape > 0)
   riskf <- match.arg(riskf)
   if (is.null(siteindex) && riskf == "site") {
@@ -115,9 +122,9 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
   } else if (model %in% m3) {
     # Smith, Brown-Resnick, extremal student
     if (model == "br") {
-      if (missing(sigma) && !missing(vario) && !missing(loc)) {
-        if (is.vector(loc))
-          loc <- matrix(loc, ncol = 1)  #1 dimensional process
+      if (missing(sigma) && !missing(vario) && !is.null(coord)) {
+        if (is.vector(coord))
+          coord <- matrix(coord, ncol = 1)  #1 dimensional process
         stopifnot(is.function(vario))
         if (model == "br") {
           model = "isbr"
@@ -125,14 +132,14 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
           if (vario(0, ...) > 1e-15) {
             stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
           }
-          semivario2mat <- function(loc, semivario, ...) {
-            di <- as.matrix(dist(loc))  #fields::rdist(loc) is faster...
+          semivario2mat <- function(coord, semivario, ...) {
+            di <- distg(coord, 1, 0)  #fields::rdist(coord) is faster...
             covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
             covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
             covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
             return(covmat)
           }
-          sigma <- semivario2mat(loc, vario, ...)/2
+          sigma <- semivario2mat(coord, vario, ...)/2
           # changed 14-05-2018 Matrix is half of Semivariogram, quarter of variogram
         }
       }
@@ -150,13 +157,13 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
     if (model == "xstud" && (missing(param) || length(param) != 1)) {
       stop("Degrees of freedom argument missing or invalid")
     }
-    if (model == "smith" && missing(loc))
-      stop("Location should be provided for the Smith model")
-    if (model == "smith" && ncol(as.matrix(loc)) != ncol(sigma)) {
+    if (model == "smith" && is.null(coord))
+      stop("Coordinates should be provided for the Smith model")
+    if (model == "smith" && ncol(as.matrix(coord)) != ncol(sigma)) {
       stop("Covariance matrix of the Smith model should be
-           of the same dimension as dimension of location vector")
+           of the same dimension as dimension of coordinate vector")
     }
-    d <- switch(model, xstud = ncol(sigma), br = ncol(sigma), smith = nrow(loc), isbr = ncol(sigma))
+    d <- switch(model, xstud = ncol(sigma), br = ncol(sigma), smith = nrow(coord), isbr = ncol(sigma))
     if (model %in% c("smith", "br", "isbr")) {
       param <- 0
     }
@@ -189,15 +196,15 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
       d <- ncol(sigma)
     }
   if (!model == "smith") {
-    loc <- cbind(0)
+    coord <- cbind(0)
   }
   # Model
   mod <- switch(model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4, xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9,
                 isbr = 9)
   if (riskf == "sum") {
     # Generate from spectral measure
-    return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) * .rmevspec_cpp(n = n, d = d, para = param, model = mod, Sigma = sigma,
-                                                                               loc = loc))
+    return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) *
+             .rmevspec_cpp(n = n, d = d, para = param, model = mod, Sigma = sigma, loc = coord))
   } else if (riskf == "site") {
     # Check now that siteindex corresponds to a particular site
     # Dimension d could have been modified earlier for spatial models
@@ -205,8 +212,9 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
     if (siteindex < 1 || siteindex > d) {
       stop("Invalid site index")
     }
-    return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod,
-                                                                         Sigma = sigma, loc = loc))
+    return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) *
+             .rPsite(n = n, j = siteindex, d = d, para = param,
+                     model = mod, Sigma = sigma, loc = coord))
   } else if (riskf %in% c("max", "min", "l2")) {
     ustar <- switch(riskf, max = 1, min = d, l2 = 1)
     ind <- 0L
@@ -215,8 +223,9 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
     nsim <- ceiling(ifelse(n < 10, 4 * n, n))
     samp <- matrix(0, nrow = n, ncol = d)
     while (ind < n) {
-      candidate <- evd::rgpd(n = nsim, loc = 1, scale = 1, shape = shape) * .rmevspec_cpp(n = nsim, d = d, para = param, model = mod,
-                                                                                          Sigma = sigma, loc = loc)/ustar
+      candidate <- evd::rgpd(n = nsim, loc = 1, scale = 1, shape = shape) *
+        .rmevspec_cpp(n = nsim, d = d, para = param, model = mod,
+                      Sigma = sigma, loc = coord)/ustar
       accept <- switch(riskf,
                        max = apply(candidate, 1, function(x) { max(x) > 1 }),
                        min = apply(candidate, 1, function(x) { min(x) > 1 }),
@@ -248,9 +257,9 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
 
 #' Simulation from generalized R-Pareto processes
 #'
-#' The generalized R-Pareto process is supported on \code{(B - A / shape, Inf)} if \code{shape > 0},
-#' or \code{(-Inf, B - A / shape)} for negative shape parameters, conditional on \eqn{(X-r(B))/r(A)>0}.
-#' The standard Pareto process corresponds to \code{A = B = rep(1, d)}.
+#' The generalized R-Pareto process is supported on \code{(loc - scale / shape, Inf)} if \code{shape > 0},
+#' or \code{(-Inf, loc - scale / shape)} for negative shape parameters, conditional on \eqn{(X-r(loc))/r(scale)>0}.
+#' The standard Pareto process corresponds to \code{scale = loc = rep(1, d)}.
 #'
 #'
 #' @inheritParams rmev
@@ -258,23 +267,26 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"), si
 #' @param riskf string indicating the risk functional.
 #' @param thresh univariate threshold for the exceedances of risk functional
 #' @param siteindex integer between 1 and d specifying the index of the site or variable
-#' @param A scale vector
-#' @param B location vector
+#' @param scale scale vector
+#' @param loc location vector
 #' @return an \code{n} by \code{d} sample from the generalized R-Pareto process, with \code{attributes}
 #' \code{accept.rate} if the procedure uses rejection sampling.
 #' @export
 #' @examples
 #' rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5,
-#'    model = 'log', A = c(1, 2, 3), B = c(2, 3, 4))
+#'    model = 'log', scale = c(1, 2, 3), loc = c(2, 3, 4))
 #' rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5),
-#'    A = 1:4, B = 1:4, model = 'bilog')
+#'    scale = 1:4, loc = 1:4, model = 'bilog')
 #' rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5),
-#'    A = 1:3, B = 1:3, model = 'sdir')
+#'    scale = 1:3, loc = 1:3, model = 'sdir')
 #' vario <- function(x, scale = 0.5, alpha = 0.8){ scale*x^alpha }
-#' grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-#' rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc,
-#'    model = 'br', A = runif(16), B = rnorm(16))
-rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "max", "min", "l2"), siteindex = NULL, d, A, B, param, sigma, model = c("log", "neglog","bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...) {
+#' grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
+#' rgparp(n = 10, riskf = 'max', vario = vario, coord = grid.coord,
+#'    model = 'br', scale = runif(16), loc = rnorm(16))
+rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "max", "min", "l2"),
+                   siteindex = NULL, d, loc, scale, param, sigma,
+                   model = c("log", "neglog","bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix"),
+                   weights, vario, coord = NULL, ...) {
   riskf <- match.arg(riskf)
   #shape <- as.vector(shape[1])
   #stopifnot(is.numeric(shape))
@@ -371,9 +383,9 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
   } else if (model %in% m3) {
     # Smith, Brown-Resnick, extremal student
     if (model == "br") {
-      if (missing(sigma) && !missing(vario) && !missing(loc)) {
-        if (is.vector(loc))
-          loc <- matrix(loc, ncol = 1)  #1 dimensional process
+      if (missing(sigma) && !missing(vario) && !is.null(coord)) {
+        if (is.vector(coord))
+          coord <- matrix(coord, ncol = 1)  #1 dimensional process
         stopifnot(is.function(vario))
         if (model == "br") {
           model = "isbr"
@@ -381,14 +393,14 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
           if (vario(0, ...) > 1e-15) {
             stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
           }
-          semivario2mat <- function(loc, semivario, ...) {
-            di <- as.matrix(dist(loc))  #fields::rdist(loc) is faster...
+          semivario2mat <- function(coord, semivario, ...) {
+            di <- as.matrix(dist(coord))  #fields::rdist(loc) is faster...
             covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
             covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
             covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
             return(covmat)
           }
-          sigma <- semivario2mat(loc, vario, ...)/2
+          sigma <- semivario2mat(coord, vario, ...)/2
           # changed 14-05-2018 Matrix is half of Semivariogram, quarter of variogram
         }
       }
@@ -406,13 +418,13 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
     if (model == "xstud" && (missing(param) || length(param) != 1)) {
       stop("Degrees of freedom argument missing or invalid")
     }
-    if (model == "smith" && missing(loc))
-      stop("Location should be provided for the Smith model")
-    if (model == "smith" && ncol(as.matrix(loc)) != ncol(sigma)) {
+    if (model == "smith" && is.null(coord))
+      stop("Coordinates should be provided for the Smith model")
+    if (model == "smith" && ncol(as.matrix(coord)) != ncol(sigma)) {
       stop("Covariance matrix of the Smith model should be
            of the same dimension as dimension of location vector")
     }
-    d <- switch(model, xstud = ncol(sigma), br = ncol(sigma), smith = nrow(loc), isbr = ncol(sigma))
+    d <- switch(model, xstud = ncol(sigma), br = ncol(sigma), smith = nrow(coord), isbr = ncol(sigma))
     if (model %in% c("smith", "br", "isbr")) {
       param <- 0
     }
@@ -445,28 +457,28 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
       d <- ncol(sigma)
     }
   if (!model == "smith") {
-    loc <- cbind(0)
+    coord <- cbind(0)
   }
   # Model
   mod <- switch(model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4, xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9,
                 isbr = 9)
   # Additional checks and arguments for accept-reject algorithm for generalized R-Pareto process
   # Scale vector
-  if(missing(A)){
+  if(missing(scale)){
     stop("Missing scale function")
   } else {
-    if(length(A) == 1){
-      A <- rep(A, length.out = d)
+    if(length(scale) == 1){
+      scale <- rep(scale, length.out = d)
     }
-    stopifnot(length(A) == d, all(A > 0))
+    stopifnot(length(scale) == d, all(scale > 0))
   }
-  if(missing(B)){
+  if(missing(loc)){
     stop("Missing location function")
   } else{
-    if(length(B) == 1){
-      B <- rep(B, length.out = d)
+    if(length(loc) == 1){
+      loc <- rep(loc, length.out = d)
     } else{
-   stopifnot(length(B) == d)
+   stopifnot(length(loc) == d)
     }
   }
 
@@ -478,32 +490,32 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
       stop("Invalid site index")
     }
   }
-  #rB <- switch(riskf, sum = sum(B), max = max(B), min = min(B), site = B[siteindex], l2 = sqrt(sum(B^2)))
-  #rA <- switch(riskf, sum = sum(A), max = max(A), min = min(A), site = A[siteindex], l2 = sqrt(sum(A^2)))
-  #B <- B - rB #identifiability constraint r(B) = 0, r(B) is the threshold
-  #A <- A / rA #identifiability constraint r(A) = 1, r(A) is scale of GP
-  # Process becomes after simulation with A, B return rA*X + rB
+  #rB <- switch(riskf, sum = sum(loc), max = max(loc), min = min(loc), site = loc[siteindex], l2 = sqrt(sum(loc^2)))
+  #rA <- switch(riskf, sum = sum(scale), max = max(scale), min = min(scale), site = scale[siteindex], l2 = sqrt(sum(scale^2)))
+  #loc <- loc - rB #identifiability constraint r(loc) = 0, r(loc) is the threshold
+  #scale <- scale / rA #identifiability constraint r(scale) = 1, r(scale) is scale of GP
+  # Process becomes after simulation with scale, loc return rA*X + rB
   #Compute threshold for the l1 norm
   shape <- rep(shape, length.out = d)
   us <- thresh
   stopifnot(length(us) == 1L)
   if(riskf %in% c("max", "l2", "sum", "mean")){
-    if(isTRUE(all(ifelse(shape < 0, -A/shape+B < us, FALSE)))){
+    if(isTRUE(all(ifelse(shape < 0, -scale/shape+loc < us, FALSE)))){
      stop("Invalid input: the threshold selected is above the upper endpoint of all of the marginal distributions.")
     }
   } else if(riskf == "min"){
-    if(isTRUE(any(ifelse(shape < 0, -A/shape+B < us, FALSE)))){
+    if(isTRUE(any(ifelse(shape < 0, -scale/shape+loc < us, FALSE)))){
       stop("Invalid input: the threshold selected is above the upper endpoint of some the marginal distributions.")
     }
   } else if(riskf == "site"){
-   if(shape[siteindex] < 0 && -A[siteindex]/shape[siteindex]+B[siteindex] < us){
+   if(shape[siteindex] < 0 && -scale[siteindex]/shape[siteindex]+loc[siteindex] < us){
      stop("Invalid input: the threshold selected is above the upper endpoint of the marginal distribution at the selected site.")
    }
   }
   if(riskf %in% c("max", "l2")){
     ustar <- na.omit(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
-                    exp(( us - B) / A),
-                    (1 + shape * (us - B) / A)^(1/shape)))
+                    exp(( us - loc) / scale),
+                    (1 + shape * (us - loc) / scale)^(1/shape)))
     if(length(ustar) == 0){stop("Threshold is outside the support of the marginal distributions.")
       } else{
        ustar <- min(ustar)
@@ -516,28 +528,28 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
     ustar <- d
     zeroshape <- sapply(shape, function(xi){isTRUE(all.equal(xi, 0))})
    if(all(shape <0)){
-    inter <- 1-(us-sum(B))/sum(A)*min(abs(shape))
+    inter <- 1-(us-sum(loc))/sum(scale)*min(abs(shape))
       if(inter > 0){
       ustar <- max(ustar, d*inter^(-1/max(abs(shape))))
       }
     }
     if(!any(zeroshape)){
-      ustar <- max(ustar, (min(abs(shape))*(us-sum(B))/sum(A)+1)^(1/max(abs(shape))))
+      ustar <- max(ustar, (min(abs(shape))*(us-sum(loc))/sum(scale)+1)^(1/max(abs(shape))))
     } else if (all(zeroshape)){
-      ustar <- max(ustar, D*(exp((us-sum(B))/sum(A))^(1/d)))
+      ustar <- max(ustar, D*(exp((us-sum(loc))/sum(scale))^(1/d)))
     }
 
     } else if(riskf == "min"){
     ustar <- sum(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
-                    exp(( us - B) / A),
-                    (1 + shape * (us - B) / A)^(1/shape)))
+                    exp(( us - loc) / scale),
+                    (1 + shape * (us - loc) / scale)^(1/shape)))
   } else if(riskf == "site"){
     #for this, simulate directly from angular measure P0
-    ustar <- (1+shape*(us-B[siteindex])/A[siteindex])^(1/shape)
+    ustar <- (1+shape*(us-loc[siteindex])/scale[siteindex])^(1/shape)
   } else if(riskf == "mean"){ # difference vs max is 1/d factor
     ustar <- min(ifelse(sapply(shape, function(xi){isTRUE(all.equal(xi, 0))}),
-                        exp(( us - B) / A),
-                        (1 + shape * (us - B) / A)^(1/shape)), na.rm = TRUE)/d
+                        exp(( us - loc) / scale),
+                        (1 + shape * (us - loc) / scale)^(1/shape)), na.rm = TRUE)/d
   }
   #Algorithm 1
   # Nonlinear risk functionals
@@ -548,12 +560,13 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
     nsim <- ceiling(ifelse(n < 10, 10 * n, n))
     samp <- matrix(0, nrow = n, ncol = d)
     while (ind < n) {
-      candidate <- ustar / runif(nsim) * .rmevspec_cpp(n = nsim, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
+      candidate <- ustar / runif(nsim) *
+        .rmevspec_cpp(n = nsim, d = d, para = param, model = mod, Sigma = sigma, loc = coord)
         for(j in 1:d){
           if(!isTRUE(all.equal(shape[j], 0))){
-          candidate[,j] <- (candidate[,j]^shape[j] - 1) / shape[j] * A[j] + B[j]
+          candidate[,j] <- (candidate[,j]^shape[j] - 1) / shape[j] * scale[j] + loc[j]
         } else{
-          candidate[,j]  <- A[j] * log(candidate[,j]) + B[j]
+          candidate[,j]  <- scale[j] * log(candidate[,j]) + loc[j]
         }
       }
       accept <- switch(riskf,
@@ -584,12 +597,12 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
     return(samp)
   } else {
      #Acceptance rate is 1
-     samp <- ustar / runif(n) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod, Sigma = sigma, loc = loc)
+     samp <- ustar / runif(n) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod, Sigma = sigma, loc = coord)
      for(j in 1:d){
      if(!isTRUE(all.equal(shape[j], 0))){
-           samp[,j] <- (samp[,j]^shape[j] - 1) / shape[j] * A[j] +  B[j]
+           samp[,j] <- (samp[,j]^shape[j] - 1) / shape[j] * scale[j] +  loc[j]
      } else{
-        samp[,j]  <- A[j] * log(samp[,j]) + B[j]
+        samp[,j]  <- scale[j] * log(samp[,j]) + loc[j]
        }
      }
     #samp <- rA * samp + rB

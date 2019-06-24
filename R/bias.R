@@ -348,7 +348,7 @@ gev.Fscore <- function(par, dat, method = "obs") {
 #' Bias correction for GP distribution
 #'
 #' Bias corrected estimates for the generalized Pareto distribution using
-#' Firth's modified score function or implicit bias substraction.
+#' Firth's modified score function or implicit bias subtraction.
 #'
 #'
 #' Method \code{subtract} solves
@@ -470,7 +470,7 @@ gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 #' Bias correction for GEV distribution
 #'
 #' Bias corrected estimates for the generalized extreme value distribution using
-#' Firth's modified score function or implicit bias substraction.
+#' Firth's modified score function or implicit bias subtraction.
 #'
 #' Method \code{subtract}solves
 #' \deqn{\tilde{\boldsymbol{\theta}} = \hat{\boldsymbol{\theta}} + b(\tilde{\boldsymbol{\theta}}}

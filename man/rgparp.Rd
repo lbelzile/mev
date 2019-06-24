@@ -5,9 +5,10 @@
 \title{Simulation from generalized R-Pareto processes}
 \usage{
 rgparp(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site",
-  "max", "min", "l2"), siteindex = NULL, d, A, B, param, sigma,
+  "max", "min", "l2"), siteindex = NULL, d, loc, scale, param, sigma,
   model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud",
-  "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario, loc, ...)
+  "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario,
+  coord = NULL, ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -22,9 +23,9 @@ rgparp(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site",
 
 \item{d}{dimension of sample}
 
-\item{A}{scale vector}
+\item{loc}{location vector}
 
-\item{B}{location vector}
+\item{scale}{scale vector}
 
 \item{param}{parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
 Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model. See \bold{Details}.}
@@ -36,9 +37,9 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 
 \item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
 
-\item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing}
+\item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjunction with \code{coord} and if \code{sigma} is missing}
 
-\item{loc}{\code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
+\item{coord}{\code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
 \item{...}{additional arguments for the \code{vario} function}
 }
@@ -47,19 +48,19 @@ an \code{n} by \code{d} sample from the generalized R-Pareto process, with \code
 \code{accept.rate} if the procedure uses rejection sampling.
 }
 \description{
-The generalized R-Pareto process is supported on \code{(B - A / shape, Inf)} if \code{shape > 0},
-or \code{(-Inf, B - A / shape)} for negative shape parameters, conditional on \eqn{(X-r(B))/r(A)>0}.
-The standard Pareto process corresponds to \code{A = B = rep(1, d)}.
+The generalized R-Pareto process is supported on \code{(loc - scale / shape, Inf)} if \code{shape > 0},
+or \code{(-Inf, loc - scale / shape)} for negative shape parameters, conditional on \eqn{(X-r(loc))/r(scale)>0}.
+The standard Pareto process corresponds to \code{scale = loc = rep(1, d)}.
 }
 \examples{
 rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5,
-   model = 'log', A = c(1, 2, 3), B = c(2, 3, 4))
+   model = 'log', scale = c(1, 2, 3), loc = c(2, 3, 4))
 rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5),
-   A = 1:4, B = 1:4, model = 'bilog')
+   scale = 1:4, loc = 1:4, model = 'bilog')
 rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5),
-   A = 1:3, B = 1:3, model = 'sdir')
+   scale = 1:3, loc = 1:3, model = 'sdir')
 vario <- function(x, scale = 0.5, alpha = 0.8){ scale*x^alpha }
-grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-rgparp(n = 10, riskf = 'max', vario = vario,loc = grid.loc,
-   model = 'br', A = runif(16), B = rnorm(16))
+grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
+rgparp(n = 10, riskf = 'max', vario = vario, coord = grid.coord,
+   model = 'br', scale = runif(16), loc = rnorm(16))
 }

@@ -46,22 +46,23 @@
 #' @references Cooley, D., P. Naveau and P. Poncet (2006). Variograms for spatial max-stable random fields,  In: Bertail P., Soulier P., Doukhan P. (eds) \emph{Dependence in Probability and Statistics}. Lecture Notes in Statistics, vol. 187. Springer, New York, NY
 #' @references R. J. Erhardt, R. L. Smith (2012), Approximate Bayesian computing for spatial extremes, \emph{Computational Statistics and Data Analysis}, \bold{56}, pp.1468--1481.
 #' @param dat an \code{n} by \code{D} matrix of unit Frechet observations
-#' @param loc an optional \code{d} by \code{D} matrix of location coordinates
+#' @param coord an optional \code{d} by \code{D} matrix of location coordinates
 #' @param estimator string indicating which model estimates to compute, one of \code{smith}, \code{schlather} or \code{fmado}.
 #' @param method string indicating which method to use to transform the margins. See \bold{Details}
 #' @param standardize logical; should observations be transformed to unit Frechet scale? Default is to transform
 #' @param prob probability of not exceeding threshold \code{thresh}
 #' @param thresh threshold parameter (default is to keep all data if \code{prob = 0}).
 #' @param plot logical; should cloud of pairwise empirical estimates be plotted? Default to \code{TRUE}.
-#' @return an invisible list with vectors \code{dist} if \code{loc} is non-null or else a matrix of pairwise indices \code{ind},
+#' @param ... additional parameters passed to the function, currently ignored.
+#' @return an invisible list with vectors \code{dist} if \code{coord} is non-null or else a matrix of pairwise indices \code{ind},
 #'  \code{extcoef} and the supplied \code{estimator}, \code{fmado} and \code{binned}. If \code{estimator == "schlather"}, an additional matrix with 2 columns containing the binned distance \code{binned} with the \code{h} and the binned extremal coefficient.
 #' @examples
 #' \dontrun{
-#' loc <- 10*cbind(runif(50), runif(50))
-#' di <- as.matrix(dist(loc))
+#' coord <- 10*cbind(runif(50), runif(50))
+#' di <- as.matrix(dist(coord))
 #' dat <- rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = 'xstud')
-#' res <- extcoef(dat = dat, loc = loc)
-#' Extremal Student extremal coefficient function
+#' res <- extcoef(dat = dat, coord = coord)
+#' # Extremal Student extremal coefficient function
 #'
 #' XT.extcoeffun <- function(h, nu, corrfun, ...){
 #'   if(!is.function(corrfun)){
@@ -88,15 +89,18 @@
 #' extcoefbr<- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
 #' lines(extcoefbr[,'h'], extcoefbr[,'extcoef'], type = 'l', col = 'orange', lwd = 2)
 #'
-#' loc <- 10*cbind(runif(20), runif(20))
-#' di <- as.matrix(dist(loc))
+#' coord <- 10*cbind(runif(20), runif(20))
+#' di <- as.matrix(dist(coord))
 #' dat <- rmev(n = 1000, d = 20, param = 3, sigma = exp(-di/2), model = 'xstud')
-#' res <- extcoef(dat = dat, loc = loc, estimator = "smith")
+#' res <- extcoef(dat = dat, coord = coord, estimator = "smith")
 #' }
-extcoef <- function(dat, loc = NULL, thresh = NULL,
+extcoef <- function(dat, coord = NULL, thresh = NULL,
                     estimator = c("schlather", "smith", "fmado"),
                     standardize = TRUE, method = c("nonparametric", "parametric"),
-                    prob = 0, plot = TRUE) {
+                    prob = 0, plot = TRUE, ...) {
+  if(is.null(coord) && !is.null(list(...)$loc)){
+   coord <-  list(...)$loc
+  }
     stopifnot(is.matrix(dat), ncol(dat) >= 2)
     estimator <- match.arg(estimator)
     fr <- dat
@@ -128,7 +132,7 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
     }
     N <- ncol(dat) * (ncol(dat) - 1)/2
     theta_vals <- rep(0, N)
-    if(!is.null(loc)){
+    if(!is.null(coord)){
       dist_vals <- rep(0, N)
     } else{
      ind_vals <- matrix(0L, nrow = N, ncol = 2)
@@ -140,8 +144,8 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
     for (i in 1L:(ncol(dat) - 1L)) {
         for (j in (i + 1L):ncol(dat)) {
           k <- k + 1L
-              if(!is.null(loc)){
-                 dist_vals[k] <- dist(loc[c(i, j), ])
+              if(!is.null(coord)){
+                 dist_vals[k] <- dist(coord[c(i, j), ])
                 } else{
                   ind_vals[k,] <- c(i, j)
                 }
@@ -165,7 +169,7 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
        }
     reslist <- list()
     # Reorder theta observations by distance (sorted)
-    if(!is.null(loc)){
+    if(!is.null(coord)){
       theta_vals <- theta_vals[order(dist_vals)]
       if(estimator == "schlather"){
         if(any(theta_vals > 3)){
@@ -199,7 +203,7 @@ extcoef <- function(dat, loc = NULL, thresh = NULL,
     }
     reslist$estimator <- estimator
     reslist$extcoef <- theta_vals
-    if(plot && !is.null(loc)){
+    if(plot && !is.null(coord)){
      plot(reslist)
     }
     return(invisible(reslist))

@@ -47,6 +47,7 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
   if (any(diff(u) <= 0)) {
     warning("Thresholds supplied in u are not in increasing order")
   }
+  x <- as.vector(x)
   u <- sort(u)
   n_u <- length(u)  # total number of thresholds
   #------------------------------------------------------------------------------#

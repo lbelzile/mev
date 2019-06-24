@@ -36,7 +36,7 @@
 #' \item \code{q} the vector \code{q} supplied by the user
 #' }
 #' @examples
-#' infomat.test(x <- evd::rgpd(n = 1000), q = seq(0.9,0.995,length=10), K <- 3)
+#' infomat.test(x <- evd::rgpd(n = 10000), q = seq(0.1, 0.9, length = 10), K <- 3)
 #' @export
 infomat.test <- function(x, q, K, plot = TRUE) {
     K <- as.integer(K)
@@ -133,7 +133,7 @@ infomat.test <- function(x, q, K, plot = TRUE) {
 
 #' Extremal index estimators based on interexceedance time and gap of exceedances
 #'
-#' The function implements the maximum likelihood estimator and iteratively reweigthed least
+#' The function implements the maximum likelihood estimator and iteratively reweighted least
 #' square estimators of Suveges (2007)  as well as the intervals estimator. The implementation
 #' differs from the presentation of the paper in that an iteration limit is enforced to make sure
 #' the iterative procedure terminates. Multiple thresholds can be supplied.

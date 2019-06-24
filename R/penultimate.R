@@ -245,7 +245,7 @@ print.mev_egp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
   cat("\nEstimates\n")
   print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)
-  if (!is.na(x$std.err) && x$estimate[3] > -0.5) {
+  if (!is.na(x$std.err[1]) && x$estimate[3] > -0.5) {
     cat("\nStandard Errors\n")
     print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
   }

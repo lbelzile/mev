@@ -4,14 +4,14 @@
 \alias{extcoef}
 \title{Estimators of the extremal coefficient}
 \usage{
-extcoef(dat, loc = NULL, thresh = NULL, estimator = c("schlather",
+extcoef(dat, coord = NULL, thresh = NULL, estimator = c("schlather",
   "smith", "fmado"), standardize = TRUE, method = c("nonparametric",
-  "parametric"), prob = 0, plot = TRUE)
+  "parametric"), prob = 0, plot = TRUE, ...)
 }
 \arguments{
 \item{dat}{an \code{n} by \code{D} matrix of unit Frechet observations}
 
-\item{loc}{an optional \code{d} by \code{D} matrix of location coordinates}
+\item{coord}{an optional \code{d} by \code{D} matrix of location coordinates}
 
 \item{thresh}{threshold parameter (default is to keep all data if \code{prob = 0}).}
 
@@ -24,9 +24,11 @@ extcoef(dat, loc = NULL, thresh = NULL, estimator = c("schlather",
 \item{prob}{probability of not exceeding threshold \code{thresh}}
 
 \item{plot}{logical; should cloud of pairwise empirical estimates be plotted? Default to \code{TRUE}.}
+
+\item{...}{additional parameters passed to the function, currently ignored.}
 }
 \value{
-an invisible list with vectors \code{dist} if \code{loc} is non-null or else a matrix of pairwise indices \code{ind},
+an invisible list with vectors \code{dist} if \code{coord} is non-null or else a matrix of pairwise indices \code{ind},
  \code{extcoef} and the supplied \code{estimator}, \code{fmado} and \code{binned}. If \code{estimator == "schlather"}, an additional matrix with 2 columns containing the binned distance \code{binned} with the \code{h} and the binned extremal coefficient.
 }
 \description{
@@ -73,11 +75,11 @@ If \code{method = "parametric"}, a parametric GEV model is fitted to each column
 }
 \examples{
 \dontrun{
-loc <- 10*cbind(runif(50), runif(50))
-di <- as.matrix(dist(loc))
+coord <- 10*cbind(runif(50), runif(50))
+di <- as.matrix(dist(coord))
 dat <- rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = 'xstud')
-res <- extcoef(dat = dat, loc = loc)
-Extremal Student extremal coefficient function
+res <- extcoef(dat = dat, coord = coord)
+# Extremal Student extremal coefficient function
 
 XT.extcoeffun <- function(h, nu, corrfun, ...){
   if(!is.function(corrfun)){
@@ -104,10 +106,10 @@ BR.extcoeffun <- function(h, vario, ...){
 extcoefbr<- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
 lines(extcoefbr[,'h'], extcoefbr[,'extcoef'], type = 'l', col = 'orange', lwd = 2)
 
-loc <- 10*cbind(runif(20), runif(20))
-di <- as.matrix(dist(loc))
+coord <- 10*cbind(runif(20), runif(20))
+di <- as.matrix(dist(coord))
 dat <- rmev(n = 1000, d = 20, param = 3, sigma = exp(-di/2), model = 'xstud')
-res <- extcoef(dat = dat, loc = loc, estimator = "smith")
+res <- extcoef(dat = dat, coord = coord, estimator = "smith")
 }
 }
 \references{

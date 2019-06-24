@@ -28,14 +28,16 @@ The location vector \code{m} and \code{Sigma} are the parameters of the underlyi
 }
 \examples{
 D <- 20L
-loc <- cbind(runif(D), runif(D))
-di <- as.matrix(dist(rbind(c(0, ncol(loc)), loc)))
+coord <- cbind(runif(D), runif(D))
+di <- as.matrix(dist(rbind(c(0, ncol(coord)), coord)))
 semivario <- function(d, alpha = 1.5, lambda = 1){(d/lambda)^alpha}
 Vmat <- semivario(di)
 Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], '+') - Vmat[-1, -1]
 m <- Vmat[-1,1]
+\dontrun{
 samp <- rparpcshr(n = 100, u = c(rep(1, 10), rep(2, 10)),
           alpha = seq(0.1, 1, length = 20), Sigma = Sigma, m = m)
+}
 }
 \references{
 Ho, Z. W. O and C. Dombry (2017), Simple models for multivariate regular variations and the

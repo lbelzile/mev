@@ -49,6 +49,6 @@ obtained from estimating the Euclidean likelihood problem without observation \e
 }
 \examples{
 set.seed(123)
-x <- rmev(n=250, d=2, param=0.5, model='log')
+x <- rmev(n=100, d=2, param=0.5, model='log')
 out <- angmeasdir(x=x, th=0, Rnorm='l1', Anorm='l1', marg='Frechet', wgt='Empirical')
 }

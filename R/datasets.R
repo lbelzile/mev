@@ -69,11 +69,11 @@ NULL
 #' @docType data
 #' @examples
 #' \dontrun{
-#' attach(maiquetia)
+#' data(maiquetia, package = "mev")
 #' day <- seq.Date(from = as.Date("1961-01-01"), to = as.Date("1999-12-31"), by = "day")
-#' nzrain <- maiquetia[year(day) < 1999 & maiquetia > 0]
-#' fit.gpd(nzrain, threshold = 60, show = TRUE)
-#' detach(maiquetia)
+#' nzrain <- maiquetia[substr(day, 1, 4) < 1999 & maiquetia > 0]
+#' fit.gpd(nzrain, threshold = 30, show = TRUE)
+#'
 #' }
 NULL
 
@@ -87,21 +87,5 @@ NULL
 #' @format a vector of size 154
 #' @name nidd
 #' @seealso \code{\link[evir]{nidd.thresh}}
-#' @docType data
-NULL
-
-#' Italian super centenarian
-#'
-#' Observations from the semi-super centenarian Survey containing 3836 individuals for cohorts of individuals born between 1896 and 1910. The individuals are sampled if they reached age 105 years between January 1st, 2009 and January 1st, 2016, after which point the individual age (as measured by \code{numdays}) are right-censored. The date of death (or the last day of observation) can be retrieved as \code{birth + numdays}, while the excess lifetime is given by \code{numdays - 38351L}.
-#'
-#' @source Holger Rootzen, based on Istat survey data
-#' @format a 3836 by 4 data frame containing the following variables
-#' \itemize{
-#' \item \code{birth}: birth \code{Date} of individual.
-#' \item \code{gender}: gender of individual, a \code{factor} with levels \code{female} or \code{male}.
-#' \item \code{rightcens}: logical; is the observation is right-censored, meaning death occurred after January 1st, 2016?
-#' \item \code{numdays}: number of days from birth until censoring or death.
-#' }
-#' @name italcent
 #' @docType data
 NULL

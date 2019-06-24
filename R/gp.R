@@ -835,9 +835,10 @@
 
 #' Maximum likelihood estimate of generalized Pareto applied to threshold exceedances
 #'
-#' The function \code{fit.gpd} is a wrapper around gp.fit
+#' The function \code{\link[mev]{fit.gpd}} is a wrapper around \code{gp.fit}
 #' @export
-#' @rdname fit.gpd
+#' @inheritParams fit.gpd
+#' @keywords internal
 gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL) {
   xi.tol = 1e-04
   xdat <- na.omit(xdat)

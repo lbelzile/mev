@@ -6,7 +6,7 @@
 \usage{
 rmevspec(n, d, param, sigma, model = c("log", "neglog", "bilog",
   "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir",
-  "dirmix"), weights, vario, loc, grid = FALSE, ...)
+  "dirmix"), weights, vario, coord = NULL, grid = FALSE, ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -23,9 +23,9 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 
 \item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
 
-\item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing}
+\item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjunction with \code{coord} and if \code{sigma} is missing}
 
-\item{loc}{\code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
+\item{coord}{\code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
 \item{grid}{Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).}
 
@@ -66,8 +66,8 @@ rmevspec(n=100, d=2, param=c(0.8,1.2,0.5), model='sdir') #with additional scale 
 #NEW: Variogram must take distance as argument
 vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
 #grid specification
-grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-rmevspec(n=100, vario=vario,loc=grid.loc, model='br')
+grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
+rmevspec(n=100, vario=vario,coord=grid.coord, model='br')
 ## Example with Dirichlet mixture
 alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model='dirmix')

@@ -27,7 +27,7 @@ gpd.tem(dat, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
 
 \item{q}{level of quantile for N-block maxima. Required only for \code{args} \code{Nquant}.}
 
-\item{plot}{logical indiating whether \code{plot.fr} should be called upon exit}
+\item{plot}{logical indicating whether \code{plot.fr} should be called upon exit}
 
 \item{correction}{logical indicating whether \link{spline.corr} should be called.}
 }
@@ -70,7 +70,7 @@ m3 <- gpd.tem(param = 'VaR', n.psi = 50, dat = dat, m = 100)
 \dontrun{
 psi <- c(seq(2, 5, length = 15), seq(5, 35, length = 45))
 m4 <- gpd.tem(param = 'ES', dat = dat, m = 100, psi = psi, correction = FALSE)
-plot.fr(m4, which = c(2, 4))
+mev:::plot.fr(m4, which = c(2, 4))
 plot(fr4 <- spline.corr(m4))
 confint(m1)
 confint(m4, parm = 2, warn = FALSE)

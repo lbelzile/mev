@@ -16,11 +16,11 @@ The original series had missing days in February 1996 (during which there were
 }
 \examples{
 \dontrun{
-attach(maiquetia)
+data(maiquetia, package = "mev")
 day <- seq.Date(from = as.Date("1961-01-01"), to = as.Date("1999-12-31"), by = "day")
-nzrain <- maiquetia[year(day) < 1999 & maiquetia > 0]
-fit.gpd(nzrain, threshold = 60, show = TRUE)
-detach(maiquetia)
+nzrain <- maiquetia[substr(day, 1, 4) < 1999 & maiquetia > 0]
+fit.gpd(nzrain, threshold = 30, show = TRUE)
+
 }
 }
 \references{

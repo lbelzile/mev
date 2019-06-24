@@ -7,7 +7,7 @@
 rparp(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"),
   siteindex = NULL, d, param, sigma, model = c("log", "neglog",
   "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct",
-  "sdir", "dirmix"), weights, vario, loc, ...)
+  "sdir", "dirmix"), weights, vario, coord = NULL, ...)
 }
 \arguments{
 \item{n}{number of observations}
@@ -30,9 +30,9 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 
 \item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
 
-\item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjonction with \code{loc} and if \code{sigma} is missing}
+\item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjunction with \code{coord} and if \code{sigma} is missing}
 
-\item{loc}{\code{d} by \code{k} matrix of location, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
+\item{coord}{\code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
 \item{...}{additional arguments for the \code{vario} function}
 }
@@ -48,11 +48,11 @@ For \code{riskf=max} and \code{riskf=min}, the procedure uses rejection sampling
 sampled from \code{sum} and may be slow if \code{d} is large.
 }
 \examples{
-rparp(n=10, riskf = 'site', siteindex=2, d=3, param=2.5, model='log')
-rparp(n=10, riskf = 'min', d=3, param=2.5, model='neglog')
-rparp(n=10, riskf = 'max', d=4, param=c(0.2,0.1,0.9,0.5), model='bilog')
-rparp(n=10, riskf = 'sum', d=3, param=c(0.8,1.2,0.6, -0.5), model='sdir')
+rparp(n=10, riskf='site', siteindex=2, d=3, param=2.5, model='log')
+rparp(n=10, riskf='min', d=3, param=2.5, model='neglog')
+rparp(n=10, riskf='max', d=4, param=c(0.2,0.1,0.9,0.5), model='bilog')
+rparp(n=10, riskf='sum', d=3, param=c(0.8,1.2,0.6, -0.5), model='sdir')
 vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
-grid.loc <- as.matrix(expand.grid(runif(4), runif(4)))
-rparp(n=10, riskf = 'max', vario=vario,loc=grid.loc, model='br')
+grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
+rparp(n=10, riskf='max', vario=vario, coord=grid.coord, model='br')
 }
