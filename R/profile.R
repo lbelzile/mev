@@ -1,4 +1,4 @@
-# This function is addd to ensure that the local solver can be fixed to something different
+# This function is added to ensure that the local solver can be fixed to something different
 # than COBYLA - see https://github.com/jyypma/nloptr/pull/38 and
 # https://github.com/stevengj/nlopt/issues/118
 .auglag <- function(x0, fn, gr = NULL, lower = NULL, upper = NULL, hin = NULL, hinjac = NULL,
@@ -151,7 +151,7 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
                 object$normal <- c(object$psi.max, object$std.error)
             }
             if (requireNamespace("cobs", quietly = TRUE)) {
-                fit.r <- cobs::cobs(x = object$r, y = object$psi, constraint = "decrease",
+                fit.r <- cobs::cobs(x = object$r, y = object$psi, #constraint = "decrease",
                   lambda = 0, ic = "SIC", pointwise = cbind(0, 0, object$normal[1]), knots.add = TRUE,
                   repeat.delete.add = TRUE, print.mesg = FALSE, print.warn = FALSE)
                 pr <- predict(fit.r, c(0, qulev))[,2]
@@ -174,7 +174,7 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
                 break
             }
             if (requireNamespace("cobs", quietly = TRUE)) {
-                fit.rst <- cobs::cobs(x = object$rstar, y = object$psi, constraint = "decrease",
+                fit.rst <- cobs::cobs(x = object$rstar, y = object$psi, #constraint = "decrease",
                   lambda = 0, ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
                   print.warn = FALSE)
                 prst <- predict(fit.rst, c(0, qulev))[,2]

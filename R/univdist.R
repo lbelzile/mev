@@ -181,13 +181,15 @@ gpd.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
             c12 <- sum(-(dat^2 - dat * sigma)/sigma^3)
             c22 <- sum(-1/3 * (2 * dat - 3 * sigma) * dat^2/sigma^3)
         }
-        -matrix(c(c11, c12, c12, c22), nrow = 2, ncol = 2, byrow = TRUE)
+        infomat <- -matrix(c(c11, c12, c12, c22), nrow = 2, ncol = 2, byrow = TRUE)
     } else if (method == "exp") {
         k22 <- -2/((1 + xi) * (1 + 2 * xi))
         k11 <- -1/(sigma^2 * (1 + 2 * xi))
         k12 <- -1/(sigma * (1 + xi) * (1 + 2 * xi))
-        -nobs * cbind(c(k11, k12), c(k12, k22))  #fixed 12-10-2016
+        infomat <- -nobs * cbind(c(k11, k12), c(k12, k22))  #fixed 12-10-2016
     }
+    colnames(infomat) <- rownames(infomat) <- c("scale","shape")
+    return(infomat)
 }
 #' Tangent exponential model statistics for the generalized Pareto distribution
 #'
@@ -691,7 +693,7 @@ gpde.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
                            12*es^3 + 4*(20*dat^3 - 57*dat^2*es + 42*dat*es^2 - 3*es^3)*log(m)^2 +
                            8*(5*dat^3 - 18*dat^2*es + 18*dat*es^2 - 3*es^3)*log(m))/(es^3*log(m)^2 + 2*es^3*log(m) + es^3))
       }
-        return(cbind(c(k11, k12), c(k12, k22)))
+        infomat <- cbind(c(k11, k12), c(k12, k22))
     } else if (method == "exp") {
         sigmae = ifelse(!xizero, es * (1 - xi) * xi/(m^xi - 1 + xi), es/(log(m)+1))
         if(!xizero){
@@ -700,9 +702,11 @@ gpde.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
         } else{
          Jac <-  rbind(c(1/(logm+1), -1/2*(log(m)^2 + 2*log(m) + 2)*es/(log(m)^2 + 2*log(m) + 1)), c(0, 1))
         }
-        return(t(Jac) %*% gpd.infomat(par = c(sigmae, xi), dat = dat, method = "exp", nobs = nobs) %*%
-            Jac)
+        infomat <- t(Jac) %*% gpd.infomat(par = c(sigmae, xi), dat = dat, method = "exp", nobs = nobs) %*%
+            Jac
     }
+    colnames(infomat) <- rownames(infomat) <- c("es","shape")
+    return(infomat)
 }
 #' Tangent exponential model statistics for the generalized Pareto distribution (expected shortfall)
 #'
@@ -854,12 +858,12 @@ gpdr.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
         info[2, 1] <- info[1, 2] <- sum(-dat^2 * (m^xi - 1) * m^xi * (1/xi + 1) * logm/((dat * (m^xi -
             1)/r + 1)^2 * r^3) + dat * m^xi * (1/xi + 1) * logm/((dat * (m^xi - 1)/r + 1) * r^2) -
             dat * (m^xi - 1)/((dat * (m^xi - 1)/r + 1) * r^2 * xi^2))
-        return(-info)
+        infomat <- -info
       } else{
         k11 <- sum((2*dat*r*log(m) - r^2))/r^4
         k12 <- 0.5*sum((2*dat*log(m) - r*log(m) - 2*r)*dat)*log(m)/r^3
         k22 <- sum((8*dat^3*log(m)^3 - r^3*log(m)^2 + 4*(dat*log(m)^3 + 3*dat*log(m)^2)*r^2 - 12*(dat^2*log(m)^3 + dat^2*log(m)^2)*r)/(12*r^3))
-        return(matrix(c(k11, k12, k12, k22), byrow = TRUE, ncol = 2, nrow = 2))
+        infomat <- matrix(c(k11, k12, k12, k22), byrow = TRUE, ncol = 2, nrow = 2)
       }
     } else if (method == "exp") {
         sigmar <- ifelse(!xizero, r * xi/(m^xi - 1), r/logm)
@@ -868,9 +872,10 @@ gpdr.infomat <- function(par, dat, m, method = c("obs", "exp"), nobs = length(da
         } else{
           Jac <-  rbind(c(1/logm, -0.5*r), c(0, 1))
         }
-        return(t(Jac) %*% gpd.infomat(par = c(sigmar, xi), method = "exp", dat = dat, nobs = length(dat)) %*% Jac)
+        infomat <- t(Jac) %*% gpd.infomat(par = c(sigmar, xi), method = "exp", dat = dat, nobs = length(dat)) %*% Jac
     }
-
+    colnames(infomat) <- rownames(infomat) <- c("retlev","shape")
+    return(infomat)
 }
 
 #' Tangent exponential model statistics for the generalized Pareto distribution (return level)
@@ -1080,23 +1085,23 @@ gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(da
     log1mp <- log(1 - p)
     logmlog1mp <- log(-log1mp)
     if (method == "obs") {
-        infomat <- matrix(0, ncol = 3, nrow = 3)
+        info <- matrix(0, ncol = 3, nrow = 3)
         if(abs(xi) > 1e-4){
-        infomat[1, 1] <- sum(-(xi * (-log1mp)^(2 * xi) - (xi^2 * (-log1mp)^(2 * xi) + xi *
+        info[1, 1] <- sum(-(xi * (-log1mp)^(2 * xi) - (xi^2 * (-log1mp)^(2 * xi) + xi *
             (-log1mp)^(2 * xi)) * ((dat * xi * (-log1mp)^xi - xi * z * (-log1mp)^xi +
             sigma)/(sigma * (-log1mp)^xi))^(1/xi) + (-log1mp)^(2 * xi))/((dat^2 * xi^2 * (-log1mp)^(2 * xi) +
              xi^2 * z^2 * (-log1mp)^(2 * xi) + 2 * sigma * dat * xi * (-log1mp)^xi +
             sigma^2 - 2 * (dat * xi^2 * (-log1mp)^(2 * xi) + sigma * xi * (-log1mp)^xi) * z) *
             ((dat * xi * (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi)))
 
-        infomat[1, 2] <- infomat[2, 1] <- sum(-(dat * (-log1mp)^(2 * xi) - z * (-log1mp)^(2 *
+        info[1, 2] <- info[2, 1] <- sum(-(dat * (-log1mp)^(2 * xi) - z * (-log1mp)^(2 *
             xi) - sigma * (-log1mp)^xi + (sigma * xi * (-log1mp)^xi + sigma * (-log1mp)^xi) *
             ((dat * xi * (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi))/
               ((sigma * dat^2 * xi^2 * (-log1mp)^(2 * xi) + sigma * xi^2 * z^2 *
             (-log1mp)^(2 * xi) + 2 * sigma^2 * dat * xi * (-log1mp)^xi + sigma^3 - 2 * (sigma *
             dat * xi^2 * (-log1mp)^(2 * xi) + sigma^2 * xi * (-log1mp)^xi) * z) * ((dat * xi *
             (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi)))
-        infomat[1, 3] <- infomat[3, 1] <- sum(-((sigma * (-log1mp)^xi * logmlog1mp - dat *
+        info[1, 3] <- info[3, 1] <- sum(-((sigma * (-log1mp)^xi * logmlog1mp - dat *
             (-log1mp)^(2 * xi)) * xi^2 + (sigma * (-log1mp)^xi * logmlog1mp - dat *
             (-log1mp)^(2 * xi)) * xi + (xi^2 * (-log1mp)^(2 * xi) + xi * (-log1mp)^(2 *
             xi)) * z - (sigma * xi^3 * (-log1mp)^xi * logmlog1mp + xi^2 * z *
@@ -1108,7 +1113,7 @@ gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(da
             xi^4 * z^2 * (-log1mp)^(2 * xi) + 2 * sigma * dat * xi^3 * (-log1mp)^xi + sigma^2 *
             xi^2 - 2 * (dat * xi^4 * (-log1mp)^(2 * xi) + sigma * xi^3 * (-log1mp)^xi) * z) *
             ((dat * xi * (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi)))
-        infomat[2, 2] <- sum((dat^2 * xi * (-log1mp)^(2 * xi) + (xi * (-log1mp)^(2 * xi) -
+        info[2, 2] <- sum((dat^2 * xi * (-log1mp)^(2 * xi) + (xi * (-log1mp)^(2 * xi) -
             (-log1mp)^(2 * xi)) * z^2 - dat^2 * (-log1mp)^(2 * xi) + 2 * sigma * dat * (-log1mp)^xi -
               2 * (dat * xi * (-log1mp)^(2 * xi) - dat * (-log1mp)^(2 * xi) + sigma *
             (-log1mp)^xi) * z - (dat^2 * xi * (-log1mp)^(2 * xi) + xi * z^2 * (-log1mp)^(2 *
@@ -1119,7 +1124,7 @@ gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(da
             (-log1mp)^xi + sigma^4 - 2 * (sigma^2 * dat * xi^2 * (-log1mp)^(2 * xi) + sigma^3 *
             xi * (-log1mp)^xi) * z) * ((dat * xi * (-log1mp)^xi - xi * z * (-log1mp)^xi +
             sigma)/(sigma * (-log1mp)^xi))^(1/xi)))
-        infomat[3, 2] <- infomat[2, 3] <- sum(-((sigma * dat * (-log1mp)^xi * logmlog1mp -
+        info[3, 2] <- info[2, 3] <- sum(-((sigma * dat * (-log1mp)^xi * logmlog1mp -
             dat^2 * (-log1mp)^(2 * xi)) * xi^2 - (xi^2 * (-log1mp)^(2 * xi) + xi *
             (-log1mp)^(2 * xi)) * z^2 + (sigma * dat * (-log1mp)^xi * logmlog1mp - dat^2 *
             (-log1mp)^(2 * xi)) * xi - ((sigma * (-log1mp)^xi * logmlog1mp - 2 * dat * (-log(-p +
@@ -1137,7 +1142,7 @@ gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(da
               (-log1mp)^xi + sigma^3 * xi^2 - 2 * (sigma * dat * xi^4 * (-log1mp)^(2 * xi) + sigma^2 * xi^3 *
             (-log1mp)^xi) * z) * ((dat * xi * (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma *
             (-log1mp)^xi))^(1/xi)))
-        infomat[3, 3] <- sum((sigma * dat * xi^4 * (-log1mp)^xi * logmlog1mp^2 + (4 * sigma *
+        info[3, 3] <- sum((sigma * dat * xi^4 * (-log1mp)^xi * logmlog1mp^2 + (4 * sigma *
             dat * (-log1mp)^xi * logmlog1mp - 3 * dat^2 * (-log1mp)^(2 * xi)) * xi^3 +
             (2 * sigma * dat * (-log1mp)^xi * (logmlog1mp - 1) - (logmlog1mp^2 - 2 *
                 logmlog1mp) * sigma^2 - dat^2 * (-log1mp)^(2 * xi)) * xi^2 - (3 * xi^3 *
@@ -1173,17 +1178,17 @@ gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(da
            (-log1mp)^(2 * xi) + sigma * xi^5 * (-log1mp)^xi) * z) * ((dat * xi * (-log1mp)^xi -
             xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi)))
         } else{ #xi numerically zero
-          infomat[1, 1] <- sum(( exp((-dat + z)/sigma)*log1mp))/sigma^2
-          infomat[1, 2] <- sum(-((sigma + exp((-dat + z)/sigma)*(sigma - dat + z)*log1mp)))/sigma^3
-          infomat[2, 1] <- infomat[1, 2]
-          infomat[1, 3] <- sum((1/(2*sigma^3))*((2* exp(dat/sigma)* sigma*(sigma - dat + z + sigma*logmlog1mp) +  exp(z/sigma)* log1mp*((dat - z)*(-2*sigma + dat - z) + 2*sigma*(sigma - dat + z)* logmlog1mp))/ exp(dat/sigma)))
-          infomat[3, 1] <- infomat[1, 3]
-          infomat[2, 2] <- sum(sigma*(sigma - 2*dat + 2*z) + exp((-dat + z)/sigma)*(dat - z)*(-2*sigma + dat - z) * log1mp)/sigma^4
-          infomat[2, 3] <- sum((1/(2*sigma^4))*(((dat - z)*(2*exp(dat/sigma)*sigma*(sigma - dat + z + sigma*logmlog1mp) +   exp(z/sigma)*  log1mp*((dat - z)*(-2*sigma + dat - z) +   2*sigma*(sigma - dat + z)* logmlog1mp)))/exp(dat/sigma)))
-          infomat[3, 2] <- infomat[2, 3]
-          infomat[3, 3] <- sum((1/(12*sigma^4))*((dat - z)*(4*sigma*((dat - z)*(3*sigma - 2*dat + 2*z) - 3*sigma*logmlog1mp*(2*(sigma - dat + z) + sigma*logmlog1mp)) +  exp((-dat + z)/sigma)*log1mp*((-8*sigma + 3*dat - 3*z)*(dat - z)^2 + 12*sigma*logmlog1mp*((dat - z)*(2*sigma - dat + z) - sigma*(sigma - dat + z)*logmlog1mp)))))
+          info[1, 1] <- sum(( exp((-dat + z)/sigma)*log1mp))/sigma^2
+          info[1, 2] <- sum(-((sigma + exp((-dat + z)/sigma)*(sigma - dat + z)*log1mp)))/sigma^3
+          info[2, 1] <- info[1, 2]
+          info[1, 3] <- sum((1/(2*sigma^3))*((2* exp(dat/sigma)* sigma*(sigma - dat + z + sigma*logmlog1mp) +  exp(z/sigma)* log1mp*((dat - z)*(-2*sigma + dat - z) + 2*sigma*(sigma - dat + z)* logmlog1mp))/ exp(dat/sigma)))
+          info[3, 1] <- info[1, 3]
+          info[2, 2] <- sum(sigma*(sigma - 2*dat + 2*z) + exp((-dat + z)/sigma)*(dat - z)*(-2*sigma + dat - z) * log1mp)/sigma^4
+          info[2, 3] <- sum((1/(2*sigma^4))*(((dat - z)*(2*exp(dat/sigma)*sigma*(sigma - dat + z + sigma*logmlog1mp) +   exp(z/sigma)*  log1mp*((dat - z)*(-2*sigma + dat - z) +   2*sigma*(sigma - dat + z)* logmlog1mp)))/exp(dat/sigma)))
+          info[3, 2] <- info[2, 3]
+          info[3, 3] <- sum((1/(12*sigma^4))*((dat - z)*(4*sigma*((dat - z)*(3*sigma - 2*dat + 2*z) - 3*sigma*logmlog1mp*(2*(sigma - dat + z) + sigma*logmlog1mp)) +  exp((-dat + z)/sigma)*log1mp*((-8*sigma + 3*dat - 3*z)*(dat - z)^2 + 12*sigma*logmlog1mp*((dat - z)*(2*sigma - dat + z) - sigma*(sigma - dat + z)*logmlog1mp)))))
         }
-        return(-infomat)
+        infomat <- -info
         # else expected information matrix
     } else {
         muf = z + sigma/xi * (1 - (-log(1 - p))^(-xi))
@@ -1194,9 +1199,10 @@ gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(da
             Jac <- rbind(c(1, log(-log1mp), -sigma * log(-log1mp)^2 + 1/2 * sigma * (-log1mp)^(-xi)
                            * log(-log1mp)^2), c(0, 1, 0), c(0, 0, 1))
         }
-        return(t(Jac) %*% gev.infomat(dat = dat, method = "exp", par = c(muf, sigma, xi)) %*% Jac)
-
+        infomat <- t(Jac) %*% gev.infomat(dat = dat, method = "exp", par = c(muf, sigma, xi)) %*% Jac
     }
+    colnames(infomat) <- rownames(infomat) <- c("retlev","scale","shape")
+    return(infomat)
 }
 
 
@@ -1375,8 +1381,7 @@ gpdN.infomat <- function(par, dat, N, method = c("obs", "exp"), nobs = length(da
                                6*psigamma(1 + N)^2 - 6*psigamma(1 + N, deriv = 1)))/
                            (12*(euler_gamma + psigamma(1 + N))^2)), c(0,1))
       }
-        return(t(Jac) %*% gpd.infomat(par = c(sigmaf, xi), dat = dat, method = "exp") %*% Jac)
-
+        infomat <- t(Jac) %*% gpd.infomat(par = c(sigmaf, xi), dat = dat, method = "exp") %*% Jac
     } else if (method == "obs") {
         # Observed information
         if(!xizero){
@@ -1427,8 +1432,10 @@ gpdN.infomat <- function(par, dat, N, method = c("obs", "exp"), nobs = length(da
                     (2 + 3*euler_gamma)*pi^2)*z^2 - (2*euler_gamma^2 + pi^2)*z^3) +6*euler_gamma*z*(3*dat^2*euler_gamma - dat*(2 + 3*euler_gamma)*z + z^2)*
                     psigammap1pN - 2*z^2*(-2*dat*euler_gamma + z)*(psigammapp1pN + 2*zeta3))))/(144*z^3*(psigamma1pN + euler_gamma)^2))
         }
-        return(cbind(c(k11, k12), c(k12, k22)))
+        infomat <- cbind(c(k11, k12), c(k12, k22))
     }
+    colnames(infomat) <- rownames(infomat) <- c("Nmean","shape")
+    return(infomat)
 }
 
 #' Tangent exponential model statistics for the generalized Pareto distribution (mean of maximum of N exceedances parametrization)
@@ -1810,25 +1817,26 @@ gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "qu
                         10*euler_gamma^4*(mu - dat)*(dat - z)*  (mu - 2*dat + z) +  2*euler_gamma^3*(mu - z)*(mu^2 + 12*dat^2 - 12*dat*z + z^2 + 2*mu*(-6*dat + 5*z)) +
                           4*(mu - z)^3*zeta3 - euler_gamma*(mu - z)^2*(pi^2*(mu - 2*dat + z) + 8*(mu - dat)*zeta3)))))/  (144*(mu - z)^4*(euler_gamma + logN)^2))
           }
-            return(cbind(c(k11, k12, k13), c(k12, k22, k23), c(k13, k23, k33)))
+            infomat <- cbind(c(k11, k12, k13), c(k12, k22, k23), c(k13, k23, k33))
         } else if (method == "exp") {
             if (!xizero) {
                 Jac <- rbind(c(1, 0, 0), c(-xi/(N^xi * gamma(-xi + 1) - 1), xi/(N^xi * gamma(-xi + 1) -
                   1), (N^xi * logN * gamma(-xi + 1) - N^xi * psigamma(-xi + 1) * gamma(-xi + 1)) *
                   (mu - z) * xi/(N^xi * gamma(-xi + 1) - 1)^2 - (mu - z)/(N^xi * gamma(-xi + 1) - 1)),
                   c(0, 0, 1))
-                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, xi), method = "exp", nobs = nobs) %*%
-                  Jac)
+               infomat <- t(Jac) %*% gev.infomat(par = c(mu, sigmaq, xi), method = "exp", nobs = nobs) %*%
+                  Jac
             } else {
                 Jac <- rbind(c(1, 0, 0), c(-1/(euler_gamma + logN), 1/(euler_gamma + logN), 1/12 *
                   (6 * euler_gamma^2 + pi^2 + 12 * euler_gamma * logN + 6 * logN^2) * (mu - z)/(euler_gamma +
                   logN)^2), c(0, 0, 1))
 
-                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, 0), method = "exp", nobs = nobs) %*%
-                  Jac)
+                infomat <- t(Jac) %*% gev.infomat(par = c(mu, sigmaq, 0), method = "exp", nobs = nobs) %*%
+                  Jac
 
             }
         }
+      colnames(infomat) <- rownames(infomat) <- c("loc","Nmean","shape")
     } else if (qty == "quantile") {
         if (!xizero) {
             # z = mu + sigma/xi*(N^xi*log(1/q)^(-xi)-1)
@@ -1951,25 +1959,25 @@ gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "qu
                                  (8*(mu - dat)*(dat - z)*(mu - 2*dat + z)*(-logN + loglog1q)^3)/(mu - z)^3))
 
           }
-            return(cbind(c(k11, k12, k13), c(k12, k22, k23), c(k13, k23, k33)))
-
+            infomat <- cbind(c(k11, k12, k13), c(k12, k22, k23), c(k13, k23, k33))
         } else if (method == "exp") {
             if (!xizero) {
                 Jac <- rbind(c(1, 0, 0), c(-xi/(N^xi * log1q^(-xi) - 1), xi/(N^xi * log1q^(-xi) -
                   1), (N^xi * log1q^(-xi) * logN - N^xi * log1q^(-xi) * loglog1q) * (mu -
                   z) * xi/(N^xi * log1q^(-xi) - 1)^2 - (mu - z)/(N^xi * log1q^(-xi) - 1)), c(0,
                   0, 1))
-                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, xi), method = "exp", nobs = nobs) %*%
-                  Jac)
+               infomat <- t(Jac) %*% gev.infomat(par = c(mu, sigmaq, xi), method = "exp", nobs = nobs) %*%
+                  Jac
             } else {
                 Jac <- rbind(c(1, 0, 0), c(-1/(logN - log(-log(q))), 1/(logN - log(-log(q))), 1/2 *
                   (mu - z)), c(0, 0, 1))
-                return(t(Jac) %*% gev.infomat(par = c(mu, sigmaq, 0), method = "exp", nobs = nobs) %*%
-                  Jac)
+               infomat <- t(Jac) %*% gev.infomat(par = c(mu, sigmaq, 0), method = "exp", nobs = nobs) %*%
+                  Jac
             }
         }
+      colnames(infomat) <- rownames(infomat) <- c("loc","Nquant","shape")
     }
-
+    return(infomat)
 }
 
 
@@ -2164,7 +2172,7 @@ rrlarg <- function(n, r, loc, scale, shape){
 #' @param par vector of \code{loc}, \code{scale} and \code{shape}
 #' @param dat an \code{n} by \code{r} sample matrix, ordered from largest to smallest in each row
 #' @param method string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.
-#' @param nobs number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.
+#' @param nobs number of observations for the expected information matrix. Default to \code{nrow(dat)} if \code{dat} is provided.
 #' @param r number of order statistics kept. Default to \code{ncol(dat)}
 #' @section Usage:
 #' \preformatted{
@@ -2259,6 +2267,19 @@ rlarg.score <- function(par, dat){
 #' @export
 #' @keywords internal
 rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), r = ncol(dat)){
+  if(!missing(dat)){
+    if(is.vector(dat)){
+      dat <- as.matrix(dat, ncol = 1)
+    }
+    if(nobs != nrow(dat)){
+      warning("Overriding value of `nobs` provided by the user")
+      nobs <- nrow(dat)
+    }
+    if(r != ncol(dat)){
+      warning("Overriding value of `r` provided by the user")
+      r <- ncol(dat)
+    }
+  }
   eta <- par[1]
   tau <- par[2]
   xi <- par[3]
@@ -2296,7 +2317,7 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
     }
     ma <- matrix(c(m11a, m12a, m13a, m12a, m22a, m23a, m13a, m23a, m33a), nrow = 3, ncol = 3)
     if(r == 1L){
-      return(nobs*ma)
+      infomat <- -nobs*ma
     } else if(r > 1L){
       if(!xizero){
         m11b <- -((xi^2*gamma(r + 2*xi))/(tau^2*(1 + 2*xi)*gamma(r)))
@@ -2315,17 +2336,14 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
         m33b <- -2 + 2*digamma(r) - digamma(r)^2 - psigamma(deriv = 1, r)
       }
       mb <- matrix(c(m11b, m12b, m13b, m12b, m22b, m23b, m13b, m23b, m33b), nrow = 3, ncol = 3)
-      return(-nobs*(ma + (r-1)*mb))
+      infomat <- -nobs*(ma + (r-1)*mb)
     }
-
   } else if(method == "obs"){
     #Partial check for ordering in first column
     if(!isTRUE(all(dat[1,1] >= dat[1,]))){
       stop("Observations in `dat` must be ordered from largest to smallest in each row.")
     }
     #Observed information matrix
-    dat <- as.matrix(dat)
-    r <- ncol(dat)
     yr <- dat[,r]
 
     if(!xizero){
@@ -2345,8 +2363,8 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
       d330a <- sum(1/12*(4*(3*eta + 2*tau)*yr^3*exp(eta/tau) - 3*yr^4*exp(eta/tau) - 6*(3*eta^2 + 4*eta*tau)*yr^2*exp(eta/tau) + 12*(eta^3 + 2*eta^2*tau)*yr*exp(eta/tau) - (3*eta^4 + 8*eta^3*tau)*exp(eta/tau) + 4*(2*eta^3*r*tau - 2*r*tau*yr^3 + 3*eta^2*tau^2 + 3*(2*eta*r*tau + tau^2)*yr^2 - 6*(eta^2*r*tau + eta*tau^2)*yr)*exp(yr/tau))*exp(-yr/tau)/tau^4)
       da <- - matrix(c(d110a, d120a, d130a, d120a, d220a, d230a, d130a, d230a, d330a), nrow = 3, ncol = 3)
     }
-    if(r == 1){
-      return(da)
+    if(r == 1L){
+      infomat <- da
     } else if(r > 1){
       y <- dat[,-r]
       if(!xizero){
@@ -2365,9 +2383,11 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
         d33b <- sum(1/3*(3*eta^2*tau + 3*(2*eta + tau)*y^2 - 2*y^3 + 6*eta^2*yr - 6*eta*yr^2 + 2*yr^3 - 6*(eta^2 + eta*tau)*y)/tau^3)
       }
       db <-  - matrix(c(d11b, d12b, d13b, d12b, d22b, d23b, d13b, d23b, d33b), nrow = 3, ncol = 3)
-      return(da + db)
+      infomat <- da + db
     }
   }
+  colnames(infomat) <- rownames(infomat) <- c("loc","scale","shape")
+  return(infomat)
 }
 
 #' Poisson process of extremes.
@@ -2484,7 +2504,7 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
        d23 <- 0.5*(m*vm^3 + 2*sum(zm^2)*exp(vm) - 2*m*vm^2 - 2*sum(zm)*exp(vm))*exp(-vm)/sigma
        d33 <- ((1/12)*(m*vm^3*(-8 + 3*vm) + 4*exp(vm)*sum(zm^2*(-3 + 2*zm))))/exp(vm)
      }
-     return(matrix(c(d11,d12,d13,d12,d22,d23,d13,d23,d33), nrow = 3, ncol = 3, byrow = TRUE))
+     infomat <- matrix(c(d11,d12,d13,d12,d22,d23,d13,d23,d33), nrow = 3, ncol = 3, byrow = TRUE)
 } else{
   r2 <- r1 <- 1
   if(!xizero){
@@ -2510,7 +2530,8 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
     e23 <- -1/2*(2*r2*vm^2 + vm^3 + 2*r2*vm - 2*vm^2 + 2*r2)*m*exp(-vm)/sigma
     e33 <- -1/12*(8*r2*vm^3 + 3*vm^4 + 12*r2*vm^2 - 8*vm^3 + 24*r2*vm + 24*r2)*m*exp(-vm)
 }
-  return(-matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE))
-}
-
+  infomat <- -matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE)
+  }
+  colnames(infomat) <- rownames(infomat) <- c("loc","scale","shape")
+  return(infomat)
 }

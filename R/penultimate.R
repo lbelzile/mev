@@ -203,6 +203,7 @@ fit.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show 
     fitted <- list()
     fitted$estimate <- fitted$param <- mle$par
     fitted$deviance <- 2*mle$value
+    fitted$nllh <- mle$value
     if (mle$convergence == 0) {
       fitted$convergence <- "successful"
       fitted$vcov <- try(solve(mle$hessian))
@@ -216,6 +217,9 @@ fit.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show 
       warning("Maximization routine may have failed; check output and try providing better starting values")
     }
     names(fitted$estimate) <- names(fitted$std.err) <-  c("kappa", "scale", "shape")
+    if(!is.null(fitted$vcov)){
+      colnames(fitted$vcov) <- rownames(fitted$vcov) <-  c("kappa", "scale", "shape")
+    }
     fitted$counts <- mle$counts
     fitted$threshold <- thresh
     fitted$nat <- length(xdata)

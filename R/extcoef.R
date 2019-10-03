@@ -73,7 +73,7 @@
 #'   cbind(h = h, extcoef = 2*pt(sqrt((nu+1)*(1-rhoh)/(1+rhoh)), nu+1))
 #' }
 #' #This time, only one graph with theoretical extremal coef
-#' plot(res$dist, res$schlather, ylim = c(1,2), pch = 20); abline(v = 2, col = 'gray')
+#' plot(res$dist, res$extcoef, ylim = c(1,2), pch = 20); abline(v = 2, col = 'gray')
 #' extcoefxt <- XT.extcoeffun(seq(0, 10, by = 0.1), nu = 3,
 #'                             corrfun = function(x){exp(-x/2)})
 #' lines(extcoefxt[,'h'], extcoefxt[,'extcoef'], type = 'l', col = 'blue', lwd = 2)

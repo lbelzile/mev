@@ -179,10 +179,10 @@
     y <- (xdatu - u)/sc
     y <- 1 + xi * y
     if (min(sc) <= 0) {
-      l <- 10^6
+      l <- 10e5
     } else {
       if (min(y) <= 0) {
-        l <- 10^6
+        l <- 10e5
       } else {
         l <- sum(log(sc)) + sum(log(y) * (1/xi + 1))
       }

@@ -345,6 +345,7 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
   names(fitted$std.err) <- names(fitted$estimate) <- c("loc","scale","shape")
   fitted$method <- "auglag"
   fitted$nllh <- mle$value
+  fitted$nobs <- length(xdat)
   fitted$convergence <- mle$convergence
   if(fitted$convergence == 0){ fitted$convergence <- "successful"}
   fitted$counts <- mle$counts
@@ -449,6 +450,7 @@ fitted$convergence <- mle$convergence
 if(fitted$convergence == 0){ fitted$convergence <- "successful"}
 fitted$counts <- mle$counts
 fitted$xdat <- xdat
+fitted$nobs <- length(xdat)
 class(fitted) <- c("mev_rlarg", "mev_gev")
 if(show){
   print(fitted)
@@ -779,3 +781,133 @@ print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\n")
   invisible(x)
 }
+
+
+  # Methods for class "mev_gev", returned by mev::fit.gev()
+
+  #' @export
+  nobs.mev_gev <- function(object, ...) {
+    return(object$nobs)
+  }
+
+  #' @export
+  coef.mev_gev <- function(object, ...) {
+    return(object$estimate)
+  }
+
+  #' @export
+  vcov.mev_gev <- function(object, ...) {
+    return(object$vcov)
+  }
+
+  #' @export
+  logLik.mev_gev <- function(object, ...) {
+    val <- -object$nllh
+    attr(val, "nobs") <- nobs(object)
+    attr(val, "df") <- length(coef(object))
+    class(val) <- "logLik"
+    return(val)
+  }
+
+
+
+  # Methods for class "mev_gpd", returned by mev::fit.gpd()
+
+  #' @export
+  nobs.mev_gpd <- function(object, ...) {
+    return(object$nat)
+  }
+
+  #' @export
+  coef.mev_gpd <- function(object, ...) {
+    return(object$estimate)
+  }
+
+  #' @export
+  vcov.mev_gpd <- function(object, ...) {
+    return(object$vcov)
+  }
+
+  #' @export
+  logLik.mev_gpd <- function(object, ...) {
+    val <- -object$nllh
+    attr(val, "nobs") <- nobs(object)
+    attr(val, "df") <- length(coef(object))
+    class(val) <- "logLik"
+    return(val)
+  }
+
+  #' @export
+  nobs.mev_rlarg <- function(object, ...) {
+    #total number of observations is prod(xdat), so length(xdat)
+    #n by r for a matrix
+    return(object$nobs)
+  }
+
+  #' @export
+  coef.mev_rlarg <- function(object, ...) {
+    return(object$estimate)
+  }
+
+  #' @export
+  vcov.mev_rlarg <- function(object, ...) {
+    return(object$vcov)
+  }
+
+  #' @export
+  logLik.mev_rlarg <- function(object, ...) {
+    val <- -object$nllh
+    attr(val, "nobs") <- nobs(object)
+    attr(val, "df") <- length(coef(object))
+    class(val) <- "logLik"
+    return(val)
+  }
+
+
+  #' @export
+  nobs.mev_pp <- function(object, ...) {
+    return(object$nat)
+  }
+
+  #' @export
+  coef.mev_pp <- function(object, ...) {
+    return(object$estimate)
+  }
+
+  #' @export
+  vcov.mev_pp <- function(object, ...) {
+    return(object$vcov)
+  }
+
+  #' @export
+  logLik.mev_pp <- function(object, ...) {
+    val <- -object$nllh
+    attr(val, "nobs") <- nobs(object)
+    attr(val, "df") <- length(coef(object))
+    class(val) <- "logLik"
+    return(val)
+  }
+
+  #' @export
+  nobs.mev_egp <- function(object, ...) {
+    return(object$nat)
+  }
+
+  #' @export
+  coef.mev_egp <- function(object, ...) {
+    return(object$estimate)
+  }
+
+  #' @export
+  vcov.mev_egp <- function(object, ...) {
+    return(object$vcov)
+  }
+
+  #' @export
+  logLik.mev_egp <- function(object, ...) {
+    val <- -object$nllh
+    attr(val, "nobs") <- nobs(object)
+    attr(val, "df") <- length(coef(object))
+    class(val) <- "logLik"
+    return(val)
+  }

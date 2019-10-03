@@ -172,7 +172,8 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
         ang <- as.matrix(ang[above, ])
         R <- as.vector(R[above])
     } else {
-        R <- NULL
+        ang <- x
+          R <- NULL
     }
     rownames(ang) <- NULL  #remove names for time series
     .returnAng(ang = ang, R = R, Rnorm = Rnorm, wgt = wgt, region = region)
