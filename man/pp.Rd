@@ -59,11 +59,6 @@ Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Value
 
 Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
 }
-\seealso{
-\code{\link{pp}}
-
-\code{\link{pp}}
-}
 \author{
 Leo Belzile
 }

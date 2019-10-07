@@ -146,7 +146,7 @@ gpd.ll.optim <- function(par, dat, tol = 1e-05) {
 gpd.score <- function(par, dat) {
     sigma = par[1]
     xi = as.vector(par[2])
-    if (!isTRUE(all.equal(0, xi))) {
+    if (!isTRUE(all.equal(0, xi, check.attributes = FALSE))) {
         c(sum(dat * (xi + 1)/(sigma^2 * (dat * xi/sigma + 1)) - 1/sigma), sum(-dat * (1/xi + 1)/(sigma *
             (dat * xi/sigma + 1)) + log(pmax(dat * xi/sigma + 1, 0))/xi^2))
     } else {
@@ -172,7 +172,7 @@ gpd.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
             stop("Data outside of range specified by parameter, yielding a zero likelihood")
         }
         c11 <- (length(dat) - (1 + xi) * sum(dat * (2 * sigma + xi * dat)/(sigma + xi * dat)^2))/(sigma^2)
-        if (!isTRUE(all.equal(xi, 0))) {
+        if (!isTRUE(all.equal(xi, 0, check.attributes = FALSE))) {
             c12 <- (1 + xi) * sum(dat/(sigma + xi * dat)^2)/xi - sum(dat/(sigma + xi * dat))/(sigma *
                 xi)
             c22 <- (2/xi^2) * sum(dat/(sigma + xi * dat)) - 2 * sum(log(pmax(dat * xi/sigma + 1, 0)))/(xi^3) +
@@ -222,7 +222,7 @@ gpd.phi <- function(par, dat, V) {
 gpd.dphi <- function(par, dat, V) {
     sigma = par[1]
     xi = as.vector(par[2])
-    if (!isTRUE(all.equal(xi, 0))) {
+    if (!isTRUE(all.equal(xi, 0, check.attributes = FALSE))) {
         rbind(xi * (1/xi + 1)/(sigma^2 * (dat * xi/sigma + 1)) - dat * xi^2 * (1/xi + 1)/(sigma^3 * (dat *
             xi/sigma + 1)^2), -(1/xi + 1)/(sigma * (dat * xi/sigma + 1)) + dat * (xi + 1)/(sigma^2 *
             (dat * xi/sigma + 1)^2) + 1/(sigma * (dat * xi/sigma + 1) * xi)) %*% V
@@ -246,7 +246,7 @@ gev.ll <- function(par, dat) {
     dat <- as.vector(dat)
     par <- as.vector(par)
     tx <- pmax(1 + par[3]/par[2] * (dat - par[1]), 0)
-    if (!isTRUE(all.equal(as.vector(par[3]), 0, tolerance = 1e-07))) {
+    if (!isTRUE(all.equal(as.vector(par[3]), 0, tolerance = 1e-07, check.attributes = FALSE))) {
         sum(-log(par[2]) - (1/par[3] + 1) * log(tx) - tx^(-1/par[3]))
     } else {
         sum(-log(par[2]) - (dat - par[1])/par[2] - exp(-(dat - par[1])/par[2]))
@@ -274,7 +274,7 @@ gev.score <- function(par, dat) {
     mu = par[1]
     sigma = par[2]
     xi = as.vector(par[3])
-    if (!isTRUE(all.equal(xi, 0, tolerance = 1e-10))) {
+    if (!isTRUE(all.equal(xi, 0, tolerance = 1e-10, check.attributes = FALSE))) {
         c(sum(-(pmax(0, -(mu - dat) * xi/sigma + 1))^(-1/xi - 1)/sigma - xi * (1/xi + 1)/(sigma * ((mu -
             dat) * xi/sigma - 1))),
           sum(-(dat - mu) * ((dat - mu) * xi/sigma + 1)^(-1/xi - 1)/sigma^2 +
@@ -356,7 +356,7 @@ gev.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) 
             stop("Data outside of range specified by parameter, yielding a zero likelihood")
         }
         infomat <- matrix(0, ncol = 3, nrow = 3)
-        if (!isTRUE(all.equal(xi, 0))) {
+        if (!isTRUE(all.equal(xi, 0, check.attributes = FALSE))) {
             infomat[1, 1] <- sum(-((dat - mu) * xi/sigma + 1)^(-1/xi - 2) * (xi + 1)/sigma^2 + xi^2 *
                 (1/xi + 1)/(sigma^2 * ((dat - mu) * xi/sigma + 1)^2))
             infomat[1, 2] <- infomat[2, 1] <- sum(-(dat - mu) * ((dat - mu) * xi/sigma + 1)^(-1/xi -
@@ -1192,7 +1192,7 @@ gevr.infomat <- function(par, dat, method = c("obs", "exp"), p, nobs = length(da
         # else expected information matrix
     } else {
         muf = z + sigma/xi * (1 - (-log(1 - p))^(-xi))
-        if (!isTRUE(all.equal(xi, 0, tolerance = 1e-07))) {
+        if (!isTRUE(all.equal(xi, 0, tolerance = 1e-07, check.attributes = FALSE))) {
             Jac <- rbind(c(1, -((-log1mp)^(-xi) - 1)/xi, sigma * (-log1mp)^(-xi) * log(-log1mp)/xi +
                              sigma * ((-log1mp)^(-xi) - 1)/xi^2), c(0, 1, 0), c(0, 0, 1))
         } else {
@@ -1534,7 +1534,7 @@ gevN.ll <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile")) {
     mu = par[1]
     z = par[2]
     xi = as.vector(par[3])
-    if (!isTRUE(all.equal(xi, 0))) {
+    if (!isTRUE(all.equal(xi, 0, check.attributes = FALSE))) {
         sigma <- switch(qty,
                         quantile = (z - mu) * xi/(N^xi * (log(1/q))^(-xi) - 1),
                         mean = (z - mu) * xi/(N^xi * gamma(1 - xi) - 1))
@@ -1647,7 +1647,7 @@ gevN.infomat <- function(par, dat, method = c("obs", "exp"), qty = c("mean", "qu
     log1q = log(1/q)
     loglog1q = log(log1q)
     qty <- match.arg(qty)
-    xizero <- isTRUE(all.equal(xi, 0, tolerance = 1e-05))
+    xizero <- isTRUE(all.equal(xi, 0, tolerance = 1e-05, check.attributes = FALSE))
     euler_gamma <- 0.57721566490153231044
     zeta3 <- 1.2020569031595944587
     if (qty == "mean") {
@@ -2156,7 +2156,7 @@ rrlarg <- function(n, r, loc, scale, shape){
   if(r == 1){
    U <- matrix(U, ncol = 1, nrow = n)
   }
-  if(!isTRUE(all.equal(shape, 0))){
+  if(!isTRUE(all.equal(shape, 0, check.attributes = FALSE))){
    loc + scale*(U^(-shape)-1)/shape
   } else{
    loc - log(U)*scale
@@ -2280,6 +2280,7 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
       r <- ncol(dat)
     }
   }
+  method <- match.arg(method)
   eta <- par[1]
   tau <- par[2]
   xi <- par[3]
@@ -2295,9 +2296,7 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
       m23a <- (1/(tau*xi^3*gamma(r)))*((r + xi*(2 + xi))*gamma(r + 2*xi) +
                                          gamma(1 + r)*(1 + xi*digamma(1 + r)) - gamma(r + xi)*(2*r + xi*(2 + xi) +
                                                                                                  xi*(r + xi)*digamma(1 + r + xi)))
-
-
-    } else{
+      } else{
       m12a <- (1 + r*digamma(r))/tau^2
       m13a <- -((digamma(r)*(2 + r*digamma(r)) + r*psigamma(deriv = 1, r))/(2*tau))
       m22a <- -((1 + digamma(r)*(2 + r*digamma(r)) + r*psigamma(deriv = 1, r))/tau^2)
@@ -2440,7 +2439,6 @@ pp.ll <- function(par, dat, u, np = 1){
 
 #' Score vector for the Poisson process above u
 #'
-#' @seealso \code{\link{pp}}
 #' @inheritParams pp
 #' @export
 #' @rdname pp
@@ -2462,7 +2460,6 @@ pp.score <- function(par, dat, u, np = 1){
 #' @note For the expected information matrix, the number of points above the threshold is random, but should correspond to
 #' \code{np}\eqn{\Lambda}. In this sense, unless \code{np} is linear in the sample size, the
 #'
-#' @seealso \code{\link{pp}}
 #' @inheritParams pp
 #' @export
 #' @rdname pp
@@ -2470,15 +2467,15 @@ pp.score <- function(par, dat, u, np = 1){
 pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = length(dat)) {
   method <- match.arg(method)
   if(method == "obs"){
-  dat <- as.vector(dat)
-  if(sum(dat >u) != length(dat)){
-   warning("`dat` contains non-exceedances")
-    dat <- dat[dat >u]
-  }
+    dat <- as.vector(dat)
+    if(sum(dat >u) != length(dat)){
+     warning("`dat` contains non-exceedances")
+      dat <- dat[dat >u]
+    }
   }
   mu <- par[1]
   sigma <- par[2]
-  xi <- par[3]
+  xi <- as.vector(par[3])
   r1 <- nobs;
   m <- np
 
@@ -2496,6 +2493,7 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
        d22 <- (vm*xi + 1)^(-1/xi - 2)*m*vm^2*xi*(1/xi + 1)/sigma^2 - sum(xi^2*zm^2*(1/xi + 1)/((xi*zm + 1)^2*sigma^2)) - 2*(vm*xi + 1)^(-1/xi - 1)*m*vm/sigma^2 + 2*xi*sum(zm*(1/xi + 1)/((xi*zm + 1)*sigma^2)) - r1/sigma^2
        d23 <- -(vm*xi + 1)^(-1/xi - 1)*m*vm*(vm/((vm*xi + 1)*xi) - log(vm*xi + 1)/xi^2)/sigma + sum(xi*zm^2*(1/xi + 1)/((xi*zm + 1)^2*sigma)) - (vm*xi + 1)^(-1/xi)*m*vm^2/((vm*xi + 1)^2*sigma) - sum(zm*(1/xi + 1)/((xi*zm + 1)*sigma)) + sum(zm/((xi*zm + 1)*sigma*xi))
        d33 <- (vm*xi + 1)^(-1/xi)*m*(vm/((vm*xi + 1)*xi) - log(vm*xi + 1)/xi^2)^2 + (vm*xi + 1)^(-1/xi)*m*(vm^2/((vm*xi + 1)^2*xi) + 2*vm/((vm*xi + 1)*xi^2) - 2*log(vm*xi + 1)/xi^3) - sum(zm^2*(1/xi + 1)/(xi*zm + 1)^2) - 2*sum(zm/((xi*zm + 1)*xi^2)) + 2*sum(log(xi*zm + 1))/xi^3
+       infomat <- matrix(c(d11,d12,d13,d12,d22,d23,d13,d23,d33), nrow = 3, ncol = 3, byrow = TRUE)
      } else{ #Observed information, xi = 0
        d11 <- m*exp(-vm)/sigma^2
        d12 <- m*vm*exp(-vm)/sigma^2 - m*exp(-vm)/sigma^2 + r1/sigma^2
@@ -2503,14 +2501,14 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
        d13 <- 0.5*(m*vm^2 + 2*sum(zm)*exp(vm) - 2*m*vm - 2*r1*exp(vm))*exp(-vm)/sigma
        d23 <- 0.5*(m*vm^3 + 2*sum(zm^2)*exp(vm) - 2*m*vm^2 - 2*sum(zm)*exp(vm))*exp(-vm)/sigma
        d33 <- ((1/12)*(m*vm^3*(-8 + 3*vm) + 4*exp(vm)*sum(zm^2*(-3 + 2*zm))))/exp(vm)
+       infomat <- matrix(c(d11,d12,d13,d12,d22,d23,d13,d23,d33), nrow = 3, ncol = 3, byrow = TRUE)
      }
-     infomat <- matrix(c(d11,d12,d13,d12,d22,d23,d13,d23,d33), nrow = 3, ncol = 3, byrow = TRUE)
+
 } else{
   r2 <- r1 <- 1
   if(!xizero){
-    e11 <- (vm*xi + 1)^(-1/xi)*m*r2*(xi + 1)*xi/((sigma*vm*xi + sigma)^2*(2*xi + 1)) - (vm*xi + 1)^(-1/xi - 2)*m*xi*(1/xi + 1)/sigma^2
-    e12 <- -(vm*xi + 1)^(-1/xi - 2)*m*vm*xi*(1/xi + 1)/sigma^2 - (vm*xi + 1)^(-1/xi)*m*r2*(xi + 1)/((sigma*vm*xi + sigma)^2*(2*xi + 1)) +
-          (vm*xi + 1)^(-1/xi - 1)*m/sigma^2
+    e12 <- -m/sigma^2*(1+xi*vm)^(-1/xi-2)*(vm-xi/(1+2*xi))
+    e11 <- -m*(1+xi)/(sigma^2)*(1+xi*vm)^(-1/xi-2)*(1-xi/(1+2*xi))
     e13 <- (vm*xi + 1)^(-1/xi - 1)*m*(vm*(1/xi + 1)/(vm*xi + 1) - log(vm*xi + 1)/xi^2)/sigma -
       (2*vm*xi + vm - xi)*(vm*xi + 1)^(-1/xi)*m*r2/((vm*xi + 1)^2*(2*xi^2 + 3*xi + 1)*sigma)
     e22 <- -(vm*xi + 1)^(-1/xi - 2)*m*vm^2*xi*(1/xi + 1)/sigma^2 + 2*(vm*xi + 1)^(-1/xi - 1)*m*vm/sigma^2 +
@@ -2523,14 +2521,14 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
          (vm^2*(2*xi + 1)*(xi + 1)*(xi - 3)*xi + 2*((2*xi^2 - xi - 3)*xi - 1)*vm + 2*xi^2)*xi)*
       (vm*xi + 1)^(-1/xi)*m*r2/((vm*xi + 1)^2*(2*xi + 1)*(xi + 1)*xi^3)
   } else{
-    e11 <- -m*exp(-vm)/sigma^2
-    e12 <- -m*r2*exp(-vm)/sigma^2 - m*vm*exp(-vm)/sigma^2 + m*exp(-vm)/sigma^2
+    e12 <- -m*exp(-vm)/sigma^2
+    e11 <- -m*r2*exp(-vm)/sigma^2 - m*vm*exp(-vm)/sigma^2 + m*exp(-vm)/sigma^2
     e13 <- -1/2*(2*r2*vm + vm^2 - 2*vm)*m*exp(-vm)/sigma
     e22 <- -2*m*r2*vm*exp(-vm)/sigma^2 - m*vm^2*exp(-vm)/sigma^2 + m*r1*exp(-vm)/sigma^2 - 2*m*r2*exp(-vm)/sigma^2 + 2*m*vm*exp(-vm)/sigma^2
     e23 <- -1/2*(2*r2*vm^2 + vm^3 + 2*r2*vm - 2*vm^2 + 2*r2)*m*exp(-vm)/sigma
     e33 <- -1/12*(8*r2*vm^3 + 3*vm^4 + 12*r2*vm^2 - 8*vm^3 + 24*r2*vm + 24*r2)*m*exp(-vm)
 }
-  infomat <- -matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE)
+  infomat <- -nobs* matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE)
   }
   colnames(infomat) <- rownames(infomat) <- c("loc","scale","shape")
   return(infomat)

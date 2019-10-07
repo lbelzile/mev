@@ -1,3 +1,12 @@
+mev v.1.13 (Release date: )
+==============
+
+Fixes: 
+* rlarg.infomat incorrect sign for expected information for d=1
+
+Changes:
+* New methods for objects returned by "fit" routines, for use in "lax" package
+
 mev v.1.12 (Release date: 2019-06-24)
 ==============
 New:

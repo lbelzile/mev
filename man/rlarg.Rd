@@ -15,7 +15,7 @@ rlarg.infomat(par, dat, method = c("obs", "exp"), nobs = nrow(dat),
 
 \item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
-\item{nobs}{number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.}
+\item{nobs}{number of observations for the expected information matrix. Default to \code{nrow(dat)} if \code{dat} is provided.}
 
 \item{r}{number of order statistics kept. Default to \code{ncol(dat)}}
 }

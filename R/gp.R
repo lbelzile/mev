@@ -946,7 +946,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                              nat = sum(xdat > threshold),
                              pat = sum(xdat > threshold)/length(xdat),
                              approx.mean = temp$mle,
-                             exceedances = xdatu), class = c("mev_gpdbayes", "mev_gpd"))
+                             exceedances = xdatu), class = c("mev_gpdbayes"))
 
     }
     if (show)
@@ -1114,8 +1114,9 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
           mean((score[2,]-a[2])*score[2,]*Wc))
   #Compute inverse of -\int \partial/\partial theta \psi dF(\theta)
   Masy <- solve(matrix(c(M3[1], M3[2], M3[2], M3[3]), ncol = 2, nrow = 2, byrow = TRUE))
-  #Hampel et al. (1986), eq. 4.2.13, p. 231
+    #Hampel et al. (1986), eq. 4.2.13, p. 231
   vcov <- Masy %*% M1 %*% Masy / length(dat)
+  colnames(vcov) <- rownames(vcov) <- c("scale","shape")
   stderr <- sqrt(diag(vcov))
   names(stderr) <- names(par_val)
   ret <- structure(list(estimate = par_val,

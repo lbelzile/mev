@@ -4,7 +4,7 @@
 \alias{fit.pp}
 \title{Maximum likelihood estimation of the point process of extremes}
 \usage{
-fit.pp(xdat, threshold = 0, npp = 365, np = NULL, show = FALSE)
+fit.pp(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
