@@ -77,6 +77,10 @@
 #'   semivario(sqrt(sum((coord[j,])^2)), ...) -
 #'   semivario(sqrt(sum((coord[i,]-coord[j,])^2)), ...)))
 #' }
+#' # asymmetric logistic model - see evd::rmvevd
+#' asy <- list(0, 0, 0, 0, c(0,0), c(0,0), c(0,0), c(0,0), c(0,0), c(0,0),
+#'   c(.2,.1,.2), c(.1,.1,.2), c(.3,.4,.1), c(.2,.2,.2), c(.4,.6,.2,.5))
+#' rmev(n=1, d=4, param=0.3, asy=asy, model="alog")
 #'rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
 #'#Example with a grid (generating an array)
 #'rmev(n=10, sigma=cbind(c(2,1), c(1,3)), coord=cbind(runif(4), runif(4)), model='smith', grid=TRUE)
@@ -323,7 +327,8 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
     mod <- switch(model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4,
                   xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9, isbr = 9)
     if (model %in% c("alog", "aneglog")) {
-        .rmevasy(n = n, d = d, para = param, asym = asym, ncompo = ncompo, Sigma = sigma, model = mod)
+    mod <- switch(model, alog = 1, aneglog = 2)
+    .rmevasy(n = n, d = d, para = param, asym = asym, ncompo = ncompo, Sigma = sigma, model = mod)
     } else {
         if (model != "smith") {
             coordat <- cbind(0)

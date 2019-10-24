@@ -3,6 +3,7 @@ mev v.1.13 (Release date: )
 
 Fixes: 
 * rlarg.infomat incorrect sign for expected information for d=1
+* rmev function did not work for `alog` and `aneglog` (reported by Michael Lalancette)
 
 Changes:
 * New methods for objects returned by "fit" routines, for use in "lax" package

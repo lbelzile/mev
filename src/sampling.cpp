@@ -1278,17 +1278,18 @@ NumericMatrix rmevasy(int n, int d, NumericVector para, LogicalMatrix asym,
   NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
   IntegerVector siz = IntegerVector::create(d, Sigma.nrow());
   //IntegerVector index = seq_len(d)-1; // can subset using index[asym(r,_)]
-  NumericMatrix nullmat;
+  NumericMatrix nullmat(0,0);
+  arma::mat void_mat(0,0);
   int j=0;
   //Generate point masses on the edges, if any
   for(int i=0; i < d; i++){
-    if(param[i]!=0){
+    if(param[i] != 0){
      samp(_, j) = Sigma(j, j)/Rcpp::rexp(n,1.0);
       j++;
     }
   }
-  arma::mat void_mat(1,1);
-for(int r = min(siz); r<Sigma.nrow(); r++){
+
+for(int r = min(siz); r < Sigma.nrow(); r++){
   NumericMatrix intersamp = rmevA2(n, ncompo(r), NumericVector::create(param[r]), model, nullmat, void_mat);
   j=0;
   for(int i=0; i < d; i++){
