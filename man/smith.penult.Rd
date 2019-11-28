@@ -4,8 +4,7 @@
 \alias{smith.penult}
 \title{Smith's penultimate approximations}
 \usage{
-smith.penult(family, method = c("bm", "pot"), u, qu, m,
-  returnList = TRUE, ...)
+smith.penult(family, method = c("bm", "pot"), u, qu, m, returnList = TRUE, ...)
 }
 \arguments{
 \item{family}{the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}}
@@ -63,7 +62,7 @@ p <- smith.penult(family='norm',
    ddensF=function(x){-x*dnorm(x)}, method='bm', m=m, returnList=FALSE)
 x <- seq(1, 5, by = 0.01)
 plot(x, m*dnorm(x)*exp((m-1)*pnorm(x,log.p=TRUE)),type='l', ylab='Density',
-main='Distribution of the maxima of\\n 100 standard normal variates')
+main='Distribution of the maxima of\n 100 standard normal variates')
 lines(x, evd::dgev(x,loc=p[1], scale=p[2], shape=0),col=2)
 lines(x, evd::dgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
 legend(x = 'topright',lty = c(1,1,1,1), col = c(1,2,3,4),

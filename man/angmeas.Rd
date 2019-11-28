@@ -4,10 +4,16 @@
 \alias{angmeas}
 \title{Rank-based transformation to angular measure}
 \usage{
-angmeas(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2",
-  "linf", "arctan"), marg = c("Frechet", "Pareto"),
-  wgt = c("Empirical", "Euclidean"), region = c("sum", "min", "max"),
-  is.angle = FALSE)
+angmeas(
+  x,
+  th,
+  Rnorm = c("l1", "l2", "linf"),
+  Anorm = c("l1", "l2", "linf", "arctan"),
+  marg = c("Frechet", "Pareto"),
+  wgt = c("Empirical", "Euclidean"),
+  region = c("sum", "min", "max"),
+  is.angle = FALSE
+)
 }
 \arguments{
 \item{x}{an \code{n} by \code{d} sample matrix}

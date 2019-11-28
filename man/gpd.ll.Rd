@@ -3,7 +3,7 @@
 \name{gpd.ll}
 \alias{gpd.ll}
 \alias{gpd.ll.optim}
-\title{log likelihood for the generalized Pareto distribution}
+\title{Log likelihood for the generalized Pareto distribution}
 \usage{
 gpd.ll(par, dat, tol = 1e-05)
 

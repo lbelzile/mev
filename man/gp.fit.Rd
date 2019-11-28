@@ -4,8 +4,13 @@
 \alias{gp.fit}
 \title{Maximum likelihood estimate of generalized Pareto applied to threshold exceedances}
 \usage{
-gp.fit(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "optim",
-  "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL)
+gp.fit(
+  xdat,
+  threshold,
+  method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"),
+  show = FALSE,
+  MCMC = NULL
+)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}

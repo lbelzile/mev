@@ -4,10 +4,16 @@
 \alias{angmeasdir}
 \title{Dirichlet mixture model for the spectral density}
 \usage{
-angmeasdir(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2",
-  "linf", "arctan"), marg = c("Frechet", "Pareto"),
-  wgt = c("Empirical", "Euclidean"), region = c("sum", "min", "max"),
-  is.angle = FALSE)
+angmeasdir(
+  x,
+  th,
+  Rnorm = c("l1", "l2", "linf"),
+  Anorm = c("l1", "l2", "linf", "arctan"),
+  marg = c("Frechet", "Pareto"),
+  wgt = c("Empirical", "Euclidean"),
+  region = c("sum", "min", "max"),
+  is.angle = FALSE
+)
 }
 \arguments{
 \item{x}{an \code{n} by \code{d} sample matrix}

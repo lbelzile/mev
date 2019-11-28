@@ -4,6 +4,8 @@ mev v.1.13 (Release date: )
 Fixes: 
 * rlarg.infomat incorrect sign for expected information for d=1
 * rmev function did not work for `alog` and `aneglog` (reported by Michael Lalancette)
+* Remove class()!= "matrix due to changes in R 4.0.0
+* egp.retlev now returns invisible object (new ordering and format).
 
 Changes:
 * New methods for objects returned by "fit" routines, for use in "lax" package

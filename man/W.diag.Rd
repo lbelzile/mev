@@ -4,10 +4,22 @@
 \alias{W.diag}
 \title{Wadsworth's univariate and bivariate exponential threshold diagnostics}
 \usage{
-W.diag(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0,
-  q2 = 1, par = NULL, M = NULL, nbs = 1000, alpha = 0.05,
-  plots = c("LRT", "WN", "PS"), UseQuantiles = TRUE, pmar = c(5, 5,
-  1, 1), ...)
+W.diag(
+  xdat,
+  model = c("nhpp", "exp", "invexp"),
+  u = NULL,
+  k,
+  q1 = 0,
+  q2 = 1,
+  par = NULL,
+  M = NULL,
+  nbs = 1000,
+  alpha = 0.05,
+  plots = c("LRT", "WN", "PS"),
+  UseQuantiles = TRUE,
+  pmar = c(5, 5, 1, 1),
+  ...
+)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}

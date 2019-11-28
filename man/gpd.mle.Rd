@@ -4,8 +4,14 @@
 \alias{gpd.mle}
 \title{Generalized Pareto maximum likelihood estimates for various quantities of interest}
 \usage{
-gpd.mle(xdat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
-  "Nquant"), m, N, p, q)
+gpd.mle(
+  xdat,
+  args = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
+  m,
+  N,
+  p,
+  q
+)
 }
 \arguments{
 \item{xdat}{sample vector of excesses}

@@ -4,8 +4,7 @@
 \alias{fit.gev}
 \title{Maximum likelihood estimation for the generalized extreme value distribution}
 \usage{
-fit.gev(xdat, start = NULL, method = c("nlminb", "BFGS"),
-  show = FALSE)
+fit.gev(xdat, start = NULL, method = c("nlminb", "BFGS"), show = FALSE)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}

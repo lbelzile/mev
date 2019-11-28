@@ -4,8 +4,14 @@
 \alias{maxstabtest}
 \title{P-P plot for testing max stability}
 \usage{
-maxstabtest(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L,
-  ties.method = "random", plot = TRUE)
+maxstabtest(
+  dat,
+  m = prod(dim(dat)[-1]),
+  nmax = 500L,
+  B = 1000L,
+  ties.method = "random",
+  plot = TRUE
+)
 }
 \arguments{
 \item{dat}{matrix or array of max-stable observations, typically block maxima. The first dimension should consist of replicates}

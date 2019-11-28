@@ -4,8 +4,13 @@
 \alias{gev.mle}
 \title{Generalized extreme value maximum likelihood estimates for various quantities of interest}
 \usage{
-gev.mle(xdat, args = c("loc", "scale", "shape", "quant", "Nmean",
-  "Nquant"), N, p, q)
+gev.mle(
+  xdat,
+  args = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
+  N,
+  p,
+  q
+)
 }
 \arguments{
 \item{xdat}{sample vector of maxima}

@@ -4,8 +4,14 @@
 \alias{confint.eprof}
 \title{Confidence intervals for profile likelihood objects}
 \usage{
-\method{confint}{eprof}(object, parm, level = 0.95, prob = c((1 -
-  level)/2, 1 - (1 - level)/2), print = FALSE, ...)
+\method{confint}{eprof}(
+  object,
+  parm,
+  level = 0.95,
+  prob = c((1 - level)/2, 1 - (1 - level)/2),
+  print = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{an object of class \code{eprof}, normally the output of \link{gpd.pll} or \link{gev.pll}.}

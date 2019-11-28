@@ -4,8 +4,14 @@
 \alias{tstab.gpd}
 \title{Parameter stability plots for peaks-over-threshold}
 \usage{
-tstab.gpd(dat, thresh, method = c("wald", "profile", "post"),
-  level = 0.95, plot = TRUE, ...)
+tstab.gpd(
+  dat,
+  thresh,
+  method = c("wald", "profile", "post"),
+  level = 0.95,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{dat}{a vector of observations}

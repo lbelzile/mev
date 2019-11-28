@@ -4,9 +4,19 @@
 \alias{clikmgp}
 \title{Censored likelihood for multivariate generalized Pareto distributions}
 \usage{
-clikmgp(dat, thresh, mthresh = thresh, loc, scale, shape, par,
-  model = c("br", "xstud", "log"), likt = c("mgp", "pois", "binom"),
-  lambdau = 1, ...)
+clikmgp(
+  dat,
+  thresh,
+  mthresh = thresh,
+  loc,
+  scale,
+  shape,
+  par,
+  model = c("br", "xstud", "log"),
+  likt = c("mgp", "pois", "binom"),
+  lambdau = 1,
+  ...
+)
 }
 \arguments{
 \item{dat}{matrix of observations}

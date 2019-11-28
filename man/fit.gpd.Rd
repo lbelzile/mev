@@ -4,8 +4,15 @@
 \alias{fit.gpd}
 \title{Maximum likelihood estimation for the generalized Pareto distribution}
 \usage{
-fit.gpd(xdat, threshold = 0, method = "Grimshaw", show = FALSE,
-  MCMC = NULL, k = 4, tol = 1e-08)
+fit.gpd(
+  xdat,
+  threshold = 0,
+  method = "Grimshaw",
+  show = FALSE,
+  MCMC = NULL,
+  k = 4,
+  tol = 1e-08
+)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}

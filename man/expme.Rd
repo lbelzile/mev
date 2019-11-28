@@ -4,8 +4,12 @@
 \alias{expme}
 \title{Exponent measure for multivariate generalized Pareto distributions}
 \usage{
-expme(z, par, model = c("log", "hr", "br", "xstud"),
-  method = c("TruncatedNormal", "mvtnorm", "mvPot"))
+expme(
+  z,
+  par,
+  model = c("log", "hr", "br", "xstud"),
+  method = c("TruncatedNormal", "mvtnorm", "mvPot")
+)
 }
 \arguments{
 \item{z}{vector at which to estimate exponent measure}

@@ -7,14 +7,17 @@
 rlarg.score(par, dat)
 }
 \arguments{
-\item{par}{a vector of location, scale and shape parameter}
+\item{par}{vector of \code{loc}, \code{scale} and \code{shape}}
 
-\item{dat}{an \code{n} by \code{r} matrix of observations, ordered from largest to smallest in each row.}
+\item{dat}{an \code{n} by \code{r} sample matrix, ordered from largest to smallest in each row}
 }
 \value{
-a vector of size 3
+score vector of size 3
 }
 \description{
 The score is computed via linear interpolation for the shape parameter in a neighborhood of zero
+}
+\seealso{
+\code{\link{rlarg}}
 }
 \keyword{internal}

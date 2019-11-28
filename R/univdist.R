@@ -93,7 +93,7 @@ NULL
 NULL
 
 
-#' log likelihood for the generalized Pareto distribution
+#' Log likelihood for the generalized Pareto distribution
 #'
 #' Function returning the density of an \code{n} sample from the GP distribution.
 #' \code{gpd.ll.optim} returns the negative log likelihood parametrized in terms of \code{log(scale)} and shape
@@ -2163,9 +2163,9 @@ rrlarg <- function(n, r, loc, scale, shape){
   }
 }
 
-#' Distribution of the r-largest observations
+#' @title Distribution of the r-largest observations
 #'
-#' Likelihood, score function and information matrix for the r-largest observations likelihood.
+#' @description Likelihood, score function and information matrix for the r-largest observations likelihood.
 #'
 #' @author Leo Belzile
 #' @name rlarg
@@ -2189,13 +2189,16 @@ rrlarg <- function(n, r, loc, scale, shape){
 #' }
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 #' @references Smith, R.L. (1986).  Extreme value theory based on the r largest annual events, \emph{Journal of Hydrology}, \bold{86}(1-2), 27--43, \code{http://dx.doi.org/10.1016/0022-1694(86)90004-1}.
+#'
 NULL
 
 
 #' Log-likelihood of the point process of r-largest observations
 #'
-#' @param par a vector of location, scale and shape parameter
-#' @param dat an \code{n} by \code{r} matrix of observations, ordered from largest to smallest in each row.
+#' The function returns the log-likelihood for an \code{n} by \code{r} matrix of observations.
+#'
+#' @inheritParams rlarg
+#' @seealso \code{\link{rlarg}}
 #' @export
 #' @keywords internal
 rlarg.ll <- function(par, dat){
@@ -2213,11 +2216,14 @@ rlarg.ll <- function(par, dat){
     -sum(exp((par[1]-dat[,r])/par[2])) - n*r*log(par[2]) - sum((dat-par[1])/par[2])
   }
 }
+
 #' Score of the r-largest observations
 #'
 #' The score is computed via linear interpolation for the shape parameter in a neighborhood of zero
-#' @inheritParams rlarg.ll
-#' @return a vector of size 3
+#'
+#' @inheritParams rlarg
+#' @seealso \code{\link{rlarg}}
+#' @return score vector of size 3
 #' @export
 #' @keywords internal
 rlarg.score <- function(par, dat){
@@ -2261,9 +2267,9 @@ rlarg.score <- function(par, dat){
 #' Information matrix for the r-largest observations.
 #'
 #' The function returns the expected or observed information matrix.
-#' @seealso \code{\link{rlarg}}
+#'
 #' @inheritParams rlarg
-#' @rdname rlarg
+#' @seealso \code{\link{rlarg}}
 #' @export
 #' @keywords internal
 rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), r = ncol(dat)){
@@ -2389,9 +2395,9 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
   return(infomat)
 }
 
-#' Poisson process of extremes.
+#' @title Poisson process of extremes.
 #'
-#' Likelihood, score function and information matrix for the Poisson process likelihood.
+#' @description Likelihood, score function and information matrix for the Poisson process likelihood.
 #'
 #' @author Leo Belzile
 #' @name pp
@@ -2423,9 +2429,13 @@ NULL
 
 #Poisson likelihood
 
-#' Poisson process log-likelihood
+#' Log-likelihood of Poisson process of threshold exceedances
+#'
 #' @export
-#' @rdname pp
+#' @inheritParams pp
+#' @seealso \code{\link{pp}}
+#' @return log-likelihood of the NHPP
+#' @keywords internal
 pp.ll <- function(par, dat, u, np = 1){
   par <- as.vector(par)
   if(abs(par[3]) > 1e-6){
@@ -2437,11 +2447,14 @@ pp.ll <- function(par, dat, u, np = 1){
   }
 }
 
-#' Score vector for the Poisson process above u
+#' @title Score vector for the Poisson process of threshold exceedances
 #'
-#' @inheritParams pp
+#' Returns the score vector of the NHPP.
+#'
 #' @export
-#' @rdname pp
+#' @inheritParams pp
+#' @seealso \code{\link{pp}}
+#' @return score vector of NHPP
 #' @keywords internal
 pp.score <- function(par, dat, u, np = 1){
   mu <- par[1]; sigma <- par[2]; xi <- par[3]; nu <- length(dat)
@@ -2458,11 +2471,12 @@ pp.score <- function(par, dat, u, np = 1){
 #' The function returns the expected or observed information matrix.
 #'
 #' @note For the expected information matrix, the number of points above the threshold is random, but should correspond to
-#' \code{np}\eqn{\Lambda}. In this sense, unless \code{np} is linear in the sample size, the
+#' \code{np}\eqn{\Lambda}.
 #'
-#' @inheritParams pp
 #' @export
-#' @rdname pp
+#' @inheritParams pp
+#' @seealso \code{\link{pp}}
+#' @return information matrix of the NHPP
 #' @keywords internal
 pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = length(dat)) {
   method <- match.arg(method)

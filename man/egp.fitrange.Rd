@@ -4,8 +4,15 @@
 \alias{egp.fitrange}
 \title{Deprecated function for parameter stability plots}
 \usage{
-egp.fitrange(xdat, thresh, model = c("egp1", "egp2", "egp3"),
-  plots = 1:3, umin, umax, nint)
+egp.fitrange(
+  xdat,
+  thresh,
+  model = c("egp1", "egp2", "egp3"),
+  plots = 1:3,
+  umin,
+  umax,
+  nint
+)
 }
 \description{
 Deprecated function for parameter stability plots

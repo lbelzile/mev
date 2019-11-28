@@ -4,8 +4,15 @@
 \alias{emplik}
 \title{Self-concordant empirical likelihood for a vector mean}
 \usage{
-emplik(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)),
-  eps = 1/nrow(dat), M = 1e+30, thresh = 1e-30, itermax = 100)
+emplik(
+  dat,
+  mu = rep(0, ncol(dat)),
+  lam = rep(0, ncol(dat)),
+  eps = 1/nrow(dat),
+  M = 1e+30,
+  thresh = 1e-30,
+  itermax = 100
+)
 }
 \arguments{
 \item{dat}{\code{n} by \code{d} matrix of \code{d}-variate observations}

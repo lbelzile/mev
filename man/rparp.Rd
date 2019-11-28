@@ -4,10 +4,21 @@
 \alias{rparp}
 \title{Simulation from R-Pareto processes}
 \usage{
-rparp(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"),
-  siteindex = NULL, d, param, sigma, model = c("log", "neglog",
-  "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct",
-  "sdir", "dirmix"), weights, vario, coord = NULL, ...)
+rparp(
+  n,
+  shape = 1,
+  riskf = c("sum", "site", "max", "min", "l2"),
+  siteindex = NULL,
+  d,
+  param,
+  sigma,
+  model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith",
+    "schlather", "ct", "sdir", "dirmix"),
+  weights,
+  vario,
+  coord = NULL,
+  ...
+)
 }
 \arguments{
 \item{n}{number of observations}

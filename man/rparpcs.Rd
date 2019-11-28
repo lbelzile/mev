@@ -4,8 +4,15 @@
 \alias{rparpcs}
 \title{Simulation from Pareto processes (max) using composition sampling}
 \usage{
-rparpcs(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br",
-  "xstud"), riskf = c("max", "min"), shape = 1)
+rparpcs(
+  n,
+  Lambda = NULL,
+  Sigma = NULL,
+  df = NULL,
+  model = c("br", "xstud"),
+  riskf = c("max", "min"),
+  shape = 1
+)
 }
 \arguments{
 \item{n}{sample size.}

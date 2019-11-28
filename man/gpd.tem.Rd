@@ -4,9 +4,19 @@
 \alias{gpd.tem}
 \title{Tangent exponential model approximation for the GP distribution}
 \usage{
-gpd.tem(dat, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
-  "Nquant"), psi = NULL, m = NULL, threshold = 0, n.psi = 50,
-  N = NULL, p = NULL, q = NULL, plot = FALSE, correction = TRUE)
+gpd.tem(
+  dat,
+  param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
+  psi = NULL,
+  m = NULL,
+  threshold = 0,
+  n.psi = 50,
+  N = NULL,
+  p = NULL,
+  q = NULL,
+  plot = FALSE,
+  correction = TRUE
+)
 }
 \arguments{
 \item{dat}{sample vector for the GP distribution}

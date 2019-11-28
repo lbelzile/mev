@@ -4,9 +4,18 @@
 \alias{fit.extgp}
 \title{Fit an extended generalized Pareto distribution of Naveau et al.}
 \usage{
-fit.extgp(data, model = 1, method = c("mle", "pwm"), init,
-  censoring = c(0, Inf), rounded = 0, confint = FALSE, R = 1000,
-  ncpus = 1, plots = TRUE)
+fit.extgp(
+  data,
+  model = 1,
+  method = c("mle", "pwm"),
+  init,
+  censoring = c(0, Inf),
+  rounded = 0,
+  confint = FALSE,
+  R = 1000,
+  ncpus = 1,
+  plots = TRUE
+)
 }
 \arguments{
 \item{data}{data vector.}

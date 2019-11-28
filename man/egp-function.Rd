@@ -8,8 +8,14 @@
 \usage{
 egp.ll(xdat, thresh, par, model = c("egp1", "egp2", "egp3"))
 
-egp.retlev(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p,
-  plot = TRUE)
+egp.retlev(
+  xdat,
+  thresh,
+  par,
+  model = c("egp1", "egp2", "egp3"),
+  p,
+  plot = TRUE
+)
 }
 \arguments{
 \item{xdat}{vector of observations, greater than the threshold}

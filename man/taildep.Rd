@@ -4,11 +4,20 @@
 \alias{taildep}
 \title{Coefficient of tail correlation and tail dependence}
 \usage{
-taildep(data, u = NULL, nq = 40, qlim = c(0.8, 0.99),
-  depmeas = c("eta", "chi"), method = list(eta = c("emp", "betacop",
-  "gpd", "hill"), chi = c("emp", "betacop")), confint = c("wald", "lrt"),
-  level = 0.95, trunc = TRUE, ties.method = "random", plot = TRUE,
-  ...)
+taildep(
+  data,
+  u = NULL,
+  nq = 40,
+  qlim = c(0.8, 0.99),
+  depmeas = c("eta", "chi"),
+  method = list(eta = c("emp", "betacop", "gpd", "hill"), chi = c("emp", "betacop")),
+  confint = c("wald", "lrt"),
+  level = 0.95,
+  trunc = TRUE,
+  ties.method = "random",
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{an \eqn{n} by \eqn{d} matrix of multivariate observations}

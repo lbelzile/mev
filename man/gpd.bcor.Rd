@@ -4,8 +4,7 @@
 \alias{gpd.bcor}
 \title{Bias correction for GP distribution}
 \usage{
-gpd.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs",
-  "exp"))
+gpd.bcor(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp"))
 }
 \arguments{
 \item{par}{parameter vector (\code{scale}, \code{shape})}

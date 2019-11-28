@@ -30,7 +30,7 @@
 #' ibvpot(mod, c(20,20))
 ibvpot <- function(fitted, q, silent = FALSE) {
     # If input is an object resulting from a call to 'fpot'
-    if (all(c("bvpot", "evd") %in% class(fitted)) && length(class(fitted) == 2)) {
+    if (inherits(fitted, c("bvpot", "evd"))) {
         fitted$pat <- fitted$nat[1:2]/nrow(fitted$data)
     }
     if (any(is.null(fitted$model), is.null(fitted$pat), is.null(fitted$threshold), is.null(fitted$param))) {

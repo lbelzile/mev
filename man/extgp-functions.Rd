@@ -14,25 +14,47 @@
 \usage{
 pextgp.G(u, type = 1, prob, kappa, delta)
 
-dextgp.G(u, type = 1, prob = NA, kappa = NA, delta = NA,
-  log = FALSE)
+dextgp.G(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE)
 
 qextgp.G(u, type = 1, prob = NA, kappa = NA, delta = NA)
 
-rextgp.G(n, prob = NA, kappa = NA, delta = NA, type = 1,
-  unifsamp = NULL, direct = FALSE, censoring = c(0, 1))
+rextgp.G(
+  n,
+  prob = NA,
+  kappa = NA,
+  delta = NA,
+  type = 1,
+  unifsamp = NULL,
+  direct = FALSE,
+  censoring = c(0, 1)
+)
 
-pextgp(q, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA,
-  type = 1)
+pextgp(q, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1)
 
-dextgp(x, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA,
-  type = 1, log = FALSE)
+dextgp(
+  x,
+  prob = NA,
+  kappa = NA,
+  delta = NA,
+  sigma = NA,
+  xi = NA,
+  type = 1,
+  log = FALSE
+)
 
-qextgp(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA,
-  type = 1)
+qextgp(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1)
 
-rextgp(n, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA,
-  type = 1, unifsamp = NULL, censoring = c(0, Inf))
+rextgp(
+  n,
+  prob = NA,
+  kappa = NA,
+  delta = NA,
+  sigma = NA,
+  xi = NA,
+  type = 1,
+  unifsamp = NULL,
+  censoring = c(0, Inf)
+)
 }
 \description{
 These functions are documented in \code{\link{extgp}} and in \code{\link{extgp.G}} for the carrier distributions supported in the unit interval.

@@ -4,10 +4,21 @@
 \alias{gpd.pll}
 \title{Profile log-likelihood for the generalized Pareto distribution}
 \usage{
-gpd.pll(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmean",
-  "Nquant"), mod = "profile", mle = NULL, dat, m = NULL, N = NULL,
-  p = NULL, q = NULL, correction = TRUE, threshold = NULL,
-  plot = TRUE, ...)
+gpd.pll(
+  psi,
+  param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
+  mod = "profile",
+  mle = NULL,
+  dat,
+  m = NULL,
+  N = NULL,
+  p = NULL,
+  q = NULL,
+  correction = TRUE,
+  threshold = NULL,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{psi}{parameter vector over which to profile (unidimensional)}

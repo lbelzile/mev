@@ -4,9 +4,17 @@
 \alias{extcoef}
 \title{Estimators of the extremal coefficient}
 \usage{
-extcoef(dat, coord = NULL, thresh = NULL, estimator = c("schlather",
-  "smith", "fmado"), standardize = TRUE, method = c("nonparametric",
-  "parametric"), prob = 0, plot = TRUE, ...)
+extcoef(
+  dat,
+  coord = NULL,
+  thresh = NULL,
+  estimator = c("schlather", "smith", "fmado"),
+  standardize = TRUE,
+  method = c("nonparametric", "parametric"),
+  prob = 0,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{dat}{an \code{n} by \code{D} matrix of unit Frechet observations}
@@ -53,6 +61,7 @@ The search for the maximum likelihood estimate for every pair \eqn{A}
  is restricted to the interval \eqn{[1,3]}. A binned version of the extremal coefficient cloud is also returned.
 The Schlather estimator is not self-consistent. The Schlather and Tawn estimator includes as special case
 the Smith estimator if we do not censor the data (\code{p = 0}) and do not standardize observations by their harmonic mean.
+
 
 The \bold{F-madogram} estimator is a non-parametric estimate based on a stationary process
 \eqn{Z}; the extremal coefficient satisfies

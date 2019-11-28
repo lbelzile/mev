@@ -4,9 +4,17 @@
 \alias{gev.tem}
 \title{Tangent exponential model approximation for the GEV distribution}
 \usage{
-gev.tem(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
-  dat, psi = NULL, p = NULL, q = 0.5, N = NULL, n.psi = 50,
-  plot = TRUE, correction = TRUE)
+gev.tem(
+  param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
+  dat,
+  psi = NULL,
+  p = NULL,
+  q = 0.5,
+  N = NULL,
+  n.psi = 50,
+  plot = TRUE,
+  correction = TRUE
+)
 }
 \arguments{
 \item{param}{parameter over which to profile}

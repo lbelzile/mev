@@ -4,8 +4,15 @@
 \alias{NC.diag}
 \title{Score and likelihood ratio tests fit of equality of shape over multiple thresholds}
 \usage{
-NC.diag(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"),
-  do.LRT = FALSE, size = NULL, my.xlab = NULL, xi.tol = 0.001)
+NC.diag(
+  x,
+  u,
+  GP.fit = c("Grimshaw", "nlm", "optim", "ismev"),
+  do.LRT = FALSE,
+  size = NULL,
+  my.xlab = NULL,
+  xi.tol = 0.001
+)
 }
 \arguments{
 \item{x}{raw data}

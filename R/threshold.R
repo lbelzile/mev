@@ -56,9 +56,9 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
   if(length(thresh) < 2){
     stop("Invalid threshold: should be of length greater than 2")
   }
-  if(!is.vector(dat) || class(dat) != "numeric"){
-    stop("Invalid data")
-  }
+  # if(!is.vector(dat) || inherits(dat, "numeric")){
+  #   stop("Invalid data")
+  # }
   nt <- length(thresh)
   np <- 2
   parmat <- matrix(0, ncol = np, nrow = nt)

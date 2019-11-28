@@ -4,11 +4,24 @@
 \alias{rgparp}
 \title{Simulation from generalized R-Pareto processes}
 \usage{
-rgparp(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site",
-  "max", "min", "l2"), siteindex = NULL, d, loc, scale, param, sigma,
-  model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud",
-  "smith", "schlather", "ct", "sdir", "dirmix"), weights, vario,
-  coord = NULL, ...)
+rgparp(
+  n,
+  shape = 1,
+  thresh = 1,
+  riskf = c("mean", "sum", "site", "max", "min", "l2"),
+  siteindex = NULL,
+  d,
+  loc,
+  scale,
+  param,
+  sigma,
+  model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith",
+    "schlather", "ct", "sdir", "dirmix"),
+  weights,
+  vario,
+  coord = NULL,
+  ...
+)
 }
 \arguments{
 \item{n}{number of observations}

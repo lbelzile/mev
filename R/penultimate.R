@@ -107,7 +107,7 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
     if (length(par)%%3 != 0) {
         stop("Invalid parameter input")
     }
-    if (class(par) != "matrix") {
+    if (!inherits(par, "matrix")) {
         par = matrix(c(par), ncol = 3)
     }
     rate <- sapply(thresh, function(u) {
@@ -123,25 +123,32 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
         warning("Some probabilities `p` are higher than the exceedance rate. Evaluate those empirically")
     }
     p <- sort(p)
+    pq <- rev(1/p)
+    np <- length(p)
     for (i in 1:length(thresh)) {
-        for (j in 1:length(p)) {
+        for (j in 1:np) {
             pl = 1 - p[j]/rate[i]
             if (par[i, 3] == 0) {
-                retlev[i, j] <- thresh[i] - par[i, 2] * switch(model, egp1 = -qgamma(pl, scale = 1, shape = par[i, 1]), egp2 = -qgamma(pl,
+                retlev[i, np-j+1] <- thresh[i] - par[i, 2] * switch(model, egp1 = -qgamma(pl, scale = 1, shape = par[i, 1]), egp2 = -qgamma(pl,
                   scale = 1, shape = par[i, 1]), egp3 = log(1 - pl^(1/par[i, 1])))
             } else {
-                retlev[i, j] <- thresh[i] + par[i, 2]/par[i, 3] * (switch(model, egp1 = (1 - qbeta(pl, par[i, 1], 1/abs(par[i, 3])))^(-sign(par[i,
+                retlev[i, np-j+1] <- thresh[i] + par[i, 2]/par[i, 3] * (switch(model, egp1 = (1 - qbeta(pl, par[i, 1], 1/abs(par[i, 3])))^(-sign(par[i,
                   3])), egp2 = exp(par[i, 3] * qgamma(pl, scale = 1, shape = par[i, 1])), egp3 = (1 - pl^(1/par[i, 1]))^(-par[i, 3])) -
                   1)
             }
         }
     }
     if (plot) {
-        matplot(1/p, t(retlev), , type = "b", lty = rep(1, length(thresh)), col = rainbow(n = length(thresh), start = 2/6, end = 0),
+        matplot(pq, t(retlev), pch = 20, type = "b", lty = rep(1, length(thresh)), col = rainbow(n = length(thresh), start = 2/6, end = 0),
             xlab = "Return period", ylab = "Estimated return level", main = paste0("Return level plot for EGP", substr(model, 4, 4),
                 ""))
+      legend("bottomright", bty = "n",legend = thresh, col = rainbow(n = length(thresh), start = 2/6, end = 0), pch = 20)
+
     }
-    return(retlev)
+    res <- retlev
+    colnames(res) <- pq
+    rownames(res) <- thresh
+    return(invisible(res))
 }
 
 #' Parameter stability plot and maximum likelihood routine for extended GP models
@@ -279,8 +286,8 @@ tstab.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1
     if (missing(thresh) && isTRUE(any(c(missing(umin), missing(umax))))) {
         stop("Must provide either minimum and maximum threshold values, or a vector of threshold `thresh'")
     } else if (missing(thresh)) {
-        stopifnot(class(umin) %in% c("numeric", "integer"),
-                  class(umax) %in% c("numeric", "integer"),
+        stopifnot(inherits(umin, c("integer", "numeric")),
+                  inherits(umax, c("integer", "numeric")),
                   length(umin) == 1, length(umax) == 1, umin < umax)
         thresh <- seq(umin, umax, length = nint)
     } else if (length(thresh) <= 1) {
@@ -446,7 +453,7 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
         }
     } else {
       ddensF <- ellips$ddensF
-        if (class(ddensF) != "function") {
+        if (!inherits(ddensF, "function")) {
             stop("Invalid arguments. Please provide valid functions.")
         }
         ddensFn <- function(x) {

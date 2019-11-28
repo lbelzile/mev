@@ -4,9 +4,18 @@
 \alias{egp2.fit}
 \title{Fit an extended generalized Pareto distribution of Naveau et al.}
 \usage{
-egp2.fit(data, model = 1, method = c("mle", "pwm"), init,
-  censoring = c(0, Inf), rounded = 0, CI = FALSE, R = 1000,
-  ncpus = 1, plots = TRUE)
+egp2.fit(
+  data,
+  model = 1,
+  method = c("mle", "pwm"),
+  init,
+  censoring = c(0, Inf),
+  rounded = 0,
+  CI = FALSE,
+  R = 1000,
+  ncpus = 1,
+  plots = TRUE
+)
 }
 \arguments{
 \item{data}{data vector.}

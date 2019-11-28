@@ -4,8 +4,13 @@
 \alias{ext.index}
 \title{Extremal index estimators based on interexceedance time and gap of exceedances}
 \usage{
-ext.index(x, q = 0.95, method = c("wls", "mle", "intervals"),
-  plot = FALSE, warn = FALSE)
+ext.index(
+  x,
+  q = 0.95,
+  method = c("wls", "mle", "intervals"),
+  plot = FALSE,
+  warn = FALSE
+)
 }
 \arguments{
 \item{x}{a vector containing of data points}

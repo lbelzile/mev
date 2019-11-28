@@ -2,12 +2,7 @@
 % Please edit documentation in R/univdist.R
 \name{rlarg}
 \alias{rlarg}
-\alias{rlarg.infomat}
 \title{Distribution of the r-largest observations}
-\usage{
-rlarg.infomat(par, dat, method = c("obs", "exp"), nobs = nrow(dat),
-  r = ncol(dat))
-}
 \arguments{
 \item{par}{vector of \code{loc}, \code{scale} and \code{shape}}
 
@@ -21,8 +16,6 @@ rlarg.infomat(par, dat, method = c("obs", "exp"), nobs = nrow(dat),
 }
 \description{
 Likelihood, score function and information matrix for the r-largest observations likelihood.
-
-The function returns the expected or observed information matrix.
 }
 \section{Usage}{
 
@@ -47,10 +40,6 @@ Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Value
 
 Smith, R.L. (1986).  Extreme value theory based on the r largest annual events, \emph{Journal of Hydrology}, \bold{86}(1-2), 27--43, \code{http://dx.doi.org/10.1016/0022-1694(86)90004-1}.
 }
-\seealso{
-\code{\link{rlarg}}
-}
 \author{
 Leo Belzile
 }
-\keyword{internal}

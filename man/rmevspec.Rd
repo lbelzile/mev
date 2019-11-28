@@ -4,9 +4,19 @@
 \alias{rmevspec}
 \title{Random samples from spectral distributions of multivariate extreme value models.}
 \usage{
-rmevspec(n, d, param, sigma, model = c("log", "neglog", "bilog",
-  "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir",
-  "dirmix"), weights, vario, coord = NULL, grid = FALSE, ...)
+rmevspec(
+  n,
+  d,
+  param,
+  sigma,
+  model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith",
+    "schlather", "ct", "sdir", "dirmix"),
+  weights,
+  vario,
+  coord = NULL,
+  grid = FALSE,
+  ...
+)
 }
 \arguments{
 \item{n}{number of observations}

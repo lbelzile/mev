@@ -2,18 +2,7 @@
 % Please edit documentation in R/univdist.R
 \name{pp}
 \alias{pp}
-\alias{pp.ll}
-\alias{pp.score}
-\alias{pp.infomat}
 \title{Poisson process of extremes.}
-\usage{
-pp.ll(par, dat, u, np = 1)
-
-pp.score(par, dat, u, np = 1)
-
-pp.infomat(par, dat, method = c("obs", "exp"), u, np = 1,
-  nobs = length(dat))
-}
 \arguments{
 \item{par}{vector of \code{loc}, \code{scale} and \code{shape}}
 
@@ -21,21 +10,15 @@ pp.infomat(par, dat, method = c("obs", "exp"), u, np = 1,
 
 \item{u}{threshold}
 
+\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
+
 \item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide
 with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
-
-\item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
 \item{nobs}{number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.}
 }
 \description{
 Likelihood, score function and information matrix for the Poisson process likelihood.
-
-The function returns the expected or observed information matrix.
-}
-\note{
-For the expected information matrix, the number of points above the threshold is random, but should correspond to
-\code{np}\eqn{\Lambda}. In this sense, unless \code{np} is linear in the sample size, the
 }
 \section{Usage}{
 
@@ -62,4 +45,3 @@ Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators fo
 \author{
 Leo Belzile
 }
-\keyword{internal}

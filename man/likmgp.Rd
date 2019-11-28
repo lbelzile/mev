@@ -4,8 +4,18 @@
 \alias{likmgp}
 \title{Likelihood for multivariate generalized Pareto distribution}
 \usage{
-likmgp(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
-  "log"), likt = c("mgp", "pois", "binom"), lambdau = 1, ...)
+likmgp(
+  dat,
+  thresh,
+  loc,
+  scale,
+  shape,
+  par,
+  model = c("br", "xstud", "log"),
+  likt = c("mgp", "pois", "binom"),
+  lambdau = 1,
+  ...
+)
 }
 \arguments{
 \item{dat}{matrix of observations}

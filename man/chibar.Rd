@@ -4,8 +4,7 @@
 \alias{chibar}
 \title{Parametric estimates of \eqn{\bar{\chi}}{chi bar}}
 \usage{
-chibar(dat, confint = c("delta", "profile", "tem"), qu = 0,
-  level = 0.95)
+chibar(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 0.95)
 }
 \arguments{
 \item{dat}{an \eqn{n} by \eqn{d} matrix of multivariate observations}

@@ -4,8 +4,15 @@
 \alias{gevN.infomat}
 \title{Information matrix of the generalized extreme value distribution (quantile/mean of N-block maxima parametrization)}
 \usage{
-gevN.infomat(par, dat, method = c("obs", "exp"), qty = c("mean",
-  "quantile"), N, q = 0.5, nobs = length(dat))
+gevN.infomat(
+  par,
+  dat,
+  method = c("obs", "exp"),
+  qty = c("mean", "quantile"),
+  N,
+  q = 0.5,
+  nobs = length(dat)
+)
 }
 \arguments{
 \item{par}{vector of \code{loc}, quantile/mean of N-block maximum and \code{shape}}
