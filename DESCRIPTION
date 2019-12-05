@@ -1,8 +1,8 @@
 Package: mev
 Type: Package
 Title: Multivariate Extreme Value Distributions
-Version: 1.12.3
-Date: 2019-11-28
+Version: 1.13
+Date: 2019-12-05
 Authors@R: c(person(given="Leo", family="Belzile", role = c("aut", "cre"), email = "belzilel@gmail.com", comment = c(ORCID = "0000-0002-9135-014X")), person(given="Jennifer L.", family="Wadsworth", role=c("aut")), person(given="Paul J.", family="Northrop", role=c("aut")), person(given="Scott D.", family="Grimshaw", role=c("aut")), person(given="Jin", family="Zhang", role=c("ctb")), person(given="Michael A.", family="Stephens", role=c("ctb")), person(given="Art B.", family="Owen", role=c("ctb")), person(given="Raphael", family="Huser", role=c("aut")))
 Description: Exact simulation from max-stable processes, R-Pareto processes for various parametric models. Threshold selection methods. Multivariate extreme diagnostics. Estimation and likelihoods for univariate extremes.
 License: GPL-3
@@ -22,7 +22,7 @@ Imports:
 Suggests: cobs, knitr, mvPot (>= 0.1.4), mvtnorm, gmm, revdbayes, ismev
 LinkingTo: Rcpp, RcppArmadillo
 LazyData: true
-RoxygenNote: 7.0.1
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
 Encoding: UTF-8
 ByteCompile: true
