@@ -15,8 +15,7 @@ pp.infomat(par, dat, method = c("obs", "exp"), u, np = 1, nobs = length(dat))
 
 \item{u}{threshold}
 
-\item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide
-with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
+\item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
 
 \item{nobs}{number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.}
 }
@@ -28,7 +27,20 @@ The function returns the expected or observed information matrix.
 }
 \note{
 For the expected information matrix, the number of points above the threshold is random, but should correspond to
-\code{np}\eqn{\Lambda}.
+\code{np}\eqn{\Lambda}. The parametrization for \code{np} is shared between \code{fit.pp}, \code{pp.ll}, etc.
+The entries for the information matrix are given in Sharkey and Tawn (2017), but contains some typos which were corrected.
+}
+\examples{
+\dontrun{
+dat <- evd::rgpd(n <- 1e3, 0.1, 2, -0.1)
+mle <- fit.pp(dat, threshold = 0, np =  np)$par
+info_obs <- pp.infomat(par = mle, dat = dat, method = "obs", u = 0, np = np)
+info_exp <- pp.infomat(par = mle, dat = dat, method = "exp", u = 0, np = np)
+info_obs/info_exp
+}
+}
+\references{
+Sharkey, P. and J.A. Tawn (2017). A Poisson process reparameterisation for Bayesian inference for extremes, \emph{Extremes}, \bold{20}(2), 239-263, \code{http://dx.doi.org/10.1007/s10687-016-0280-2}.
 }
 \seealso{
 \code{\link{pp}}

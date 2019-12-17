@@ -12,8 +12,7 @@
 
 \item{method}{string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.}
 
-\item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide
-with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
+\item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
 
 \item{nobs}{number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.}
 }
@@ -41,6 +40,8 @@ pp.infomat(par, dat, method = c('obs', 'exp'))}
 Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 
 Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
+
+Sharkey, P. and J.A. Tawn (2017). A Poisson process reparameterisation for Bayesian inference for extremes, \emph{Extremes}, \bold{20}(2), 239-263, \code{http://dx.doi.org/10.1007/s10687-016-0280-2}.
 }
 \author{
 Leo Belzile

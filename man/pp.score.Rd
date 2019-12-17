@@ -15,8 +15,7 @@ pp.score(par, dat, u, np = 1)
 
 \item{u}{threshold}
 
-\item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide
-with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
+\item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
 }
 \value{
 score vector of NHPP

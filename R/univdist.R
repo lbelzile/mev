@@ -2405,8 +2405,7 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
 #' @param dat sample vector
 #' @param u threshold
 #' @param method string indicating whether to use the expected  (\code{'exp'}) or the observed (\code{'obs'} - the default) information matrix.
-#' @param np number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide
-#' with those of a generalized extreme value distribution with block size \code{length(dat)/np}.
+#' @param np number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide with those of a generalized extreme value distribution with block size \code{length(dat)/np}.
 #' @param nobs number of observations for the expected information matrix. Default to \code{length(dat)} if \code{dat} is provided.
 #' @section Usage:
 #' \preformatted{pp.ll(par, dat)
@@ -2422,7 +2421,7 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
 #' }
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 #' @references Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
-#'
+#' @references Sharkey, P. and J.A. Tawn (2017). A Poisson process reparameterisation for Bayesian inference for extremes, \emph{Extremes}, \bold{20}(2), 239-263, \code{http://dx.doi.org/10.1007/s10687-016-0280-2}.
 NULL
 
 
@@ -2431,9 +2430,13 @@ NULL
 
 #' Log-likelihood of Poisson process of threshold exceedances
 #'
+#' This function returns the log-likelihood of the non-homogeneous Poisson process
+#' of exceedances above threshold \code{u}, adjusted so that there are \code{np} periods
+#' of observations.
+#'
 #' @export
-#' @inheritParams pp
 #' @seealso \code{\link{pp}}
+#' @inheritParams pp
 #' @return log-likelihood of the NHPP
 #' @keywords internal
 pp.ll <- function(par, dat, u, np = 1){
@@ -2471,13 +2474,23 @@ pp.score <- function(par, dat, u, np = 1){
 #' The function returns the expected or observed information matrix.
 #'
 #' @note For the expected information matrix, the number of points above the threshold is random, but should correspond to
-#' \code{np}\eqn{\Lambda}.
+#' \code{np}\eqn{\Lambda}. The parametrization for \code{np} is shared between \code{fit.pp}, \code{pp.ll}, etc.
+#' The entries for the information matrix are given in Sharkey and Tawn (2017), but contains some typos which were corrected.
 #'
 #' @export
 #' @inheritParams pp
 #' @seealso \code{\link{pp}}
 #' @return information matrix of the NHPP
+#' @references Sharkey, P. and J.A. Tawn (2017). A Poisson process reparameterisation for Bayesian inference for extremes, \emph{Extremes}, \bold{20}(2), 239-263, \code{http://dx.doi.org/10.1007/s10687-016-0280-2}.
 #' @keywords internal
+#' @examples
+#' \dontrun{
+#' dat <- evd::rgpd(n <- 1e3, 0.1, 2, -0.1)
+#' mle <- fit.pp(dat, threshold = 0, np =  np)$par
+#' info_obs <- pp.infomat(par = mle, dat = dat, method = "obs", u = 0, np = np)
+#' info_exp <- pp.infomat(par = mle, dat = dat, method = "exp", u = 0, np = np)
+#' info_obs/info_exp
+#' }
 pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = length(dat)) {
   method <- match.arg(method)
   if(method == "obs"){
@@ -2487,6 +2500,7 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
       dat <- dat[dat >u]
     }
   }
+  stopifnot(length(par)==3L)
   mu <- par[1]
   sigma <- par[2]
   xi <- as.vector(par[3])
@@ -2534,15 +2548,16 @@ pp.infomat <- function(par, dat, method = c("obs", "exp"), u, np = 1, nobs = len
       (2*(vm*xi + 1)^2*(2*xi + 1)*(xi + 1)*log(vm*xi + 1) +
          (vm^2*(2*xi + 1)*(xi + 1)*(xi - 3)*xi + 2*((2*xi^2 - xi - 3)*xi - 1)*vm + 2*xi^2)*xi)*
       (vm*xi + 1)^(-1/xi)*m*r2/((vm*xi + 1)^2*(2*xi + 1)*(xi + 1)*xi^3)
+    infomat <- - nobs * matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE)
   } else{
-    e12 <- -m*exp(-vm)/sigma^2
-    e11 <- -m*r2*exp(-vm)/sigma^2 - m*vm*exp(-vm)/sigma^2 + m*exp(-vm)/sigma^2
+    e11 <- -m*exp(-vm)/sigma^2
+    e12 <- -m*r2*exp(-vm)/sigma^2 - m*vm*exp(-vm)/sigma^2 + m*exp(-vm)/sigma^2
     e13 <- -1/2*(2*r2*vm + vm^2 - 2*vm)*m*exp(-vm)/sigma
     e22 <- -2*m*r2*vm*exp(-vm)/sigma^2 - m*vm^2*exp(-vm)/sigma^2 + m*r1*exp(-vm)/sigma^2 - 2*m*r2*exp(-vm)/sigma^2 + 2*m*vm*exp(-vm)/sigma^2
     e23 <- -1/2*(2*r2*vm^2 + vm^3 + 2*r2*vm - 2*vm^2 + 2*r2)*m*exp(-vm)/sigma
     e33 <- -1/12*(8*r2*vm^3 + 3*vm^4 + 12*r2*vm^2 - 8*vm^3 + 24*r2*vm + 24*r2)*m*exp(-vm)
 }
-  infomat <- -nobs* matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE)
+  infomat <- - matrix(c(e11,e12,e13,e12,e22,e23,e13,e23,e33), nrow = 3, ncol = 3, byrow = TRUE)
   }
   colnames(infomat) <- rownames(infomat) <- c("loc","scale","shape")
   return(infomat)

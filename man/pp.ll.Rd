@@ -13,14 +13,15 @@ pp.ll(par, dat, u, np = 1)
 
 \item{u}{threshold}
 
-\item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide
-with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
+\item{np}{number of periods of observations. This is a \emph{post hoc} adjustment for the intensity so that the parameters of the model coincide with those of a generalized extreme value distribution with block size \code{length(dat)/np}.}
 }
 \value{
 log-likelihood of the NHPP
 }
 \description{
-Log-likelihood of Poisson process of threshold exceedances
+This function returns the log-likelihood of the non-homogeneous Poisson process
+of exceedances above threshold \code{u}, adjusted so that there are \code{np} periods
+of observations.
 }
 \seealso{
 \code{\link{pp}}
