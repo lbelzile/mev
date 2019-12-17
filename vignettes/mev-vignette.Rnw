@@ -41,7 +41,7 @@ if (before && options$fig.show!='none') par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axi
 \maketitle
 \begin{center}
 { \small
-EPFL-SB-MATH-STAT \\ Station 8, Bâtiment MA \\CH-1015, Switzerland,\\ \href{leo.belzile@epfl.ch}{\texttt{leo.belzile@epfl.ch}}
+Department of Decision Sciences \\ HEC Montréal  \\\href{leo.belzile@hec.ca}{\texttt{leo.belzile@hec.ca}}
 }
 \end{center}
 

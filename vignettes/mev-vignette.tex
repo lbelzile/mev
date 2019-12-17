@@ -1,4 +1,54 @@
-\documentclass{article}
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amssymb, amsfonts}
@@ -19,10 +69,9 @@
 \newcommand{\sumi}{\sum_{i=1}^n}
 \newcommand{\pfrac}[2]{\left(\frac{#1}{#2}\right)}
 \DeclareMathOperator{\diag}{diag}
-
-\usepackage{Sweave}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
-\input{mev-vignette-concordance}
+
 %\VignetteIndexEntry{Exact unconditional sampling from max-stable random vectors}
 %\VignetteEngine{knitr::knitr_notangle}
 
@@ -32,7 +81,7 @@
 \maketitle
 \begin{center}
 { \small
-EPFL-SB-MATH-STAT \\ Station 8, Bâtiment MA \\CH-1015, Switzerland,\\ \href{leo.belzile@epfl.ch}{\texttt{leo.belzile@epfl.ch}}
+Department of Decision Sciences \\ HEC Montréal  \\\href{leo.belzile@hec.ca}{\texttt{leo.belzile@hec.ca}}
 }
 \end{center}
 
@@ -43,37 +92,39 @@ The `\code{mev}' package was originally introduced to implement the exact uncond
 There are two main functions, \code{rmev} and \code{rmevspec}. \code{rmev} samples from simple max-stable processes, meaning it will return an $n \times d$ matrix of samples, where each of the column has a sample from a unit Frechet distribution. In constrast, \code{rmevspec} returns sample on the unit simplex from the spectral (or angular) measure. One could use this to test estimation based on spectral densities, or to construct samples from Pareto processes.
 
 The syntax is
-\begin{Schunk}
-\begin{Sinput}
-> library(mev)
-> #Sample of size 1000 from a 5-dimensional logistic model
-> x <- rmev(n=1000, d=5, param=0.5, model="log")
-> #Marginal parameters are all standard Frechet, meaning GEV(1,1,1)
-> apply(x, 2, function(col){ismev::gev.fit(col, show=FALSE)$mle})
-\end{Sinput}
-\begin{Soutput}
-       [,1]   [,2]   [,3]   [,4]   [,5]
-[1,] 0.9771 1.0140 0.9780 0.9882 0.9787
-[2,] 0.9575 1.0176 0.9678 0.9670 0.9481
-[3,] 0.9585 0.9873 1.0045 0.9748 0.9992
-\end{Soutput}
-\begin{Sinput}
-> #Sample from the corresponding spectral density
-> w <- rmevspec(n=1000, d=5, param=0.5, model="log")
-> #All rows sum to 1 by construction
-> head(rowSums(w))
-\end{Sinput}
-\begin{Soutput}
-[1] 1 1 1 1 1 1
-\end{Soutput}
-\begin{Sinput}
-> #The marginal mean is 1/d
-> round(colMeans(w),2)
-\end{Sinput}
-\begin{Soutput}
-[1] 0.2 0.2 0.2 0.2 0.2
-\end{Soutput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(mev)}
+\hlcom{#Sample of size 1000 from a 5-dimensional logistic model}
+\hlstd{x} \hlkwb{<-} \hlkwd{rmev}\hlstd{(}\hlkwc{n}\hlstd{=}\hlnum{1000}\hlstd{,} \hlkwc{d}\hlstd{=}\hlnum{5}\hlstd{,} \hlkwc{param}\hlstd{=}\hlnum{0.5}\hlstd{,} \hlkwc{model}\hlstd{=}\hlstr{"log"}\hlstd{)}
+\hlcom{#Marginal parameters are all standard Frechet, meaning GEV(1,1,1)}
+\hlkwd{apply}\hlstd{(x,} \hlnum{2}\hlstd{,} \hlkwa{function}\hlstd{(}\hlkwc{col}\hlstd{)\{ismev}\hlopt{::}\hlkwd{gev.fit}\hlstd{(col,} \hlkwc{show}\hlstd{=}\hlnum{FALSE}\hlstd{)}\hlopt{$}\hlstd{mle\})}
+\end{alltt}
+\begin{verbatim}
+##        [,1]   [,2]   [,3]   [,4]   [,5]
+## [1,] 0.9540 0.9582 0.9651 0.9725 0.9659
+## [2,] 0.9375 0.9419 0.9175 0.9416 0.9498
+## [3,] 0.9495 0.9653 0.9395 0.9444 0.9597
+\end{verbatim}
+\begin{alltt}
+\hlcom{#Sample from the corresponding spectral density}
+\hlstd{w} \hlkwb{<-} \hlkwd{rmevspec}\hlstd{(}\hlkwc{n}\hlstd{=}\hlnum{1000}\hlstd{,} \hlkwc{d}\hlstd{=}\hlnum{5}\hlstd{,} \hlkwc{param}\hlstd{=}\hlnum{0.5}\hlstd{,} \hlkwc{model}\hlstd{=}\hlstr{"log"}\hlstd{)}
+\hlcom{#All rows sum to 1 by construction}
+\hlkwd{head}\hlstd{(}\hlkwd{rowSums}\hlstd{(w))}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 1 1 1 1 1
+\end{verbatim}
+\begin{alltt}
+\hlcom{#The marginal mean is 1/d}
+\hlkwd{round}\hlstd{(}\hlkwd{colMeans}\hlstd{(w),}\hlnum{2}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.19 0.20 0.20 0.21 0.20
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
 \section{Description of the models implemented}
 
@@ -184,7 +235,7 @@ While \cite{Engelke:2015} state that H\"usler--Reiss variates can be sampled fol
 conditioned on a particular site ($\bs{s}_0$), which complicates the comparisons with the other methods.
 
 Let $I_{-j}=\{1, \ldots, d\} \setminus \{j\}$ and $\lambda_{ij}^2 \geq 0$ be entries of a strictly conditionally
-negative definite matrice $\bs{\Lambda}$, for which $\lambda_{ij}^2=\lambda_{ji}^2$. Then, following \cite{Nikoloulopoulos:2009}
+negative definite matrix $\bs{\Lambda}$, for which $\lambda_{ij}^2=\lambda_{ji}^2$. Then, following \cite{Nikoloulopoulos:2009}
 (Remark~2.5) and \cite{Huser:2013}, we can write the distribution function as
  \begin{align*}
    \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{j=1}^d \frac{1}{x_j} \Phi_{d-1, \bs{\Sigma}_{-j}} \left( \lambda_{ij}-
