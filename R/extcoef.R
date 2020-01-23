@@ -31,7 +31,7 @@
 #'
 #' All estimators are coded in plain R and computations are not optimized. The estimation
 #' time can therefore be significant for large data sets. If there are no missing observations,
-#' the routine in \code{\link[SpatialExtremes]{fmadogram}} should be prefered as it is
+#' the routine \code{fmadogram} from the \code{SpatialExtremes} package should be prefered as it is
 #' noticeably faster.
 #'
 #' The data will typically consist of max-stable vectors or block maxima.

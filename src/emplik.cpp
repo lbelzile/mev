@@ -121,8 +121,8 @@ arma::vec svdlm (arma::mat X, arma::colvec y){
   arma::svd(U, d, V, X);
   U.resize(y.n_elem,d.n_elem);
   double maxd = max(d);
-  for(int i=0; i<d.n_elem; i++){
-    if(d(i) < (RELTOL * max(d) + ABSTOL)){
+  for(arma::uword i=0; i < d.n_elem; i++){
+    if(d(i) < (RELTOL * maxd + ABSTOL)){
       d(i) = 0;
     } else{
       d(i)=1 / d(i);

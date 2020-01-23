@@ -217,11 +217,11 @@ arma::vec dmvnorm_chol_arma(arma::mat x,  arma::rowvec mean,  arma::mat chol_sig
     arma::vec logretval(n);
     arma::mat rooti = arma::trans(arma::inv(arma::trimatu(chol_sigma)));
     double rootisum = arma::sum(log(rooti.diag()));
-    double constants = -(static_cast<double>(d)/2.0) *  std::log(2.0 * M_PI);
+    double constants = -(static_cast<double>(d)/2.0) *  log2pi;
 
     for (int i = 0; i < n; i ++) {
       arma::vec z = rooti * arma::trans( x.row(i) - mean) ;
-      logretval(i)      = constants - 0.5 * arma::sum(z%z) + rootisum;
+      logretval(i) = constants - 0.5 * arma::sum(z%z) + rootisum;
     }
     if (logv == false) {
       logretval = exp(logretval);
@@ -398,7 +398,7 @@ NumericVector rPexstud (int index, arma::mat cholesky, arma::mat sigma, NumericV
 //' @keywords internal
 //[[Rcpp::export(.rPHuslerReiss)]]
 NumericVector rPHuslerReiss (int index, arma::mat cholesky, arma::mat Sigma){
-  if(index < 0 || index >= Sigma.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
+  if(index < 0 || (unsigned) index >= Sigma.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
   arma::vec mu = arma::vec(Sigma.n_cols);// b/c need constructor, then setter
   mu = -2.0*Sigma.col(index);
   mu.shed_row(index);
@@ -417,7 +417,7 @@ NumericVector rPHuslerReiss (int index, arma::mat cholesky, arma::mat Sigma){
 
 //[[Rcpp::export(.rPHuslerReiss_old)]]
 NumericVector rPHuslerReiss_old (int index, arma::mat Lambda){
-  if(index < 0 || index >= Lambda.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
+  if(index < 0 || (unsigned) index >= Lambda.n_cols) Rcpp::stop("Invalid argument in rPHuslerReiss");
 
   arma::vec mu = arma::vec(Lambda.n_cols);// b/c need constructor, then setter
   mu = -2.0*Lambda.col(index);
@@ -473,7 +473,7 @@ NumericVector rPBrownResnick_old (int index, NumericMatrix Sigma){
 
 NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
   int d = loc.n_rows;
-  if(index < 0 || index >= d) Rcpp::stop("Invalid index in rPSmith");
+  if(index < 0 || (unsigned) index >= d) Rcpp::stop("Invalid index in rPSmith");
   arma::vec mu = arma::vec(Sigma.n_cols);
   //arma::rowvec mut = arma::rowvec(d);
   mu.zeros(); //mut.zeros();
@@ -501,7 +501,7 @@ NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
 //[[Rcpp::export(.rPSmith)]]
 NumericVector rPSmith (int index, arma::mat Sigma_chol, arma::mat loc){
   int d = loc.n_rows;
-  if(index < 0 || index >= d) Rcpp::stop("Invalid index in rPSmith");
+  if(index < 0 || (unsigned) index >= d) Rcpp::stop("Invalid index in rPSmith");
   arma::vec mu = arma::vec(Sigma_chol.n_cols);
   //arma::rowvec mut = arma::rowvec(d);
   mu.zeros(); //mut.zeros();
@@ -709,7 +709,7 @@ NumericMatrix rexstudspec(int n, arma::mat sigma, NumericVector al){
   arma::mat samp(n, d);
   IntegerVector intsamps = sample_qty(n, d);
   int r = 0;
-  for(unsigned int j = 0; j < d; j++){
+  for(int j = 0; (unsigned) j < d; j++){
     if(intsamps[j] > 0){
       samp.rows(r, r+intsamps[j]-1) = mvrtXstud(intsamps[j], sigma, alpha, j);
       r += intsamps[j];
