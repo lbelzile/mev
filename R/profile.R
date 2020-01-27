@@ -2295,10 +2295,10 @@ gev.tem <- function(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant
 #' dat <- evd::rgpd(n = 40, scale = 1, shape = -0.1)
 #' #with plots
 #' m1 <- gpd.tem(param = 'shape', n.psi = 50, dat = dat, plot = TRUE)
+#' \dontrun{
 #' m2 <- gpd.tem(param = 'scale', n.psi = 50, dat = dat)
 #' m3 <- gpd.tem(param = 'VaR', n.psi = 50, dat = dat, m = 100)
 #' #Providing psi
-#' \dontrun{
 #' psi <- c(seq(2, 5, length = 15), seq(5, 35, length = 45))
 #' m4 <- gpd.tem(param = 'ES', dat = dat, m = 100, psi = psi, correction = FALSE)
 #' mev:::plot.fr(m4, which = c(2, 4))
