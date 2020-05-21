@@ -1,3 +1,10 @@
+mev v.1.14 
+==============
+
+Fixes:
+* Optimization method in fit.gev now uses the PWM solution of Hosking (1985) as starting value
+* Fixes to NHPP order statistics density (returns -Inf outside of domain, also correctly evaluate for boundary case when xi=-1)
+* Optimization routines fit.pp, fit.gev and fit.rlarg now return correct MLE when solution lies on boundary (xi=-1) and are more robust to failure (gradients for nlminb return large values rather than NAs which caused the algorithm to stop).
 
 mev v.1.13 (Release date: 2019-12-17)
 ==============

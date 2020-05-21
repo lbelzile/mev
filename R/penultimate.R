@@ -349,8 +349,9 @@ tstab.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1
 #' Smith's penultimate approximations
 #'
 #' The function takes as arguments the distribution and density functions. There are two options:
-#' \code{method='bm'} yields block maxima and the user should provide in such case the block sizes via the
-#' argument \code{m}. If instead \code{method='pot'} is provided, a vector of threshold values must be
+#' \code{method='bm'} yields block maxima and \code{method='pot'} threshold exceedances.
+#' For \code{method='bm'}, the user should provide in such case the block sizes via the
+#' argument \code{m}, whereas if \code{method='pot'}, a vector of threshold values should be
 #' provided. The other argument (\code{u} or \code{m} depending on the method) is ignored.
 #'
 #' Alternatively, the user can provide functions \code{densF}, \code{quantF} and \code{distF} for the density,

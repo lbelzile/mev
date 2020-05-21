@@ -206,6 +206,7 @@ fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC
 #' plot(pp_mle)
 fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
   xdat <- as.vector(xdat)
+  xdat <- xdat[is.finite(xdat)]
   n <- length(xdat)
   if (missing(threshold) || length(threshold) != 1 || mode(threshold) !=  "numeric")
     stop("`threshold' must be a numeric value")
@@ -218,10 +219,12 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
   #Without covariates, we have exactly np*(1+xi/sigma*(u-mu))^(-1/xi)=nu
   #So degenerate optimization!
  pp.nll <- function(par, xdat, u, np){
-     -pp.ll(par = par, dat = xdat, u = u, np = np)
+    nll <- -pp.ll(par = par, dat = xdat, u = u, np = np)
+    ifelse(is.finite(nll), nll, 1e10)
  }
  pp.ngr <- function(par, xdat, u, np){
-   -pp.score(par = par, dat = xdat, u = u, np = np)
+   grad <- -pp.score(par = par, dat = xdat, u = u, np = np)
+   ifelse(is.finite(grad), grad, 1e10)
  }
  xmax <- max(xdatu); xmin <- min(xdatu)
  #hin Inequalities for Augmented Lagrangian
@@ -242,6 +245,9 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
                    fn = pp.nll, gr = pp.ngr, hin = pp.hin,
              u = u, xdat = xdatu, np = np, control.outer = list(trace=FALSE, method = "nlminb")))
  if(mle$convergence == 0  || isTRUE(all.equal(mle$gradient, rep(0,3), tolerance = 1e-3))){
+   mle$convergence <- "successful"
+   names(mle$par) <- c("loc","scale","shape")
+ } else if(isTRUE(all.equal(mle$par['shape'], -1, check.attributes = FALSE, tolerance = 1e-6))){
    mle$convergence <- "successful"
    names(mle$par) <- c("loc","scale","shape")
  } else{
@@ -282,6 +288,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
 #' Maximum likelihood estimation for the generalized extreme value distribution
 #'
 #' This function returns an object of class \code{mev_gev}, with default methods for printing and quantile-quantile plots.
+#' The default starting values are the solution of the probability weighted moments.
 #' @inheritParams gp.fit
 #' @export
 #' @importFrom alabama auglag
@@ -300,42 +307,68 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
 #' \item \code{xdat} vector of data
 #' }
 fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE){
-  xdat <- na.omit(as.vector(xdat))
+  xdat <- as.vector(xdat)
+  xdat <- sort(xdat[is.finite(xdat)])
   method <- match.arg(method)
   n <- length(xdat)
-  xmax <- max(xdat)
-  xmin <- min(xdat)
+  xmax <- xdat[n] #sorted data
+  xmin <- xdat[1]
+  xmean <- mean(xdat)
   if(is.null(start)){
-  #Optimization routine, with default starting values
-  in2 <- sqrt(6 * var(xdat))/pi
-  in1 <- mean(xdat) - 0.57722 * in2
-  spar <- c(in1, in2, 0.1)
-  if(spar[2] + spar[3] * (xmin - spar[1]) <= 0){
-    spar[2] <- abs(spar[3]*(xmin-spar[1])) - 1e-5
+  #Optimization routine, with PWM as default starting values
+  pwm <- function(dat, r){
+    # Data must be sorted!
+    r <- as.integer(r)
+    n <- length(dat)
+    stopifnot(n > r, r > 0)
+    sum(exp(lgamma((r+1):n) - lgamma(((r+1):n)-r))*dat[-(1:r)])/exp(lgamma(n+1) - lgamma(n-r))
   }
+  bpwm <- c(xmean, pwm(xdat,1), pwm(xdat,2))
+  # bpwm <- c(xmean, sum(rank(xdat)/(n+1)*xdat)/n, sum((rank(xdat)/(n+1))^2*xdat)/n)
+  kst <- (2*bpwm[2]-bpwm[1])/(3*bpwm[3]-bpwm[1])-log(2)/log(3)
+  xi_start <- -(7.859*kst + 2.9554*kst^2)
+  sigma_start <- -(2*bpwm[2]-bpwm[1])*xi_start/(gamma(1-xi_start)*(1-2^(xi_start)))
+  mu_start <- bpwm[1]-sigma_start*(gamma(1-xi_start)-1)/xi_start
+  spar <- c(mu_start, sigma_start, xi_start)
+  # check if initial value satisfy inequality constraints
+    if((xi_start < 0)&((spar[2] + spar[3] * (xmax - spar[1])) < 0)){
+      spar[1] <- spar[2]/spar[3] + xmax + 0.1
+    } else if((xi_start > 0)&((spar[2] + spar[3] * (xmin - spar[1])) < 0)){
+      spar[1] <- spar[2]/spar[3] + xmin - 0.1 #TODO check this
+    }
   } else{
    stopifnot(length(start)==3)
-    spar <- as.vector(start)
+   spar <- as.vector(start)
   }
   mle <- try(suppressWarnings(alabama::auglag(par = spar, fn = function(par) {
-    -gev.ll(par, dat = xdat)
+   nll <- -gev.ll(par, dat = xdat)
+   ifelse(is.finite(nll), nll, 1e10)
   }, gr = function(par) {
-    -gev.score(par, dat = xdat)
+    grad <- -gev.score(par, dat = xdat)
+    ifelse(is.finite(grad), grad, 1e6)
   }, hin = function(par) {
-    c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
+    c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]), par[2], par[3] + 0.99)
   }, control.outer = list(method = method, trace = FALSE),
   control.optim = switch(method,
-                         nlminb = list(iter.max = 300L, rel.tol = 1e-10, step.min = 1e-10),
-                         BFGS = list(iter.max = 300L, rel.tol = 1e-10)
+                         nlminb = list(iter.max = 500L, rel.tol = 1e-10, step.min = 1e-10),
+                         BFGS = list(maxit = 1000L, reltol = 1e-10)
 
   ))))
+  # Special case of MLE on the boundary xi = -1
+  par_boundary <- c(xmean, xmax-xmean, -1)
+  nll_boundary <- n*(1+log(par_boundary[2]))
   if(is.character(mle)){
    stop("Optimization routine for the GEV did not converge.")
   }
   #Extract information and store
   fitted <- list()
-  #Point estimate
-  fitted$estimate <- mle$par
+  if((nll_boundary > mle$value)&(mle$par[3] > -1)){
+    fitted$nllh <- mle$value
+    fitted$estimate <- mle$par
+  } else{
+    fitted$nllh <- nll_boundary
+    fitted$estimate <- par_boundary
+  }
   #Observed information matrix and standard errors
   if(fitted$estimate[3] > -0.5){
     fitted$vcov <- solve(gev.infomat(par = fitted$estimate, dat = xdat, method = "obs"))
@@ -346,10 +379,8 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
   }
   names(fitted$std.err) <- names(fitted$estimate) <- c("loc","scale","shape")
   fitted$method <- "auglag"
-  fitted$nllh <- mle$value
   fitted$nobs <- length(xdat)
-  fitted$convergence <- mle$convergence
-  if(fitted$convergence == 0){ fitted$convergence <- "successful"}
+  if(mle$convergence == 0){ fitted$convergence <- "successful"}
   fitted$counts <- mle$counts
   fitted$xdat <- xdat
   class(fitted) <- "mev_gev"
@@ -391,48 +422,64 @@ fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FA
     stop("Input should be ordered from largest to smallest in each row")
   }
 #Optimization routine, with default starting values
-xmax <- max(xdat); xmin <- min(xdat)
+xmax <- max(xdat)
+xmin <- min(xdat)
 if(is.null(start)){
     if(nrow(xdat) > 15L){ # Fit a generalized extreme value distribution to largest
     in2 <- sqrt(6 * var(xdat[,1]))/pi
     in1 <- mean(xdat[,1]) - 0.57722 * in2
     shape <- suppressWarnings(fit.gev(xdat[,1])$estimate[3])
-    spar <- c(in1, in2, shape)
+    spar <- c(in1, in2, shape + 0.2)
     if(spar[3] > 0 && (spar[2] + spar[3] * (xmin - spar[1]) <= 0)){
      spar[2] <- abs(spar[3]*(xmin - spar[1]))*1.1
     } else if(spar[3] < 0 && (spar[2] + spar[3] * (xmax - spar[1]) <= 0)){
       spar[2] <- abs(spar[3]*(xmax - spar[1]))*1.1
     }
   } else {
-    spar <- fit.pp(as.vector(xdat), threshold = xmin, np = 1)$estimate
+    spar <- suppressWarnings(fit.pp(as.vector(xdat), threshold = xmin, np = 1)$estimate)
   }
 } else{
   stopifnot(length(start)==3)
   spar <- as.vector(start)
-  if((spar[3] > 0 && spar[2] + spar[3] * (xmin - spar[1]) <= 0) ||
-     (spar[3] < 0 && spar[2] + spar[3] * (xmax - spar[1]) <= 0)){
+  if(( (spar[3] > 0) && (spar[2] + spar[3] * (xmin - spar[1]) <= 0)) ||
+     ( (spar[3] < 0) && (spar[2] + spar[3] * (xmax - spar[1]) <= 0))){
     stop("Invalid starting values in `start`")
   }
 }
 mle <- try(suppressWarnings(alabama::auglag(par = spar,
   fn = function(par) {
-  -rlarg.ll(par, dat = xdat)
+  nll <- -rlarg.ll(par, dat = xdat)
+    ifelse(is.finite(nll), nll, 1e10)
 }, gr = function(par) {
-  -rlarg.score(par, dat = xdat)
+  grad <- -rlarg.score(par, dat = xdat)
+  ifelse(is.finite(grad), grad, 1e10)
 }, hin = function(par) {
-  c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]))
+  c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]), par[3]+1-1e-8, par[2])
 }, control.outer = list(method = method, trace = FALSE, NMinit = TRUE),
 control.optim = switch(method,
-                       nlminb = list(iter.max = 300L, rel.tol = 1e-10, step.min = 1e-10),
-                       BFGS = list(iter.max = 300L, rel.tol = 1e-10)
+                       nlminb = list(iter.max = 1000L, rel.tol = 1e-10, step.min = 1e-10),
+                       BFGS = list(maxit = 1000L, reltol = 1e-10)
 ))))
 if(is.character(mle)){
   stop("Optimization routine for r-largest observations did not converge")
 }
+ xmeanr <- mean(xdat[,r])
+ # check MLE at xi=-1
+ par_boundary <- c(xmax - (xmax-xmeanr)/r, (xmax-xmeanr)/r, -1)
+ nll_boundary <- -rlarg.ll(par_boundary, dat = xdat)
 #Extract information and store
 fitted <- list()
+fitted$convergence <- mle$convergence
+if(fitted$convergence == 0){ fitted$convergence <- "successful"}
 #Point estimate
-fitted$estimate <- mle$par
+ if((nll_boundary > mle$value)&(mle$par[3] > -1)){
+  fitted$nllh <- mle$value
+  fitted$estimate <- mle$par
+ } else{
+   fitted$nllh <- nll_boundary
+   fitted$estimate <- par_boundary
+   fitted$convergence <- "successful"
+ }
 #Observed information matrix and standard errors
 if(fitted$estimate[3] > -0.5){
   fitted$vcov <- try(solve(rlarg.infomat(par = fitted$estimate, dat = xdat, method = "obs")))
@@ -447,9 +494,7 @@ if(fitted$estimate[3] > -0.5){
 }
 names(fitted$std.err) <- names(fitted$estimate) <- c("loc","scale","shape")
 fitted$method <- "auglag"
-fitted$nllh <- mle$value
-fitted$convergence <- mle$convergence
-if(fitted$convergence == 0){ fitted$convergence <- "successful"}
+
 fitted$counts <- mle$counts
 fitted$xdat <- xdat
 fitted$nobs <- length(xdat)

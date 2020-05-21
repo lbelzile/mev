@@ -2150,7 +2150,7 @@ gevN.dphi <- function(par, dat, N, q = 0.5, qty = c("mean", "quantile"), V) {
 #' @param shape shape parameter
 #' @return an \code{n} by \code{r} matrix of samples from the point process, ordered from largest to smallest in each row.
 #' @export
-rrlarg <- function(n, r, loc, scale, shape){
+rrlarg <- function(n, r, loc = 0, scale = 1, shape = 0){
   U <- matrix(rexp(n*r), nrow = n, ncol = r)
   U <- t(apply(U, 1, cumsum))
   if(r == 1){
@@ -2209,11 +2209,20 @@ rlarg.ll <- function(par, dat){
   }
   r <- ncol(dat)
   n <- nrow(dat)
-  if(abs(par[3]) > 1e-7){
-  - sum((1+par[3]*(dat[,r]-par[1])/par[2])^(-1/par[3])) - n*r*log(par[2]) -
-      (1/par[3]+1)*sum(log1p(par[3]*(dat-par[1])/par[2]))
+  xmax <- max(dat[,1])
+  xmin <- min(dat[,r])
+  if((par[3] < 0)&(xmax > par[1] - par[2]/par[3]) || (par[3] > 0)&(xmin < par[1] - par[2]/par[3])){
+    return(-Inf)
+  }
+  if(isTRUE(all.equal(par[3],-1, check.attributes = FALSE))){
+    - sum((1+par[3]*(dat[,r]-par[1])/par[2])^(-1/par[3])) - n*r*log(par[2])
   } else{
-    -sum(exp((par[1]-dat[,r])/par[2])) - n*r*log(par[2]) - sum((dat-par[1])/par[2])
+    if(abs(par[3]) > 1e-7){
+      - sum((1+par[3]*(dat[,r]-par[1])/par[2])^(-1/par[3])) - n*r*log(par[2]) -
+        (1/par[3]+1)*sum(log1p(par[3]*(dat-par[1])/par[2]))
+    } else{
+      -sum(exp((par[1]-dat[,r])/par[2])) - n*r*log(par[2]) - sum((dat-par[1])/par[2])
+    }
   }
 }
 
