@@ -1,5 +1,6 @@
 mev v.1.14 
 ==============
+New: four new families of max-stable models (pairwise beta, pairwise exponential, weighted Dirichlet and weighted exponential) for rmev, following Ballani and Schlather (2011)
 
 Fixes:
 * Optimization method in fit.gev now uses the PWM solution of Hosking (1985) as starting value

@@ -27,7 +27,6 @@ IntegerVector sample_qty(int n, int d){
 }
 
 
-
 //' Random variate generation for Dirichlet distribution on \eqn{S_{d}}{Sd}
 //'
 //' A function to sample Dirichlet random variables, based on the representation as ratios of Gamma.
@@ -279,7 +278,7 @@ NumericVector rPneglog (int d, int index, NumericVector theta){
 }
 
 //' Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
-//' \eqn{P_{x}} is probability of extremal functions from a Dirichlet mixture
+//' \eqn{P_{x}} is the probability of extremal functions from a Dirichlet mixture
 //'
 //' @param d dimension of the 1-sample
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
@@ -310,7 +309,7 @@ NumericVector rPdirmix (int d, int index, NumericMatrix alpha, NumericVector wei
 }
 
 //' Generate from bilogistic \eqn{Y \sim {P_x}}, where
-//' \eqn{P_{x}} is probability of extremal functions
+//' \eqn{P_{x}} is the probability of extremal functions
 //'
 //' @param d dimension of the 1-sample
 //' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
@@ -519,7 +518,7 @@ NumericVector rPSmith (int index, arma::mat Sigma_chol, arma::mat loc){
 
 
 //' Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
-//' \eqn{P_{x}} is probability of extremal functions from the Dirichlet model of
+//' \eqn{P_{x}} is the probability of extremal functions from the Dirichlet model of
 //' Coles and Tawn.
 //'
 //' Note: we generate from the Dirichlet rather than the Gamma distribution, since the former is parallelized
@@ -560,6 +559,7 @@ NumericVector rPdir(int d, int index, NumericVector alpha, bool irv = false){
     return sample;
   }
 }
+
 
 // SPECTRAL DISTRIBUTIONS ON L1-SPHERE (unit simplex)
 
@@ -885,13 +885,222 @@ NumericMatrix rdirspec(int n, int d, NumericVector alpha, bool irv = false){
   return sample;
 }
 
+//' Generates from \eqn{Q_i}{Qi}, the spectral measure of the pairwise Beta model
+//'
+//' This model was introduced in Cooley, Davis and Naveau (2010).
+//' The sample is drawn from a mixture and the algorithm follows from the proof of Theorem 1 in Ballani and Schlather (2011)
+//' and is written in full in Algorithm 1 of Sabourin et al. (2013).
+//'
+//' @param n sample size
+//' @param alpha concentration parameter
+//' @param beta vector of all pairwise component (lexicographic order, by row)
+//' @return a matrix of samples from the angular distribution
+//' @references Cooley, D., R.A. Davis and P. Naveau (2010). The pairwise beta distribution: A flexible parametric multivariate model for extremes, \emph{Journal of Multivariate Analysis}, \bold{101}(9), 2103--2117.
+//' @references Ballani, D. and M. Schlather (2011). A construction principle for multivariate extreme value distributions, \emph{Biometrika}, \bold{98}(3), 633--645.
+//' @references Sabourin, A., P. Naveau and A. Fougeres (2013). Bayesian model averaging for extremes, \emph{Extremes}, \bold{16}, 325--350.
+//' @author Leo Belzile
+//' @keywords internal
+//' @return an \code{n} by \code{d} sample from the spectral distribution
+// [[Rcpp::export(.rpairbetaspec)]]
+NumericMatrix rpairbetaspec(int n, int d, double alpha, NumericVector beta){
+  NumericMatrix samp(n, d);
+  if(d*(d-1) != 2*beta.size()){
+    Rcpp::stop("Invalid input for the pairwise beta model.");
+  }
+  int nmix = d*(d-1)/2;
+  IntegerVector ncat = sample_qty(n, nmix);
+  IntegerVector order = Rcpp::sample(n = n, n, false);
+  int ncatot = 0;
+  int m = 0;
+  for(int i=0; i<(d-1); i++){
+    for(int j=i+1; j<d; j++){
+      int ncatm = ncat[m];
+      if(ncatm > 0){
+        NumericVector r = Rcpp::rbeta(ncatm, (d-2)*alpha, 2*alpha + 1.0);
+        NumericMatrix vtheta = rdir(ncatm, rep(1.0, d-2));
+        NumericVector theta = Rcpp::rbeta(ncatm, beta[m], beta[m]);
+        for(int l=0; l < ncatm; l++){
+          int k0 = 0;
+          for(int k=0; k<d; k++){
+            if(k == i){
+              samp(order[ncatot + l]-1,k) = theta[l]*(1.0-r[l]);
+            } else if(k == j){
+              samp(order[ncatot + l]-1,k) = (1.0-theta[l])*(1.0-r[l]);
+            } else{
+              samp(order[ncatot + l]-1,k) = vtheta(l, k0)*r[l];
+              k0++;
+            }
+          }
+        }
+      }
+      m++;
+      ncatot = ncatot + ncatm;
+    }
+  }
+  return samp;
+}
+
+//' Generates from \eqn{Q_i}{Qi}, the spectral measure of the pairwise exponential model
+//'
+//' The sample is drawn from a mixture and the algorithm follows from the proof of Theorem 1 in Ballani and Schlather (2011).
+//'
+//' @param n sample size
+//' @param alpha concentration parameter
+//' @param beta vector of all pairwise component (lexicographic order, by row)
+//' @return a matrix of samples from the angular distribution
+//' @references Ballani, D. and M. Schlather (2011). A construction principle for multivariate extreme value distributions, \emph{Biometrika}, \bold{98}(3), 633--645.
+//' @author Leo Belzile
+//' @keywords internal
+//' @return an \code{n} by \code{d} sample from the spectral distribution
+// [[Rcpp::export(.rpairexpspec)]]
+NumericMatrix rpairexpspec(int n, int d, double alpha, NumericVector beta){
+  NumericMatrix samp(n, d);
+  if(d*(d-1) != 2*beta.size()){
+    Rcpp::stop("Invalid input for the pairwise beta model.");
+  }
+  int nmix = d*(d-1)/2;
+  IntegerVector ncat = sample_qty(n, nmix);
+  IntegerVector order = Rcpp::sample(n, n, false);
+  int ncatot = 0;
+  int m = 0;
+  NumericMatrix theta(1,2);
+  for(int i=0; i<(d-1); i++){
+    for(int j=i+1; j<d; j++){
+      int ncatm = ncat[m];
+      if(ncatm > 0){
+        NumericVector r = Rcpp::rbeta(ncatm, (d-2)*alpha, 2*alpha + 1.0);
+        NumericMatrix vtheta = rdir(ncatm, rep(1.0, d-2));
+        for(int l=0; l < ncatm; l++){
+          bool acpt = false;
+          while(!acpt){
+            theta = rdir(1, rep(1.0, 2));
+            if(beta[i]>0){
+              acpt = log(Rcpp::runif(1))[0] <  beta[i]*min(theta(0,_)) - beta[i]/d;
+            } else{
+              acpt = log(Rcpp::runif(1))[0] <  beta[i]*min(theta(0,_));
+            }
+          }
+          int k0 = 0;
+          for(int k=0; k<d; k++){
+            if(k == i){
+              samp(order[ncatot + l]-1,k) = theta(0,0)*(1.0-r[l]);
+            } else if(k == j){
+              samp(order[ncatot + l]-1,k) = theta(0,1)*(1.0-r[l]);
+            } else{
+              samp(order[ncatot + l]-1,k) = vtheta(l, k0)*r[l];
+              k0++;
+            }
+          }
+        }
+      }
+        m++;
+        ncatot = ncatot + ncatm;
+    }
+  }
+  return samp;
+}
+
+
+//' Generates from \eqn{Q_i}{Qi}, the spectral measure of the weighted Dirichlet model
+//'
+//' This model was introduced in Ballani and Schlather (2011).
+//' @param n sample size
+//' @param alpha vector of concentration parameters
+//' @param beta vector of Dirichlet components
+//' @return a matrix of samples from the angular distribution
+//' @references Ballani, D. and M. Schlather (2011). A construction principle for multivariate extreme value distributions, \emph{Biometrika}, \bold{98}(3), 633--645.
+//' @author Leo Belzile
+//' @keywords internal
+//' @return an \code{n} by \code{d} sample from the spectral distribution
+// [[Rcpp::export(.rwdirbsspec)]]
+NumericMatrix rwdirbsspec(int n, int d, NumericVector alpha, NumericVector beta){
+  NumericMatrix samp(n, d);
+  if(d != beta.size() || beta.size() != alpha.size()){
+    Rcpp::stop("Invalid input for the weighted Dirichlet model.");
+  }
+  IntegerVector ncat = sample_qty(n, d);
+  IntegerVector order = Rcpp::sample(n, n, false);
+  int ncatot = 0;
+  for(int i=0; i<d; i++){
+    int ncatm = ncat[i];
+    if(ncatm > 0){
+      NumericVector r = Rcpp::rbeta(ncatm, (d - 1)*alpha[i], alpha[i]);
+      NumericMatrix vtheta = rdir(ncatm, rep(beta[i], d-1));
+      for(int l=0; l < ncatm; l++){
+        int k0 = 0;
+        for(int k=0; k<d; k++){
+          if(k == i){
+            samp(order[ncatot + l]-1,k) = (1.0-r[l]);
+          } else{
+            samp(order[ncatot + l]-1,k) = vtheta(l, k0)*r[l];
+            k0++;
+          }
+        }
+      }
+    }
+    ncatot += ncatm;
+  }
+  return samp;
+}
+
+//' Generates from \eqn{Q_i}{Qi}, the spectral measure of the weighted exponential model
+//'
+//' This model was introduced in Ballani and Schlather (2011).
+//' @param n sample size
+//' @param alpha vector of concentration parameters
+//' @param beta vector of Dirichlet components
+//' @return a matrix of samples from the angular distribution
+//' @references Ballani, D. and M. Schlather (2011). A construction principle for multivariate extreme value distributions, \emph{Biometrika}, \bold{98}(3), 633--645.
+//' @author Leo Belzile
+//' @keywords internal
+//' @return an \code{n} by \code{d} sample from the spectral distribution
+// [[Rcpp::export(.rwexpbsspec)]]
+NumericMatrix rwexpbsspec(int n, int d, NumericVector alpha, NumericVector beta){
+  NumericMatrix samp(n, d);
+  if(d != beta.size() || beta.size() != alpha.size()){
+    Rcpp::stop("Invalid input for the weighted exponential model.");
+  }
+  IntegerVector ncat = sample_qty(n, d);
+  IntegerVector order = Rcpp::sample(n = n, n, false);
+  NumericMatrix vtheta(1, d-1);
+  int ncatot = 0;
+  for(int i=0; i<d; i++){
+    int ncatm = ncat[i];
+    if(ncatm > 0){
+      NumericVector r = Rcpp::rbeta(ncatm, (d - 1)*alpha[i], alpha[i]);
+      for(int l=0; l < ncatm; l++){
+        bool acpt = false;
+        while(!acpt){
+          vtheta = rdir(1, rep(1.0, d-1));
+          if(beta[i]>0){
+            acpt = log(Rcpp::runif(1))[0] <  beta[i]*min(vtheta(0,_)) - beta[i]/d;
+          } else{
+            acpt = log(Rcpp::runif(1))[0] <  beta[i]*min(vtheta(0,_));
+          }
+        }
+        int k0 = 0;
+        for(int k=0; k<d; k++){
+          if(k == i){
+            samp(order[ncatot + l]-1, k) = (1.0-r[l]);
+          } else{
+            samp(order[ncatot + l]-1,k) = vtheta(0,k0)*r[l];
+            k0++;
+          }
+        }
+      }
+      ncatot += ncatm;
+    }
+  }
+  return samp;
+}
+
 // Internal function to verify confirmity for rmevA1, rmevA2, rmevspec
 void check_args(int d, NumericVector param, int model, NumericMatrix Sigma, arma::mat loc) {
     //Model 1: logistic
     if(model==1 && param.size()!=1){
       Rcpp::warning("Logistic model currently only implemented for one argument");
       //Model 2: negative logistic
-    } else  if(model == 2 && param.size()!=1){
+    } else if(model == 2 && param.size()!=1){
       Rcpp::warning("Negative logistic model currently only implemented for one argument");
       //Model 3: Dirichlet mixture
       //Checks are performed in rmev wrapper function
@@ -938,8 +1147,35 @@ void check_args(int d, NumericVector param, int model, NumericMatrix Sigma, arma
     } else if(model == 9){
       //Copy entries in a vector, to use sugar (otherwise need to cast to &int)
       if(Sigma.ncol()!=Sigma.nrow()) Rcpp::stop("Provided matrix is not square");
-    }
-    if (model > 10){
+    } else if(model == 10){ //pairwise beta
+      if(param.size() != d*(d-1)/2 + 1){
+        Rcpp::stop("Invalid length of parameter vector for pairwise beta model");
+      }
+      if(is_true(any(param < 0))){
+        Rcpp::stop("Invalid parameter in the pairwise beta model");
+      }
+    } else if(model == 11){
+      if(param.size() != d*(d-1)/2 + 1){
+        Rcpp::stop("Invalid length of parameter vector for pairwise exponential model");
+      }
+      if(param[0] < 0){
+        Rcpp::stop("Invalid concentration parameter for the pairwise exponential model");
+      }
+    } else if(model == 12){
+      if(param.size() != 2*d){
+        Rcpp::stop("Invalid length of parameter vector for Ballani-Schlather weighted Dirichlet model");
+      }
+      if(is_true(any(param < 0))){
+        Rcpp::stop("Invalid parameters in the Ballani-Schlather weighted Dirichlet model");
+      }
+    } else if(model == 13){
+      if(param.size() != 2*d){
+        Rcpp::stop("Invalid length of parameter vector for Ballani-Schlather weighted exponential model");
+      }
+      if(is_true(any(param[seq(0, d-1)] < 0))){
+        Rcpp::stop("Negative parameters for alpha vector in Ballani-Schlather weighted exponential model");
+      }
+    } else if(model > 13){
       Rcpp::stop("Model not currently implemented");
     }
   }
@@ -1022,6 +1258,14 @@ NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix 
         Y = rsmithspec(1, cholesky, loc)(0,_);
       }  else if(model == 9){
         Y = rhrspec(1, sigma)(0,_);
+      } else if(model == 10){
+        Y = rpairbetaspec(1, d, param[0], param[seq(1, d*(d-1)/2)])(0,_);
+      } else if(model == 11){
+        Y = rpairexpspec(1, d, param[0], param[seq(1, d*(d-1)/2)])(0,_);
+      } else if(model == 12){
+        Y = rwdirbsspec(1, d, param[seq(0, d-1)], param[seq(d, 2*d-1)])(0,_);
+      } else if(model == 13){
+        Y = rwexpbsspec(1, d, param[seq(0, d-1)], param[seq(d, 2*d-1)])(0,_);
       } else {
         Rcpp::stop("Model not yet implemented");
       }
@@ -1117,7 +1361,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
       Covar.shed_row(0); Covar.shed_col(0);
       cholesky = arma::chol(Covar);
       Y = rPHuslerReiss(0, cholesky, sigma);
-    } else{
+    } else if(model >= 10){
       Rcpp::stop("Sampler not yet implemented with extremal functions");
     }
 
@@ -1139,6 +1383,7 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
         //(6)  Simulate from Pxn
         if(model == 1){
           Y = rPlog(d, j, param);
+          Rcpp::Rcout << j << ": " << Y << std::endl;
         } else if(model == 2){
           Y = rPneglog(d, j, param);
         } else if(model == 3){
@@ -1241,8 +1486,16 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
     samp = rdirspec(n, d, param, irv);
   } else if(model == 8){
     samp = rsmithspec(n, cholesky, loc);
-  }  else if(model == 9){
+  } else if(model == 9){
     samp = rhrspec(n, sigma);
+  } else if(model == 10){
+    samp = rpairbetaspec(n, d, param[0], param[seq(1, d*(d-1)/2)]);
+  } else if(model == 11){
+     samp = rpairexpspec(n, d, param[0], param[seq(1, d*(d-1)/2)]);
+   } else if(model == 12){
+     samp = rwdirbsspec(n, d, param[seq(0, d-1)], param[seq(d, 2*d-1)]);
+   } else if(model == 13){
+     samp = rwexpbsspec(n, d, param[seq(0, d-1)], param[seq(d, 2*d-1)]);
   } else{
     Rcpp::stop("Invalid model");
   }
@@ -1304,8 +1557,6 @@ return samp;
 
 //' Samples from exceedances at site (scaled extremal function definition)
 //'
-//' Models currently implemented include logistic and negative logistic, sampling
-//' from the extremal functions. This requires derivation of \eqn{P_x}
 //'
 //' @param n sample size
 //' @param index index of the site or variable
@@ -1386,6 +1637,8 @@ NumericMatrix rPsite(int n, int j, int d, NumericVector para, int model, Numeric
           samp(i, _) = rPSmith(j, cholesky, loc);
         } else if(model == 9){
           samp(i, _) = rPHuslerReiss(j, cholesky, sigma);
+        } else{
+          Rcpp::stop("Invalid model");
         }
    }
   return samp;

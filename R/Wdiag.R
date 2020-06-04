@@ -94,6 +94,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (unull) {
         thresh <- quantile(xdat, q1)
     } else {
+        stopifnot(length(u)>1)
         thresh <- min(u)
     }
     if (!unull) {

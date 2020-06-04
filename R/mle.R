@@ -369,13 +369,16 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
     fitted$nllh <- nll_boundary
     fitted$estimate <- par_boundary
   }
+
   #Observed information matrix and standard errors
+  fitted$vcov <- matrix(NA, ncol = 3, nrow = 3)
+  fitted$std.err <- rep(NA, 3)
   if(fitted$estimate[3] > -0.5){
-    fitted$vcov <- solve(gev.infomat(par = fitted$estimate, dat = xdat, method = "obs"))
+    vcovt <- try(solve(gev.infomat(par = fitted$estimate, dat = xdat, method = "obs")))
+    if(!is.character(vcovt)){
+    fitted$vcov <- vcovt
     fitted$std.err <- sqrt(diag(fitted$vcov))
-  } else{
-    fitted$vcov <- matrix(NA, ncol = 3, nrow = 3)
-    fitted$std.err <- rep(NA, 3)
+    }
   }
   names(fitted$std.err) <- names(fitted$estimate) <- c("loc","scale","shape")
   fitted$method <- "auglag"

@@ -79,14 +79,16 @@
 #' either a vector of numbers or a vector of names. If missing, all parameters are considered.
 #' @param level	confidence level, with default value of 0.95
 #' @param prob percentiles, with default giving symmetric 95\% confidence intervals
+#' @param method string for the method, either \code{cobs} (constrained robust B-spline from eponym package) or \code{smooth.spline}
 #' @param ... additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.
 #' @param print should a summary be printed. Default to \code{FALSE}.
 #' @return returns a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
 #' @export
-confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1-level)/2), print = FALSE, ...) {
+confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1-level)/2), print = FALSE, method = c("cobs","smooth.spline"), ...) {
   if(!isTRUE(all.equal(diff(prob),level, check.attributes = FALSE))){
    warning("Incompatible arguments: `level` does not match `prob`.")
   }
+  method <- match.arg(method[1], c("cobs","smooth.spline"))
     args <- list(...)
     if ("warn" %in% names(args) && is.logical(args$warn)) {
         warn <- args$warn
@@ -150,8 +152,8 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
             if (is.null(object$normal)) {
                 object$normal <- c(object$psi.max, object$std.error)
             }
-            if (requireNamespace("cobs", quietly = TRUE)) {
-                fit.r <- cobs::cobs(x = object$r, y = object$psi, #constraint = "decrease",
+            if (method == "cobs" && requireNamespace("cobs", quietly = TRUE)) {
+                fit.r <- cobs::cobs(x = object$r, y = object$psi, constraint = "decrease",
                   lambda = 0, ic = "SIC", pointwise = cbind(0, 0, object$normal[1]), knots.add = TRUE,
                   repeat.delete.add = TRUE, print.mesg = FALSE, print.warn = FALSE)
                 pr <- predict(fit.r, c(0, qulev))[,2]
@@ -173,8 +175,8 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
             if (is.null(object$rstar)) {
                 break
             }
-            if (requireNamespace("cobs", quietly = TRUE)) {
-                fit.rst <- cobs::cobs(x = object$rstar, y = object$psi, #constraint = "decrease",
+            if (method == "cobs" && requireNamespace("cobs", quietly = TRUE)) {
+                fit.rst <- cobs::cobs(x = object$rstar, y = object$psi, constraint = "decrease",
                   lambda = 0, ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
                   print.warn = FALSE)
                 prst <- predict(fit.rst, c(0, qulev))[,2]
@@ -202,7 +204,7 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
             if (is.null(object$tem.pll)) {
                 break
             }
-            if (requireNamespace("cobs", quietly = TRUE)) {
+            if (method == "cobs" && requireNamespace("cobs", quietly = TRUE)) {
                 fit.mtem <- cobs::cobs(x = sign(object$tem.mle - object$psi) * sqrt(-2 * (object$tem.pll -
                   object$tem.maxpll)), y = object$psi, constraint = "decrease", lambda = 0,
                   ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
@@ -220,7 +222,7 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
             if (is.null(object$empcov.pll)) {
                 break
             }
-            if (requireNamespace("cobs", quietly = TRUE)) {
+            if (method == "cobs" && requireNamespace("cobs", quietly = TRUE)) {
                 fit.mempcov <- cobs::cobs(x = sign(object$empcov.mle - object$psi) * sqrt(-2 *
                   (object$empcov.pll - object$empcov.maxpll)), y = object$psi, constraint = "decrease",
                   lambda = 0, ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
@@ -1273,28 +1275,28 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         args <- c(param, "shape")
     }
     # Sanity checks to ensure all arguments are provided
-    if (missing(N)) {
+    if (is.null(N)) {
         if (param %in% c("Nmean", "Nquant")) {
             stop("Argument `N` missing. Procedure aborted")
         } else {
             N <- NA
         }
     }
-    if (missing(m)) {
+    if (is.null(m)) {
         if (param %in% c("VaR", "ES")) {
             stop("Argument `m` missing. Procedure aborted")
         } else {
             m <- NA
         }
     }
-    if (missing(p)) {
+    if (is.null(p)) {
         if (param == "quant") {
             stop("Argument `p` missing. Procedure aborted")
         } else {
             p <- NA
         }
     }
-    if (missing(q)) {
+    if (is.null(q)) {
         if (param == "Nquant") {
             stop("Argument `q` missing. Procedure aborted")
         } else {

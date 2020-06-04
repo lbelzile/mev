@@ -140,7 +140,7 @@ mvrnorm <- function(n, mu, Sigma) {
 }
 
 #' Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
-#' \eqn{P_{x}} is probability of extremal functions from a Dirichlet mixture
+#' \eqn{P_{x}} is the probability of extremal functions from a Dirichlet mixture
 #'
 #' @param d dimension of the 1-sample
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
@@ -153,7 +153,7 @@ mvrnorm <- function(n, mu, Sigma) {
 }
 
 #' Generate from bilogistic \eqn{Y \sim {P_x}}, where
-#' \eqn{P_{x}} is probability of extremal functions
+#' \eqn{P_{x}} is the probability of extremal functions
 #'
 #' @param d dimension of the 1-sample
 #' @param index index of the location. An integer in {0, ..., \eqn{d-1}}
@@ -221,7 +221,7 @@ mvrnorm <- function(n, mu, Sigma) {
 }
 
 #' Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
-#' \eqn{P_{x}} is probability of extremal functions from the Dirichlet model of
+#' \eqn{P_{x}} is the probability of extremal functions from the Dirichlet model of
 #' Coles and Tawn.
 #'
 #' Note: we generate from the Dirichlet rather than the Gamma distribution, since the former is parallelized
@@ -369,6 +369,72 @@ mvrnorm <- function(n, mu, Sigma) {
     .Call(`_mev_rdirspec`, n, d, alpha, irv)
 }
 
+#' Generates from \eqn{Q_i}{Qi}, the spectral measure of the pairwise Beta model
+#'
+#' This model was introduced in Cooley, Davis and Naveau (2010).
+#' The sample is drawn from a mixture and the algorithm follows from the proof of Theorem 1 in Ballani and Schlather (2011)
+#' and is written in full in Algorithm 1 of Sabourin et al. (2013).
+#'
+#' @param n sample size
+#' @param alpha concentration parameter
+#' @param beta vector of all pairwise component (lexicographic order, by row)
+#' @return a matrix of samples from the angular distribution
+#' @references Cooley, D., R.A. Davis and P. Naveau (2010). The pairwise beta distribution: A flexible parametric multivariate model for extremes, \emph{Journal of Multivariate Analysis}, \bold{101}(9), 2103--2117.
+#' @references Ballani, D. and M. Schlather (2011). A construction principle for multivariate extreme value distributions, \emph{Biometrika}, \bold{98}(3), 633--645.
+#' @references Sabourin, A., P. Naveau and A. Fougeres (2013). Bayesian model averaging for extremes, \emph{Extremes}, \bold{16}, 325--350.
+#' @author Leo Belzile
+#' @keywords internal
+#' @return an \code{n} by \code{d} sample from the spectral distribution
+.rpairbetaspec <- function(n, d, alpha, beta) {
+    .Call(`_mev_rpairbetaspec`, n, d, alpha, beta)
+}
+
+#' Generates from \eqn{Q_i}{Qi}, the spectral measure of the pairwise exponential model
+#'
+#' The sample is drawn from a mixture and the algorithm follows from the proof of Theorem 1 in Ballani and Schlather (2011).
+#'
+#' @param n sample size
+#' @param alpha concentration parameter
+#' @param beta vector of all pairwise component (lexicographic order, by row)
+#' @return a matrix of samples from the angular distribution
+#' @references Ballani, D. and M. Schlather (2011). A construction principle for multivariate extreme value distributions, \emph{Biometrika}, \bold{98}(3), 633--645.
+#' @author Leo Belzile
+#' @keywords internal
+#' @return an \code{n} by \code{d} sample from the spectral distribution
+.rpairexpspec <- function(n, d, alpha, beta) {
+    .Call(`_mev_rpairexpspec`, n, d, alpha, beta)
+}
+
+#' Generates from \eqn{Q_i}{Qi}, the spectral measure of the weighted Dirichlet model
+#'
+#' This model was introduced in Ballani and Schlather (2011).
+#' @param n sample size
+#' @param alpha vector of concentration parameters
+#' @param beta vector of Dirichlet components
+#' @return a matrix of samples from the angular distribution
+#' @references Ballani, D. and M. Schlather (2011). A construction principle for multivariate extreme value distributions, \emph{Biometrika}, \bold{98}(3), 633--645.
+#' @author Leo Belzile
+#' @keywords internal
+#' @return an \code{n} by \code{d} sample from the spectral distribution
+.rwdirbsspec <- function(n, d, alpha, beta) {
+    .Call(`_mev_rwdirbsspec`, n, d, alpha, beta)
+}
+
+#' Generates from \eqn{Q_i}{Qi}, the spectral measure of the weighted exponential model
+#'
+#' This model was introduced in Ballani and Schlather (2011).
+#' @param n sample size
+#' @param alpha vector of concentration parameters
+#' @param beta vector of Dirichlet components
+#' @return a matrix of samples from the angular distribution
+#' @references Ballani, D. and M. Schlather (2011). A construction principle for multivariate extreme value distributions, \emph{Biometrika}, \bold{98}(3), 633--645.
+#' @author Leo Belzile
+#' @keywords internal
+#' @return an \code{n} by \code{d} sample from the spectral distribution
+.rwexpbsspec <- function(n, d, alpha, beta) {
+    .Call(`_mev_rwexpbsspec`, n, d, alpha, beta)
+}
+
 #' Multivariate extreme value distribution sampling algorithm via angular measure
 #'
 #' This algorithm corresponds to Algorithm 1 in Dombry, Engelke and Oesting (2016),
@@ -456,8 +522,6 @@ mvrnorm <- function(n, mu, Sigma) {
 
 #' Samples from exceedances at site (scaled extremal function definition)
 #'
-#' Models currently implemented include logistic and negative logistic, sampling
-#' from the extremal functions. This requires derivation of \eqn{P_x}
 #'
 #' @param n sample size
 #' @param index index of the site or variable
