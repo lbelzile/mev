@@ -10,6 +10,7 @@
   level = 0.95,
   prob = c((1 - level)/2, 1 - (1 - level)/2),
   print = FALSE,
+  method = c("cobs", "smooth.spline"),
   ...
 )
 }
@@ -24,6 +25,8 @@ either a vector of numbers or a vector of names. If missing, all parameters are 
 \item{prob}{percentiles, with default giving symmetric 95\% confidence intervals}
 
 \item{print}{should a summary be printed. Default to \code{FALSE}.}
+
+\item{method}{string for the method, either \code{cobs} (constrained robust B-spline from eponym package) or \code{smooth.spline}}
 
 \item{...}{additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.}
 }

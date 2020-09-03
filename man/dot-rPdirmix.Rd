@@ -3,7 +3,7 @@
 \name{.rPdirmix}
 \alias{.rPdirmix}
 \title{Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
-\eqn{P_{x}} is probability of extremal functions from a Dirichlet mixture}
+\eqn{P_{x}} is the probability of extremal functions from a Dirichlet mixture}
 \usage{
 .rPdirmix(d, index, alpha, weight)
 }
@@ -21,6 +21,6 @@ a \code{d}-vector from \eqn{P_x}
 }
 \description{
 Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
-\eqn{P_{x}} is probability of extremal functions from a Dirichlet mixture
+\eqn{P_{x}} is the probability of extremal functions from a Dirichlet mixture
 }
 \keyword{internal}

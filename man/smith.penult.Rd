@@ -34,8 +34,9 @@ either a vector, a matrix if either \code{length(m)>1} or \code{length(u)>1} or 
 }
 \description{
 The function takes as arguments the distribution and density functions. There are two options:
-\code{method='bm'} yields block maxima and the user should provide in such case the block sizes via the
-argument \code{m}. If instead \code{method='pot'} is provided, a vector of threshold values must be
+\code{method='bm'} yields block maxima and \code{method='pot'} threshold exceedances.
+For \code{method='bm'}, the user should provide in such case the block sizes via the
+argument \code{m}, whereas if \code{method='pot'}, a vector of threshold values should be
 provided. The other argument (\code{u} or \code{m} depending on the method) is ignored.
 }
 \details{

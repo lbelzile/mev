@@ -4,10 +4,12 @@
 \alias{spline.corr}
 \title{Spline correction for Fraser-Reid approximations}
 \usage{
-spline.corr(fr)
+spline.corr(fr, method = c("cobs", "smooth.spline"))
 }
 \arguments{
 \item{fr}{an object of class \code{fr}, normally the output of \link{gpd.tem} or \link{gev.tem}.}
+
+\item{method}{string for the method, either \code{cobs} (constrained robust B-spline from eponym package) or \code{smooth.spline}}
 }
 \value{
 an object of class \code{fr}, containing as additional arguments \code{spline} and a modified \code{rstar} argument.

@@ -11,10 +11,11 @@ rmev(
   asy,
   sigma,
   model = c("log", "alog", "neglog", "aneglog", "bilog", "negbilog", "hr", "br",
-    "xstud", "smith", "schlather", "ct", "sdir", "dirmix"),
+    "xstud", "smith", "schlather", "ct", "sdir", "dirmix", "pairbeta", "pairexp",
+    "wdirbs", "wexpbs"),
   alg = c("ef", "sm"),
-  weights,
-  vario,
+  weights = NULL,
+  vario = NULL,
   coord = NULL,
   grid = FALSE,
   ...
@@ -52,8 +53,7 @@ an \code{n} by \code{d} exact sample from the corresponding multivariate extreme
 }
 \description{
 Implementation of the random number generators for multivariate extreme-value distributions
-and max-stable processes based on the two algorithms described in
-Dombry, Engelke and Oesting (2016).
+and max-stable processes based on the two algorithms described in Dombry, Engelke and Oesting (2016).
 }
 \details{
 The vector param differs depending on the model
@@ -68,6 +68,8 @@ The vector param differs depending on the model
  vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(-\min(\alpha_1, \ldots, \alpha_d), 1]} treated as shape parameter
  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
+ \item \code{pairbeta, pairexp}: \code{d(d-1)/2+1} vector of parameters, containing the concentration parameter and the coefficients of the pairwise beta, in lexicographical order e.g., \eqn{\beta_{12}, \beta_{13}, \ldots}
+ \item \code{wdirbs, wexpbs}: \code{2d} vector of \code{d} concentration parameters followed by the \code{d} Dirichlet parameters
 }
 
 Stephenson points out that the multivariate asymmetric negative logistic model given in e.g. Coles and Tawn (1991) is not a valid distribution function in dimension \eqn{d>3} unless additional constraints are imposed on the parameter values.
@@ -111,6 +113,7 @@ rmev(n=10, sigma=cbind(c(2,1), c(1,3)), coord=cbind(runif(4), runif(4)), model='
 ## Example with Dirichlet mixture
 alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model='dirmix')
+rmev(n=10, param=c(0.1,1,2,3), d=3, model='pairbeta')
 }
 \references{
 Dombry, Engelke and Oesting (2016). Exact simulation of max-stable processes, \emph{Biometrika}, \bold{103}(2), 303--317.

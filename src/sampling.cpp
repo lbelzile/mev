@@ -1383,7 +1383,6 @@ NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix 
         //(6)  Simulate from Pxn
         if(model == 1){
           Y = rPlog(d, j, param);
-          Rcpp::Rcout << j << ": " << Y << std::endl;
         } else if(model == 2){
           Y = rPneglog(d, j, param);
         } else if(model == 3){

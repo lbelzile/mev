@@ -4,7 +4,9 @@
 \name{w1500m}
 \alias{w1500m}
 \title{Best 200 times of Women 1500m Track}
-\format{a vector of size 200}
+\format{
+a vector of size 200
+}
 \source{
 <http://www.alltime-athletics.com/w_1500ok.htm>, accessed 14.08.2018
 }

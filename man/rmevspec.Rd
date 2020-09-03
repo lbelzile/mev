@@ -10,9 +10,9 @@ rmevspec(
   param,
   sigma,
   model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith",
-    "schlather", "ct", "sdir", "dirmix"),
-  weights,
-  vario,
+    "schlather", "ct", "sdir", "dirmix", "pairbeta", "pairexp", "wdirbs", "wexpbs"),
+  weights = NULL,
+  vario = NULL,
   coord = NULL,
   grid = FALSE,
   ...
@@ -58,6 +58,8 @@ The vector param differs depending on the model
  vector consisting of the \code{d} Dirichlet parameters and the last entry is an index of regular variation in \eqn{(0, 1]} treated as scale
  \item \code{xstud}: one dimensional parameter corresponding to degrees of freedom \code{alpha}
  \item \code{dirmix}: \code{d} by \code{m}-dimensional matrix of positive (a)symmetry parameters
+ \item \code{pairbeta, pairexp}: \code{d(d-1)/2+1} vector of parameters, containing the concentration parameter and the coefficients of the pairwise beta, in lexicographical order e.g., \eqn{\beta_{1,2}, \beta_{1,3}, \ldots}
+ \item \code{wdirbs, wexpbs}: \code{2d} vector of \code{d} concentration parameters followed by the \code{d} Dirichlet parameters
 }
 }
 \section{Note}{

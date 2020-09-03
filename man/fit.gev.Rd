@@ -31,4 +31,5 @@ Values other than \code{0} indicate that the algorithm likely did not converge.
 }
 \description{
 This function returns an object of class \code{mev_gev}, with default methods for printing and quantile-quantile plots.
+The default starting values are the solution of the probability weighted moments.
 }

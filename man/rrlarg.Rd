@@ -4,7 +4,7 @@
 \alias{rrlarg}
 \title{Simulate r-largest observations from point process of extremes}
 \usage{
-rrlarg(n, r, loc, scale, shape)
+rrlarg(n, r, loc = 0, scale = 1, shape = 0)
 }
 \arguments{
 \item{n}{sample size}

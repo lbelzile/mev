@@ -4,7 +4,9 @@
 \name{maiquetia}
 \alias{maiquetia}
 \title{Maiquetia Daily Rainfall}
-\format{a vector of size 14244 containing daily rainfall (in mm),}
+\format{
+a vector of size 14244 containing daily rainfall (in mm),
+}
 \source{
 J.R. Cordova and M. González, accessed 25.11.2018 from <https://rss.onlinelibrary.wiley.com/hub/journal/14679876/series-c-datasets>
 }

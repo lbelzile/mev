@@ -4,8 +4,10 @@
 \name{venice}
 \alias{venice}
 \title{Venice Sea Levels}
-\format{a data frame with 131 rows and 11 columns containing the year of the measurement (first column)
-and ordered 10-largest yearly observations, reported in decreasing order from largest (\code{r1}) to smallest (\code{r10}).}
+\format{
+a data frame with 131 rows and 11 columns containing the year of the measurement (first column)
+and ordered 10-largest yearly observations, reported in decreasing order from largest (\code{r1}) to smallest (\code{r10}).
+}
 \source{
 City of Venice, Historical archive <http://archive.comune.venezia.it/flex/cm/pages/ServeBLOB.php/L/EN/IDPagina/3045>. Last accessed October 2018.
 }

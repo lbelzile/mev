@@ -3,7 +3,7 @@
 \name{.rPdir}
 \alias{.rPdir}
 \title{Generate from extremal Dirichlet \eqn{Y \sim {P_x}}, where
-\eqn{P_{x}} is probability of extremal functions from the Dirichlet model of
+\eqn{P_{x}} is the probability of extremal functions from the Dirichlet model of
 Coles and Tawn.}
 \usage{
 .rPdir(d, index, alpha, irv = FALSE)

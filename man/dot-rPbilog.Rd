@@ -3,7 +3,7 @@
 \name{.rPbilog}
 \alias{.rPbilog}
 \title{Generate from bilogistic \eqn{Y \sim {P_x}}, where
-\eqn{P_{x}} is probability of extremal functions}
+\eqn{P_{x}} is the probability of extremal functions}
 \usage{
 .rPbilog(d, index, alpha)
 }
@@ -19,6 +19,6 @@ a \code{d}-vector from \eqn{P_x}
 }
 \description{
 Generate from bilogistic \eqn{Y \sim {P_x}}, where
-\eqn{P_{x}} is probability of extremal functions
+\eqn{P_{x}} is the probability of extremal functions
 }
 \keyword{internal}

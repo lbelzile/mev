@@ -27,7 +27,6 @@
 a \code{n} by \code{d} matrix containing the sample
 }
 \description{
-Models currently implemented include logistic and negative logistic, sampling
-from the extremal functions. This requires derivation of \eqn{P_x}
+Samples from exceedances at site (scaled extremal function definition)
 }
 \keyword{internal}

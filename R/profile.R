@@ -479,7 +479,7 @@ plot.eprof <- function(x, ...) {
 gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
                     mod = "profile", dat, N = NULL, p = NULL, q = NULL, correction = TRUE, plot = TRUE, ...) {
 
-    oldpar <- param <- match.arg(param)
+    param <- match.arg(param)
     mod <- match.arg(mod, c("profile","tem", "modif"), several.ok = TRUE)
     # Parametrization profiling for quant over scale is more numerically stable
     if (param == "quant") {
@@ -488,6 +488,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         N = 1
         param <- "Nquant"
     }
+    oldpar <- match.arg(param, choices = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), several.ok = FALSE)
     # Arguments for parametrization of the log likelihood
     if (param %in% c("loc", "scale", "shape")) {
         args <- c("loc", "scale", "shape")
@@ -811,7 +812,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         }
 
         # Return levels, quantiles or value-at-risk
-    } else if (param == "quant") {
+    } else if (param == "quant") { # THIS IS NOT EXECUTED ANYMORE...
         maxll <- gevr.ll(mle, dat = dat, p = p)
         std.error <- sqrt(solve(gevr.infomat(par = mle, dat = dat, method = "exp", p = p))[1])
         constr.mle.quant <- function(quant) {
@@ -2120,17 +2121,18 @@ plot.fr <- function(x, ...) {
 #' @details If available, the function uses \code{cobs} from the eponym package. The latter handles constraints and smoothness penalties, and is more robust than the equivalent \code{\link[stats]{smooth.spline}}.
 #'
 #' @param fr an object of class \code{fr}, normally the output of \link{gpd.tem} or \link{gev.tem}.
-#'
+#' @param method string for the method, either \code{cobs} (constrained robust B-spline from eponym package) or \code{smooth.spline}
 #' @return an object of class \code{fr}, containing as additional arguments \code{spline} and a modified \code{rstar} argument.
 #' @export
-spline.corr <- function(fr) {
+spline.corr <- function(fr, method = c("cobs","smooth.spline")) {
     # Step 1: fit a smoothing spline to rstar If fit failed for some values (for example when
     # shape forced to be < 1) Remove those values
+    method <- match.arg(method[1], choices = c("cobs","smooth.spline"))
     if (all(is.nan(fr$q)) || all(is.nan(fr$rstar))) {
         # If could not compute Fraser-Reid correction, abort
         return(fr)
     }
-    fitfailed <- which(is.na(fr$r))
+    fitfailed <- which(!is.finite(fr$r))
     if (length(fitfailed) > 0) {
         fr$r <- fr$r[-fitfailed]
         fr$rstar <- fr$rstar[-fitfailed]
@@ -2139,7 +2141,7 @@ spline.corr <- function(fr) {
     }
     w <- pchisq(fr$r^2, 0.5)
     # If any correction for q failed and returned NA
-    corfailed <- which(is.na(fr$rstar))
+    corfailed <- which(!is.finite(fr$rstar))
     # If equispaced values for psi between MLE and other, then we have r = 0
     corfailed <- c(corfailed, which(fr$r == 0))
     if (length(corfailed) > 0) {
@@ -2150,7 +2152,7 @@ spline.corr <- function(fr) {
         resp <- (fr$rstar - fr$r)
         regr <- fr$r
     }
-    if (requireNamespace("cobs", quietly = TRUE)) {
+    if (method == "cobs" && requireNamespace("cobs", quietly = TRUE)) {
         spline <- cobs::cobs(y = resp, x = regr, w = w, constraint = "none", lambda = 1, nknots = 20,
             print.mesg = FALSE, print.warn = FALSE)$fitted
     } else {
