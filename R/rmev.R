@@ -109,7 +109,7 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
   if(missing(sigma)){ sigma <- NULL }
   out <- .rmev_checks(n = n, d = d, param = param, asy = asy, sigma = sigma,
                model =  model, alg = alg, weights = weights,
-               vario = vario, coord = coord)
+               vario = vario, coord = coord, ...)
     mod <- switch(out$model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4,
                   xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9, isbr = 9,
                   pairbeta = 10, pairexp = 11, wdirbs = 12, wexpbs = 13)
@@ -203,7 +203,8 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
   if(missing(param)){ param <- NULL }
   if(missing(sigma)){ sigma <- NULL }
     out <- .rmev_checks(n = n, d = d, param = param, asy = asy, sigma = sigma,
-                 model = model, alg = alg, weights = weights, vario = vario, coord = coord, grid = grid)
+                 model = model, alg = alg, weights = weights,
+                 vario = vario, coord = coord, grid = grid, ...)
     mod <- switch(out$model, log = 1, neglog = 2, dirmix = 3,
                   bilog = 4, negbilog = 4, xstud = 5, br = 6,
                   sdir = 7, smith = 8, hr = 9, isbr = 9,
@@ -295,7 +296,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
 
 #' @keywords internal
 .rmev_checks <- function(n = n, d = d, param = param, asy = asy, sigma = sigma,
-                   model =  model, alg = alg, weights = weights, vario = vario, coord = coord, grid = grid){
+                   model =  model, alg = alg, weights = weights, vario = vario, coord = coord, grid = grid, ...){
   models <- c("log", "alog", "neglog", "aneglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir",
               "dirmix", "negdir", "dir", "pairbeta","pairexp","wdirbs","wexpbs")
   alg <- match.arg(alg)
