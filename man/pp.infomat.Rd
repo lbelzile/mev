@@ -33,6 +33,7 @@ The entries for the information matrix are given in Sharkey and Tawn (2017), but
 \examples{
 \dontrun{
 dat <- evd::rgpd(n <- 1e3, 0.1, 2, -0.1)
+np <- 10
 mle <- fit.pp(dat, threshold = 0, np =  np)$par
 info_obs <- pp.infomat(par = mle, dat = dat, method = "obs", u = 0, np = np)
 info_exp <- pp.infomat(par = mle, dat = dat, method = "exp", u = 0, np = np)
