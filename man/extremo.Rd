@@ -58,7 +58,7 @@ alpha <- par[1]; if(!isTRUE(all(alpha > 0, alpha < 2))){return(1e10)}
 scale <- par[2]; if(scale <= 0){return(1e10)}
 a <- par[3]; if(a<1){return(1e10)}
 rho <- par[4]; if(abs(rho) >= pi/2){return(1e10)}
-semivariomat <- mgp::power.vario(distg(coord, a, rho), alpha = alpha, scale = scale)
+semivariomat <- power.vario(distg(coord, a, rho), alpha = alpha, scale = scale)
   sum((2*(1-pnorm(sqrt(semivariomat[lower.tri(semivariomat)]/2))) - emp)^2)
 }
 
