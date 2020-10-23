@@ -1,6 +1,9 @@
 mev v.1.14 
 ==============
-New: four new families of max-stable models (pairwise beta, pairwise exponential, weighted Dirichlet and weighted exponential) for rmev, following Ballani and Schlather (2011)
+New: 
+* four new families of max-stable models (pairwise beta, pairwise exponential, weighted Dirichlet and weighted exponential) for rmev, following Ballani and Schlather (2011)
+* function `fit.gpd` and `fit.gev` now accept fixed parameters
+* anova methods for `mev_gpd` and `mev_gev` objects
 
 Fixes:
 * Optimization method in fit.gev now uses the PWM solution of Hosking (1985) as starting value
@@ -18,7 +21,7 @@ Fixes:
 * egp.retlev now returns invisible object (new ordering and format).
 
 Changes:
-* New methods for objects returned by "fit" routines, for use in "lax" package
+* New S3 methods for objects returned by "fit" routines, for use in "lax" package
 
 mev v.1.12 (Release date: 2019-06-24)
 ==============

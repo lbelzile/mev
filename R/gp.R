@@ -839,12 +839,21 @@
 #' @export
 #' @inheritParams fit.gpd
 #' @keywords internal
-gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL) {
+gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL, fpar = NULL) {
   xi.tol = 1e-04
   xdat <- na.omit(xdat)
   xdatu <- xdat[xdat > threshold] - threshold
   # Optimization of model, depending on routine
   method <- match.arg(method)
+  if(!is.null(fpar)){
+    stopifnot(is.list(fpar),
+              length(fpar) == 1L,
+              names(fpar) %in% c("scale","shape"))
+    if(method %in% c("zs", "zhang")){
+      stop("Invalid method choice.")
+    }
+    method <- "fpar"
+  }
   if (!is.null(MCMC) && !method %in% c("zs", "zhang"))
     warning("Ignoring argument `MCMC` for frequentist estimation")
   if (missing(method)) {
@@ -893,6 +902,82 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
       temp$nllh <- -nll_limxi
     }
     temp$conv <- temp$convergence
+  } else if (method == "fpar") {
+    method <- "auglag"
+    mdat <- xdat[xdat > threshold] - threshold
+    maxdat <- max(mdat)
+    param_names <- c("scale", "shape")
+    wf <- param_names == names(fpar)
+    if(!any(wf)){
+      stop("List `fpar` must contain either `scale` or `shape`")
+    }
+    wfo <- order(c(which(!wf), which(wf)))
+    fixed_param <- as.vector(unlist(fpar))
+    stopifnot(length(fixed_param) == 1L)
+    if(wf[2] & isTRUE(all.equal(fixed_param, 0, check.attributes = FALSE))){# shape is fixed}
+      mean_xdat <- mean(xdat)
+      temp <- list(par = mean_xdat,
+                   value = -gpd.ll(c(mean_xdat, 0), mdat),
+                   convergence = 0,
+                   counts = c("function" = 1, "gradient" = 0))
+    } else{
+    start <- ifelse(wf[2], ifelse(fixed_param < 0, 1.1*maxdat/abs(fixed_param), mean(xdat)), 0.1)
+    temp <- try(alabama::auglag(par = start, fpar = fixed_param,
+                                wf = wf, wfo = wfo,
+                                fn = function(par, fpar, wfo, wf, dat, ...){
+                                          -gpd.ll(c(par,fpar)[wfo], dat = dat)},
+                                        gr = function(par, fpar, wfo, wf, dat, ...){
+                                          - gpd.score(c(par,fpar)[wfo], dat = dat)[!wf]},
+                                        hin = function(par, fpar, wfo, wf, dat, ...){
+                                          param <- c(par,fpar)[wfo]
+                                          c(param[1], param[2]+1,
+                                            ifelse(param[2]<0, param[2]*maxdat + param[1],1e-4))},
+                                        dat = mdat, control.outer = list(trace = FALSE),
+                                        control.optim = list(trace = FALSE)))
+      if(!is.character(temp)){
+      if(!isTRUE(all(temp$kkt1, temp$kkt2)) && !all.equal(c(temp$par), -1)){
+        warning("Optimization algorithm did not converge.")
+      } else{
+        temp$convergence == 0
+      }
+    } else{
+      stop("Optimization algorithm did not converge.")
+    }
+  }
+    temp$mle <- temp$par
+    temp$param <- c(temp$par, fixed_param)[wfo]
+    temp$nllh <- temp$value
+    temp$conv <- temp$convergence
+    # Initialize standard errors and covariance matrix
+    temp$vcov <- matrix(NA)
+    temp$se <- NA
+    if(temp$param[2] > -0.5){
+      infomat <- gpd.infomat(dat = mdat, par = temp$param, method = "obs")[!wf,!wf]
+      if(isTRUE(c(infomat) > 0)){
+      temp$vcov <- matrix(1/infomat)
+      temp$se <- sqrt(c(temp$vcov))
+      }
+    }
+    names(temp$mle) <- names(temp$se) <- param_names[!wf]
+    names(temp$param) <- param_names
+    output <- structure(list(estimate = temp$mle,
+                             std.err = temp$se,
+                             param = temp$param,
+                             vcov = temp$vcov,
+                             threshold = threshold,
+                             method = method,
+                             nllh = temp$nllh,
+                             nat = sum(xdat > threshold),
+                             pat = length(xdatu)/length(xdat),
+                             convergence = ifelse(temp$conv == 0, "successful", temp$conv),
+                             counts = temp$counts,
+                             exceedances = xdatu,
+                             wfixed = wf),
+                        class = "mev_gpd")
+    if (show) {
+      print(output)
+    }
+    return(invisible(output))
   } else if (method == "optim") {
     temp <- .gpd_1D_fit(xdat, threshold, show = FALSE, xi.tol = xi.tol)  # 1D max, algebraic Hessian
     if (temp$conv != 0) {
@@ -927,6 +1012,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
       names(post.mean) <- names(post.se) <- c("scale", "shape")
       post <- structure(list(method = method,
                              estimate = post.mean,
+                             param = post.mean,
                              threshold = threshold,
                              nat = sum(xdat > threshold),
                              pat = sum(xdat > threshold)/length(xdat),
@@ -942,6 +1028,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     } else {
       post <- structure(list(method = method,
                              estimate = temp$mle,
+                             param = temp$mle,
                              threshold = threshold,
                              nat = sum(xdat > threshold),
                              pat = sum(xdat > threshold)/length(xdat),
@@ -992,6 +1079,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
   }
   names(temp$mle) <- names(std.errors) <- c("scale", "shape")
   output <- structure(list(estimate = temp$mle,
+                           param = temp$mle,
                            std.err = std.errors,
                            vcov = invobsinfomat,
                            threshold = threshold,
@@ -1000,7 +1088,10 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                            nat = sum(xdat > threshold),
                            pat = length(xdatu)/length(xdat),
                            convergence = ifelse(temp$conv == 0, "successful", temp$conv),
-                           counts = temp$counts, exceedances = xdatu), class = "mev_gpd")
+                           counts = temp$counts,
+                           exceedances = xdatu,
+                           wfixed =rep(FALSE, 2L)),
+                      class = "mev_gpd")
   if (show) {
     print(output)
   }
@@ -1129,6 +1220,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                         nat = length(dat),
                         pat = length(dat)/ninit,
                         counts = c("function" = niter),
+                        param = par_val,
                         exceedances = dat,
                         weights = Wgt_dat), class = "mev_gpd")
   if(show){

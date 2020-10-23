@@ -4,7 +4,14 @@
 \alias{fit.gev}
 \title{Maximum likelihood estimation for the generalized extreme value distribution}
 \usage{
-fit.gev(xdat, start = NULL, method = c("nlminb", "BFGS"), show = FALSE)
+fit.gev(
+  xdat,
+  start = NULL,
+  method = c("nlminb", "BFGS"),
+  show = FALSE,
+  fpar = NULL,
+  ...
+)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
@@ -14,6 +21,8 @@ fit.gev(xdat, start = NULL, method = c("nlminb", "BFGS"), show = FALSE)
 \item{method}{string indicating the outer optimization routine for the augmented Lagrangian. One of \code{nlminb} or \code{BFGS}.}
 
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
+
+\item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
 }
 \value{
 a list containing the following components:

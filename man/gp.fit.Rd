@@ -9,7 +9,8 @@ gp.fit(
   threshold,
   method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"),
   show = FALSE,
-  MCMC = NULL
+  MCMC = NULL,
+  fpar = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ gp.fit(
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
 
 \item{MCMC}{\code{NULL} for frequentist estimates, otherwise a boolean or a list with parameters passed. If \code{TRUE}, runs a Metropolis-Hastings sampler to get posterior mean estimates. Can be used to pass arguments \code{niter}, \code{burnin} and \code{thin} to the sampler as a list.}
+
+\item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
 }
 \description{
 The function \code{\link[mev]{fit.gpd}} is a wrapper around \code{gp.fit}

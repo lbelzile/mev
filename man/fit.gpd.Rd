@@ -11,7 +11,8 @@ fit.gpd(
   show = FALSE,
   MCMC = NULL,
   k = 4,
-  tol = 1e-08
+  tol = 1e-08,
+  fpar = NULL
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ fit.gpd(
 (higher bounds are more efficient, low bounds are more robust). Default to 4, must be larger than \eqn{\sqrt{2}}.}
 
 \item{tol}{numerical tolerance for OBRE weights iterations (\code{method = "obre"}). Default to \code{1e-8}.}
+
+\item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
 }
 \value{
 If \code{method} is neither \code{'zs'} nor \code{'zhang'}, a list containing the following components:
@@ -107,7 +110,7 @@ Dupuis, D.J. (1998). Exceedances over High Thresholds: A Guide to Threshold Sele
 \code{\link[evd]{fpot}} and \code{\link[ismev]{gpd.fit}}
 }
 \author{
-Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the methods \code{nlm}, \code{nlm} and \code{ismev}.
+Scott D. Grimshaw for the \code{Grimshaw} option. Paul J. Northrop and Claire L. Coleman for the methods \code{optim}, \code{nlm} and \code{ismev}.
 J. Zhang and Michael A. Stephens (2009) and Zhang (2010) for the \code{zs} and \code{zhang} approximate methods and L. Belzile for methods \code{auglag} and \code{obre}, the wrapper and MCMC samplers.
 
 If \code{show = TRUE}, the optimal \eqn{B} robust estimated weights for the largest observations are printed alongside with the
