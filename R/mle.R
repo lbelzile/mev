@@ -208,11 +208,11 @@ fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC
 #' data(eskrain)
 #' pp_mle <- fit.pp(eskrain, threshold = 30, np = 6201)
 #' plot(pp_mle)
-fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
+fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show = FALSE, fpar = NULL){
   xdat <- as.vector(xdat)
   xdat <- xdat[is.finite(xdat)]
   n <- length(xdat)
-  if (missing(threshold) || length(threshold) != 1 || mode(threshold) !=  "numeric")
+  if (length(threshold) != 1 || mode(threshold) !=  "numeric")
     stop("`threshold' must be a numeric value")
   u <- as.double(threshold)
   xdatu <- xdat[xdat > u] #keep data above
@@ -220,58 +220,137 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
   if(is.null(np)){
     np <- n/npp
   }
-  #Without covariates, we have exactly np*(1+xi/sigma*(u-mu))^(-1/xi)=nu
-  #So degenerate optimization!
- pp.nll <- function(par, xdat, u, np){
-    nll <- -pp.ll(par = par, dat = xdat, u = u, np = np)
+  # Fixed parameters
+  param_names <- c("loc", "scale", "shape")
+  stopifnot(is.null(fpar) | is.list(fpar))
+  wf <- (param_names %in% names(fpar))
+  if(sum(wf) == 3L){
+    stop("Invalid input: all of the model parameters are fixed.")
+  }
+  if(is.list(fpar) && (length(fpar) >= 1L)){ #NULL has length zero
+    if(is.null(names(fpar))){
+      stop("`fpar` must be a named list")
+    }
+    if(!isTRUE(all(names(fpar) %in% param_names))){
+      stop("Unknown fixed parameter: must be one of `loc`,`scale` or `shape`. ")
+    }
+    if(!isTRUE(all(unlist(lapply(fpar, length)) == rep(1L, sum(wf))))){
+      stop("Each fixed parameter must be of length one.")
+    }
+  }
+  spar <- vector(mode = "numeric", length = 3L)
+  names(spar) <- param_names
+  for(i in seq_along(fpar)){
+    spar[names(fpar[i])] <- unlist(fpar[i])[1]
+  }
+  # Without covariates, we have (almost) exactly np*(1+xi/sigma*(u-mu))^(-1/xi)=nu
+  # this follows from the Poisson approximation to the binomial
+  # the mle for the latter is known (sample proportion of exceedance)
+  # So we can effectively reduce the dimension of the optimization from 3 to 2 parameters
+ pp.nll <- function(par, fpar, wf, xdat, u, np){
+    param <- numeric(length = 3L)
+    param[!wf] <- par
+    param[wf] <- fpar
+    nll <- -pp.ll(par = param, dat = xdat, u = u, np = np)
     ifelse(is.finite(nll), nll, 1e10)
  }
- pp.ngr <- function(par, xdat, u, np){
-   grad <- -pp.score(par = par, dat = xdat, u = u, np = np)
+ pp.ngr <- function(par, fpar, wf, xdat, u, np){
+   param <- numeric(length = 3L)
+   param[!wf] <- par
+   param[wf] <- fpar
+   grad <- -pp.score(par = param, dat = xdat, u = u, np = np)[!wf]
    ifelse(is.finite(grad), grad, 1e10)
  }
  xmax <- max(xdatu); xmin <- min(xdatu)
  #hin Inequalities for Augmented Lagrangian
- pp.hin <- function(par, xdat, u, np){
-   c(par[2], par[3] + 1,
-     (u - par[1])*par[3] + par[2],
-     (xmin - par[1])*par[3] + par[2],
-     (xmax - par[1])*par[3] + par[2])
+ pp.hin <- function(par, fpar, wf, xdat, u, np){
+   param <- numeric(length = 3L)
+   param[!wf] <- par
+   param[wf] <- fpar
+   c(param[2], param[3] + 1,
+     (u - param[1])*param[3] + param[2],
+     (xmin - param[1])*param[3] + param[2],
+     (xmax - param[1])*param[3] + param[2])
  }
 
- # Starting value
- gppars <- suppressWarnings(fit.gpd(xdat = xdatu, threshold = threshold)$estimate)
- sigma_init <- gppars['scale']*(length(xdatu)/np)^(gppars['shape'])
- mu_init <-  threshold - sigma_init*(((length(xdatu)/np)^(-gppars['shape']))-1)/gppars['shape']
+ # Starting values
+ if(!is.null(start) && is.list(start)){
+   if(!isTRUE(all(param_names[!wf] %in% names(start)))){
+     stop(paste("Invalid starting value: named list must have components",
+                paste(param_names[!wf], collapse = ", ")))
+   }
+   for(i in seq_along(start)){
+     if(names(start[i]) %in% param_names[!wf]){
+      spar[names(start[i])] <- unlist(start[i])[1]
+     }
+   }
+   if(!isTRUE(all(pp.hin(par = spar[!wf], fpar = spar[wf], wf = wf, u = u, xdat = xdatu, np = np)>0))){
+     stop("Starting values do not satisfy the inequality constraints.")
+   }
+ } else{
+ if(all(!wf)){ # no missing values
+   gppars <- suppressWarnings(fit.gpd(xdat = xdatu, threshold = threshold)$estimate)
+   sigma_init <- gppars['scale']*(length(xdatu)/np)^(gppars['shape'])
+   mu_init <-  threshold - sigma_init*(((length(xdatu)/np)^(-gppars['shape']))-1)/gppars['shape']
+   spar <- c(mu_init, sigma_init, gppars['shape'])
+ } else{
+   if(wf[3]){
+     if(!wf[2]){
+       gppars <- suppressWarnings(fit.gpd(xdat = xdatu, threshold = threshold, fpar = list(shape = spar[3]))$param)
+       spar[2] <- gppars['scale']*(length(xdatu)/np)^(gppars['shape'])
+     }
+     if(!isTRUE(all.equal(spar['shape'], 0, tolerance = 1e-6, check.attributes = FALSE))){
+       spar[1] <-  threshold - spar['scale']*(((length(xdatu)/np)^(-spar['shape']))-1)/spar['shape']
+     } else {
+       spar[1] <- threshold + log(length(xdatu)/np)*spar[2]
+     }
+
+   } else{
+     # if shape not fixed, set xi=0 so constraints are satisfied
+     # Starting values from evd::fpot
+   spar[3] <- 0
+   if(!wf[2]){
+     spar[2] <- sqrt(6 * var(xdatu))/pi
+   }
+   if(!wf[1]){
+     spar[1] <- mean(xdatu) + (log(length(xdatu)/np) - 0.58)*spar[2]
+   }
+   }
+ }
+ }
  # Optimization - basically started at MLE
  mle <- suppressWarnings(
-   alabama::auglag(par = c(mu_init, sigma_init, gppars['shape']),
+   alabama::auglag(par = spar[!wf], fpar = spar[wf], wf = wf,
                    fn = pp.nll, gr = pp.ngr, hin = pp.hin,
              u = u, xdat = xdatu, np = np, control.outer = list(trace=FALSE, method = "nlminb")))
- if(mle$convergence == 0  || isTRUE(all.equal(mle$gradient, rep(0,3), tolerance = 1e-3))){
+ if((mle$convergence == 0  || isTRUE(all.equal(mle$gradient, rep(0, sum(wf)), tolerance = 1e-3))) && isTRUE(all(mle$kkt1, mle$kkt2)) ){
    mle$convergence <- "successful"
-   names(mle$par) <- c("loc","scale","shape")
- } else if(isTRUE(all.equal(mle$par['shape'], -1, check.attributes = FALSE, tolerance = 1e-6))){
+ } else if(!wf[3] && isTRUE(all.equal(mle$par['shape'], -1, check.attributes = FALSE, tolerance = 1e-6))){
    mle$convergence <- "successful"
-   names(mle$par) <- c("loc","scale","shape")
- } else{
+ } else {
   warning("Optimization routine may not have succeeded.")
  }
+ wfo <- order(c(which(!wf), which(wf)))
+ notf <- sum(!wf)
  fitted <- list()
- if(mle$par[3] > -0.5){
-   fitted$vcov <- try(solve(pp.infomat(par = mle$par, u = u, np = np, dat = xdatu, method = "obs")))
+ fitted$estimate <- mle$par
+ fitted$param <- c(mle$par, spar[wf])[wfo]
+ if(fitted$param[3] > -0.5){
+   fitted$vcov <- try(solve(pp.infomat(par = fitted$param, u = u, np = np, dat = xdatu, method = "obs")[!wf,!wf]))
    fitted$std.err <- try(sqrt(diag(fitted$vcov)))
    if(is.character(fitted$vcov) || is.character(fitted$std.err)){
      fitted$vcov <- NULL
-     fitted$std.err <- rep(NA, 3)
+     fitted$std.err <- rep(NA, notf)
    }
  } else{
    fitted$vcov <- NULL
-   fitted$std.err <- rep(NA, 3)
+   fitted$std.err <- rep(NA, notf)
  }
- fitted$estimate <- fitted$param <- mle$par
+
+
  fitted$nllh <- mle$value
- names(fitted$estimate) <- names(fitted$std.err) <-  c("loc","scale","shape")
+ names(fitted$param)<-  param_names
+ names(fitted$estimate) <- names(fitted$std.err) <-  param_names[!wf]
  fitted$convergence <- mle$convergence
  fitted$counts <- mle$counts
  fitted$threshold <- u
@@ -279,8 +358,10 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
  fitted$npp <- npp
  fitted$nat <- nu
  fitted$pat <- nu/n
- fitted$xdat <- xdat #data including non-exceedances
+ fitted$xdat <- xdat
  fitted$exceedances <- xdatu
+ fitted$start <- spar
+ fitted$wfixed <- wf
  class(fitted) <- c("mev_pp")
  if(show){
    print(fitted)
@@ -310,7 +391,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE){
 #' \item \code{counts} components taken from the list returned by \code{\link[alabama]{auglag}}.
 #' \item \code{xdat} vector of data
 #' }
-fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE, fpar = NULL, ...){
+fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE, fpar = NULL){
   fitted <- list() # container
   param_names <- c("loc", "scale", "shape")
   stopifnot(is.null(fpar) | is.list(fpar))
@@ -453,7 +534,7 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
   if(isTRUE(all(mle$kkt1, mle$kkt2))){
     fitted$convergence <- "successful"
   } else{
-    fitted$convergence <- "Algorithm did not converge"
+    fitted$convergence <- "converge dubious"
   }
   fitted$counts <- mle$counts
   fitted$xdat <- xdat
@@ -490,22 +571,40 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
 #' @examples
 #' xdat <- rrlarg(n = 10, loc = 0, scale = 1, shape = 0.1, r = 4)
 #' fit.rlarg(xdat)
-fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE){
+fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE, fpar = NULL){
+  param_names <- c("loc", "scale", "shape")
+  stopifnot(is.null(fpar) | is.list(fpar))
+  wf <- (param_names %in% names(fpar))
+  if(sum(wf) == 3L){
+    stop("Invalid input: all of the model parameters are fixed.")
+  }
+  if(is.list(fpar) && (length(fpar) >= 1L)){ #NULL has length zero
+    if(is.null(names(fpar))){
+      stop("`fpar` must be a named list")
+    }
+    if(!isTRUE(all(names(fpar) %in% param_names))){
+      stop("Unknown fixed parameter: must be one of `loc`,`scale` or `shape`. ")
+    }
+    if(!isTRUE(all(unlist(lapply(fpar, length)) == rep(1L, sum(wf))))){
+      stop("Each fixed parameter must be of length one.")
+    }
+  }
   xdat <- na.omit(as.matrix(xdat))
   method <- match.arg(method)
   r <- ncol(xdat)
-  if(which.max(xdat[1,]) != 1){
+  if(which.max(xdat[1,]) != 1){ #only check first row
     stop("Input should be ordered from largest to smallest in each row")
   }
 #Optimization routine, with default starting values
 xmax <- max(xdat)
 xmin <- min(xdat)
+spar <- vector(mode = "numeric", length = 3L)
 if(is.null(start)){
     if(nrow(xdat) > 15L){ # Fit a generalized extreme value distribution to largest
     in2 <- sqrt(6 * var(xdat[,1]))/pi
     in1 <- mean(xdat[,1]) - 0.57722 * in2
     shape <- suppressWarnings(fit.gev(xdat[,1])$estimate[3])
-    spar <- c(in1, in2, shape + 0.2)
+    spar[1:3] <- c(in1, in2, shape + 0.2)
     if(spar[3] > 0 && (spar[2] + spar[3] * (xmin - spar[1]) <= 0)){
      spar[2] <- abs(spar[3]*(xmin - spar[1]))*1.1
     } else if(spar[3] < 0 && (spar[2] + spar[3] * (xmax - spar[1]) <= 0)){
@@ -514,66 +613,125 @@ if(is.null(start)){
   } else {
     spar <- suppressWarnings(fit.pp(as.vector(xdat), threshold = xmin, np = 1)$estimate)
   }
-} else{
-  stopifnot(length(start)==3)
-  spar <- as.vector(start)
-  if(( (spar[3] > 0) && (spar[2] + spar[3] * (xmin - spar[1]) <= 0)) ||
-     ( (spar[3] < 0) && (spar[2] + spar[3] * (xmax - spar[1]) <= 0))){
-    stop("Invalid starting values in `start`")
+} else{ # start is provided
+  stopifnot(length(start) == (3L - sum(wf)))
+  if(is.null(names(start))){
+    spar[!wf] <- unlist(start) # assume order, for better or worse
+  } else {
+    stopifnot(isTRUE(all(names(start) %in% param_names)))
+    for(name in names(start)){
+      spar[name] <- unlist(start[name])
+    }
   }
 }
-mle <- try(suppressWarnings(alabama::auglag(par = spar,
-  fn = function(par) {
-  nll <- -rlarg.ll(par, dat = xdat)
-    ifelse(is.finite(nll), nll, 1e10)
-}, gr = function(par) {
-  grad <- -rlarg.score(par, dat = xdat)
-  ifelse(is.finite(grad), grad, 1e10)
-}, hin = function(par) {
-  c(par[2] + par[3] * (xmax - par[1]), par[2] + par[3] * (xmin - par[1]), par[3]+1-1e-8, par[2])
-}, control.outer = list(method = method, trace = FALSE, NMinit = TRUE),
-control.optim = switch(method,
-                       nlminb = list(iter.max = 1000L, rel.tol = 1e-10, step.min = 1e-10),
-                       BFGS = list(maxit = 1000L, reltol = 1e-10)
-))))
+
+names(spar) <- param_names
+# end of start - attempt to find initial values.
+for(i in seq_along(fpar)){
+  spar[names(fpar[i])] <- unlist(fpar[i])[1]
+}
+if(isTRUE(any(
+  (spar[3] > 0) && (spar[2] + spar[3] * (xmin - spar[1]) <= 0),
+  (spar[3] < 0) && (spar[2] + spar[3] * (xmax - spar[1]) <= 0),
+  spar[2] < 0,
+  spar[3] < -1-1e-8))){
+  stop("Invalid starting values in `start`")
+}
+
+# check if initial value satisfy inequality constraints
+# multiple clauses because we cannot modify a fixed parameter
+if((spar[3] < 0)&((spar[2] + spar[3] * (xmax - spar[1])) < 0)){
+  if(!wf[1]){
+    spar[1] <- spar[2]/spar[3] + xmax + 0.1
+  } else if(!wf[2]){
+    spar[2] <- 1.1*(spar[1]-xmax)*spar[3]
+  } else if(!wf[3]){
+    spar[3] <- -0.9*spar[2]/(xmax-spar[1])
+  }
+} else if((spar[3] > 0)&((spar[2] + spar[3] * (xmin - spar[1])) < 0)){
+  if(!wf[1]){
+    spar[1] <- spar[2]/spar[3] + xmin - 0.1
+  } else if(!wf[2]){
+    spar[2] <- 1.1*(spar[1]-xmin)*spar[3]
+  } else if(!wf[3]){
+    spar[3] <- 0.9*spar[2]/(spar[1]-xmin)
+  }
+}
+
+start_vals <- spar[!wf]
+fixed_vals <- spar[wf] #when empty, a num vector of length zero
+wfo <- order(c(which(!wf), which(wf)))
+mle <- try(suppressWarnings(
+  alabama::auglag(par = start_vals,
+                  fpar = fixed_vals,
+                  wfixed = wf,
+                  wfo = wfo,
+                  fn = function(par, fpar, wfixed, wfo){
+                    params <- c(par, fpar)[wfo]
+                    nll <-  -rlarg.ll(params, dat = xdat)
+                    ifelse(is.finite(nll), nll, 1e10)
+                  }, gr = function(par, fpar, wfixed, wfo) {
+                    params <- c(par, fpar)[wfo]
+                    grad <- -rlarg.score(params, dat = xdat)[!wfixed]
+                    ifelse(is.finite(grad), grad, 1e10)
+                  }, hin = function(par, fpar, wfixed, wfo) {
+                    params <- c(par, fpar)[wfo]
+                    c(params[2] + params[3] * (xmax - params[1]),
+                      params[2] + params[3] * (xmin - params[1]),
+                      params[2],
+                      params[3] + 1-1e-8)
+                  }, control.outer = list(method = method, trace = FALSE, NMinit = TRUE),
+                  control.optim = switch(method,
+                                         nlminb = list(iter.max = 1000L, rel.tol = 1e-10, step.min = 1e-10),
+                                         list(maxit = 1000L, reltol = 1e-10)
+
+                  ))))
+
 if(is.character(mle)){
   stop("Optimization routine for r-largest observations did not converge")
 }
- xmeanr <- mean(xdat[,r])
- # check MLE at xi=-1
- par_boundary <- c(xmax - (xmax-xmeanr)/r, (xmax-xmeanr)/r, -1)
- nll_boundary <- -rlarg.ll(par_boundary, dat = xdat)
 #Extract information and store
 fitted <- list()
 fitted$convergence <- mle$convergence
-if(fitted$convergence == 0){ fitted$convergence <- "successful"}
+if(isTRUE(all(mle$kkt1, mle$kkt2, mle$convergence == 0))){
+  fitted$convergence <- "successful"
+} else{
+  fitted$convergence <- "dubious convergence"
+}
+fitted$nllh <- mle$value
+fitted$estimate <- mle$par
+fitted$param <- c(mle$par, spar[wf])[wfo]
 #Point estimate
- if((nll_boundary > mle$value)&(mle$par[3] > -1)){
-  fitted$nllh <- mle$value
-  fitted$estimate <- mle$par
- } else{
+if(sum(wf) == 0){
+  xmeanr <- mean(xdat[,r])
+  # check MLE at xi=-1
+  par_boundary <- c(xmax - (xmax-xmeanr)/r, (xmax-xmeanr)/r, -1)
+  nll_boundary <- -rlarg.ll(par_boundary, dat = xdat)
+ if(!isTRUE(all(nll_boundary > mle$value, mle$par[3] > -1))){
    fitted$nllh <- nll_boundary
    fitted$estimate <- par_boundary
    fitted$convergence <- "successful"
  }
-#Observed information matrix and standard errors
-if(fitted$estimate[3] > -0.5){
-  fitted$vcov <- try(solve(rlarg.infomat(par = fitted$estimate, dat = xdat, method = "obs")))
-  fitted$std.err <- try(sqrt(diag(fitted$vcov)))
-  if(is.character(fitted$std.err)){
-    fitted$vcov <- NULL
-    fitted$std.err <- rep(NA, 3)
-  }
-} else{
-  fitted$vcov <- NULL
-  fitted$std.err <- rep(NA, 3)
 }
-names(fitted$std.err) <- names(fitted$estimate) <- c("loc","scale","shape")
+#Observed information matrix and standard errors
+fitted$vcov <- matrix(NA, ncol = length(mle$par), nrow = length(mle$par))
+fitted$std.err <- rep(NA, length(mle$par))
+if(fitted$param[3] > -0.5){
+  vcovt <- try(solve(rlarg.infomat(par = fitted$param, dat = xdat, method = "obs")[!wf,!wf]))
+  if(!is.character(vcovt)){
+    fitted$vcov <- vcovt
+    fitted$std.err <- sqrt(diag(fitted$vcov))
+  }
+}
+names(fitted$param) <- names(wf) <- c("loc","scale","shape")
+names(fitted$std.err) <- names(fitted$estimate) <- c("loc","scale","shape")[!wf]
 fitted$method <- "auglag"
 
 fitted$counts <- mle$counts
 fitted$xdat <- xdat
 fitted$nobs <- length(xdat)
+fitted$start <- spar #if start not provided, this is PWM
+fitted$wfixed <- wf
 class(fitted) <- c("mev_rlarg", "mev_gev")
 if(show){
   print(fitted)
@@ -759,7 +917,11 @@ plot.mev_gev <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
 # @param ... additional argument passed to \code{matplot}.
 #' @export
 plot.mev_rlarg <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...) {
-  ppdat <- (1+x$estimate[3]*(as.matrix(x$xdat)-x$estimate[1])/x$estimate[2])^(-1/x$estimate[3])
+  if(!isTRUE(all.equal(x$param[3], 0, check.attributes = FALSE))){
+  ppdat <- (1+x$param[3]*(as.matrix(x$xdat)-x$param[1])/x$param[2])^(-1/x$param[3])
+  } else{
+    ppdat <- exp(-(as.matrix(x$xdat)-x$param[1])/x$param[2])
+  }
   if(ncol(ppdat) == 1){
     dat <- as.vector(ppdat)
   } else{
@@ -835,16 +997,16 @@ plot.mev_pp <- function(x, which = 1:2, main = "Quantile-quantile plot", xlab = 
   }
 
   dat <- sort(x$exceedances)
-  scalet <- x$estimate['scale'] + x$estimate['shape']*(x$threshold - x$estimate['loc'])
+  scalet <- x$param['scale'] + x$param['shape']*(x$threshold - x$param['loc'])
   n <- length(dat)
   pp_confint_lim <- t(sapply(1:n, function(i) {qbeta(c(0.025, 0.975), i, n - i + 1) }))
   qq_confint_lim <- apply(pp_confint_lim, 2, function(y){
-    evd::qgpd(y, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])})
+    evd::qgpd(y, loc = x$threshold, scale = scalet, shape = x$param['shape'])})
   pobs <- (1:n)/(n + 1)
-  quant <- evd::qgpd(pobs, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])
+  quant <- evd::qgpd(pobs, loc = x$threshold, scale = scalet, shape = x$param['shape'])
   if(show[1]){
     matplot(pobs, cbind(pp_confint_lim,
-                        evd::pgpd(dat, loc = x$threshold, scale = scalet, shape = x$estimate['shape'])),
+                        evd::pgpd(dat, loc = x$threshold, scale = scalet, shape = x$param['shape'])),
             main = main[1], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = c(0,1), xlim = c(0,1),
             lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)
@@ -932,6 +1094,10 @@ print.mev_gev <- function(x, digits = max(3, getOption("digits") - 3), ...) {
     cat("\nStandard Errors\n")
     print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
   }
+  if(length(x$estimate) != length(x$param)){
+    cat("\nParameters\n")
+    print.default(format(x$param, digits = digits), print.gap = 2, quote = FALSE, ...)
+  }
   cat("\nOptimization Information\n")
   cat("  Convergence:", x$convergence, "\n")
   cat("  Function Evaluations:", x$counts["function"], "\n")
@@ -959,7 +1125,10 @@ print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
     cat("\nStandard Errors\n")
     print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
   }
-
+  if(length(x$estimate) != length(x$param)){
+    cat("\nParameters\n")
+    print.default(format(x$param, digits = digits), print.gap = 2, quote = FALSE, ...)
+  }
   cat("\nOptimization Information\n")
   cat("  Convergence:", x$convergence, "\n")
   cat("  Function Evaluations:", x$counts["function"], "\n")
@@ -1162,6 +1331,54 @@ print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
     for (i in 1:narg) {
       if (!inherits(get(models[i], envir = parent.frame()), "mev_gev"))
         stop("Invalid input: use only with objects of class 'mev_gev'.")
+    }
+
+    npar <- rep(0, length(models))
+    dev <- rep(0, length(models))
+    for (i in 1:narg) {
+      evmod <- get(models[i], envir = parent.frame())
+      dev[i] <- 2*evmod$nllh
+      npar[i] <- length(evmod$estimate)
+    }
+    if(sum(object2$wfixed) <= sum(object$wfixed)){
+      stop("Invalid order: `object2` must contain a model with restrictions")
+    }
+    if(!isTRUE(all.equal(object$xdat, object2$xdat))){
+      stop("Invalid arguments: the samples should be the same")
+    }
+    nested <- FALSE
+    if(isTRUE(all(which(object$wfixed) %in% which(object2$wfixed)))){
+      if(isTRUE(all.equal(object$param[which(object$wfixed)],
+                          object2$param[which(object$wfixed)]))){
+        nested <- TRUE
+      }
+    }
+    if(!nested){
+      stop("Invalid input: models are not nested.")
+    }
+    df <- -diff(npar)
+    dvdiff <- diff(dev)
+    pval <- pchisq(dvdiff, df = df, lower.tail = FALSE)
+    table <- data.frame(npar, dev, c(NA, df), c(NA, dvdiff), c(NA,
+                                                               pval))
+    dimnames(table) <- list(models, c("npar", "Deviance", "Df",
+                                      "Chisq", "Pr(>Chisq)"))
+    structure(table, heading = c("Analysis of Deviance Table\n"),
+              class = c("anova", "data.frame"))
+  }
+  #' @export
+  anova.mev_pp <- function(object, object2, ...){
+    if (any(missing(object), missing(object2))){
+      stop("At least two models must be specified.")
+    }
+
+    model1 <- deparse(substitute(object))
+    model2 <- deparse(substitute(object2))
+    models <- c(model1, model2)
+    narg <- length(models)
+    for (i in 1:narg) {
+      if (!inherits(get(models[i], envir = parent.frame()), "mev_pp"))
+        stop("Invalid input: use only with objects of class 'mev_pp'.")
     }
 
     npar <- rep(0, length(models))

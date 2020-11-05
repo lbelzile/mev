@@ -2470,10 +2470,16 @@ pp.ll <- function(par, dat, u, np = 1){
 #' @keywords internal
 pp.score <- function(par, dat, u, np = 1){
   mu <- par[1]; sigma <- par[2]; xi <- par[3]; nu <- length(dat)
+  if(!isTRUE(all.equal(xi, 0, check.attributes = FALSE))){
   c(  -sum(xi*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1))) -  np*(-(mu - u)*xi/sigma + 1)^(-1/xi - 1)/sigma,
        sum((mu - dat)*xi*(1/xi + 1)/(sigma^2*((mu - dat)*xi/sigma - 1))) - nu/sigma + (mu - u)*np*((u - mu)*xi/sigma + 1)^(1/xi - 1)/(sigma^2*((u - mu)*xi/sigma + 1)^(2/xi)),
        - sum((mu - dat)*(1/xi + 1)/(sigma*((mu - dat)*xi/sigma - 1))) + sum(log1p(-(mu - dat)*xi/sigma)/xi^2) -
          np*(log1p((u - mu)*xi/sigma)/xi^2 - (mu - u)/(sigma*((mu - u)*xi/sigma - 1)*xi))/(-(mu - u)*xi/sigma + 1)^(1/xi))
+  } else{
+    c(-np*exp((mu-u)/sigma)/sigma + nu/sigma,
+    np*(mu-u)*exp((mu-u)/sigma)/sigma^2 - nu/sigma + sum((dat-mu)/sigma^2),
+    -1/2*np*(mu - u)^2*exp((mu-u)/sigma)/sigma^2 + sum(1/2*(mu + 2*sigma - dat)*(mu - dat)/sigma^2))
+  }
 }
 
 
