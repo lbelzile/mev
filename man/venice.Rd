@@ -5,16 +5,17 @@
 \alias{venice}
 \title{Venice Sea Levels}
 \format{
-a data frame with 131 rows and 11 columns containing the year of the measurement (first column)
+a data frame with 133 rows and 11 columns containing the year of the measurement (first column)
 and ordered 10-largest yearly observations, reported in decreasing order from largest (\code{r1}) to smallest (\code{r10}).
 }
 \source{
-City of Venice, Historical archive <http://archive.comune.venezia.it/flex/cm/pages/ServeBLOB.php/L/EN/IDPagina/3045>. Last accessed October 2018.
+City of Venice, Historical archive <https://www.comune.venezia.it/node/6214>. Last accessed November 5th, 2020.
 }
 \description{
 The \code{venice} data contains the 10 largest yearly sea levels (in cm)
-from 1887 until 2017. Only the yearly maximum is available for 1922
-and the six largest observations for 1936.
+from 1887 until 2019. Only the yearly maximum is available for 1922
+and the six largest observations for 1936. Note that this database is frequently updated
+as new observations become available.
 }
 \note{
 Smith (1986) notes that the annual maxima seems to fluctuate around a constant sea level
@@ -23,8 +24,8 @@ up to 1930 or so, after which there is potential linear trend. Records of thresh
 
 The observations from 1931 until 1981 can be found in
 Table 1 in Smith (1986), who reported data from Pirazzoli (1982).
-The values from 1983 until 2017 were extracted by Anthony Davison from the City
-of Venice website (accessed October 2018) and are licensed under the CC BY-NC-SA 3.0 license.
+The values from 1983 until 2019 were extracted by Anthony Davison from the City
+of Venice website (accessed in May 2020) and are licensed under the CC BY-NC-SA 3.0 license.
 The Venice City website indicates
 that later measurements were recorded by an instrument located in Punta Salute.
 }

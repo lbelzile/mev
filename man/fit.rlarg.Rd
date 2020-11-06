@@ -4,7 +4,13 @@
 \alias{fit.rlarg}
 \title{Maximum likelihood estimates of point process for the r-largest observations}
 \usage{
-fit.rlarg(xdat, start = NULL, method = c("nlminb", "BFGS"), show = FALSE)
+fit.rlarg(
+  xdat,
+  start = NULL,
+  method = c("nlminb", "BFGS"),
+  show = FALSE,
+  fpar = NULL
+)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
@@ -14,6 +20,8 @@ fit.rlarg(xdat, start = NULL, method = c("nlminb", "BFGS"), show = FALSE)
 \item{method}{the method to be used. See \bold{Details}. Can be abbreviated.}
 
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
+
+\item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
 }
 \value{
 a list containing the following components:

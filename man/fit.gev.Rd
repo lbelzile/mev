@@ -9,8 +9,7 @@ fit.gev(
   start = NULL,
   method = c("nlminb", "BFGS"),
   show = FALSE,
-  fpar = NULL,
-  ...
+  fpar = NULL
 )
 }
 \arguments{

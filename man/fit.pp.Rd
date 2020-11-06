@@ -4,7 +4,15 @@
 \alias{fit.pp}
 \title{Maximum likelihood estimation of the point process of extremes}
 \usage{
-fit.pp(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE)
+fit.pp(
+  xdat,
+  threshold = 0,
+  npp = 1,
+  np = NULL,
+  start = NULL,
+  show = FALSE,
+  fpar = NULL
+)
 }
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
@@ -16,6 +24,8 @@ fit.pp(xdat, threshold = 0, npp = 1, np = NULL, show = FALSE)
 \item{np}{number of periods of data, if \code{xdat} only contains exceedances.}
 
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
+
+\item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
 }
 \value{
 a list containing the following components:
