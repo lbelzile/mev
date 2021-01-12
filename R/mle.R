@@ -506,7 +506,7 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
   fitted$nllh <- mle$value
   fitted$estimate <- mle$par
   fitted$param <- c(mle$par, spar[wf])[wfo]
-  if(!any(wf) | isTRUE(all(all.equal(wf, c(FALSE, FALSE, TRUE)), all.equal(fixed_vals, -1, check.attributes = FALSE)))){
+  if(!any(wf) | all(isTRUE(all.equal(wf, c(FALSE, FALSE, TRUE))), isTRUE(all.equal(fixed_vals, -1, check.attributes = FALSE)))){
     par_boundary <- c(xmean, xmax-xmean, -1)
     nll_boundary <- n*(1+log(par_boundary[2]))
     #Extract information and store
