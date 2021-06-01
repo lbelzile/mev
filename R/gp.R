@@ -306,477 +306,396 @@
 #' @param x sample values
 #' @return a list with the maximum likelihood estimates of components \code{a} and \code{k}
 #' @keywords internal
-.fit.gpd.grimshaw <- function(x) {
-  n <- length(x)
-  xq <- sort(x)
-  xbar <- mean(x)
-  sumx2 <- sum(x^2)/n
-  x1 <- xq[1]
-  xn <- xq[n]
-  # Find the local maxima/minima of the likelihood.
-  epsilon <- 1e-6/xbar  #  Initialize epsilon as the accuracy criterion
-  # The local maxima/minima must be found numerically by finding the zero(s) of h().
-  #  Algorithm for finding the zero(s) of h().
-  #  Any roots that exist must be within the interval (lobnd, hibnd).
-  lobnd <- 2 * (x1 - xbar)/x1^2
-  if (lobnd >= 0) {
-    lobnd <- -epsilon
-  }
-  hibnd <- (1/xn) - epsilon
-  if (hibnd <= 0) {
-    hibnd <- epsilon
-  }
-  # If h''(0) > 0, look for one negative and one positive zero of h().
-  # If h''(0) < 0, look for two negative and two positive zeros
-  # of h().
-  secderiv <- sumx2 - 2 * xbar^2  #{ Evaluate h''(0). }
-  if (secderiv > 0) {
-    # Look for one negative and one positive zero of h().
-    thzeros <- cbind(c(0, 0), c(0, 0))
-    nzeros <- 2
-    # Begin with the initial value at lobnd.
-    hlo <- (1 + sum(log(1 - lobnd * x))/n) * (sum(1/(1 - lobnd * x))/n) - 1
-    if (hlo < 0) {
-      thlo <- lobnd  #{  Orient the search so h(thlo)<0  }
-      thhi <- -epsilon
-    } else {
-      thlo <- -epsilon
-      thhi <- lobnd
+.fit.gpd.grimshaw <- function (x)
+  {
+    n <- length(x)
+    xq <- sort(x)
+    xbar <- mean(x)
+    sumx2 <- sum(x^2)/n
+    x1 <- xq[1]
+    xn <- xq[n]
+    epsilon <- 1e-6/xbar # careful: too low epsilon leads to xi=0
+    lobnd <- 2 * (x1 - xbar)/x1^2
+    maxiter <- 400L
+    if (lobnd >= 0) {
+      lobnd <- -epsilon
     }
-    thzero <- lobnd  #{  Initial value for modified Newton-Raphson is lobnd. }
-    dxold <- abs(thhi - thlo)
-    dx <- dxold
-    temp1 <- sum(log(1 - thzero * x))/n
-    temp2 <- sum(1/(1 - thzero * x))/n
-    temp3 <- sum(1/(1 - thzero * x)^2)/n
-    h <- (1 + temp1) * (temp2) - 1
-    hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-
-    # Newton-Raphson Algorithm to find the zero of the function h() for a given initial starting point.
-    j <- 1
-    maxiter <- 400  #{Maximum number of mod. Newton-Raphson iterations}
-    while (j <= maxiter) {
-      # Determine whether it is better to use Bisection
-      # (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
-      c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
-      c2 <- (abs(2 * h) > abs(dxold * hprime))
-      if (c1 + c2 >= 1) {
-        dxold <- dx
-        dx <- (thhi - thlo)/2
-        thzero <- thlo + dx
-        if (thlo == thzero) {
-          # {Change in root is negligible}
-          j <- 1000
-        }
-      } else {
-        dxold <- dx
-        dx <- h/hprime
-        temp <- thzero
-        thzero <- thzero - dx
-        if (temp == thzero) {
-          # {Change in root is negligible}
-          j <- 1001
-        }
+    hibnd <- (1/xn) - epsilon #modif
+    if (hibnd <= 0) {
+      hibnd <- epsilon
+    }
+    secderiv <- sumx2 - 2 * xbar^2
+    if (secderiv > 0) {
+      thzeros <- cbind(c(0, 0), c(0, 0))
+      nzeros <- 2
+      hlo <- (1 + sum(log(1 - lobnd * x))/n) * (sum(1/(1 - lobnd * x))/n) - 1
+      if (hlo < 0) {
+        thlo <- lobnd
+        thhi <- -epsilon
+      }   else {
+        thlo <- -epsilon
+        thhi <- lobnd
       }
-      # Determine if convergence criterion is met.
-      if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
-        j <- 999
-      }
-      temp1 <- sum(log(1 - thzero * x))/n
-      temp2 <- sum(1/(1 - thzero * x))/n
-      temp3 <- sum(1/(1 - thzero * x)^2)/n
+      thzero <- lobnd
+      dxold <- abs(thhi - thlo)
+      dx <- dxold
+      temp1 <- mean(log(1 - thzero * x))
+      temp2 <- mean(1/(1 - thzero * x))
+      temp3 <- mean(1/(1 - thzero * x)^2)
       h <- (1 + temp1) * (temp2) - 1
       hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-      if (h < 0) {
-        # {Maintain the bracket on the root}
-        thlo <- thzero
-      } else {
-        thhi <- thzero
-      }
-      j <- j + 1
-    }
-
-    if (j > maxiter + 1) {
-      thzeros[1, ] <- cbind(thzero, j)
-    }
-    # Begin with the initial value at hibnd.
-    hlo <- (1 + sum(log(1 - epsilon * x))/n) * (sum(1/(1 - epsilon * x))/n) - 1
-    if (hlo < 0) {
-      thlo <- epsilon  #{  Orient the search so h(thlo)<0  }
-      thhi <- hibnd
-    } else {
-      thlo <- hibnd
-      thhi <- epsilon
-    }
-    thzero <- hibnd  #{  Initial value for modified Newton-Raphson is hibnd. }
-    dxold <- abs(thhi - thlo)
-    dx <- dxold
-    temp1 <- sum(log(1 - thzero * x))/n
-    temp2 <- sum(1/(1 - thzero * x))/n
-    temp3 <- sum(1/(1 - thzero * x)^2)/n
-    h <- (1 + temp1) * (temp2) - 1
-    hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-
-    # Newton-Raphson Algorithm to find the zero of the function h() for a given initial starting point.
-    j <- 1
-    maxiter <- 400  #{Maximum number of mod. Newton-Raphson iterations}
-    while (j <= maxiter) {
-      # Determine whether it is better to use Bisection
-      # (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
-      c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
-      c2 <- (abs(2 * h) > abs(dxold * hprime))
-      if (c1 + c2 >= 1) {
-        dxold <- dx
-        dx <- (thhi - thlo)/2
-        thzero <- thlo + dx
-        if (thlo == thzero) {
-          # {Change in root is negligible}
-          j <- 1000
-        }
-      } else {
-        dxold <- dx
-        dx <- h/hprime
-        temp <- thzero
-        thzero <- thzero - dx
-        if (temp == thzero) {
-          # {Change in root is negligible}
-          j <- 1001
-        }
-      }
-      # Determine if convergence criterion is met.
-      if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
-        j <- 999
-      }
-      temp1 <- sum(log(1 - thzero * x))/n
-      temp2 <- sum(1/(1 - thzero * x))/n
-      temp3 <- sum(1/(1 - thzero * x)^2)/n
-      h <- (1 + temp1) * (temp2) - 1
-      hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-      if (h < 0) {
-        # {Maintain the bracket on the root}
-        thlo <- thzero
-      } else {
-        thhi <- thzero
-      }
-      j <- j + 1
-    }
-    if (j > maxiter + 1) {
-      thzeros[2, ] <- cbind(thzero, j)
-    }
-  } else {
-    # if lim h''(theta)< 0
-    # Look for two negative and two positive zeros of h().
-    thzeros <- matrix(rep(0, 8), ncol = 2)
-    nzeros <- 4
-    # Begin with the initial value at lobnd.
-    hlo <- (1 + sum(log(1 - lobnd * x))/n) * (sum(1/(1 - lobnd * x))/n) - 1
-    if (hlo < 0) {
-      thlo <- lobnd  #{  Orient the search so h(thlo)<0  }
-      thhi <- -epsilon
-    } else {
-      thlo <- -epsilon
-      thhi <- lobnd
-    }
-    thzero <- lobnd  #{  Initial value for modified Newton-Raphson is lobnd. }
-    dxold <- abs(thhi - thlo)
-    dx <- dxold
-    temp1 <- sum(log(1 - thzero * x))/n
-    temp2 <- sum(1/(1 - thzero * x))/n
-    temp3 <- sum(1/(1 - thzero * x)^2)/n
-    h <- (1 + temp1) * (temp2) - 1
-    hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-
-    ## Newton-Raphson Algorithm to find the zero of the function h() for a given initial starting point.
-    j <- 1
-    maxiter <- 400  #{Maximum number of mod. Newton-Raphson iterations}
-    while (j <= maxiter) {
-      # Determine whether it is better to use Bisection
-      # (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
-      c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
-      c2 <- (abs(2 * h) > abs(dxold * hprime))
-      if (c1 + c2 >= 1) {
-        dxold <- dx
-        dx <- (thhi - thlo)/2
-        thzero <- thlo + dx
-        if (thlo == thzero) {
-          # {Change in root is negligible}
-          j <- 1000
-        }
-      } else {
-        dxold <- dx
-        dx <- h/hprime
-        temp <- thzero
-        thzero <- thzero - dx
-        if (temp == thzero) {
-          # {Change in root is negligible}
-          j <- 1001
-        }
-      }
-      # Determine if convergence criterion is met.
-      if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
-        j <- 999
-      }
-      temp1 <- sum(log(1 - thzero * x))/n
-      temp2 <- sum(1/(1 - thzero * x))/n
-      temp3 <- sum(1/(1 - thzero * x)^2)/n
-      h <- (1 + temp1) * (temp2) - 1
-      hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-      if (h < 0) {
-        # {Maintain the bracket on the root}
-        thlo <- thzero
-      } else {
-        thhi <- thzero
-      }
-      j <- j + 1
-    }
-    if (j > maxiter + 1) {
-      thzeros[1, ] <- cbind(thzero, j)
-    }
-    ### if(!all.equal(thzero, -epsilon, tolerance = abs(epsilon))){
-    # Look at the derivative to determine where the second root lies.
-    # If h'(0) > 0, second root lies between thzero and -epsilon.
-    # If h'(0) < 0, second root lies between lobnd and thzero.
-    temp1 <- sum(log(1 - thzero * x))/n
-    temp2 <- sum(1/(1 - thzero * x))/n
-    temp3 <- sum(1/(1 - thzero * x)^2)/n
-    hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-    if (hprime > 0) {
-      # h'(0)>0, so the second zero lies between thzero and -epsilon.
-      # Establish Initial Values.
-      thlo <- thzero
-      thhi <- -epsilon
-      thzero <- thhi
-      dx <- thlo - thhi
       j <- 1
-      maxiter <- 400  #{Maximum number of bisection iterations}
       while (j <= maxiter) {
-        dx <- 0.5 * dx
-        thmid <- thzero + dx
-        hmid <- (1 + sum(log(1 - thmid * x))/n) * (sum(1/(1 - thmid * x))/n) - 1
-        if (hmid < 0) {
-          thzero <- thmid
-        } else if (hmid == 0) {
-          # {Zero of h() has been found}
-          j <- 999
+        c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
+        c2 <- (abs(2 * h) > abs(dxold * hprime))
+        if (c1 + c2 >= 1) {
+          dxold <- dx
+          dx <- (thhi - thlo)/2
+          thzero <- thlo + dx
+          if (thlo == thzero) {
+            j <- 1000
+          }
+        } else {
+          dxold <- dx
+          dx <- h/hprime
+          temp <- thzero
+          thzero <- thzero - dx
+          if (temp == thzero) {
+            j <- 1001
+          }
         }
         if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
           j <- 999
         }
+        temp1 <- mean(log(1 - thzero * x))
+        temp2 <- mean(1/(1 - thzero * x))
+        temp3 <- mean(1/(1 - thzero * x)^2)
+        h <- (1 + temp1) * (temp2) - 1
+        hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
+        if (h < 0) {
+          thlo <- thzero
+        }  else {
+          thhi <- thzero
+        }
         j <- j + 1
       }
-
+      if (j > maxiter + 1) {
+        thzeros[1, ] <- cbind(thzero, j)
+      }
+      hlo <- (1 + sum(log(1 - epsilon * x))/n) * (sum(1/(1 -epsilon * x))/n) - 1
+      if (hlo < 0) {
+        thlo <- epsilon
+        thhi <- hibnd
+      }  else {
+        thlo <- hibnd
+        thhi <- epsilon
+      }
+      thzero <- (hibnd + epsilon)/2
+      dxold <- abs(thhi - thlo)
+      dx <- dxold
+      temp1 <- mean(log(1 - thzero * x))
+      temp2 <- mean(1/(1 - thzero * x))
+      temp3 <- mean(1/(1 - thzero * x)^2)
+      h <- (1 + temp1) * (temp2) - 1
+      hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
+      j <- 1
+      while (j <= maxiter) {
+        c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
+        c2 <- (abs(2 * h) > abs(dxold * hprime))
+        if (c1 + c2 >= 1) {
+          dxold <- dx
+          dx <- (thhi - thlo)/2
+          thzero <- thlo + dx
+          if (thlo == thzero) {
+            j <- 1000
+          }
+        } else {
+          dxold <- dx
+          dx <- h/hprime
+          temp <- thzero
+          thzero <- thzero - dx
+          if (temp == thzero) {
+            j <- 1001
+          }
+        }
+        if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
+          j <- 999
+        }
+        temp1 <- mean(log(1 - thzero * x))
+        temp2 <- mean(1/(1 - thzero * x))
+        temp3 <- mean(1/(1 - thzero * x)^2)
+        h <- (1 + temp1) * (temp2) - 1
+        hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
+        if (h < 0) {
+          thlo <- thzero
+        } else {
+          thhi <- thzero
+        }
+        j <- j + 1
+      }
       if (j > maxiter + 1) {
         thzeros[2, ] <- cbind(thzero, j)
       }
     } else {
-      # h'(0)<0, so the second zero lies between lobnd and thzero.  Establish Initial Values.
-      thlo <- lobnd
-      thhi <- thzero
-      thzero <- thlo
-      dx <- thhi - thlo
-      j <- 1
-      maxiter <- 400  #{Maximum number of bisection iterations}
-      while (j <= maxiter) {
-        dx <- 0.5 * dx
-        thmid <- thzero + dx
-        hmid <- (1 + sum(log(1 - thmid * x))/n) * (sum(1/(1 - thmid * x))/n) - 1
-        if (hmid < 0) {
-          thzero <- thmid
-        } else if (hmid == 0) {
-          # {Zero of h() has been found}
-          j <- 999
-        }
-        if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
-          j <- 999
-        }
-        j <- j + 1
-      }
-      ### }
-      if (j > maxiter + 1) {
-        thzeros[2, ] <- cbind(thzero, j)
-      }
-    }
-    # Begin with the initial value at hibnd.
-    hlo <- (1 + sum(log(1 - epsilon * x))/n) * (sum(1/(1 - epsilon * x))/n) - 1
-    if (hlo < 0) {
-      thlo <- epsilon  #{  Orient the search so h(thlo)<0  }
-      thhi <- hibnd
-    } else {
-      thlo <- hibnd
-      thhi <- epsilon
-    }
-    thzero <- hibnd  #{  Initial value for modified Newton-Raphson is hibnd. }
-    dxold <- abs(thhi - thlo)
-    dx <- dxold
-    temp1 <- sum(log(1 - thzero * x))/n
-    temp2 <- sum(1/(1 - thzero * x))/n
-    temp3 <- sum(1/(1 - thzero * x)^2)/n
-    h <- (1 + temp1) * (temp2) - 1
-    hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-    # Newton-Raphson Algorithm to find the zero of the function h() for a given initial starting point.
-    j <- 1
-    maxiter <- 400  #{Maximum number of mod. Newton-Raphson iterations}
-    while (j <= maxiter) {
-      # Determine whether it is better to use Bisection
-      # (if N-R is out of range or not decreasing fast enough) or Newton-Raphson.
-      c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
-      c2 <- (abs(2 * h) > abs(dxold * hprime))
-      if (c1 + c2 >= 1) {
-        dxold <- dx
-        dx <- (thhi - thlo)/2
-        thzero <- thlo + dx
-        if (thlo == thzero) {
-          # {Change in root is negligible}
-          j <- 1000
-        }
+      thzeros <- matrix(rep(0, 8), ncol = 2)
+      nzeros <- 4
+      hlo <- (1 + sum(log(1 - lobnd * x))/n) * (sum(1/(1 -lobnd * x))/n) - 1
+      if (hlo < 0) {
+        thlo <- lobnd
+        thhi <- -epsilon
       } else {
-        dxold <- dx
-        dx <- h/hprime
-        temp <- thzero
-        thzero <- thzero - dx
-        if (temp == thzero) {
-          # {Change in root is negligible}
-          j <- 1001
-        }
+        thlo <- -epsilon
+        thhi <- lobnd
       }
-      # Determine if convergence criterion is met.
-      if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
-        j <- 999
-      }
-      temp1 <- sum(log(1 - thzero * x))/n
-      temp2 <- sum(1/(1 - thzero * x))/n
-      temp3 <- sum(1/(1 - thzero * x)^2)/n
+      thzero <- lobnd
+      dxold <- abs(thhi - thlo)
+      dx <- dxold
+      temp1 <- mean(log(1 - thzero * x))
+      temp2 <- mean(1/(1 - thzero * x))
+      temp3 <- mean(1/(1 - thzero * x)^2)
       h <- (1 + temp1) * (temp2) - 1
       hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-      if (h < 0) {
-        # {Maintain the bracket on the root}
+      j <- 1
+      while (j <= maxiter) {
+        c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
+        c2 <- (abs(2 * h) > abs(dxold * hprime))
+        if (c1 + c2 >= 1) {
+          dxold <- dx
+          dx <- (thhi - thlo)/2
+          thzero <- thlo + dx
+          if (thlo == thzero) {
+            j <- 1000
+          }
+        }  else {
+          dxold <- dx
+          dx <- h/hprime
+          temp <- thzero
+          thzero <- thzero - dx
+          if (temp == thzero) {
+            j <- 1001
+          }
+        }
+        if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
+          j <- 999
+        }
+        temp1 <- mean(log(1 - thzero * x))
+        temp2 <- mean(1/(1 - thzero * x))
+        temp3 <- mean(1/(1 - thzero * x)^2)
+        h <- (1 + temp1) * (temp2) - 1
+        hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
+        if (h < 0) {
+          thlo <- thzero
+        } else {
+          thhi <- thzero
+        }
+        j <- j + 1
+      }
+      if (j > maxiter + 1) {
+        thzeros[1, ] <- cbind(thzero, j)
+      }
+      temp1 <- mean(log(1 - thzero * x))
+      temp2 <- mean(1/(1 - thzero * x))
+      temp3 <- mean(1/(1 - thzero * x)^2)
+      hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
+      if (hprime > 0) {
         thlo <- thzero
+        thhi <- -epsilon
+        thzero <- thhi
+        dx <- thlo - thhi
+        j <- 1
+
+        while (j <= maxiter) {
+          dx <- 0.5 * dx
+          thmid <- thzero + dx
+          hmid <- (1 + sum(log(1 - thmid * x))/n) * (sum(1/(1 - thmid * x))/n) - 1
+          if (hmid < 0) {
+            thzero <- thmid
+          } else if (hmid == 0) {
+            j <- 999
+          }
+          if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
+            j <- 999
+          }
+          j <- j + 1
+        }
+        if (j > maxiter + 1) {
+          thzeros[2, ] <- cbind(thzero, j)
+        }
       } else {
+        thlo <- lobnd
         thhi <- thzero
+        thzero <- thlo
+        dx <- thhi - thlo
+        j <- 1
+        while (j <= maxiter) {
+          dx <- 0.5 * dx
+          thmid <- thzero + dx
+          hmid <- (1 + sum(log(1 - thmid * x))/n) * (sum(1/(1 - thmid * x))/n) - 1
+          if (hmid < 0) {
+            thzero <- thmid
+          }  else if (hmid == 0) {
+            j <- 999
+          }
+          if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
+            j <- 999
+          }
+          j <- j + 1
+        }
+        if (j > maxiter + 1) {
+          thzeros[2, ] <- cbind(thzero, j)
+        }
       }
-      j <- j + 1
-    }
-
-    if (j > maxiter + 1) {
-      thzeros[3, ] <- cbind(thzero, j)
-    }
-    # Look at the derivative to determine where the second root lies.
-    # If h'(0)>0, second root lies between thzero and hibnd.
-    # If h'(0)<0, second root lies between epsilon and thzero.
-    temp1 <- mean(log(1 - thzero * x))
-    temp2 <- mean(1/(1 - thzero * x))
-    temp3 <- mean(1/(1 - thzero * x)^2)
-    hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
-    if (hprime > 0) {
-      # h'(0)>0, so the second zero lies between thzero and hibnd.  Establish Initial Values.
-      thlo <- thzero
-      thhi <- hibnd
-      thzero <- thhi
-      dx <- thlo - thhi
-
+      hlo <- (1 + sum(log(1 - epsilon * x))/n) * (sum(1/(1 - epsilon * x))/n) - 1
+      if (hlo < 0) {
+        thlo <- epsilon
+        thhi <- hibnd
+      } else {
+        thlo <- hibnd
+        thhi <- epsilon
+      }
+      thzero <- (hibnd + epsilon)/2
+      dxold <- abs(thhi - thlo)
+      dx <- dxold
+      temp1 <- mean(log(1 - thzero * x))
+      temp2 <- mean(1/(1 - thzero * x))
+      temp3 <- mean(1/(1 - thzero * x)^2)
+      h <- (1 + temp1) * (temp2) - 1
+      hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
       j <- 1
-      maxiter <- 100  #{Maximum number of bisection iterations}
       while (j <= maxiter) {
-        dx <- 0.5 * dx
-        thmid <- thzero + dx
-        hmid <- (1 + sum(log(1 - thmid * x))/n) * (sum(1/(1 - thmid * x))/n) - 1
-        if (hmid < 0) {
-          thzero <- thmid
-        } else if (hmid == 0) {
-          # {Zero of h() has been found}
-          j <- 999
+        c1 <- (((thzero - thhi) * hprime - h) * ((thzero - thlo) * hprime - h) >= 0)
+        c2 <- (abs(2 * h) > abs(dxold * hprime))
+        if (c1 + c2 >= 1) {
+          dxold <- dx
+          dx <- (thhi - thlo)/2
+          thzero <- thlo + dx
+          if (thlo == thzero) {
+            j <- 1000
+          }
+        } else {
+          dxold <- dx
+          dx <- h/hprime
+          temp <- thzero
+          thzero <- thzero - dx
+          if (temp == thzero) {
+            j <- 1001
+          }
         }
         if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
           j <- 999
         }
+        temp1 <- mean(log(1 - thzero * x))
+        temp2 <- mean(1/(1 - thzero * x))
+        temp3 <- mean(1/(1 - thzero * x)^2)
+        h <- (1 + temp1) * (temp2) - 1
+        hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
+        if (h < 0) {
+          thlo <- thzero
+        } else {
+          thhi <- thzero
+        }
         j <- j + 1
       }
-
       if (j > maxiter + 1) {
-        thzeros[4, ] <- cbind(thzero, j)
+        thzeros[3, ] <- cbind(thzero, j)
       }
+      temp1 <- mean(log(1 - thzero * x))
+      temp2 <- mean(1/(1 - thzero * x))
+      temp3 <- mean(1/(1 - thzero * x)^2)
+      hprime <- (temp3 - temp2^2 - temp1 * (temp2 - temp3))/thzero
+      if (hprime > 0) {
+        thlo <- thzero
+        thhi <- hibnd
+        thzero <- thhi
+        dx <- thlo - thhi
+        j <- 1
+        while (j <= maxiter) {
+          dx <- 0.5 * dx
+          thmid <- thzero + dx
+          hmid <- (1 + sum(log(1 - thmid * x))/n) * (sum(1/(1 - thmid * x))/n) - 1
+          if (hmid < 0) {
+            thzero <- thmid
+          }  else if (hmid == 0) {
+            j <- 999
+          }
+          if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
+            j <- 999
+          }
+          j <- j + 1
+        }
+        if (j > maxiter + 1) {
+          thzeros[4, ] <- cbind(thzero, j)
+        }
+      } else {
+        thlo <- epsilon
+        thhi <- thzero
+        thzero <- thlo
+        dx <- thhi - thlo
+        j <- 1
+        while (j <= maxiter) {
+          dx <- 0.5 * dx
+          thmid <- thzero + dx
+          hmid <- (1 + sum(log(1 - thmid * x))/n) * (sum(1/(1 - thmid * x))/n) - 1
+          if (hmid < 0) {
+            thzero <- thmid
+          }  else if (hmid == 0) {
+            j <- 999
+          }
+          if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
+            j <- 999
+          }
+          j <- j + 1
+        }
+        if (j > maxiter + 1) {
+          thzeros[4, ] <- cbind(thzero, j)
+        }
+      }
+    }
+    thetas <- thzeros[thzeros[, 2] > maxiter + 1, ]
+    nzeros <- nrow(thetas)
+    proll <- rep(0, nzeros)
+    mles <- matrix(rep(0, 4 * nzeros), ncol = 4)
+    i <- 1
+    while (i <= nzeros) {
+      temp1 <- sum(log(1 - thetas[i, 1] * x))
+      mles[i, 1] <- -temp1/n
+      mles[i, 2] <- mles[i, 1]/thetas[i, 1]
+      mles[i, 3] <- -n * log(mles[i, 2]) + (1/mles[i, 1] - 1) * temp1
+      mles[i, 4] <- 999
+      i <- i + 1
+    }
+    ind <- seq_along(mles[, 4])
+    ind <- ind[mles[, 4] == 999]
+    if (sum(ind) == 0) {
+      nomle <- 0
     } else {
-      # h'(0)<0, so the second zero lies between epsilon and thzero.  Establish Initial Values.
-      thlo <- epsilon
-      thhi <- thzero
-      thzero <- thlo
-      dx <- thhi - thlo
-
-      j <- 1
-      maxiter <- 100  #{Maximum number of bisection iterations}
-      while (j <= maxiter) {
-        dx <- 0.5 * dx
-        thmid <- thzero + dx
-        hmid <- (1 + sum(log(1 - thmid * x))/n) * (sum(1/(1 - thmid * x))/n) - 1
-        if (hmid < 0) {
-          thzero <- thmid
-        } else if (hmid == 0) {
-          # {Zero of h() has been found}
-          j <- 999
-        }
-        if (abs(dx) < epsilon * abs(thlo + thhi)/2) {
-          j <- 999
-        }
-        j <- j + 1
-      }
-
-      if (j > maxiter + 1) {
-        thzeros[4, ] <- cbind(thzero, j)
-      }
+      nomle <- 1
     }
-  }
-  # Of the candidate zero(s) of h(),
-  # determine whether they correspond to a local maximum or minimum of the log-likelihood.
-  # Eliminate any non-convergent roots}
-  thetas <- thzeros[thzeros[, 2] > maxiter + 1, ]
-  nzeros <- nrow(thetas)
-  proll <- rep(0, nzeros)
-  mles <- matrix(rep(0, 4 * nzeros), ncol = 4)
-  i <- 1
-  while (i <= nzeros) {
-    temp1 <- sum(log(1 - thetas[i, 1] * x))
-    mles[i, 1] <- -temp1/n
-    mles[i, 2] <- mles[i, 1]/thetas[i, 1]
-    mles[i, 3] <- -n * log(mles[i, 2]) + (1/mles[i, 1] - 1) * temp1
-    mles[i, 4] <- 999
-    i <- i + 1
-  }
-  ind <- 1:length(mles[, 4])
-  ind <- ind[mles[, 4] == 999]
-  if (sum(ind) == 0) {
-    # { Check to see if there are any local maxima. }
-    nomle <- 0  #{ If not, there is no mle. }
-  } else {
-    nomle <- 1
-  }
-  if (nomle != 0) {
-    mles <- mles[ind, ]
-    outside <- which(mles[,1]> 1+1e-10)
-    if(length(outside)>0){ #at most 2 such values
-      mles[outside,3] <- -10e8 #replace by hard bound
+    if (nomle != 0) {
+      mles <- mles[ind, ]
+      outside <- which(mles[, 1] > 1 + 1e-10)
+      if (length(outside) > 0) {
+        mles[outside, 3] <- -Inf
+      }
+      mles <- rbind(mles,
+                    c(1, xn, -n * log(xn), 999), # case xi=-1
+                    c(0, xbar, sum(log(dexp(xq, rate = 1/xbar))), 0)) # exponential model
+
+      nmles <- nrow(mles)
+      maxlogl <- max(mles[, 3])
+      ind <- order(mles[, 3])
+      ind <- ind[nmles]
+      k <- mles[ind, 1]
+      a <- mles[ind, 2]
+      conv <- 0
+    } else {
+      conv <- 50
+      k <- NA
+      a <- NA
     }
-    nmles <- nrow(mles)
-    # Add the boundary value where k=1 to the candidates for the maximum of the log-likelihood.
-    # with numerical tolerance to scale so that evaluates
-    mles <- rbind(mles, c(1-1e-7, xn, -n * log(xn), 999))
-    nmles <- nmles + 1L
-    # Choose of the candidate mles whichever has the largest log-likelihood.
-    maxlogl <- max(mles[, 3])
-    ind <- order(mles[, 3])
-    ind <- ind[nmles]
-    k <- mles[ind, 1]
-    # label(k, 'GPD mle of k')
-    a <- mles[ind, 2]
-    conv <- 0
-    # label(a, 'GPD mle of a')
-  } else {
-    conv <- 50
-    # No Maximum Likelihood Estimators were found.
-    k <- NA
-    a <- NA
+    list(k = k, a = a, conv = conv)
   }
-  list(k = k, a = a, conv = conv)
-}
+
 
 ".Zhang_Stephens_posterior" <- function(x) {
   # x: sample data from the GPD

@@ -126,7 +126,7 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
     # ........... End of test.stat.calc() ............
 
     e.stat <- test.stat.calc(score, e.info)  # score test statistic
-    e.p <- pchisq(e.stat, df = m - 1, lower.tail = F)  # p-value
+    e.p <- pchisq(e.stat, df = m - 1, lower.tail = FALSE)  # p-value
     c(e.stat, e.p)
   }
   # .......................................................  end of function score.test
