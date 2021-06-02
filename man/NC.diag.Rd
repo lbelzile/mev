@@ -50,7 +50,7 @@ and will not recover from failure of the maximization routine, returning various
 \examples{
 \dontrun{
 data(nidd)
-u <- quantile(nidd, seq(0.85, 0.99, by = 0.01))
+u <- seq(65,90, by = 1L)
 NC.diag(nidd, u, size = 0.05)
 }
 }

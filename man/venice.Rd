@@ -14,8 +14,7 @@ City of Venice, Historical archive <https://www.comune.venezia.it/node/6214>. La
 \description{
 The \code{venice} data contains the 10 largest yearly sea levels (in cm)
 from 1887 until 2019. Only the yearly maximum is available for 1922
-and the six largest observations for 1936. Note that this database is frequently updated
-as new observations become available.
+and the six largest observations for 1936.
 }
 \note{
 Smith (1986) notes that the annual maxima seems to fluctuate around a constant sea level

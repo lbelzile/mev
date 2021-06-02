@@ -15,7 +15,7 @@ fit.rlarg(
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
 
-\item{start}{numeric vector of starting values}
+\item{start}{named list of starting values}
 
 \item{method}{the method to be used. See \bold{Details}. Can be abbreviated.}
 

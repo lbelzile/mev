@@ -15,7 +15,7 @@ fit.gev(
 \arguments{
 \item{xdat}{a numeric vector of data to be fitted.}
 
-\item{start}{numeric vector of starting values}
+\item{start}{named list of starting values}
 
 \item{method}{string indicating the outer optimization routine for the augmented Lagrangian. One of \code{nlminb} or \code{BFGS}.}
 

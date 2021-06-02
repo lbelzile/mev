@@ -23,6 +23,8 @@ fit.pp(
 
 \item{np}{number of periods of data, if \code{xdat} only contains exceedances.}
 
+\item{start}{named list of starting values}
+
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
 
 \item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}

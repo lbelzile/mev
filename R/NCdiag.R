@@ -40,7 +40,7 @@
 #' @examples
 #' \dontrun{
 #' data(nidd)
-#' u <- quantile(nidd, seq(0.85, 0.99, by = 0.01))
+#' u <- seq(65,90, by = 1L)
 #' NC.diag(nidd, u, size = 0.05)
 #' }
 NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LRT = FALSE, size = NULL, my.xlab = NULL, xi.tol = 0.001) {
@@ -64,16 +64,16 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
   for (i in 1:n_u) {
     # loop over all thresholds
     if (GP.fit == "nlm") {
-      temp <- .gpd_1D_fit(x, u[i], show = F, xi.tol = xi.tol, calc.se = F)  # threshold u[j1], 1D max, algebraic Hessian
+      temp <- .gpd_1D_fit(x, u[i], show = FALSE, xi.tol = xi.tol, calc.se = F)  # threshold u[j1], 1D max, algebraic Hessian
       phi.init <- temp$mle[2]/temp$mle[1]  # better initial estimate of phi
       temp <- .GP_1D_fit_nlm(x, u[i], init.val = phi.init, gradtol = 1e-20, steptol = 1e-20, calc.se = F)
       # 1D max, use nlm to get gradients v close to zero
     } else if (GP.fit == "ismev") {
-      temp <- .gpd_2D_fit(x, u[i], show = F)  # threshold u[i], ismev GP fitting function
-      temp <- .gpd_2D_fit(x, u[i], show = F, siginit = temp$mle[1], shinit = temp$mle[2], method = "BFGS", reltol = 1e-30, abstol = 1e-30)
+      temp <- .gpd_2D_fit(x, u[i], show = FALSE)  # threshold u[i], ismev GP fitting function
+      temp <- .gpd_2D_fit(x, u[i], show = FALSE, siginit = temp$mle[1], shinit = temp$mle[2], method = "BFGS", reltol = 1e-30, abstol = 1e-30)
     } else if (GP.fit == "optim") {
-      temp <- .gpd_1D_fit(x, u[i], show = F, xi.tol = xi.tol)  # threshold u[i], 1D max, algebraic Hessian
-      temp <- .gpd_1D_fit(x, u[i], show = F, xi.tol = xi.tol, phi.input = temp$mle[2]/temp$mle[1], reltol = 1e-30, abstol = 1e-30)
+      temp <- .gpd_1D_fit(x, u[i], show = FALSE, xi.tol = xi.tol)  # threshold u[i], 1D max, algebraic Hessian
+      temp <- .gpd_1D_fit(x, u[i], show = FALSE, xi.tol = xi.tol, phi.input = temp$mle[2]/temp$mle[1], reltol = 1e-30, abstol = 1e-30)
       # threshold u[i], 1D max, algebraic Hessian
     } else if (GP.fit == "Grimshaw") {
       yy <- x[x > u[i]] - u[i]  # thresholds excesses
