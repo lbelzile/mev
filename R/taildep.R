@@ -47,6 +47,10 @@ taildep <- function (data, u = NULL, nq = 40, qlim = c(0.8, 0.99), depmeas = c("
   if((! length(depmeas) %in% c(1L, 2L)) || !all(depmeas  %in% c(1L, 2L))){
     stop("Invalid argument for `depmeas`: must be either `eta`,`chi` or both.")
   }
+  if(! (is.list(method) && isTRUE(all(names(method) %in% depmeas)))){
+    stop(paste0("`method` should be a list with components ",
+               paste(depmeas, collapse = " and "),"."))
+  }
   data <- as.matrix(data)
   data <- na.omit(data)
   n <- nrow(data)
