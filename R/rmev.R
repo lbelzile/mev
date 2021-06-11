@@ -16,6 +16,7 @@
 #' @param coord \code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.
 #' @param weights vector of length \code{m} for the \code{m} mixture components. Must sum to one
 #' @param grid Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).
+#' @param dist symmetric matrix of pairwise distances. Default to \code{NULL}.
 #' @param ... additional arguments for the \code{vario} function
 #' @author Leo Belzile
 #' @details The vector param differs depending on the model
@@ -62,18 +63,19 @@
 #'semivario <- function(x, scale, alpha){ scale*x^alpha }
 #'#grid specification
 #'grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
-#'rmev(n=100, vario=semivario,coord=grid.coord, model='br', scale = 0.5, alpha = 1)
-#'vario2cov <- function(coord, semivario,...){
+#'rmev(n=100, vario=semivario, coord=grid.coord, model='br', scale = 0.5, alpha = 1)
+#'#using the Brown-Resnick model with a covariance matrix
+#' vario2cov <- function(coord, semivario,...){
 #'  sapply(1:nrow(coord), function(i) sapply(1:nrow(coord), function(j)
 #'   semivario(sqrt(sum((coord[i,])^2)), ...) +
 #'   semivario(sqrt(sum((coord[j,])^2)), ...) -
 #'   semivario(sqrt(sum((coord[i,]-coord[j,])^2)), ...)))
 #' }
+#' rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
 #' # asymmetric logistic model - see evd::rmvevd
 #' asy <- list(0, 0, 0, 0, c(0,0), c(0,0), c(0,0), c(0,0), c(0,0), c(0,0),
 #'   c(.2,.1,.2), c(.1,.1,.2), c(.3,.4,.1), c(.2,.2,.2), c(.4,.6,.2,.5))
 #' rmev(n=1, d=4, param=0.3, asy=asy, model="alog")
-#'rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
 #'#Example with a grid (generating an array)
 #'rmev(n=10, sigma=cbind(c(2,1), c(1,3)), coord=cbind(runif(4), runif(4)), model='smith', grid=TRUE)
 #'## Example with Dirichlet mixture
@@ -82,26 +84,12 @@
 #'rmev(n=10, param=c(0.1,1,2,3), d=3, model='pairbeta')
 rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "aneglog", "bilog", "negbilog", "hr", "br", "xstud",
     "smith", "schlather", "ct", "sdir", "dirmix","pairbeta","pairexp","wdirbs","wexpbs"), alg = c("ef", "sm"),
-    weights = NULL, vario = NULL, coord = NULL, grid = FALSE, ...) {
+    weights = NULL, vario = NULL, coord = NULL, grid = FALSE, dist = NULL, ...) {
 
   # Create gridded values if specification is for random field discretization
   ellips <- list(...)
   if(is.null(coord) && !is.null(ellips$loc)){
     coord <- ellips$loc
-  }
-  if (!is.null(coord)) {
-    coord <- as.matrix(coord)
-    if (ncol(coord) == 1)
-      grid <- FALSE
-    if (grid) {
-      if (all(sapply(1:ncol(coord), function(i) {
-        length(unique(coord[, i])) == nrow(coord)
-      }))) {
-        coord <- matrix(unlist(expand.grid(apply(coord, 2, as.list))), ncol = ncol(coord))
-      } else {
-        stop("Duplicate values in `coord' using `grid=TRUE' not allowed")
-      }
-    }
   }
   if(missing(d)){ d <- NULL }
   if(missing(param)){ param <- NULL }
@@ -109,7 +97,7 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
   if(missing(sigma)){ sigma <- NULL }
   out <- .rmev_checks(n = n, d = d, param = param, asy = asy, sigma = sigma,
                model =  model, alg = alg, weights = weights,
-               vario = vario, coord = coord, ...)
+               vario = vario, coord = coord, grid = grid, dist = dist, ...)
     mod <- switch(out$model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4,
                   xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9, isbr = 9,
                   pairbeta = 10, pairexp = 11, wdirbs = 12, wexpbs = 13)
@@ -192,7 +180,7 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
 #' @export
 rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather",
     "ct", "sdir", "dirmix","pairbeta","pairexp","wdirbs","wexpbs"),
-    weights = NULL, vario = NULL, coord = NULL, grid = FALSE, ...) {
+    weights = NULL, vario = NULL, coord = NULL, grid = FALSE, dist = NULL, ...) {
   # Dummy algorithm argument for internal checks
   alg <- "sm"
   if(model %in% c("alog","aneglog")){
@@ -204,7 +192,8 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
   if(missing(sigma)){ sigma <- NULL }
     out <- .rmev_checks(n = n, d = d, param = param, asy = asy, sigma = sigma,
                  model = model, alg = alg, weights = weights,
-                 vario = vario, coord = coord, grid = grid, ...)
+                 vario = vario, coord = coord, grid = grid, dist = dist,
+                 ...)
     mod <- switch(out$model, log = 1, neglog = 2, dirmix = 3,
                   bilog = 4, negbilog = 4, xstud = 5, br = 6,
                   sdir = 7, smith = 8, hr = 9, isbr = 9,
@@ -296,9 +285,13 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
 
 #' @keywords internal
 .rmev_checks <- function(n = n, d = d, param = param, asy = asy, sigma = sigma,
-                   model =  model, alg = alg, weights = weights, vario = vario, coord = coord, grid = grid, ...){
-  models <- c("log", "alog", "neglog", "aneglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir",
-              "dirmix", "negdir", "dir", "pairbeta","pairexp","wdirbs","wexpbs")
+                   model =  model, alg = alg, weights = weights, vario = vario,
+                   coord = coord, grid = grid, dist = dist, ...){
+  models <- c("log", "alog", "neglog", "aneglog",
+              "bilog", "negbilog", "hr", "br",
+              "isbr", "xstud", "smith", "schlather",
+              "ct", "sdir", "dirmix", "negdir", "dir",
+              "pairbeta","pairexp","wdirbs","wexpbs")
   alg <- match.arg(alg)
   asym <- NULL
   ncompo <- NULL
@@ -311,8 +304,9 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     }
   }
   if (model == "schlather") {
-    if (!is.null(param))
+    if (!is.null(param) && !isTRUE(all.equal(param, 1, check.attributes = FALSE))){
       warning("Parameter value (degrees of freedom) set to one for Schlather model")
+    }
     param <- 1
     model <- "xstud"
   }
@@ -327,12 +321,41 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     stop("Invalid parameter")
   }
   # Check spatial requirements
-  if ((!is.null(coord) || !is.null(vario)) && !model %in% m3) {
+  if ((!is.null(coord) || !is.null(vario) || !is.null(dist)) && !model %in% m3) {
     if (model == "hr") {
       warning("Obsolete. Please use `model=br' instead of `hr' for spatial models.")
       model <- "br"
     } else {
-      warning("Unused arguments `vario' or `coord'; only implemented for Extremal student or Brown-Resnick process")
+      warning("Unused arguments `vario`, `dist` or `coord`; only implemented for extremal Student-t or Brown-Resnick processes.")
+    }
+  }
+  if(model %in% m3){
+    if(!is.logical(grid) || length(grid) != 1){
+      stop("Argument `grid` must be a logical, either TRUE or FALSE.")
+    }
+    if(!is.null(dist)){
+      if(!is.matrix(dist) || !isSymmetric(dist) || any(dist[upper.tri(dist, diag = FALSE)] <= 0) || !isTRUE(all(diag(dist) == 0))){
+        stop("Invalid pairwise distance matrix `dist`: distances must be nonnegative, locations unique and the matrix must be symmetric.")
+      }
+      if(!is.null(coord) || grid){
+        warning("Arguments `coord` and `grid` are ignored if pairwise distance matrix `dist` is provided.")
+        coord <- NULL
+        grid <- FALSE
+      }
+    }
+    if (!is.null(coord)) {
+      coord <- as.matrix(coord)
+      if (ncol(coord) == 1)
+        grid <- FALSE
+      if (grid) {
+        if (all(sapply(1:ncol(coord), function(i) {
+          length(unique(coord[, i])) == nrow(coord)
+        }))) {
+          coord <- matrix(unlist(expand.grid(apply(coord, 2, as.list))), ncol = ncol(coord))
+        } else {
+          stop("Duplicate values in `coord' using `grid=TRUE' not allowed")
+        }
+      }
     }
   }
   # One-parameter families
@@ -405,10 +428,14 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     }
     model = "sdir"
   } else if (model %in% m3) {
+    if(!is.null(dist)){
+
+    }
     # Smith, Brown-Resnick, extremal student
-    if (is.null(sigma) && !is.null(vario) && !is.null(coord)) {
-      if (is.vector(coord))
+    if (is.null(sigma) && !is.null(vario) && (!is.null(coord) || !is.null(dist))) {
+      if(!is.null(coord) && is.vector(coord)){
         coord <- matrix(coord, ncol = 1)  #1 dimensional process
+      }
       stopifnot(is.function(vario))
       if (model == "br") {
         model = "isbr"
@@ -416,14 +443,18 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
         if (vario(0, ...) > 1e-15) {
           stop("Cannot have a nugget term in the variogram for the Brown-Resnick process")
         }
-        semivario2mat <- function(coord, semivario, ...) {
-          di <- as.matrix(dist(coord))  #fields::rdist(coord) is faster...
+        semivario2mat <- function(coord, semivario, dist, ...) {
+          if(is.null(dist)){
+            di <- as.matrix(dist(coord))
+          } else{
+            di <- dist
+          } #fields::rdist(coord) is faster...
           covmat <- matrix(0, nrow = nrow(di), ncol = ncol(di))
           covmat[lower.tri(covmat)] <- semivario(di[lower.tri(di)], ...)
           covmat[upper.tri(covmat)] <- t(covmat)[upper.tri(covmat)]
           return(covmat)
         }
-        sigma <- semivario2mat(coord, vario, ...)/2
+        sigma <- semivario2mat(coord, vario, dist, ...)/2
         # changed 08-03-2018 Matrix is half of Semivariogram, quarter of variogram
       }
     }
