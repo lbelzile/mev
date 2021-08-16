@@ -182,6 +182,7 @@ fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC
 #' @inheritParams fit.gpd
 #' @param start named list of starting values
 #' @param npp number of observation per period. See \bold{Details}
+#' @param fpar a named list with optional fixed components \code{loc}, \code{scale} and \code{shape}
 #' @param np number of periods of data, if \code{xdat} only contains exceedances.
 #' @details The parameter \code{npp} controls the frequency of observations.
 #' If data are recorded on a daily basis, using a value of \code{npp = 365.25}
@@ -378,6 +379,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show =
 #' @inheritParams gp.fit
 #' @export
 #' @importFrom alabama auglag
+#' @param fpar a named list with optional fixed components \code{loc}, \code{scale} and \code{shape}
 #' @param start named list of starting values
 #' @param method string indicating the outer optimization routine for the augmented Lagrangian. One of \code{nlminb} or \code{BFGS}.
 #' @return a list containing the following components:

@@ -536,7 +536,7 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
     if(!any(zeroshape)){
       ustar <- max(ustar, (min(abs(shape))*(us-sum(loc))/sum(scale)+1)^(1/max(abs(shape))))
     } else if (all(zeroshape)){
-      ustar <- max(ustar, D*(exp((us-sum(loc))/sum(scale))^(1/d)))
+      ustar <- max(ustar, d*(exp((us-sum(loc))/sum(scale))^(1/d)))
     }
 
     } else if(riskf == "min"){

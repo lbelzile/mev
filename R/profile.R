@@ -2123,6 +2123,7 @@ plot.fr <- function(x, ...) {
 #' @param fr an object of class \code{fr}, normally the output of \link{gpd.tem} or \link{gev.tem}.
 #' @param method string for the method, either \code{cobs} (constrained robust B-spline from eponym package) or \code{smooth.spline}
 #' @return an object of class \code{fr}, containing as additional arguments \code{spline} and a modified \code{rstar} argument.
+#' @keywords internal
 #' @export
 spline.corr <- function(fr, method = c("cobs","smooth.spline")) {
     # Step 1: fit a smoothing spline to rstar If fit failed for some values (for example when
@@ -2187,6 +2188,58 @@ spline.corr <- function(fr, method = c("cobs","smooth.spline")) {
         fr$rstar <- predict(spline, fr$r)$y + fr$r
     }
     return(fr)
+}
+
+#' Bridging the singularity for higher order asymptotics
+#'
+#' The correction factor \eqn{\log(q/r)/r} for the
+#' likelihood root is unbounded in the vincinity of #' the maximum likelihood estimator. The thesis of
+#' Rongcai Li (University of Toronto, 2001)
+#' explores different ways of bridging this
+#' singularity, notably using asymptotic expansions.
+#'
+#' The poor man's method used here consists in
+#' fitting a robust regression to \eqn{1/q-1/r}
+#' as a function of \eqn{r} and using predictions
+#' from the model to solve for \eqn{q}. This
+#' approach is seemingly superior to that
+#' previously used in \link{spline.corr}.
+#'
+#' @importFrom MASS rlm
+#' @param
+##' @return an object of class \code{fr}, containing as additional arguments \code{spline} and a modified \code{rstar} argument.
+#' @keywords internal
+#' @export
+tem.corr <- function(fr, print.warning = FALSE) {
+   if (all(is.nan(fr$q)) || all(is.nan(fr$rstar))) {
+    # If could not compute Fraser-Reid correction, abort
+    return(fr)
+  }
+  fitfailed <- which(!is.finite(fr$r))
+  if (length(fitfailed) > 0) {
+    fr$r <- fr$r[-fitfailed]
+    fr$rstar <- fr$rstar[-fitfailed]
+    fr$q <- fr$q[-fitfailed]
+    fr$psi <- fr$psi[-fitfailed]
+  }
+  if(length(fr$psi) < 25L){
+    if(print.warning){
+    warning("The correction for the tangent exponential model\n is based on less than 25 observations.")
+    }
+  }
+  # this is approximately linear for fixed data
+  resp <- 1/fr$q - 1/fr$r
+  # fit a robust regression to discount observations that are outlying
+  robust_reg <- MASS::rlm(resp ~ fr$r)
+  # Replace q values by predictions
+  pred <- predict(robust_reg)
+  qhat <- 1/(pred + 1/fr$r)
+  fr$q_old <- fr$q
+  fr$rstar_old <- fr$rstar
+  fr$q <- qhat
+  fr$rstar <- fr$r + log(fr$q/fr$r)/fr$r
+  fr$tem.psimax
+  return(fr)
 }
 
 

@@ -94,14 +94,21 @@
 #' dat <- rmev(n = 1000, d = 20, param = 3, sigma = exp(-di/2), model = 'xstud')
 #' res <- extcoef(dat = dat, coord = coord, estimator = "smith")
 #' }
-extcoef <- function(dat, coord = NULL, thresh = NULL,
+extcoef <- function(dat,
+                    coord = NULL,
+                    thresh = NULL,
                     estimator = c("schlather", "smith", "fmado"),
-                    standardize = TRUE, method = c("nonparametric", "parametric"),
-                    prob = 0, plot = TRUE, ...) {
+                    standardize = TRUE,
+                    method = c("nonparametric", "parametric"),
+                    prob = 0,
+                    plot = TRUE,
+                    ...) {
   if(is.null(coord) && !is.null(list(...)$loc)){
    coord <-  list(...)$loc
   }
-    stopifnot(is.matrix(dat), ncol(dat) >= 2)
+    stopifnot(is.matrix(dat),
+              ncol(dat) >= 2,
+              nrow(coord) == ncol(dat))
     estimator <- match.arg(estimator)
     fr <- dat
     #Transform margins to unit Frechet
@@ -110,11 +117,16 @@ extcoef <- function(dat, coord = NULL, thresh = NULL,
       if(method == "nonparametric"){
         for(j in 1:ncol(dat)){
           nj <- sum(!is.na(dat[, j])) + 1L
-          fr[,j] <- -1/log(rank(dat[,j], na.last = "keep", ties.method = "random")/nj)
+          fr[,j] <- -1/log(rank(dat[,j],
+                                na.last = "keep",
+                                ties.method = "random")/nj)
         }
       } else{ #parametric
         for(j in 1:ncol(dat)){
-          fr[,j] <- -1/log(do.call(what = evd::pgev, c(list(q = dat[,j]), fit.gev(dat[,j])$estimate)))
+          fr[,j] <- -1/log(
+            do.call(what = evd::pgev,
+                    c(list(q = dat[,j]),
+                      fit.gev(dat[,j])$estimate)))
         }
       }
     }
@@ -128,7 +140,10 @@ extcoef <- function(dat, coord = NULL, thresh = NULL,
       }
     #Compute harmonic mean, reweight estimators
     harmo_mean <- apply(1/fr, 2, mean, na.rm = TRUE)
-    transfo_fr <- fr %*% diag(harmo_mean)
+    transfo_fr <- sweep(x = fr,
+                        MARGIN = 2,
+                        STATS = harmo_mean,
+                        FUN = "/")
     }
     N <- ncol(dat) * (ncol(dat) - 1)/2
     theta_vals <- rep(0, N)
@@ -159,9 +174,14 @@ extcoef <- function(dat, coord = NULL, thresh = NULL,
                   overlap_size[k] <- sqrt(length(X))  #sqrt of size of overlapping set
                 } else if (estimator == "fmado") {
                   # F-madogram estimator
-                  Y <- apply(na.omit(dat[, c(i, j)]), 2, rank, ties.method = "random")
+                  Y <- apply(na.omit(dat[, c(i, j)]), 2,
+                             rank, ties.method = "random")
+                  if(is.null(dim(Y))){
+                    next()
+                  } else{
                   nu <- sum(abs(Y[, 1] - Y[, 2]))/(2 * nrow(Y)^2)
                   theta_vals[k] <- (1 + 2 * nu)/(1 - 2 * nu)
+                  }
                 } else if(estimator == "smith"){
                   theta_vals[k] <- 1/mean(1/apply(na.omit(fr[,c(i, j)]), 1, max))
                 }
@@ -219,17 +239,34 @@ plot.mev_extcoef <- function(x, ...){
     } else{
       tikz <- FALSE
     }
-    ymax <- 1.1*min(max(c(2.1,x$extcoef)), 3)
-    xmax <- 1.02*max(x$dist)
+    ymax <- 1.1*min(c(max(c(2.1,x$extcoef),
+                        na.rm = TRUE),
+                    3), na.rm = TRUE)
+    xmax <- 1.02*max(x$dist, na.rm = TRUE)
     if (x$estimator == "schlather"){
-        graphics::plot(x$dist, x$extcoef, xlab = ifelse(tikz, "$h$", "h"), ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
-            bty = "l", cex = 0.8, col = grDevices::rgb(0, 0, 0, alpha = 0.5), ylim = c(1, ymax), yaxs = "i", xaxs = "i", xlim = c(0, xmax))
+        graphics::plot(x = x$dist,
+                       y = x$extcoef,
+                       xlab = ifelse(tikz, "$h$", "h"),
+                       ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
+                       bty = "l",
+                       cex = 0.8,
+                       col = grDevices::rgb(0, 0, 0, alpha = 0.5),
+                       ylim = c(1, ymax),
+                       yaxs = "i",
+                       xaxs = "i",
+                       xlim = c(0, xmax))
           lines(x$binned[, 1], x$binned[, 2], col = 2, lwd = 2)
     } else{
-      graphics::plot(x$dist, x$extcoef, xlab = ifelse(tikz, "$h$", "h"),
+      graphics::plot(x = x$dist,
+                     y = x$extcoef,
+                     xlab = ifelse(tikz, "$h$", "h"),
                      ylab = ifelse(tikz, "$\\theta$", expression(theta(h))),
-                     bty = "l", cex = 0.8, col = grDevices::rgb(0, 0, 0, alpha = 0.5),
-                     ylim = c(1, ymax), yaxs = "i", xaxs = "i", xlim = c(0, xmax))
+                     bty = "l",
+                     cex = 0.8,
+                     col = grDevices::rgb(0, 0, 0, alpha = 0.5),
+                     ylim = c(1, ymax),
+                     yaxs = "i", xaxs = "i",
+                     xlim = c(0, xmax))
 
     }
     abline(h = 2, col = "grey")

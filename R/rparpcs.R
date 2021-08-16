@@ -125,8 +125,8 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
 #' @param Sigma covariance matrix of process, used to define \eqn{Q}. See \bold{Details}.
 #' @param m location vector of Gaussian distribution.
 #' @return \code{n} by d matrix of observations
-#' @references Ho, Z. W. O and C. Dombry (2017), Simple models for multivariate regular variations and the
-#'   Huesler-Reiss Pareto distribution, \url{http://arxiv.org/abs/1712.09225v1}
+#' @references Ho, Z. W. O and C. Dombry (2019), Simple models for multivariate regular variations and the
+#'   Huesler-Reiss Pareto distribution, Journal of Multivariate Analysis (\bold{173}), p. 525-550, \url{https://doi.org/10.1016/j.jmva.2019.04.008}
 #' @export
 #' @examples
 #' D <- 20L

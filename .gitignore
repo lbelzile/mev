@@ -13,3 +13,4 @@ data/padova.rda
 data/zurichrain.rda
 data/italcent.rda
 man/italcent.Rd
+inst/rawdata

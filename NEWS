@@ -1,22 +1,24 @@
-mev v.1.14 
+mev v.1.14
 ==============
-New: 
+New:
 * four new families of max-stable models (pairwise beta, pairwise exponential, weighted Dirichlet and weighted exponential) for rmev, following Ballani and Schlather (2011)
 * function `fit.gpd` and `fit.gev` now accept fixed parameters
 * anova methods for `mev_gpd` and `mev_gev` objects
 * `rmev` and `rmevspec` now accept a distance matrix in place of coordinates for spatial models.
 
 Fixes:
+* ext.coef correctly handles arrays with missing values (reported by M. Jousset)
 * Optimization method in fit.gev now uses the PWM solution of Hosking (1985) as starting value
-* gev.pll now returns confidence intervals for param = "quant" (signaled by D. Dupuis)
+* gev.pll now returns confidence intervals for param = "quant" (reported by D. Dupuis)
 * Fixes to NHPP order statistics density (returns -Inf outside of domain, also correctly evaluate for boundary case when xi=-1)
 * Optimization routines fit.pp, fit.gev and fit.rlarg now return correct MLE when solution lies on boundary (xi=-1) and are more robust to failure (gradients for nlminb return large values rather than NAs which caused the algorithm to stop).
 * Grimshaw's algorithm sometimes returned incorrect value because of too low tolerance for eta near zero. Returned back to default settings.
+* rparp now correctly handles xi=0
 
 mev v.1.13 (Release date: 2019-12-17)
 ==============
 
-Fixes: 
+Fixes:
 * rlarg.infomat incorrect sign for expected information for d=1
 * rmev function did not work for `alog` and `aneglog` (reported by Michael Lalancette)
 * Remove class()!= "matrix due to changes in R 4.0.0
