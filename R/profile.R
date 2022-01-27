@@ -86,7 +86,7 @@
 #' @export
 confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1-level)/2), print = FALSE, method = c("cobs","smooth.spline"), ...) {
   if(!isTRUE(all.equal(diff(prob),level, check.attributes = FALSE))){
-   warning("Incompatible arguments: `level` does not match `prob`.")
+   warning("Incompatible arguments: \"level\" does not match \"prob\".")
   }
   method <- match.arg(method[1], c("cobs","smooth.spline"))
     args <- list(...)
@@ -96,7 +96,7 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
         warn <- TRUE
     }
     if (length(prob) != 2) {
-        stop("`prob` must be a vector of size 2")
+        stop("\"prob\" must be a vector of size 2")
       prob <- sort(prob)
     }
     if (missing(parm)) {
@@ -134,7 +134,7 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
         ind <- unique(ind[ind %in% 1:4])
     }
     if (length(ind) == 0) {
-        stop("Invalid `parm` argument.")
+        stop("Invalid \"parm\" argument.")
     }
     qulev <- qnorm(1-prob)
     conf <- matrix(ncol = 4, nrow = 3)
@@ -500,21 +500,21 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
     # Sanity checks to ensure all arguments are provided
     if (is.null(N)) {
         if (param %in% c("Nmean", "Nquant")) {
-            stop("Argument `N` missing. Procedure aborted")
+            stop("Argument \"N\" missing. Procedure aborted")
         } else {
             N <- NA
         }
     }
     if (is.null(q)) {
         if (param == "Nquant") {
-            stop("Argument `q` missing. Procedure aborted")
+            stop("Argument \"q\" missing. Procedure aborted")
         } else {
             q <- NA
         }
     }
     if (is.null(p)) {
         if (param == "quant") {
-            stop("Argument `p` missing. Procedure aborted")
+            stop("Argument \"p\" missing. Procedure aborted")
         } else {
             p <- NA
         }
@@ -1278,28 +1278,28 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     # Sanity checks to ensure all arguments are provided
     if (is.null(N)) {
         if (param %in% c("Nmean", "Nquant")) {
-            stop("Argument `N` missing. Procedure aborted")
+            stop("Argument \"N\" missing. Procedure aborted")
         } else {
             N <- NA
         }
     }
     if (is.null(m)) {
         if (param %in% c("VaR", "ES")) {
-            stop("Argument `m` missing. Procedure aborted")
+            stop("Argument \"m\" missing. Procedure aborted")
         } else {
             m <- NA
         }
     }
     if (is.null(p)) {
         if (param == "quant") {
-            stop("Argument `p` missing. Procedure aborted")
+            stop("Argument \"p\" missing. Procedure aborted")
         } else {
             p <- NA
         }
     }
     if (is.null(q)) {
         if (param == "Nquant") {
-            stop("Argument `q` missing. Procedure aborted")
+            stop("Argument \"q\" missing. Procedure aborted")
         } else {
             q <- NA
         }
@@ -2036,7 +2036,7 @@ plot.fr <- function(x, ...) {
             whichPlot <- (1:4)[c(1:4 %in% whichPlot)]
         } else if ("all" %in% names(list(...))) {
             if (!is.logical(all)) {
-                stop("Invalid `all' parameter")
+                stop("Invalid \"all\" parameter")
             }
             if (list(...)$all) {
                 whichPlot <- 1:4
@@ -2193,7 +2193,8 @@ spline.corr <- function(fr, method = c("cobs","smooth.spline")) {
 #' Bridging the singularity for higher order asymptotics
 #'
 #' The correction factor \eqn{\log(q/r)/r} for the
-#' likelihood root is unbounded in the vincinity of #' the maximum likelihood estimator. The thesis of
+#' likelihood root is unbounded in the vincinity of
+#' the maximum likelihood estimator. The thesis of
 #' Rongcai Li (University of Toronto, 2001)
 #' explores different ways of bridging this
 #' singularity, notably using asymptotic expansions.
@@ -2205,12 +2206,15 @@ spline.corr <- function(fr, method = c("cobs","smooth.spline")) {
 #' approach is seemingly superior to that
 #' previously used in \link{spline.corr}.
 #'
-#' @importFrom MASS rlm
-#' @param
+#' @param fran object of class \code{fr}
+#' @param print.warning logical; should warning message be printed? Default to \code{FALSE}
 ##' @return an object of class \code{fr}, containing as additional arguments \code{spline} and a modified \code{rstar} argument.
 #' @keywords internal
 #' @export
 tem.corr <- function(fr, print.warning = FALSE) {
+  if(!requireNamespace("MASS", quietly = TRUE)){
+    stop("The \"MASS\" package is required for this function to work")
+  }
    if (all(is.nan(fr$q)) || all(is.nan(fr$rstar))) {
     # If could not compute Fraser-Reid correction, abort
     return(fr)
@@ -2369,7 +2373,7 @@ gpd.tem <- function(dat, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     psi = NULL, m = NULL, threshold = 0, n.psi = 50, N = NULL, p = NULL, q = NULL, plot = FALSE,
     correction = TRUE) {
     if (param %in% c("VaR", "ES") && is.null(m)) {
-        stop("Parameter `m' missing")
+        stop("Parameter \"m\" missing")
     }
     dat <- dat - threshold
     tem <- gpd.pll(psi = psi, param = param, mod = "tem", dat = dat, N = N, m = m, mle = NULL,

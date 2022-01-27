@@ -1,10 +1,12 @@
 mev v.1.14
 ==============
 New:
+* bivariate coefficient of extremal asymmetry
 * four new families of max-stable models (pairwise beta, pairwise exponential, weighted Dirichlet and weighted exponential) for rmev, following Ballani and Schlather (2011)
 * function `fit.gpd` and `fit.gev` now accept fixed parameters
 * anova methods for `mev_gpd` and `mev_gev` objects
 * `rmev` and `rmevspec` now accept a distance matrix in place of coordinates for spatial models.
+* new datasets
 
 Fixes:
 * ext.coef correctly handles arrays with missing values (reported by M. Jousset)

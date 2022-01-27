@@ -31,11 +31,11 @@
 maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L,
                         ties.method = "random", plot = TRUE){
   if(is.null(dim(dat))){
-    stop("`dat` should be an array or a matrix, with replicates")
+    stop("\"dat\" should be an array or a matrix, with replicates")
   }
   d <- length(dim(dat))
   if(!d %in% 2:3){
-    stop("`dat` must be a n by D matrix or else an (n by D by D) array if observations are gridded")
+    stop("\"dat\" must be a n by D matrix or else an (n by D by D) array if observations are gridded")
   }
   D <- prod(dim(dat)[2:d])
   n <- dim(dat)[1]
@@ -58,7 +58,7 @@ maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L,
   # Selection of m-tuples
   ntuples <- min(nmax, choose(D, m))
   if(ntuples * n > 10000L){
-    warning("The number of statistics is higher than 10000L: consider reducing `nmax`.")
+    warning("The number of statistics is higher than 10000L: consider reducing \"nmax\".")
   }
   #TODO Choose pairs that are not far apart - using some form of preferential sampling based on distance
   if(ntuples < nmax){

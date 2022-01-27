@@ -18,6 +18,7 @@ rmev(
   vario = NULL,
   coord = NULL,
   grid = FALSE,
+  dist = NULL,
   ...
 )
 }
@@ -45,6 +46,8 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 \item{coord}{\code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
 \item{grid}{Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).}
+
+\item{dist}{symmetric matrix of pairwise distances. Default to \code{NULL}.}
 
 \item{...}{additional arguments for the \code{vario} function}
 }
@@ -96,18 +99,19 @@ rmev(n=100, d=4, param=c(0.2,0.1,0.9,0.5), model='bilog', alg='sm')
 semivario <- function(x, scale, alpha){ scale*x^alpha }
 #grid specification
 grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
-rmev(n=100, vario=semivario,coord=grid.coord, model='br', scale = 0.5, alpha = 1)
+rmev(n=100, vario=semivario, coord=grid.coord, model='br', scale = 0.5, alpha = 1)
+#using the Brown-Resnick model with a covariance matrix
 vario2cov <- function(coord, semivario,...){
  sapply(1:nrow(coord), function(i) sapply(1:nrow(coord), function(j)
   semivario(sqrt(sum((coord[i,])^2)), ...) +
   semivario(sqrt(sum((coord[j,])^2)), ...) -
   semivario(sqrt(sum((coord[i,]-coord[j,])^2)), ...)))
 }
+rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
 # asymmetric logistic model - see evd::rmvevd
 asy <- list(0, 0, 0, 0, c(0,0), c(0,0), c(0,0), c(0,0), c(0,0), c(0,0),
   c(.2,.1,.2), c(.1,.1,.2), c(.3,.4,.1), c(.2,.2,.2), c(.4,.6,.2,.5))
 rmev(n=1, d=4, param=0.3, asy=asy, model="alog")
-rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
 #Example with a grid (generating an array)
 rmev(n=10, sigma=cbind(c(2,1), c(1,3)), coord=cbind(runif(4), runif(4)), model='smith', grid=TRUE)
 ## Example with Dirichlet mixture

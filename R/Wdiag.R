@@ -74,7 +74,7 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
         xdat <- pmin(xdat[, 1], xdat[, 2])
     }
     if (ncol(as.matrix(xdat)) != 1) {
-        stop("Invalid input for `xdat`")
+        stop("Invalid input for \"xdat")
     }
     switch(model,
            nhpp = .NHPP.diag(xdat = xdat, u = u, k = k, q1 = q1, q2 = q2, par = par, M = M, nbs = nbs, alpha = alpha, plots = plots,

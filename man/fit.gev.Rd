@@ -21,7 +21,7 @@ fit.gev(
 
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
 
-\item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
+\item{fpar}{a named list with optional fixed components \code{loc}, \code{scale} and \code{shape}}
 }
 \value{
 a list containing the following components:
@@ -40,4 +40,10 @@ Values other than \code{0} indicate that the algorithm likely did not converge.
 \description{
 This function returns an object of class \code{mev_gev}, with default methods for printing and quantile-quantile plots.
 The default starting values are the solution of the probability weighted moments.
+}
+\examples{
+xdat <- evd::rgev(n = 100)
+fit.gev(xdat, show = TRUE)
+# Example with fixed parameter
+fit.gev(xdat, show = TRUE, fpar = list(shape = 0))
 }

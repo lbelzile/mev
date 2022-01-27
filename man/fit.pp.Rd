@@ -27,7 +27,7 @@ fit.pp(
 
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
 
-\item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
+\item{fpar}{a named list with optional fixed components \code{loc}, \code{scale} and \code{shape}}
 }
 \value{
 a list containing the following components:

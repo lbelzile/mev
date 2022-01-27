@@ -13,10 +13,10 @@
 power.vario <- function(h, alpha, scale = 1) {
   stopifnot(length(alpha) == 1, length(scale) == 1)
   if (scale < 0) {
-    stop("Invalid scale parameter in power.vario")
+    stop("Invalid scale parameter in \"power.vario\".")
   }
   if (alpha < 0 || alpha > 2 - 1e-10) {
-    stop("Invalid shape parameter in `power.vario`")
+    stop("Invalid shape parameter in \"power.vario\".")
   }
   (h / scale)^alpha
 }
@@ -36,10 +36,10 @@ power.vario <- function(h, alpha, scale = 1) {
 powerexp.cor <- function(h, alpha = 1, scale = 1) {
   stopifnot(length(alpha) == 1, length(scale) == 1)
   if (scale < 0) {
-    stop("Invalid scale parameter in power.vario")
+    stop("Invalid scale parameter in \"power.vario\"")
   }
   if (alpha < 0 || alpha > 2 - 1e-10) {
-    stop("Invalid shape parameter in `power.vario`")
+    stop("Invalid shape parameter in \"power.vario\"")
   }
   exp(-(h / scale)^alpha)
 }
@@ -60,13 +60,13 @@ powerexp.cor <- function(h, alpha = 1, scale = 1) {
 schlather.vario <- function(h, alpha, beta, scale = 1) {
   stopifnot(length(alpha) == 1, length(beta) == 1, length(scale) == 1)
   if (alpha <= 0 || alpha > 2 - 1e-10) {
-    stop("Invalid shape parameter in `schlather.vario`")
+    stop("Invalid shape parameter in \"schlather.vario\"")
   }
   if (beta > 2 - 1e-10) {
-    stop("Invalid smoothness parameter in `schlather.vario`")
+    stop("Invalid smoothness parameter in \"schlather.vario\"")
   }
   if (scale <= 0) {
-    stop("Invalid scale parameter in `schlather.vario`")
+    stop("Invalid scale parameter in \"schlather.vario\"")
   }
   if (!(abs(beta) < 1e-5)) {
     pow <- beta / alpha

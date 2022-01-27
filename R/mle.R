@@ -51,17 +51,18 @@ gpd.mle <- function(xdat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmea
 #' @examples
 #' dat <- evd::rgev(n = 100, shape = 0.2)
 #' gev.mle(xdat = dat, N = 100, p = 0.01, q = 0.5)
+#'
 gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), N, p, q) {
   args <- match.arg(args, c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), several.ok = TRUE)
 
   if(missing(q) && "Nquant" %in% args){
-    stop("Argument `q` missing for `Nquant`")
+    stop("Argument \"q\" missing for \"Nquant\"")
   }
   if(missing(p) && "quant" %in% args){
-    stop("Argument `p` missing for `quant`")
+    stop("Argument \"p\" missing for \"quant\"")
   }
   if(missing(N) && any(c("Nmean", "Nquant") %in% args)){
-    stop("Argument `N` missing for `Nquant` or `Nmean`")
+    stop("Argument \"N\" missing for \"Nquant\" or \"Nmean\"")
   }
   fitted <- suppressWarnings(fit.gev(xdat = xdat))
   mu <- fitted$estimate[1]
@@ -169,7 +170,7 @@ fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC
    gp.fit(xdat = na.omit(as.vector(xdat)), threshold = threshold, method = method, show = show, MCMC = MCMC, fpar = fpar)
  } else{
    if(!is.null(fpar)){
-     warning("`fpar` argument ignored for OBRE method.")
+     warning("\"fpar\" argument ignored for OBRE method.")
    }
    .fit.gpd.rob(dat = na.omit(as.vector(xdat)), thresh = threshold, show = show, k = k, tol = tol)
  }
@@ -215,7 +216,7 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show =
   xdat <- xdat[is.finite(xdat)]
   n <- length(xdat)
   if (length(threshold) != 1 || mode(threshold) !=  "numeric")
-    stop("`threshold' must be a numeric value")
+    stop("\"threshold\" must be a numeric value")
   u <- as.double(threshold)
   xdatu <- xdat[xdat > u] #keep data above
   nu <- length(xdatu) #number above
@@ -231,10 +232,10 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show =
   }
   if(is.list(fpar) && (length(fpar) >= 1L)){ #NULL has length zero
     if(is.null(names(fpar))){
-      stop("`fpar` must be a named list")
+      stop("\"fpar\" must be a named list")
     }
     if(!isTRUE(all(names(fpar) %in% param_names))){
-      stop("Unknown fixed parameter: must be one of `loc`,`scale` or `shape`. ")
+      stop("Unknown fixed parameter: must be one of \"loc\",\"scale\" or \"shape\". ")
     }
     if(!isTRUE(all(unlist(lapply(fpar, length)) == rep(1L, sum(wf))))){
       stop("Each fixed parameter must be of length one.")
@@ -394,6 +395,11 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show =
 #' \item \code{counts} components taken from the list returned by \code{\link[alabama]{auglag}}.
 #' \item \code{xdat} vector of data
 #' }
+#' @examples
+#' xdat <- evd::rgev(n = 100)
+#' fit.gev(xdat, show = TRUE)
+#' # Example with fixed parameter
+#' fit.gev(xdat, show = TRUE, fpar = list(shape = 0))
 fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE, fpar = NULL){
   fitted <- list() # container
   param_names <- c("loc", "scale", "shape")
@@ -404,10 +410,10 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
   }
   if(is.list(fpar) && (length(fpar) >= 1L)){ #NULL has length zero
     if(is.null(names(fpar))){
-      stop("`fpar` must be a named list")
+      stop("\"fpar\" must be a named list")
     }
     if(!isTRUE(all(names(fpar) %in% param_names))){
-      stop("Unknown fixed parameter: must be one of `loc`,`scale` or `shape`. ")
+      stop("Unknown fixed parameter: must be one of \"loc\",\"scale\" or \"shape\". ")
     }
     if(!isTRUE(all(unlist(lapply(fpar, length)) == rep(1L, sum(wf))))){
       stop("Each fixed parameter must be of length one.")
@@ -583,10 +589,10 @@ fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FA
   }
   if(is.list(fpar) && (length(fpar) >= 1L)){ #NULL has length zero
     if(is.null(names(fpar))){
-      stop("`fpar` must be a named list")
+      stop("\"fpar\" must be a named list")
     }
     if(!isTRUE(all(names(fpar) %in% param_names))){
-      stop("Unknown fixed parameter: must be one of `loc`,`scale` or `shape`. ")
+      stop("Unknown fixed parameter: must be one of \"loc\",\"scale\" or \"shape\". ")
     }
     if(!isTRUE(all(unlist(lapply(fpar, length)) == rep(1L, sum(wf))))){
       stop("Each fixed parameter must be of length one.")
@@ -638,7 +644,7 @@ if(isTRUE(any(
   (spar[3] < 0) && (spar[2] + spar[3] * (xmax - spar[1]) <= 0),
   spar[2] < 0,
   spar[3] < -1-1e-8))){
-  stop("Invalid starting values in `start`")
+  stop("Invalid starting values in \"start\"")
 }
 
 # check if initial value satisfy inequality constraints
@@ -751,10 +757,10 @@ invisible(fitted)
 #' @export
 plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", add = TRUE, ...) {
   if (!is.vector(x$exceedances)) {
-    stop("Object `x` does not contain `exceedances`, or else the latter is not a vector")
+    stop("Object \"x\" does not contain \"exceedances\", or else the latter is not a vector")
   }
   if (!is.numeric(which) || any(which < 1) || any(which > 2)){
-    stop("`which' must be in 1:2")
+    stop("\"which\" must be in 1:2")
   }
   show <- rep(FALSE, 2)
   show[which] <- TRUE
@@ -769,7 +775,7 @@ plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else{
     if(length(main) != sum(show)){
-     stop("Invalid input: `main` must be of the same length as `which`")
+     stop("Invalid input: \"main\" must be of the same length as \"which\"")
     }
   }
 
@@ -808,10 +814,10 @@ plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
 #' @export
 plot.mev_gpdbayes <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", add = TRUE, ...) {
   if (!is.vector(x$exceedances)) {
-    stop("Object `x` does not contain `exceedances`, or else the latter is not a vector")
+    stop("Object \"x\" does not contain \"exceedances\", or else the latter is not a vector")
   }
   if (!is.numeric(which) || any(which < 1) || any(which > 2)){
-    stop("`which' must be in 1:2")
+    stop("\"which\" must be in 1:2")
   }
   show <- rep(FALSE, 2)
   show[which] <- TRUE
@@ -826,7 +832,7 @@ plot.mev_gpdbayes <- function(x, which = 1:2, main, xlab = "Theoretical quantile
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else{
     if(length(main) != sum(show)){
-      stop("Invalid input: `main` must be of the same length as `which`")
+      stop("Invalid input: \"main\" must be of the same length as \"which\"")
     }
   }
 
@@ -866,10 +872,10 @@ plot.mev_gpdbayes <- function(x, which = 1:2, main, xlab = "Theoretical quantile
 #' @export
 plot.mev_gev <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...) {
   if (!is.vector(x$xdat)) {
-    stop("Object `x` does not contain `exceedances`, or else the latter is not a vector")
+    stop("Object \"x\" does not contain \"exceedances\", or else the latter is not a vector")
   }
   if (!is.numeric(which) || any(which < 1) || any(which > 2)){
-    stop("`which' must be in 1:2")
+    stop("\"which\" must be in 1:2")
   }
   show <- rep(FALSE, 2)
   show[which] <- TRUE
@@ -882,7 +888,7 @@ plot.mev_gev <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else{
     if(length(main) != sum(show)){
-      stop("Invalid input: `main` must be of the same length as `which`")
+      stop("Invalid input: \"main\" must be of the same length as \"which\"")
     }
   }
   dat <- sort(x$xdat)
@@ -932,7 +938,7 @@ plot.mev_rlarg <- function(x, which = 1:2, main, xlab = "Theoretical quantiles",
   }
   n <- length(dat)
   if (!is.numeric(which) || any(which < 1) || any(which > 2)){
-    stop("`which' must be in 1:2")
+    stop("\"which\" must be in 1:2")
   }
   show <- rep(FALSE, 2)
   show[which] <- TRUE
@@ -945,7 +951,7 @@ plot.mev_rlarg <- function(x, which = 1:2, main, xlab = "Theoretical quantiles",
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else{
     if(length(main) != sum(show)){
-      stop("Invalid input: `main` must be of the same length as `which`")
+      stop("Invalid input: \"main\" must be of the same length as \"which\"")
     }
   }
   pp_confint_lim <- t(sapply(1:n, function(i) {qbeta(c(0.025, 0.975), i, n - i + 1) }))
@@ -979,10 +985,10 @@ plot.mev_rlarg <- function(x, which = 1:2, main, xlab = "Theoretical quantiles",
 #' @export
 plot.mev_pp <- function(x, which = 1:2, main = "Quantile-quantile plot", xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...) {
   if (!is.vector(x$exceedances)) {
-    stop("Object `x` does not contain `exceedances`, or else the latter is not a vector")
+    stop("Object \"x\" does not contain \"exceedances\", or else the latter is not a vector")
   }
   if (!is.numeric(which) || any(which < 1) || any(which > 2)){
-    stop("`which' must be in 1:2")
+    stop("\"which\" must be in 1:2")
   }
   show <- rep(FALSE, 2)
   show[which] <- TRUE
@@ -995,7 +1001,7 @@ plot.mev_pp <- function(x, which = 1:2, main = "Quantile-quantile plot", xlab = 
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else{
     if(length(main) != sum(show)){
-      stop("Invalid input: `main` must be of the same length as `which`")
+      stop("Invalid input: \"main\" must be of the same length as \"which\"")
     }
   }
 
@@ -1093,7 +1099,7 @@ print.mev_gev <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
   cat("\nEstimates\n")
   print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)
-  if (!is.na(x$std.err) && x$estimate[1] > -0.5) {
+  if (!isTRUE(any(is.na(x$std.err))) && x$estimate[1] > -0.5) {
     cat("\nStandard Errors\n")
     print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
   }
@@ -1124,7 +1130,7 @@ print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
   cat("\nEstimates\n")
   print.default(format(x$estimate, digits = digits), print.gap = 2, quote = FALSE, ...)
-  if (!is.na(x$std.err) && x$estimate[1] > -0.5) {
+  if (!isTRUE(any(is.na(x$std.err))) && x$estimate[1] > -0.5) {
     cat("\nStandard Errors\n")
     print.default(format(x$std.err, digits = digits), print.gap = 2, quote = FALSE, ...)
   }
@@ -1296,7 +1302,7 @@ print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
       npar[i] <- length(evmod$estimate)
     }
     if(sum(object2$wfixed) <= sum(object$wfixed)){
-      stop("Invalid order: `object2` must contain a model with restrictions")
+      stop("Invalid order: \"object2\" must contain a model with restrictions")
     }
     if(!isTRUE(all.equal(object$xdat, object2$xdat))){
       stop("Invalid arguments: the samples should be the same")
@@ -1344,7 +1350,7 @@ print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
       npar[i] <- length(evmod$estimate)
     }
     if(sum(object2$wfixed) <= sum(object$wfixed)){
-      stop("Invalid order: `object2` must contain a model with restrictions")
+      stop("Invalid order: \"object2\" must contain a model with restrictions")
     }
     if(!isTRUE(all.equal(object$xdat, object2$xdat))){
       stop("Invalid arguments: the samples should be the same")
@@ -1392,7 +1398,7 @@ print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
       npar[i] <- length(evmod$estimate)
     }
     if(sum(object2$wfixed) <= sum(object$wfixed)){
-      stop("Invalid order: `object2` must contain a model with restrictions")
+      stop("Invalid order: \"object2\" must contain a model with restrictions")
     }
     if(!isTRUE(all.equal(object$xdat, object2$xdat))){
       stop("Invalid arguments: the samples should be the same")

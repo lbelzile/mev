@@ -90,7 +90,7 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
     eta <- fit.gpd(apply(sp, 1, min), threshold = x)$estimate["shape"]
     # Angles
     if (any(c(w < 0, w > 1, length(unique(w)) != length(w)))) {
-        stop("Invalid argument `w` to angextrapo")
+        stop("Invalid argument \"w\" to angextrapo")
     }
     g <- sapply(w, function(wi) {
         sum((sp[, 1] > wi * x) + (sp[, 2] > (1 - wi) * x))

@@ -30,3 +30,4 @@ While penalized (robust) splines often do a good job at capturing and correcting
 may also be driven by unusual values lying on the profile log-likelihood the curve or fail to detect outliers (or falsely identifying `correct' values as outliers). The user should always validate by comparing the plots of both the uncorrected (raw) output of the object with that of \code{spline.corr}.
 }
 
+\keyword{internal}

@@ -10,7 +10,7 @@
   n <- length(xdat)
   z$trans <- FALSE
   if (is.function(threshold))
-    stop("`threshold' cannot be a function")
+    stop("\"threshold\" cannot be a function")
   u <- rep(threshold, length.out = n)
   if (length(unique(u)) > 1)
     z$trans <- TRUE
@@ -138,7 +138,7 @@
   n <- length(xdat)
   z$trans <- FALSE
   if (is.function(threshold))
-    stop("`threshold' cannot be a function")
+    stop("\"threshold\" cannot be a function")
   u <- rep(threshold, length.out = n)
   if (length(unique(u)) > 1)
     z$trans <- TRUE
@@ -774,7 +774,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     method <- "fpar"
   }
   if (!is.null(MCMC) && !method %in% c("zs", "zhang"))
-    warning("Ignoring argument `MCMC` for frequentist estimation")
+    warning("Ignoring argument \"MCMC\" for frequentist estimation")
   if (missing(method)) {
     method = "Grimshaw"
   }
@@ -828,7 +828,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     param_names <- c("scale", "shape")
     wf <- param_names == names(fpar)
     if(!any(wf)){
-      stop("List `fpar` must contain either `scale` or `shape`")
+      stop("List \"fpar\" must contain either \"scale\" or \"shape\"")
     }
     wfo <- order(c(which(!wf), which(wf)))
     fixed_param <- as.vector(unlist(fpar))
@@ -994,7 +994,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     std.errors <- rep(NA, 2)
   }
   if (temp$mle[2] < -1 && temp$conv == 0) {
-    warning("The MLE is not a solution to the score equation for `xi < -1'")
+    warning("The MLE is not a solution to the score equation for \"xi < -1'")
   }
   names(temp$mle) <- names(std.errors) <- c("scale", "shape")
   output <- structure(list(estimate = temp$mle,

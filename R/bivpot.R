@@ -34,18 +34,17 @@ ibvpot <- function(fitted, q, silent = FALSE) {
         fitted$pat <- fitted$nat[1:2]/nrow(fitted$data)
     }
     if (any(is.null(fitted$model), is.null(fitted$pat), is.null(fitted$threshold), is.null(fitted$param))) {
-        stop("Invalid argument for `fitted'. Please provide a list with components
-\t\t\t\t\t\t\t`model',`threshold', `pat',`param' or the output of `evd::fbvpot'")
+        stop("Invalid argument for \"fitted\". \nPlease provide a list with components \"model\", \"threshold\", \"pat\",\"param\"\n or elsethe output of \"evd::fbvpot\"")
     }
     if (!all(c("shape1", "scale1", "shape2", "scale2") %in% names(fitted$param))) {
-        stop("Invalid arguments for `param'. Missing marginal parameters.")
+        stop("Invalid arguments for \"param\". Missing marginal parameters.")
     }
     if (length(fitted$pat) != 2 || length(fitted$threshold) != 2 || !is.numeric(fitted$threshold) || any(fitted$pat > 1) || any(fitted$pat <
         0)) {
-        stop("Invalid input for `pat' or `threshold' vector.")
+        stop("Invalid input for \"pat\" or \"threshold\" vector.")
     }
     if (!fitted$model %in% c("log", "alog", "hr", "neglog", "aneglog", "bilog", "negbilog", "ct", "amix")) {
-        stop("Invalid model. See documentation in the evd package")
+        stop("Invalid model. See documentation in the \"evd\" package")
     }
     if (fitted$model %in% c("log", "hr", "neglog")) {
         modelclass <- "A"
@@ -56,7 +55,7 @@ ibvpot <- function(fitted, q, silent = FALSE) {
     }
     bivparnames <- switch(modelclass, A = "dep", B = c("dep", "asy1", "asy2"), C = c("alpha", "beta"))
     if (!all(bivparnames %in% names(fitted$param))) {
-        stop("Invalid arguments for `param'. Missing bivariate parameters.")
+        stop("Invalid arguments for \"param\". Missing bivariate parameters.")
     }
     # Exponent measure for the postulated model
     if (fitted$model == "ct" && !is.na(fitted$param["rho"])) {

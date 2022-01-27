@@ -36,6 +36,18 @@
 #' rparpcs(n = 10, Sigma = cov2cor(Sigma), df = 3, model = 'xstud')
 #' }
 rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "xstud"), riskf = c("max", "min"), shape = 1) {
+  if (!requireNamespace("TruncatedNormal", quietly = TRUE)) {
+    stop(
+      "Package \"TruncatedNormal\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if(!utils::packageVersion("TruncatedNormal") > "1.2"){
+    stop(
+      "Please update package \"TruncatedNormal\" to a more recent version.",
+      call. = FALSE
+    )
+  }
     model <- match.arg(model)
     riskf <- match.arg(riskf)
     stopifnot(shape > 0)
@@ -46,7 +58,7 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
         stopifnot(!is.null(Sigma))
         D <- nrow(Sigma)
         if (!isTRUE(all.equal(as.vector(diag(Sigma)), rep(1, D)))) {
-            warning("Input `Sigma` must be a correlation matrix")
+            warning("Input \"Sigma\" must be a correlation matrix")
             Sigma <- cov2cor(Sigma)
         }
         weights <- .weightsXstud(z = rep(1, D), Sigma = Sigma, df = df, riskf = riskf)
@@ -141,6 +153,12 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
 #'           alpha = seq(0.1, 1, length = 20), Sigma = Sigma, m = m)
 #' }
 rparpcshr <- function(n, u, alpha, Sigma, m) {
+  if (!requireNamespace("TruncatedNormal", quietly = TRUE)) {
+    stop(
+      "Package \"TruncatedNormal\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
     D <- ncol(Sigma)
     Sigmainv <- solve(Sigma)
     q <- Sigmainv %*% rep(1, D)

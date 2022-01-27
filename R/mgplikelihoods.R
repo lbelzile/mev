@@ -72,7 +72,7 @@ jac <- function(dat, loc = 0, scale, shape, lambdau = 1, censored) {
   } else {
     dat <- as.matrix(dat)
     if (!is.matrix(dat)) {
-      stop("`dat` must be a matrix")
+      stop("\"dat\" must be a matrix")
     }
     N <- nrow(dat)
     if (!all(dim(dat) == dim(censored))) {
@@ -158,25 +158,25 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
   if (model == "br") {
     Lambda <- par$Lambda
     if (is.null(Lambda)) {
-      stop("Invalid `par` for `br` model.")
+      stop("Invalid \"par\" for \"br\" model.")
     }
   } else if (model == "xstud") {
     Sigma <- par$Sigma
     df <- par$df
     if (any(is.null(df), is.null(Sigma))) {
-      stop("Invalid `par` for `xstud` model.")
+      stop("Invalid \"par\" for \"xstud\" model.")
     }
   } else if (model == "log") {
     alpha <- par$alpha
     if (is.null(alpha)) {
-      stop("Invalid `par`")
+      stop("Invalid \"par\"")
     }
     alpha <- alpha[1]
     if (alpha > 1) {
       alpha <- 1 / alpha
     }
     if (alpha < 0) {
-      stop("Invalid `par` for `log` model.")
+      stop("Invalid \"par\" for \"log\" model.")
     }
   }
   stopifnot(is.matrix(tdat), ncol(tdat) > 1)
@@ -236,7 +236,14 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
       tu[j] <- exp((thresh - B[j]) / A[j]) / lambdau[j]
     }
   }
-
+  if(model %in% c("br","xstud")){
+  if (!requireNamespace("mvPot", quietly = TRUE)) {
+    stop(
+      "Package \"mvPot\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+ }
   if (model == "br") {
     intens <- intensBR(tdat = tdat, Lambda = Lambda)
     exponentMeasure <- sum(.weightsBR(z = tu, Lambda = Lambda, prime = B1, method = "mvPot", genvec = genvec1, nrep = 1) / tu)
@@ -299,6 +306,7 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
 #' @export
 clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model = c("br", "xstud", "log"),
                     likt = c("mgp", "pois", "binom"), lambdau = 1, ...) {
+
   # Rename arguments
   tdat <- dat
   N <- nrow(dat)
@@ -313,25 +321,25 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
   if (model == "br") {
     Lambda <- par$Lambda
     if (is.null(Lambda)) {
-      stop("Invalid `par` for `br` model.")
+      stop("Invalid \"par\" for \"br\" model.")
     }
   } else if (model == "xstud") {
     Sigma <- par$Sigma
     df <- par$df
     if (any(is.null(df), is.null(Sigma))) {
-      stop("Invalid `par` for `xstud` model.")
+      stop("Invalid \"par\" for \"xstud\" model.")
     }
   } else if (model == "log") {
     alpha <- par$alpha
     if (is.null(alpha)) {
-      stop("Invalid `par`")
+      stop("Invalid \"par\"")
     }
     alpha <- alpha[1]
     if (alpha > 1) {
       alpha <- 1 / alpha
     }
     if (alpha < 0) {
-      stop("Invalid `par` for `log` model.")
+      stop("Invalid \"par\" for \"log\" model.")
     }
   }
   stopifnot(is.matrix(tdat), ncol(tdat) > 1)
@@ -570,7 +578,6 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
 #' @param method string indicating the package from which to extract the numerical integration routine
 #' @return numeric giving the measure of the complement of \eqn{[0,z]}.
 #' @export
-#' @importFrom TruncatedNormal mvNqmc mvTqmc
 #' @examples
 #' \dontrun{
 #' # Extremal Student
@@ -596,13 +603,26 @@ expme <- function(z, par, model = c("log", "hr", "br", "xstud"),
     method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
-        warning("`mvtnorm` package is not installed.")
+        warning("\"mvtnorm\" package is not installed.")
         method <- "TruncatedNormal"
       }
     } else if (method == "mvPot") {
       if (!requireNamespace("mvPot", quietly = TRUE)) {
-        warning("`mvPot` package is not installed.")
+        warning("\"mvPot\" package is not installed.")
         method <- "TruncatedNormal"
+      }
+    } else if(method == "TruncatedNormal"){
+      if (!requireNamespace("TruncatedNormal", quietly = TRUE)) {
+        stop(
+          "Package \"TruncatedNormal\" must be installed to use this function.",
+          call. = FALSE
+        )
+      }
+      if(!utils::packageVersion("TruncatedNormal") > "1.1"){
+        stop(
+          "Please update package \"TruncatedNormal\" to a more recent version.",
+          call. = FALSE
+        )
       }
     }
   }
@@ -673,10 +693,10 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
   D <- length(z)
   stopifnot(ncol(Sigma) == D | nrow(Sigma) == D | df > 0)
   if (!isTRUE(all.equal(as.vector(diag(Sigma)), rep(1, D)))) {
-    warning("Input `Sigma` must be a correlation matrix")
+    warning("Input \"Sigma\" must be a correlation matrix")
     Sigma <- try(cov2cor(Sigma))
     if (is.character(Sigma)) {
-      stop("Could not convert `Sigma` to a correlation matrix.")
+      stop("Could not convert \"Sigma\" to a correlation matrix.")
     }
   }
   weights <- .weightsXstud(z = z, Sigma = Sigma, df = df, method = method)

@@ -15,7 +15,7 @@
 \item{qty}{string indicating whether to calculate the \code{q} quantile or the mean}
 }
 \description{
-Likelihood, score function and information matrix, bias,
+Likelihood, score function and information matrix,
 approximate ancillary statistics and sample space derivative
 for the generalized extreme value distribution  parametrized in terms of the
 quantiles/mean of N-block maxima parametrization \eqn{z}, scale and shape.

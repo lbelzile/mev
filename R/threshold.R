@@ -161,7 +161,7 @@ plot.mev_tstab.gpd <- function(x, which = 1:2, ...){
   } else{
    ylab <- ellipsis$ylab
    if(length(ylab)!= length(which)){
-     stop(paste("Invalid `ylab` argument: must be a vector of size", length(which)))
+     stop(paste("Invalid \"ylab argument: must be a vector of size", length(which)))
    }
    ellipsis$ylab <- NULL
    }

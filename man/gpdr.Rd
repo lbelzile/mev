@@ -19,7 +19,7 @@
 \item{V}{vector calculated by \code{gpdr.Vfun}}
 }
 \description{
-Likelihood, score function and information matrix, bias,
+Likelihood, score function and information matrix,
 approximate ancillary statistics and sample space derivative
 for the generalized Pareto distribution parametrized in terms of return levels.
 }

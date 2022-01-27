@@ -34,4 +34,5 @@ quantiles of maxima of \code{N} blocks.
 \examples{
 dat <- evd::rgev(n = 100, shape = 0.2)
 gev.mle(xdat = dat, N = 100, p = 0.01, q = 0.5)
+
 }

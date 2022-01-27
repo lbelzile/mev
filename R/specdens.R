@@ -112,7 +112,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
             sqrt(sum(x^2))
         }), linf = apply(S, 1, max))
         # Ordering observations: this is not strictly necessary but of some use for later inspection + for
-        # defn of `above` when region='sum' Ordering is same regardless of above norm
+        # defn of 'above' when region='sum' Ordering is same regardless of above norm
         ordR <- order(R)
         S <- S[ordR, ]
         # Order radius
@@ -125,7 +125,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
                   warning("The length of the threshold provided does not match the dimension of the problem; assuming identical thresholds")
                   th <- rep(th[1], ncol(S))
                 } else {
-                  stop("Invalid argument `th`: the length of the threshold provided does not match the dimension of the problem.")
+                  stop("Invalid argument \"th\": the length of the threshold provided does not match the dimension of the problem.")
                 }
             }
             if (wgt == "Euclidean") {
@@ -144,7 +144,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
             # list if of unequal length, a matrix otherwise! if region=='sum'
         } else {
             if (length(th) != 1) {
-                warning("Only using the first entry of `th'")
+                warning("Only using the first entry of \"th\"")
                 th <- th[1]
             }
             above <- floor(th * length(R)):length(R)  #works because observations are ordered
@@ -215,7 +215,7 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
 .pickands.emp <- function(emp, plot = FALSE, add = FALSE, tikz = FALSE, ...) {
     pos <- seq(0, 1, length = 1000)
     if (is.null(emp$wts)) {
-        warning("Invalid input; no `wts' arguments, likely due to convergence failure")
+        warning("Invalid input; no \"wts arguments, likely due to convergence failure")
         pickands.pos <- rep(NA, length(pos))
     } else {
         pickands.pos <- .Pickands_emp(pos, emp$ang, emp$wts)

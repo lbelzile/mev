@@ -120,7 +120,7 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
     if (any(sapply(rate, function(zeta) {
         zeta < p
     }))) {
-        warning("Some probabilities `p` are higher than the exceedance rate. Evaluate those empirically")
+        warning("Some probabilities \"p\" are higher than the exceedance rate. Evaluate those empirically")
     }
     p <- sort(p)
     pq <- rev(1/p)
@@ -180,7 +180,7 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
 #' tstab.egp(xdat = xdat, thresh = thresh, model = "egp2", plots = 1:3)
 fit.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE) {
     if (!(model %in% c("egp1", "egp2", "egp3")) || length(model) != 1) {
-        stop("Invalid model  argument: must be one of `egp1', `egp2' or `egp3'.")
+        stop("Invalid model  argument: must be one of \"egp1\", \"egp2\" or \"egp3\".")
     }
     if (length(thresh) > 1) {
         warning("Length of threshold vector greater than one. Selecting first component.")
@@ -284,14 +284,14 @@ tstab.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1
         stop("Invalid model selection")
     }
     if (missing(thresh) && isTRUE(any(c(missing(umin), missing(umax))))) {
-        stop("Must provide either minimum and maximum threshold values, or a vector of threshold `thresh'")
+        stop("Must provide either minimum and maximum threshold values, or a vector of threshold \"thresh\".")
     } else if (missing(thresh)) {
         stopifnot(inherits(umin, c("integer", "numeric")),
                   inherits(umax, c("integer", "numeric")),
                   length(umin) == 1, length(umax) == 1, umin < umax)
         thresh <- seq(umin, umax, length = nint)
     } else if (length(thresh) <= 1) {
-        stop("Invalid `thresh' provided; please use a vector of threshold candidates of length at least 2")
+        stop("Invalid argument\"thresh\" provided;\n please use a vector of threshold candidates of length at least 2")
     }
     pe <- se <- matrix(0, ncol = 4, nrow = length(thresh))
     conv <- rep(0, length(thresh))
@@ -418,7 +418,7 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
     } else{ #compatibility - copy from previous
       if(any(c(is.null(ellips$densF),
                is.null(ellips$distF)))){
-        stop("Argument `family` missing.")
+        stop("Argument \"family\" missing.")
       } else{
        densF <- ellips$densF
        distF <- ellips$distF
@@ -477,7 +477,7 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
                 if (abs(bmroot$f.root) < 1e-05) {
                   return(bmroot$root)
                 } else {
-                  warning("Could not find `bm` using numerical root finder.")
+                  warning("Could not find \"bm\" using numerical root finder.")
                   return(NA)
                 }
             }
@@ -659,7 +659,7 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, method = c("bm",
     if (method == "bm") {
         if (!mdaGumbel) {
             if (is.null(rho)) {
-                stop("Invalid `rho' parameter")
+                stop("Invalid \"rho\" parameter")
             }
             GEV3rd <- function(x) {
                 # , an, bn, gamma, eps, rho
@@ -704,7 +704,7 @@ smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, method = c("bm",
     } else if (method == "pot") {
         if (!mdaGumbel) {
             if (is.null(rho)) {
-                stop("Invalid `rho' parameter")
+                stop("Invalid \"rho\" parameter")
             }
             # Peaks-over-threshold - GP-like distribution functions and densities , an, bn, gamma, eps, rho
             GP3rd <- function(x) {

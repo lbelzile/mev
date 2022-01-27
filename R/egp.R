@@ -56,7 +56,7 @@ fit.extgp <- function(data, model = 1, method = c("mle", "pwm"), init, censoring
     # Sanity checks
     initsize <- switch(model, 3, 3, 4, 5)
     if (length(init) != initsize) {
-        stop("Invalid starting values in `init'; incorrect length.")
+        stop("Invalid starting values in \"init\"; incorrect length.")
     }
     data = data[data > 0]
     if (model == 3 && "pwm" %in% method) {
@@ -401,17 +401,17 @@ NULL
 #' @keywords internal
 pextgp.G <- function(u, type = 1, prob, kappa, delta) {
     if (!type %in% 1:5) {
-        stop("Invalid `type' argument")
+        stop("Invalid \"type\" argument")
     }
     type <- type[1]
     if (type %in% c(1, 3, 4) && missing(kappa)) {
-        stop("Argument `kappa' missing.")
+        stop("Argument \"kappa\" missing.")
     }
     if (type %in% c(2, 3, 4) && missing(delta)) {
-        stop("Argument `delta' missing.")
+        stop("Argument \"delta\" missing.")
     }
     if (type == 4 && missing(prob)) {
-        stop("Argument `prob' missing.")
+        stop("Argument \"prob\" missing.")
     }
     if (type == 0) {
         return(u)
@@ -431,17 +431,17 @@ pextgp.G <- function(u, type = 1, prob, kappa, delta) {
 #' @keywords internal
 dextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE) {
     if (!type %in% 1:5) {
-        stop("Invalid `type' argument")
+        stop("Invalid \"type\" argument")
     }
     type <- type[1]
     if (type %in% c(1, 3, 4) && missing(kappa)) {
-        stop("Argument `kappa' missing.")
+        stop("Argument \"kappa\" missing.")
     }
     if (type %in% c(2, 3, 4) && missing(delta)) {
-        stop("Argument `delta' missing.")
+        stop("Argument \"delta\" missing.")
     }
     if (type == 4 && missing(prob)) {
-        stop("Argument `prob' missing.")
+        stop("Argument \"prob\" missing.")
     }
     if (log == FALSE) {
         if (type == 0) {
@@ -477,17 +477,17 @@ dextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE
 #' @keywords internal
 qextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA) {
     if (!type %in% 1:5) {
-        stop("Invalid `type' argument")
+        stop("Invalid \"type\" argument")
     }
     type <- type[1]
     if (type %in% c(1, 3, 4) && missing(kappa)) {
-        stop("Argument `kappa' missing.")
+        stop("Argument \"kappa\" missing.")
     }
     if (type %in% c(2, 3, 4) && missing(delta)) {
-        stop("Argument `delta' missing.")
+        stop("Argument \"delta\" missing.")
     }
     if (type == 4 && missing(prob)) {
-        stop("Argument `prob' missing.")
+        stop("Argument \"prob\" missing.")
     }
     if (type == 0) {
         return(u)
@@ -513,17 +513,17 @@ qextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA) {
 #' @keywords internal
 rextgp.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = NULL, direct = FALSE, censoring = c(0, 1)) {
     if (!type %in% 1:5) {
-        stop("Invalid `type' argument")
+        stop("Invalid \"type\" argument")
     }
     type <- type[1]
     if (type %in% c(1, 3, 4) && missing(kappa)) {
-        stop("Argument `kappa' missing.")
+        stop("Argument \"kappa\" missing.")
     }
     if (type %in% c(2, 3, 4) && missing(delta)) {
-        stop("Argument `delta' missing.")
+        stop("Argument \"delta\" missing.")
     }
     if (type == 4 && missing(prob)) {
-        stop("Argument `prob' missing.")
+        stop("Argument \"prob missing.")
     }
     if (is.null(unifsamp)) {
         unifsamp <- runif(n)

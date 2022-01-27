@@ -92,7 +92,7 @@ res <- extcoef(dat = dat, coord = coord)
 
 XT.extcoeffun <- function(h, nu, corrfun, ...){
   if(!is.function(corrfun)){
-    stop('Invalid function `corrfun`.')
+    stop('Invalid function \"corrfun\".')
   }
   h <- unique(as.vector(h))
   rhoh <- sapply(h, corrfun, ...)
@@ -106,7 +106,7 @@ lines(extcoefxt[,'h'], extcoefxt[,'extcoef'], type = 'l', col = 'blue', lwd = 2)
 # Brown--Resnick extremal coefficient function
 BR.extcoeffun <- function(h, vario, ...){
   if(!is.function(vario)){
-    stop('Invalid function `vario`.')
+    stop('Invalid function \"vario\".')
   }
   h <- unique(as.vector(h))
   gammah <- sapply(h, vario, ...)

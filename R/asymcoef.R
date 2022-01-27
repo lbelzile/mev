@@ -39,10 +39,11 @@
 #'              d = 2,
 #'              param = 0.2,
 #'              model = "log")
-#' ext_asym(samp, confint = "wald")
-#' ext_asym(samp, method = "emplik")
+#' xasym(samp, confint = "wald")
+#' xasym(samp, method = "emplik")
 #' }
-ext_asym <- function (data,
+#' @export
+xasym <- function (data,
                       u = NULL,
                       nq = 40,
                       qlim = c(0.8, 0.99),

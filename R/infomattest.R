@@ -205,7 +205,7 @@ ext.index <- function(x, q = 0.95, method = c("wls", "mle", "intervals"), plot =
         N <- length(exceeds) + 1L
         chi <- sort(exceeds[which(exceeds > 0)])
         if(length(chi) == 0){
-          warning("Only zero gaps given; return extremal index of `0`")
+          warning("Only zero gaps given; return extremal index of zero.")
          return(0)
         }
         # Rescaled interexceedance time

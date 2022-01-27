@@ -236,14 +236,14 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     }
     if (model == "alog") {
         if (mode(dep) != "numeric" || any(dep <= 0) || any(dep > 1))
-            stop("invalid argument for `dep'")
+            stop("invalid argument for \"dep\"")
     } else {
         if (mode(dep) != "numeric" || any(dep <= 0))
-            stop("invalid argument for `dep'")
+            stop("invalid argument for \"dep\"")
     }
     nb <- 2^d - 1
     if (mode(asy) != "list" || length(asy) != nb)
-        stop(paste("`asy' should be a list of length", nb))
+        stop(paste("\"asy\" should be a list of length", nb))
     tasy <- function(theta, b) {
         trans <- matrix(0, nrow = nb, ncol = d)
         for (i in 1:nb) trans[i, (1:d %in% b[[i]])] <- theta[[i]]
@@ -251,15 +251,15 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     }
     b <- subsets(d)
     if (any(sapply(asy, length) != sapply(b, length)))
-        stop("`asy' is not of the correct form")
+        stop("\"asy\" is not of the correct form")
     asy <- tasy(asy, b)
     if (!is.matrix(asy) || mode(asy) != "numeric")
-        stop("`asy' is not of the correct form")
+        stop("\"asy\" is not of the correct form")
     if (min(asy) < 0 || max(asy) > 1)
-        stop("`asy' must contain parameters in [0,1]")
+        stop("\"asy\" must contain parameters in [0,1]")
     if (any(apply(asy, 2, sum) != 1) || any(asy[c(rep(FALSE, d), dep == 1), ] != 0) || any(apply(asy[-(1:d), , drop = FALSE], 1, function(x) sum(x !=
         0)) == 1))
-        stop("`asy' does not satisfy the appropriate constraints")
+        stop("\"asy\" does not satisfy the appropriate constraints")
     asy
 }
 
@@ -323,22 +323,22 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
   # Check spatial requirements
   if ((!is.null(coord) || !is.null(vario) || !is.null(dist)) && !model %in% m3) {
     if (model == "hr") {
-      warning("Obsolete. Please use `model=br' instead of `hr' for spatial models.")
+      warning("Obsolete. Please use \"model=br\" instead of \"hr\" for spatial models.")
       model <- "br"
     } else {
-      warning("Unused arguments `vario`, `dist` or `coord`; only implemented for extremal Student-t or Brown-Resnick processes.")
+      warning("Unused arguments \"vario\", \"dist\" or \"coord\"; only implemented for extremal Student-t or Brown-Resnick processes.")
     }
   }
   if(model %in% m3){
     if(!is.logical(grid) || length(grid) != 1){
-      stop("Argument `grid` must be a logical, either TRUE or FALSE.")
+      stop("Argument \"grid\" must be a logical, either TRUE or FALSE.")
     }
     if(!is.null(dist)){
       if(!is.matrix(dist) || !isSymmetric(dist) || any(dist[upper.tri(dist, diag = FALSE)] <= 0) || !isTRUE(all(diag(dist) == 0))){
-        stop("Invalid pairwise distance matrix `dist`: distances must be nonnegative, locations unique and the matrix must be symmetric.")
+        stop("Invalid pairwise distance matrix \"dist\": distances must be nonnegative, locations unique and the matrix must be symmetric.")
       }
       if(!is.null(coord) || grid){
-        warning("Arguments `coord` and `grid` are ignored if pairwise distance matrix `dist` is provided.")
+        warning("Arguments \"coord\" and \"grid\" are ignored if pairwise distance matrix \"dist\" is provided.")
         coord <- NULL
         grid <- FALSE
       }
@@ -353,7 +353,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
         }))) {
           coord <- matrix(unlist(expand.grid(apply(coord, 2, as.list))), ncol = ncol(coord))
         } else {
-          stop("Duplicate values in `coord' using `grid=TRUE' not allowed")
+          stop("Duplicate values in \"coord\" using \"grid=TRUE\" not allowed")
         }
       }
     }
@@ -402,7 +402,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     if (model == "ct") {
       if (length(param) != d) {
         if (length(param) == (d + 1)) {
-          warning("Use `sdir' model for the scaled extremal Dirichlet model.")
+          warning("Use \"sdir\" model for the scaled extremal Dirichlet model.")
           model = "sdir"
         } else {
           stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
@@ -526,7 +526,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     if (is.null(d)) {
       d <- nrow(param)
     } else if (d != nrow(param)) {
-      stop("Dimension of `d' and provided `param' do not match")
+      stop("\"d\" and dimension of provided \"param\" vector do not match.")
     }
     # Checking for the mean constraints
     mar_mean <- colSums(t(param)/colSums(param) * weights)
@@ -541,10 +541,10 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     param <- 0
     if (any(c(sigma < 0, diag(sigma) != rep(0, ncol(sigma)), ncol(sigma) != nrow(sigma), ncol(sigma) != d))) {
       stop("Invalid parameter matrix for the Husler-Reiss model.
-           Note: for Brown-Resnick model, please use model=`br' instead.")
+           Note: for Brown-Resnick model, please use model=\"br\" instead.")
     }
     if (!.is.CNSD(sigma)) {
-      stop("Parameter matrix for the Husler-Reiss model is not conditionally negative definite")
+      stop("Parameter matrix for the Huesler-Reiss model is not conditionally negative definite")
     }
   } else if(model %in% m5){
     sigma = matrix(0,1,1)

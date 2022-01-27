@@ -94,7 +94,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"),
     if (model == "ct") {
       if (length(param) != d) {
         if (length(param) == (d + 1)) {
-          warning("Use `sdir' model for the scaled extremal Dirichlet model.")
+          warning("Use \"sdir\" model for the scaled extremal Dirichlet model.")
           model = "sdir"
         } else {
           stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")
@@ -355,7 +355,7 @@ rgparp <- function(n, shape = 1, thresh = 1, riskf = c("mean", "sum", "site", "m
     if (model == "ct") {
       if (length(param) != d) {
         if (length(param) == (d + 1)) {
-          warning("Use `sdir' model for the scaled extremal Dirichlet model.")
+          warning("Use \"sdir model for the scaled extremal Dirichlet model.")
           model = "sdir"
         } else {
           stop("Invalid arguments for the Coles and Tawn (extremal Dirichlet) model.")

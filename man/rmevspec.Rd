@@ -15,6 +15,7 @@ rmevspec(
   vario = NULL,
   coord = NULL,
   grid = FALSE,
+  dist = NULL,
   ...
 )
 }
@@ -38,6 +39,8 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
 \item{coord}{\code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.}
 
 \item{grid}{Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).}
+
+\item{dist}{symmetric matrix of pairwise distances. Default to \code{NULL}.}
 
 \item{...}{additional arguments for the \code{vario} function}
 }
