@@ -32,7 +32,6 @@
 #' @param ncpus integer; number of CPUs for parallel calculations (default: 1).
 #' @param plots logical; whether to produce histogram and density plots.
 #' @export
-#' @importFrom boot boot boot.ci
 #' @importFrom grDevices rgb
 #' @importFrom graphics hist layout
 #' @importFrom evd dgpd pgpd qgpd
@@ -44,12 +43,26 @@
 #' fit.extgp(rain[rain>0], model=1, method = 'mle', init = c(0.9, gp.fit(rain, 0)$est),
 #'  rounded = 0.1, confint = TRUE, R = 20)
 #' }
-fit.extgp <- function(data, model = 1, method = c("mle", "pwm"), init, censoring = c(0, Inf),
-                      rounded = 0, confint = FALSE, R = 1000, ncpus = 1, plots = TRUE) {
+fit.extgp <- function(data,
+                      model = 1,
+                      method = c("mle", "pwm"),
+                      init,
+                      censoring = c(0, Inf),
+                      rounded = 0,
+                      confint = FALSE,
+                      R = 1000,
+                      ncpus = 1,
+                      plots = TRUE) {
     method <- match.arg(method, c("mle", "pwm"), several.ok = TRUE)
     if("pwm" %in% method){
       if (!requireNamespace("gmm", quietly = TRUE)) {
         stop("Package \"gmm\" needed for this function to work. Please install it.",
+             call. = FALSE)
+      }
+    }
+    if(confint){
+      if (!requireNamespace("boot", quietly = TRUE)) {
+        stop("Package \"boot\" needed for this function to work. Please install it.",
              call. = FALSE)
       }
     }

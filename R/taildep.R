@@ -48,10 +48,11 @@ taildep <- function (data, u = NULL,
   if(is.character(depmeas)){
     depmeas <- which(c("eta", "chi") %in% match.arg(depmeas, c("eta", "chi"), several.ok = TRUE))
   }
+  depmeas_names <- c("eta", "chi")[depmeas]
   if((! length(depmeas) %in% c(1L, 2L)) || !all(depmeas  %in% c(1L, 2L))){
     stop("Invalid argument for \"depmeas\": must be either \"eta\",\"chi\" or both.")
   }
-  if(! (is.list(method) && isTRUE(all(names(method) %in% depmeas)))){
+  if(! (is.list(method) && isTRUE(all(names(method) %in% depmeas_names)))){
     stop(paste0("\"method\" should be a list with components ",
                paste(depmeas, collapse = " and "),"."))
   }

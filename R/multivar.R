@@ -115,7 +115,6 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 #' which are adjusted post-inference.
 #'
 #' @importFrom utils capture.output
-#' @importFrom evd fpot
 #' @importFrom graphics segments
 #' @return a plot of the lambda function if \code{plot=TRUE}, plus an invisible list with components
 #' \itemize{
@@ -126,11 +125,12 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 #' }
 #' @examples
 #' set.seed(12)
-#' dat <- evd::rbvevd(n=1000, dep = 0.1)
+#' dat <- mev::rmev(n = 1000, d = 2, model = "log", param = 0.1)
 #' lambdadep(dat, method = 'hill')
 #' \dontrun{
 #' lambdadep(dat, method = 'bayes')
 #' lambdadep(dat, method = 'mle')
+#' # With independent observations
 #' dat <- matrix(runif(n = 2000), ncol = 2)
 #' lambdadep(dat, method = 'hill')
 #' }
@@ -154,7 +154,8 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
     }))
     # Form a bivariate minima pair for a grid of values of w in Sd, the unit simplex
     v <- rep(1, 2)
-    lambda_seq <- sapply(w_seq <- seq(0, 1, by = 0.02), function(w) {
+    w_seq <- seq(0, 1, by = 0.02)
+    lambda_seq <- sapply(w_seq, function(w) {
         ang_weighted_dat <- exp(apply(Xexp/(c(w, 1 - w)), 2, min))
         if (method == "mle") {
             fit <- mev::gp.fit(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu))
@@ -171,12 +172,20 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
                 pot_stval0 <- mev::gp.fit(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu))$estimate
                 if (pot_stval0[2] < 1 || pot_stval0[2] > 1/max(c(1 - w, w))) {
                   # If values are not within the allowed interval, fit GP fixing the shape to a legit value
-                  pot_stval <- try(evd::fpot(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu), shape = (xi <- max(1 + 0.001,
-                    min(v[2], 1/max(c(1 - w, w)) - 0.001, na.rm = TRUE))), std.err = FALSE, method = "Brent", lower = pot_stval0[1]/5,
-                    upper = pot_stval0[1] * 10))
+                  xi <- max(
+                    1 + 0.001,
+                    min(v[2], 1 / max(c(1 - w, w)) - 0.001,
+                        na.rm = TRUE)
+                  )
+                  pot_stval <- try(
+                    mev::fit.gpd(xdat = ang_weighted_dat,
+                                 threshold = quantile(ang_weighted_dat,
+                                                      qu),
+                                 fpar = list(shape = xi)
+                                 ))
                   # Make sure that the result is valid and optim converged
                   if (!is.character(pot_stval)) {
-                    start <- c(pot_stval$est[[1]], xi)
+                    start <- c(pot_stval$estimate[[1]], xi)
                   } else {
                     start <- NA
                   }
