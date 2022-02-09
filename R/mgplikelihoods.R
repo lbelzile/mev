@@ -695,7 +695,7 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
   if (!isTRUE(all.equal(as.vector(diag(Sigma)), rep(1, D)))) {
     warning("Input \"Sigma\" must be a correlation matrix")
     Sigma <- try(cov2cor(Sigma))
-    if (is.character(Sigma)) {
+    if (inherits(Sigma, what = "try-error")) {
       stop("Could not convert \"Sigma\" to a correlation matrix.")
     }
   }

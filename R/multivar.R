@@ -184,7 +184,7 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
                                  fpar = list(shape = xi)
                                  ))
                   # Make sure that the result is valid and optim converged
-                  if (!is.character(pot_stval)) {
+                  if (!inherits(pot_stval, what = "try-error")) {
                     start <- c(pot_stval$estimate[[1]], xi)
                   } else {
                     start <- NA
@@ -197,12 +197,13 @@ lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot =
                 invisible(utils::capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp", data = ang_weighted_dat,
                   thresh = quantile(ang_weighted_dat, qu), prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1,
                     max_xi = 1/max(c(1 - w, w))), init_ests = start, trans = "BC")), silent = TRUE)))
-                if (is.character(postsamp)) {
+                if (inherits(postsamp, what = "try-error")) {
+                  # Try again if it failed, with different values
                   invisible(capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp", data = ang_weighted_dat,
                     thresh = quantile(ang_weighted_dat, qu), prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1,
                       max_xi = 1/max(c(1 - w, w))), init_ests = start)), silent = TRUE)))
                 }
-                if (is.character(postsamp)) {
+                if (inherits(postsamp, what = "try-error")) {
                   return(rep(NA, 3))
                 } else {
                   v <- as.vector(apply(postsamp$sim_vals, 2, median))

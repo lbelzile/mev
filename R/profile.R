@@ -575,7 +575,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             x0 = c(median(dat/sigmat), 0.05)
             if (is.nan(gev.ll(c(x0[1], sigmat, x0[2]), dat = dat))) {
                 constr_fit <- try(evd::fgev(x = dat, std.err = FALSE, scale = sigmat, shape = x0[2]))
-                if (!is.character(constr_fit)) {
+                if (!inherits(constr_fit, what = "try-error")) {
                   if (constr_fit$convergence == "successful") {
                     x0 <- as.vector(c(constr_fit$estimate["loc"], 0.05))
                   } else {
@@ -634,7 +634,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         #   ifelse(is.infinite(val) || is.na(val), 1e10, val)},
         #   gr = function(par){ val <- -gev.score(c(par[1], exp(par[2]), xit), dat = dat)[-ind]},
         #   hin = function(par){c(ifelse(xit <= 0, exp(par[2]) + xit*(xmax-par[1]), exp(par[2]) + xit*(xmin-par[1])))} ) }
-        #    if(!is.character(opt)){
+        #    if(!inherits(opt, what = "try-error")){
         # if(all(c(opt$convergence > 0, abs(gev.score(c(opt$par, xit), dat = dat)[1:2]) < 5e-4))){
         # return(c(opt$par, opt$value)) } else { #evd::fgev(start = list(loc = opt$par[1], scale =
         # opt$par[2]), shape = xit, # x = dat, method = 'BFGS', control=list(reltol=1e-10, abstol =
@@ -669,7 +669,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             }, hin = function(par) {
                 ifelse(xit <= 0, par[2] + xit * (xmax - par[1]), par[2] + xit * (xmin - par[1]))
             }, localsolver = "SLSQP"))))
-            if (!is.character(opt)) {
+            if (!inherits(opt, what = "try-error")) {
                 if (opt$convergence > 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
                   opt2 <- suppressMessages(suppressWarnings(
                     nloptr::slsqp(x0 = opt$par, fn = function(par) {
@@ -817,7 +817,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         std.error <- sqrt(solve(gevr.infomat(par = mle, dat = dat, method = "exp", p = p))[1])
         constr.mle.quant <- function(quant) {
             fitted <- try(evd::fgev(x = dat, prob = p, quantile = quant, method = "Neld", std.err = FALSE))
-            if (!is.character(fitted)) {
+            if (!inherits(fitted, what = "try-error")) {
                 fitted <- optim(par = list(scale = log(fitted$estimate[1]), shape = fitted$estimate[2]),
                   dat = dat, p = p, fn = function(lambda, p, dat) {
                     gevr.ll.optim(c(quant, lambda), dat = dat, p = p)
@@ -976,7 +976,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             # (zt-par[1])*par[2]/(N^par[2]*(log(1/q))^(-par[2])-1), mean =
             # (zt-par[1])*par[2]/(N^par[2]*gamma(1-par[2])-1)) c(sigma, sigma + par[2]*(xmax-par[1]),
             # sigma + par[2]*(xmin-par[1]))}, control.outer = list (trace = FALSE) )))
-            if (!is.character(opt)) {
+            if (!inherits(opt, what = "try-error")) {
                 # if(opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e10))){
                 if (opt$convergence > 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
                   opt2 <- suppressMessages(suppressWarnings(
@@ -991,7 +991,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                       1), mean = (zt - par[1]) * par[2]/(N^par[2] * gamma(1 - par[2]) - 1))
                     c(sigma, sigma + par[2] * (xmax - par[1]), sigma + par[2] * (xmin - par[1]))
                   })))
-                  if (!is.character(opt2)) {
+                  if (!inherits(opt2, what = "try-error")) {
                     if (opt2$convergence > 0 && !isTRUE(all.equal(opt2$value, 1e+10))) {
                       return(c(opt2$par, opt2$value))
                     }

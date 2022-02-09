@@ -15,6 +15,7 @@ Fixes:
 * Fixes to NHPP order statistics density (returns -Inf outside of domain, also correctly evaluate for boundary case when xi=-1)
 * Optimization routines fit.pp, fit.gev and fit.rlarg now return correct MLE when solution lies on boundary (xi=-1) and are more robust to failure (gradients for nlminb return large values rather than NAs which caused the algorithm to stop).
 * Grimshaw's algorithm sometimes returned incorrect value because of too low tolerance for eta near zero. Returned back to default settings.
+* fit.gpd(..., method = "obre") now returns additional failure messages if the algorithm drifts towards infeasible values.
 * rparp now correctly handles xi=0
 
 mev v.1.13 (Release date: 2019-12-17)

@@ -414,7 +414,7 @@ gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
         bcor.rf <- try(nleqslv::nleqslv(x = st, fn = function(parbc, par, dat) {
             parbc - par + gpd.bias(parbc, length(dat))
         }, par = par, dat = dat), silent = TRUE)
-        if (!is.character(bcor.rf)) {
+        if (!inherits(bcor.rf, what = "try-error")) {
             if (bcor.rf$termcd == 1 || (bcor.rf$termcd == 2 && isTRUE(all.equal(bcor.rf$fvec, rep(0, 2), tolerance = 1e-06)))) {
                 return(bcor.rf$x)
             }
@@ -448,7 +448,7 @@ gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
         }
         par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gpd.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000))),
             silent = TRUE)
-        if (!is.character(par.firth)) {
+        if (!inherits(par.firth, what = "try-error")) {
             if (par.firth$termcd == 1 || (par.firth$termcd == 2 && isTRUE(all.equal(par.firth$fvec, rep(0, 2), tolerance = 1e-06)))) {
                 return(par.firth$x)
             }
@@ -529,14 +529,14 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
         bcor.rf <- try(nleqslv::nleqslv(x = st, fn = function(parbc, par, dat) {
             parbc - par + gev.bias(parbc, length(dat))
         }, par = par, dat = dat, control = list(maxit = 1000, xtol = 1e-10)), silent = TRUE)
-        if (!is.character(bcor.rf)) {
+        if (!inherits(bcor.rf, what = "try-error")) {
             if (bcor.rf$termcd == 1 || (bcor.rf$termcd %in% c(2, 3) && isTRUE(all.equal(bcor.rf$fvec, rep(0, 3), tolerance = 1e-06)))) {
                 return(bcor.rf$x)
             }
             bcor.rf <- try(nleqslv::nleqslv(x = st, fn = function(parbc, par, dat) {
                 parbc - par + gev.bias(parbc, length(dat))
             }, global = "none", par = par, dat = dat, control = list(maxit = 1000, xtol = 1e-10)), silent = TRUE)
-            if (!is.character(bcor.rf)) {
+            if (!inherits(bcor.rf, what = "try-error")) {
                 if (bcor.rf$termcd == 1 || (bcor.rf$termcd %in% c(2, 3) && isTRUE(all.equal(bcor.rf$fvec, rep(0, 3), tolerance = 1e-06)))) {
                   return(bcor.rf$x)
                 } else if (abs(bcor.rf$x[3]) < 0.025 && bcor.rf$termcd == 2 && isTRUE(all.equal(bcor.rf$fvec, rep(0, 3), tolerance = 0.01))) {
@@ -572,7 +572,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
         }
         par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000,
             xtol = 1e-10))), silent = TRUE)
-        if (!is.character(par.firth)) {
+        if (!inherits(par.firth, what = "try-error")) {
             # Try finding the root with default options
             if (par.firth$termcd == 1 || (par.firth$termcd %in% c(2, 3) && isTRUE(all.equal(par.firth$fvec, rep(0, 3), tolerance = 1e-06)))) {
                 return(par.firth$x)
@@ -580,7 +580,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
             # Sometimes, method fails for values of xi close to zero - try with a full Broyden or Newton search
             par.firth <- try(suppressWarnings(nleqslv::nleqslv(fn = gev.Fscoren, x = st, dat = dat, met = method, control = list(maxit = 1000,
                 xtol = 1e-10), global = "none")), silent = TRUE)
-            if (!is.character(par.firth)) {
+            if (!inherits(par.firth, what = "try-error")) {
                 if (par.firth$termcd == 1 || (par.firth$termcd %in% c(2, 3) && isTRUE(all.equal(par.firth$fvec, rep(0, 3), tolerance = 1e-06)))) {
                   return(par.firth$x)
                 } else if (abs(par.firth$x[3]) < 0.025 && par.firth$termcd == 2 && isTRUE(all.equal(par.firth$fvec, rep(0, 3), tolerance = 0.05))) {

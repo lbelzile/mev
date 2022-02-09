@@ -124,10 +124,10 @@ taildep <- function (data, u = NULL,
       fitu <- suppressWarnings(fit.gpd(ps, threshold = th))
       prof <- try(suppressWarnings(gpd.pll(param = "shape", dat = ps, threshold = th, mod = "prof", mle = fitu$estimate, plot = FALSE)))
       co <- try(suppressWarnings(confint(prof, prob = c((1-level)/2, (1+level)/2), print = FALSE)))
-      if(!is.character(co)){
-        return(co)
+      if(inherits(x = co, what = "try-error")){
+        return(c(fitu$estimate[2], rep(NA, 2)))
       } else{
-       return(c(fitu$estimate[2], rep(NA, 2)))
+        return(co)
       }
     } else{
       return(rep(NA, 3))
@@ -159,7 +159,9 @@ taildep <- function (data, u = NULL,
       if(confint == "lrt"){
         low <- try(uniroot(f = function(il){ 2*(expll(samp, il) - maxll) + qchisq(level, 1)}, interval = c(1e-8, mle)))
         upp <- try(uniroot(f = function(il){ 2*(expll(samp, il) - maxll) + qchisq(level, 1)}, interval = c(mle, 5)))
-       return(c(mle, ifelse(is.character(low), NA, low), ifelse(is.character(upp), NA, upp)))
+       return(c(mle,
+                ifelse(inherits(low, what = "try-error"), NA, low),
+                ifelse(inherits(upp, what = "try-error"), NA, upp)))
       } else if(confint == "wald"){
        return(c(mle, mle + c(-1,1)*mle/sqrt(length(samp))*qnorm((1+level)/2)))
       }

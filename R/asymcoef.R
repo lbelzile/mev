@@ -234,7 +234,7 @@ if(method == "empirical"){
                           th = 0,
                           wgt = "Empirical",
                           is.angle = TRUE)))
-    if(!is.character(emplik_sol)){
+    if(!inherits(emplik_sol, what = "try-error")){
  est[i] <- xcoef_fun_emplik(angles = as.vector(emplik_sol$ang),
                             weights = emplik_sol$wts)
     } else{
