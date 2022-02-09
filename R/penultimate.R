@@ -195,18 +195,41 @@ fit.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show 
     }
     if (changinit) {
         init <- c(kappa = 1.01, suppressWarnings(fit.gpd(xdat, threshold = thresh[1], show = FALSE)$est))
+        # Change starting values for boundary cases, otherwise the optimization stalls
+        if(init[3] < -0.99){
+          init[3] <- -0.97
+        }
     }
-
+    if(!is.finite(egp.ll(par = init, xdat = xdat,
+                         thresh = thresh,
+                         model = model))){
+      stop("Invalid starting parameters.")
+    }
     # Keep exceedances only
-    xdata = xdat[xdat > thresh]
-    xmax <- max(xdata);
+    xdata <- xdat[xdat > thresh]
+    xmax <- max(xdata)
     mle <- alabama::auglag(par = init,
-                           fn = function(par, xdat, thresh, model){-egp.ll(par = par, xdat = xdat, thresh = thresh, model = model)},
-                           hin = function(par, ...){c(par[1]-1e-10, par[2]-1e-10, par[3]+1,
-                                                      ifelse(par[3] < 0, thresh-par[2]/par[3] - xmax, 1))},
-                           xdat = xdata, thresh = thresh, model = model,
-                           control.outer = list(trace = FALSE, method = "BFGS"),
-                           control.optim = list(maxit = 500, reltol = 1e-10))
+                           fn = function(par, xdat, thresh, model){
+                             -egp.ll(par = par,
+                                     xdat = xdat,
+                                     thresh = thresh,
+                                     model = model)
+                             },
+                           hin = function(par, ...){
+                             c(par[1]-1e-10,
+                               par[2]-1e-10,
+                               par[3]+1,
+                               ifelse(par[3] < 0,
+                                      thresh-par[2]/par[3] - xmax,
+                                      1))
+                             },
+                           xdat = xdata,
+                           thresh = thresh,
+                           model = model,
+                           control.outer = list(trace = FALSE,
+                                                method = "BFGS"),
+                           control.optim = list(maxit = 500,
+                                                reltol = 1e-10))
     fitted <- list()
     fitted$estimate <- fitted$param <- mle$par
     fitted$deviance <- 2*mle$value
@@ -215,7 +238,7 @@ fit.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show 
       fitted$convergence <- "successful"
       fitted$vcov <- try(solve(mle$hessian))
       fitted$std.err <- try(sqrt(diag(fitted$vcov)))
-      if(is.character(mle$se) || mle$par[3] < -0.5){
+      if(inherits(fitted$std.err, what = "try-error") || mle$par[3] < -0.5){
         fitted$vcov <- NULL
         fitted$se <- rep(NA, 3)
       }
