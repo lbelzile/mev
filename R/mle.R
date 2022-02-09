@@ -16,8 +16,18 @@
 #' @examples
 #' xdat <- evd::rgpd(n = 30, shape = 0.2)
 #' gpd.mle(xdat = xdat, N = 100, p = 0.01, q = 0.5, m = 100)
-gpd.mle <- function(xdat, args = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
-                    m, N, p, q) {
+gpd.mle <- function(xdat,
+                    args = c("scale",
+                             "shape",
+                             "quant",
+                             "VaR",
+                             "ES",
+                             "Nmean",
+                             "Nquant"),
+                    m,
+                    N,
+                    p,
+                    q) {
   args <- match.arg(args, c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"), several.ok = TRUE)
   fitted <- try(gp.fit(xdat = na.omit(as.vector(xdat)), threshold = 0, method = "Grimshaw"))
   sigma <- fitted$estimate[1]
@@ -97,6 +107,7 @@ gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' (higher bounds are more efficient, low bounds are more robust). Default to 4, must be larger than \eqn{\sqrt{2}}.
 #' @param tol numerical tolerance for OBRE weights iterations (\code{method = "obre"}). Default to \code{1e-8}.
 #' @param fpar a named list with fixed parameters, either \code{scale} or \code{shape}
+#' @param warnSE logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.
 #' @seealso \code{\link[evd]{fpot}} and \code{\link[ismev]{gpd.fit}}
 #'
 #' @details The default method is \code{'Grimshaw'}, which maximizes the profile likelihood for the ratio scale/shape.  Other options include \code{'obre'} for optimal \eqn{B}-robust estimator of the parameter of Dupuis (1998), vanilla maximization of the log-likelihood using constrained optimization routine \code{'auglag'}, 1-dimensional optimization of the profile likelihood using \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{'ismev'} performs the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
@@ -165,14 +176,32 @@ gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' data(eskrain)
 #' fit.gpd(eskrain, threshold = 35, method = 'Grimshaw', show = TRUE)
 #' fit.gpd(eskrain, threshold = 30, method = 'zs', show = TRUE)
-fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC = NULL, k = 4, tol = 1e-8, fpar = NULL){
+fit.gpd <- function(xdat,
+                    threshold = 0,
+                    method = "Grimshaw",
+                    show = FALSE,
+                    MCMC = NULL,
+                    k = 4,
+                    tol = 1e-8,
+                    fpar = NULL,
+                    warnSE = FALSE){
  if(!method == "obre"){
-   gp.fit(xdat = na.omit(as.vector(xdat)), threshold = threshold, method = method, show = show, MCMC = MCMC, fpar = fpar)
+   gp.fit(xdat = na.omit(as.vector(xdat)),
+          threshold = threshold,
+          method = method,
+          show = show,
+          MCMC = MCMC,
+          fpar = fpar,
+          warnSE = warnSE)
  } else{
    if(!is.null(fpar)){
      warning("\"fpar\" argument ignored for OBRE method.")
    }
-   .fit.gpd.rob(dat = na.omit(as.vector(xdat)), thresh = threshold, show = show, k = k, tol = tol)
+   .fit.gpd.rob(dat = na.omit(as.vector(xdat)),
+                thresh = threshold,
+                show = show,
+                k = k,
+                tol = tol)
  }
 }
 
@@ -211,8 +240,17 @@ fit.gpd <- function(xdat, threshold = 0, method = "Grimshaw", show = FALSE, MCMC
 #' data(eskrain)
 #' pp_mle <- fit.pp(eskrain, threshold = 30, np = 6201)
 #' plot(pp_mle)
-fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show = FALSE, fpar = NULL){
+fit.pp <- function(xdat,
+                   threshold = 0,
+                   npp = 1,
+                   np = NULL,
+                   method = c("nlminb", "BFGS"),
+                   start = NULL,
+                   show = FALSE,
+                   fpar = NULL,
+                   warnSE = FALSE){
   xdat <- as.vector(xdat)
+  method <- match.arg(method)
   xdat <- xdat[is.finite(xdat)]
   n <- length(xdat)
   if (length(threshold) != 1 || mode(threshold) !=  "numeric")
@@ -291,41 +329,47 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show =
      stop("Starting values do not satisfy the inequality constraints.")
    }
  } else{
- if(all(!wf)){ # no missing values
    gppars <- suppressWarnings(fit.gpd(xdat = xdatu, threshold = threshold)$estimate)
    sigma_init <- gppars['scale']*(length(xdatu)/np)^(gppars['shape'])
    mu_init <-  threshold - sigma_init*(((length(xdatu)/np)^(-gppars['shape']))-1)/gppars['shape']
-   spar <- c(mu_init, sigma_init, gppars['shape'])
- } else{
-   if(wf[3]){
-     if(!wf[2]){
-       gppars <- suppressWarnings(fit.gpd(xdat = xdatu, threshold = threshold, fpar = list(shape = spar[3]))$param)
-       spar[2] <- gppars['scale']*(length(xdatu)/np)^(gppars['shape'])
-     }
-     if(!isTRUE(all.equal(spar['shape'], 0, tolerance = 1e-6, check.attributes = FALSE))){
-       spar[1] <-  threshold - spar['scale']*(((length(xdatu)/np)^(-spar['shape']))-1)/spar['shape']
-     } else {
-       spar[1] <- threshold + log(length(xdatu)/np)*spar[2]
-     }
-
+   spar0 <- c(mu_init, sigma_init, gppars['shape'])
+   if(all(!wf)){ # no missing values
+     spar <- spar0
    } else{
-     # if shape not fixed, set xi=0 so constraints are satisfied
-     # Starting values from evd::fpot
-   spar[3] <- 0
+    # Normal approximation around MLE (quadratic function)
+   umle <- c(spar0[1], log(spar0[2]), spar0[3])
+   # Compute precision matrix at MLE
+   prec <- diag(c(1, spar0[2], 1)) %*% pp.infomat(par = spar0, dat = xdat, u = u, np = np) %*% diag(c(1, spar0[2], 1))
+   # Best linear prediction
+   spar[!wf] <- as.vector(c(umle[!wf] - solve(prec[which(!wf), which(!wf), drop = FALSE]) %*% prec[which(!wf), which(wf), drop = FALSE] %*% (spar[wf] - spar0[wf])))
    if(!wf[2]){
-     spar[2] <- sqrt(6 * var(xdatu))/pi
+     # Backtransform scale if not fixed
+     spar[2] <- exp(spar[2])
    }
-   if(!wf[1]){
-     spar[1] <- mean(xdatu) + (log(length(xdatu)/np) - 0.58)*spar[2]
    }
+   # Check the starting values are feasible
+   if(!isTRUE(all(pp.hin(par = spar[!wf], fpar = spar[wf], wf = wf, u = u, xdat = xdatu, np = np)>0))){
+     stop("Starting values do not satisfy the inequality constraints.")
    }
  }
- }
- # Optimization - basically started at MLE
+   # check_init_ll <- try(pp.ll(par = spar, dat = xdat, u = u, np = np))
+   # if(inherits(check_init_ll, "try-error")){
+   #   stop("Invalid starting values")
+   #   # Invalid starting values
+   # }
+  # Optimization - basically started at MLE
  mle <- suppressWarnings(
-   alabama::auglag(par = spar[!wf], fpar = spar[wf], wf = wf,
-                   fn = pp.nll, gr = pp.ngr, hin = pp.hin,
-             u = u, xdat = xdatu, np = np, control.outer = list(trace=FALSE, method = "nlminb")))
+   alabama::auglag(par = spar[!wf],
+                   fpar = spar[wf],
+                   wf = wf,
+                   fn = pp.nll,
+                   gr = pp.ngr,
+                   hin = pp.hin,
+                   u = u,
+                   xdat = xdatu,
+                   np = np,
+                   control.outer = list(trace = FALSE,
+                                        method = method)))
  if((mle$convergence == 0  || isTRUE(all.equal(mle$gradient, rep(0, sum(wf)), tolerance = 1e-3))) && isTRUE(all(mle$kkt1, mle$kkt2)) ){
    mle$convergence <- "successful"
  } else if(!wf[3] && isTRUE(all.equal(mle$par['shape'], -1, check.attributes = FALSE, tolerance = 1e-6))){
@@ -341,15 +385,20 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show =
  if(fitted$param[3] > -0.5){
    fitted$vcov <- try(solve(pp.infomat(par = fitted$param, u = u, np = np, dat = xdatu, method = "obs")[!wf,!wf]))
    fitted$std.err <- try(sqrt(diag(fitted$vcov)))
-   if(is.character(fitted$vcov) || is.character(fitted$std.err)){
+   if(inherits(fitted$std.err, what = "try-error")){
      fitted$vcov <- NULL
      fitted$std.err <- rep(NA, notf)
+     if(warnSE){
+       warning("Cannot calculate standard error based on observed information")
+     }
    }
  } else{
+   if(warnSE){
+     warning("Cannot calculate standard error based on observed information")
+   }
    fitted$vcov <- NULL
    fitted$std.err <- rep(NA, notf)
  }
-
 
  fitted$nllh <- mle$value
  names(fitted$param)<-  param_names
@@ -400,7 +449,12 @@ fit.pp <- function(xdat, threshold = 0, npp = 1, np = NULL, start = NULL, show =
 #' fit.gev(xdat, show = TRUE)
 #' # Example with fixed parameter
 #' fit.gev(xdat, show = TRUE, fpar = list(shape = 0))
-fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE, fpar = NULL){
+fit.gev <- function(xdat,
+                    start = NULL,
+                    method = c("nlminb","BFGS"),
+                    show = FALSE,
+                    fpar = NULL,
+                    warnSE = FALSE){
   fitted <- list() # container
   param_names <- c("loc", "scale", "shape")
   stopifnot(is.null(fpar) | is.list(fpar))
@@ -508,7 +562,7 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
                     ))))
 
   # Special case of MLE on the boundary xi = -1
-  if(is.character(mle)){
+  if(inherits(mle, what = "try-error")){
     stop("Optimization routine for the GEV did not converge.")
   }
   fitted$nllh <- mle$value
@@ -531,9 +585,16 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
   fitted$std.err <- rep(NA, length(mle$par))
   if(fitted$param[3] > -0.5){
     vcovt <- try(solve(gev.infomat(par = fitted$param, dat = xdat, method = "obs")[!wf,!wf]))
-    if(!is.character(vcovt)){
+    if(!inherits(vcovt, what = "try-error")){
       fitted$vcov <- vcovt
       fitted$std.err <- sqrt(diag(fitted$vcov))
+      if(warnSE){
+        warning("Cannot calculate standard error based on observed information")
+      }
+    }
+  } else{
+    if(warnSE){
+      warning("Cannot calculate standard error based on observed information")
     }
   }
   names(fitted$param) <- names(wf) <- c("loc","scale","shape")
@@ -580,7 +641,12 @@ fit.gev <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALS
 #' @examples
 #' xdat <- rrlarg(n = 10, loc = 0, scale = 1, shape = 0.1, r = 4)
 #' fit.rlarg(xdat)
-fit.rlarg <- function(xdat, start = NULL, method = c("nlminb","BFGS"), show = FALSE, fpar = NULL){
+fit.rlarg <- function(xdat,
+                      start = NULL,
+                      method = c("nlminb","BFGS"),
+                      show = FALSE,
+                      fpar = NULL,
+                      warnSE = FALSE){
   param_names <- c("loc", "scale", "shape")
   stopifnot(is.null(fpar) | is.list(fpar))
   wf <- (param_names %in% names(fpar))
@@ -696,7 +762,7 @@ mle <- try(suppressWarnings(
 
                   ))))
 
-if(is.character(mle)){
+if(inherits(mle, what = "try-error")){
   stop("Optimization routine for r-largest observations did not converge")
 }
 #Extract information and store
@@ -727,9 +793,14 @@ fitted$vcov <- matrix(NA, ncol = length(mle$par), nrow = length(mle$par))
 fitted$std.err <- rep(NA, length(mle$par))
 if(fitted$param[3] > -0.5){
   vcovt <- try(solve(rlarg.infomat(par = fitted$param, dat = xdat, method = "obs")[!wf,!wf]))
-  if(!is.character(vcovt)){
+  if(!inherits(vcovt, what = "try-error")){
+
     fitted$vcov <- vcovt
     fitted$std.err <- sqrt(diag(fitted$vcov))
+  }
+} else{
+  if(warnSE){
+    warning("Cannot calculate standard error based on observed information")
   }
 }
 names(fitted$param) <- names(wf) <- c("loc","scale","shape")
