@@ -81,7 +81,7 @@
   }
   temp <- try(optim(phi.init, GP.1D.negloglik, gr = gp.1D.grad, hessian = FALSE, method = method, control = list(maxit = maxit,
                                                                                                                  ...)))
-  if (is.character(temp)) {
+  if (inherits(temp, what = "try-error")) {
     z$conv <- 50
     return(z)
   }
@@ -208,7 +208,7 @@
   }
   #
   x <- try(optim(init, gpd.lik, gr = gp.grad, hessian = TRUE, method = method, control = list(maxit = maxit, ...)))
-  if (is.character(x)) {
+  if (inherits(x, what = "try-error")) {
     z$conv <- 50
     return(z)
   }
@@ -758,7 +758,7 @@
 #' @export
 #' @inheritParams fit.gpd
 #' @keywords internal
-gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL, fpar = NULL) {
+gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"), show = FALSE, MCMC = NULL, fpar = NULL, warnSE = TRUE) {
   xi.tol = 1e-04
   xdat <- na.omit(xdat)
   xdatu <- xdat[xdat > threshold] - threshold
@@ -803,7 +803,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                                         hin = function(par, dat){c(par[1], par[2]+1, ifelse(par[2]<0,par[2]*maxdat + par[1],1e-4))},
                                         dat = mdat, control.outer = list(trace = FALSE),
                                         control.optim = list(fnscale = -1, trace = FALSE)))
-    if(!is.character(temp)){
+    if(!inherits(temp, what = "try-error")){
       if(temp$convergence != 0){
         warning("Algorithm did not converge.")
         temp <- .fit.gpd.grimshaw(mdat)
@@ -853,7 +853,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                                             ifelse(param[2]<0, param[2]*maxdat + param[1],1e-4))},
                                         dat = mdat, control.outer = list(trace = FALSE),
                                         control.optim = list(trace = FALSE)))
-      if(!is.character(temp)){
+      if(!inherits(temp, what = "try-error")){
       if(!isTRUE(all(temp$kkt1, temp$kkt2)) && !all.equal(c(temp$par), -1)){
         warning("Optimization algorithm did not converge.")
       } else{
@@ -980,7 +980,9 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                               "notinvert"
                             }, warning = function(w) w)
   if (any(c(isTRUE(invobsinfomat == "notinvert"), all(is.nan(invobsinfomat)), all(is.na(invobsinfomat))))) {
-    warning("Cannot calculate standard error based on observed information")
+    if(warnSE){
+    warning("Cannot calculate standard errors based on observed information")
+    }
     if (!is.null(temp$se)) {
       std.errors <- diag(temp$se)
     } else {
@@ -990,7 +992,9 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     # If the MLE was returned
     std.errors <- sqrt(diag(invobsinfomat))
   } else {
-    warning("Cannot calculate standard error based on observed information")
+    if(warnSE){
+      warning("Cannot calculate standard error based on observed information")
+    }
     std.errors <- rep(NA, 2)
   }
   if (temp$mle[2] < -1 && temp$conv == 0) {
@@ -1080,22 +1084,22 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
   }
   #Initialize algorithm
   # keep only exceedances
-  dat <- as.vector(dat[dat>thresh] - thresh)
+  dat <- as.vector(dat[dat > thresh] - thresh)
   # starting value is maximum likelihood estimates
   par_val <- gp.fit(dat, threshold = 0)$estimate
   a <- rep(0, 2)
   A <- t(solve(chol(gpd.infomat(par = par_val, dat = dat, method = "obs"))))
   dtheta <- rep(Inf, 2)
   u <- runif(1e4);
-  niter <- 0L; niter_max <- 1e3L
-  while(max(abs(dtheta/par_val)) > tol && niter < niter_max){
+  niter <- 0L;
+  niter_max <- 1e3L
+  while(isTRUE(max(abs(dtheta/par_val)) > tol) && niter < niter_max){
     niter <- niter + 1L
     if(all(is.finite(dtheta))){
       par_val <- par_val + dtheta
     }
     #Monte-Carlo integration with antithetic variables
     xd <- evd::qgpd(c(u, 1-u), loc = 0, scale = par_val[1], shape = par_val[2])
-    #Obtain a
     score <- gpd.score.i(par = par_val, dat = xd)
     Wc <- Wfun(dat = xd, par = par_val, A = A, a = a, k = k)
     a <- rowSums(score %*% Wc)/ sum(Wc)
@@ -1129,13 +1133,23 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
   colnames(vcov) <- rownames(vcov) <- c("scale","shape")
   stderr <- sqrt(diag(vcov))
   names(stderr) <- names(par_val)
+  convergence <- "successful"
+  conv <- 0L
+  if(niter == niter_max){
+    convergence <- "Algorithm did not converge: maximum number of iterations reached"
+    conv <- 1L
+  }
+  if(!isTRUE(is.finite(gpd.ll(par_val, dat = dat)))){
+    convergence <- "Solution not feasible; algorithm aborted."
+    conv <- 2L
+  }
   ret <- structure(list(estimate = par_val,
                         std.err = stderr,
                         vcov = vcov,
                         threshold = thresh,
                         method = "obre",
-                        nllh = -as.vector(gpd.ll(par_val, dat = dat)),
-                        convergence = ifelse(niter == niter_max, 1, "successful"),
+                        nllh = ifelse(conv == 2L, Inf, -as.vector(gpd.ll(par_val, dat = dat))),
+                        convergence = convergence,
                         nat = length(dat),
                         pat = length(dat)/ninit,
                         counts = c("function" = niter),
@@ -1144,10 +1158,11 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                         weights = Wgt_dat), class = "mev_gpd")
   if(show){
     print(ret)
-
+    if(convergence == "successful"){
     matw <- head(cbind("exceedances" =  ret$exceedances,
                        "weights" = ret$weights,
                        "p-value" = rank(ret$weights)/length(ret$weights))[order(ret$exceedances, decreasing = TRUE),])
+    }
     rownames(matw) <- 1:6
     matw <- matw[matw[,2] != 1,]
     if(length(matw)> 0){
