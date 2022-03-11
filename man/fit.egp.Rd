@@ -14,7 +14,9 @@ tstab.egp(
   plots = 1:3,
   umin,
   umax,
-  nint
+  nint,
+  changepar = TRUE,
+  ...
 )
 }
 \arguments{
@@ -35,6 +37,8 @@ tstab.egp(
 \item{umax}{optional maximum value considered for threshold (if \code{thresh} is not provided)}
 
 \item{nint}{optional integer number specifying the number of thresholds to test.}
+
+\item{changepar}{logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.}
 }
 \value{
 \code{fit.egp} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors

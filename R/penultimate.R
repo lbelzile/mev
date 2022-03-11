@@ -170,6 +170,7 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
 #' @param umin optional minimum value considered for threshold (if \code{thresh} is not provided)
 #' @param umax optional maximum value considered for threshold (if \code{thresh} is not provided)
 #' @param nint optional integer number specifying the number of thresholds to test.
+#' @param changepar logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.
 #' @return \code{tstab.egp} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
 #' @importFrom graphics arrows points polygon title
 #' @export
@@ -302,7 +303,15 @@ egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots 
 #' @inheritParams egp
 #' @rdname fit.egp
 #' @export
-tstab.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3, umin, umax, nint) {
+tstab.egp <- function(xdat,
+                      thresh,
+                      model = c("egp1", "egp2", "egp3"),
+                      plots = 1:3,
+                      umin,
+                      umax,
+                      nint,
+                      changepar = TRUE,
+                      ...) {
     if (!(model %in% c("egp1", "egp2", "egp3")) || length(model) != 1) {
         stop("Invalid model selection")
     }
@@ -340,10 +349,11 @@ tstab.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1
         if (!isTRUE(all(plots %in% 1:3))) {
             stop("Invalid plot selection. Must be a vector of integers containing indices 1, 2 or 3.")
         }
-
-        old.par <- par(no.readonly = TRUE)
-        on.exit(par(old.par))
-        par(mfrow = c(length(plots), 1), mar = c(4.5, 4.5, 3.1, 0.1))
+        if(changepar){
+          old.par <- par(no.readonly = TRUE)
+          on.exit(par(old.par))
+          par(mfrow = c(length(plots), 1), mar = c(4.5, 4.5, 3.1, 0.1))
+        }
         for (i in plots) {
             if (i == 2) {  i <- 4  }  #Get modified scale
             # Plotting devices limits

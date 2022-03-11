@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.10000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.20000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,7 +63,8 @@
   method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Grimshaw"</span>, <span class="st">"auglag"</span>, <span class="st">"nlm"</span>, <span class="st">"optim"</span>, <span class="st">"ismev"</span>, <span class="st">"zs"</span>, <span class="st">"zhang"</span><span class="op">)</span>,
   show <span class="op">=</span> <span class="cn">FALSE</span>,
   MCMC <span class="op">=</span> <span class="cn">NULL</span>,
-  fpar <span class="op">=</span> <span class="cn">NULL</span>
+  fpar <span class="op">=</span> <span class="cn">NULL</span>,
+  warnSE <span class="op">=</span> <span class="cn">TRUE</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -81,6 +82,8 @@
 <dd><p><code>NULL</code> for frequentist estimates, otherwise a boolean or a list with parameters passed. If <code>TRUE</code>, runs a Metropolis-Hastings sampler to get posterior mean estimates. Can be used to pass arguments <code>niter</code>, <code>burnin</code> and <code>thin</code> to the sampler as a list.</p></dd>
 <dt>fpar</dt>
 <dd><p>a named list with fixed parameters, either <code>scale</code> or <code>shape</code></p></dd>
+<dt>warnSE</dt>
+<dd><p>logical; if <code>TRUE</code>, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.</p></dd>
 </dl></div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

@@ -19,6 +19,7 @@ Fixes:
 * fit.gpd(..., method = "obre") now returns additional failure messages if the algorithm drifts towards infeasible values.
 * rparp now correctly handles xi=0
 * Extended GP model now has 'step' for discretization, and a valid distribution function that returns real arguments whenever the input is finite, fixing (#9)
+* W.diag and egp.fitrange include arguments for changing 'par' (#10)
 
 mev v.1.13 (Release date: 2019-12-17)
 ==============

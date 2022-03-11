@@ -16,6 +16,9 @@ tstab.gpd(dat = nzrain,
           thresh = thcan, 
           method = "profile")
 
+## ----NCdiag, out.width = '90%',fig.width = 10, fig.height = 6, fig.align = "center", out.width = '90%'----
+fNCdiag <- NC.diag(x = nzrain, u = thcan)
+
 ## ----tstagegp, out.width = '90%', fig.width = 8, fig.height = 15, fig.align = "center"----
 tstab.egp(xdat = nzrain, 
           thresh = thcan, 
@@ -29,7 +32,4 @@ fWdiag <-
     u = thcan,
     plots = c("WN", "PS")
   )
-
-## ----NCdiag, out.width = '90%',fig.width = 10, fig.height = 6, fig.align = "center", out.width = '90%'----
-fNCdiag <- NC.diag(x = nzrain, u = thcan)
 

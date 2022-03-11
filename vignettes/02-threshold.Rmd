@@ -77,6 +77,7 @@ When we fit the limiting parametric models to finite samples, maximum likelihood
 
 The extreme value distributions have unbounded influence functions and outliers can strongly affect the estimate of the shape. @Dupuis:1999 proposes an optimal $B$-robust estimator of the generalized Pareto parameters. Points that are outlying or for which the fit is poor are downweighted; if the weights for the largest observations are very low, this suggests that the threshold is too low. While there is no guarantee that observations that were simulated from a generalized Pareto distributed would not be downweighted, systematic downweighting of the largest exceedances may be indicative of poor fit. 
 
+## Examples 
 
 We are now ready to go back to the Maiquetia data and try to select a reasonable threshold. To this effect, we select a sequence of candidate thresholds and run the procedures described above. 
 
@@ -95,6 +96,13 @@ tstab.gpd(dat = nzrain,
           thresh = thcan, 
           method = "profile")
 ```
+
+Another option is the @Northrop:2014 penultimate test, which considers a sequence of threshold and tests whether a single shape fits the data against the alternative where the shape parameter differs at each candidate threshold following a step function. The `NC.diag` function plots the $p$-value path against the candidate thresholds; the top axis also displays the number of threshold exceedances. The extended generalized Pareto distribution can also be used to produce threshold stability plot with 95% confidence intervals. The parameter $\kappa=1$ if the model is generalized Pareto. Although there are three potential families, the family `egp2` seems prefered for most settings.
+
+```{r NCdiag, out.width = '90%',fig.width = 10, fig.height = 6, fig.align = "center", out.width = '90%'}
+fNCdiag <- NC.diag(x = nzrain, u = thcan)
+```
+
 
 ```{r tstagegp, out.width = '90%', fig.width = 8, fig.height = 15, fig.align = "center"}
 tstab.egp(xdat = nzrain, 
@@ -116,11 +124,6 @@ fWdiag <-
   )
 ```
 
-Another option is the @Northrop:2014 penultimate test, which considers a sequence of threshold and tests whether a single shape fits the data against the alternative where the shape parameter differs at each candidate threshold following a step function. The `NC.diag` function plots the $p$-value path against the candidate thresholds; the top axis also displays the number of threshold exceedances. The extended generalized Pareto distribution can also be used to produce threshold stability plot with 95% confidence intervals. The parameter $\kappa=1$ if the model is generalized Pareto. Although there are three potential families, the family `egp2` exhibits the fastest converence for
-
-```{r NCdiag, out.width = '90%',fig.width = 10, fig.height = 6, fig.align = "center", out.width = '90%'}
-fNCdiag <- NC.diag(x = nzrain, u = thcan)
-```
 
 ## Your turn
 

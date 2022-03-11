@@ -17,7 +17,7 @@ W.diag(
   alpha = 0.05,
   plots = c("LRT", "WN", "PS"),
   UseQuantiles = TRUE,
-  pmar = c(5, 5, 1, 1),
+  changepar = TRUE,
   ...
 )
 }
@@ -48,9 +48,9 @@ but rather the uppermost threshold will be at the \eqn{(q_2-1/k)}{q2-1/k} quanti
 
 \item{UseQuantiles}{logical; use quantiles as the thresholds in the plot?}
 
-\item{pmar}{vector of length 4 giving the arguments for the plot margins in \code{par(mar=c(*,*,*,*))}.}
+\item{changepar}{logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.}
 
-\item{...}{additional parameters passed to \code{plot}.}
+\item{...}{additional parameters passed to \code{plot}, overriding defaults.}
 }
 \value{
 plots of the requested diagnostics and an invisible list with components
@@ -82,15 +82,22 @@ is transformed to exponential margins using the empirical distribution function.
 \examples{
 \dontrun{
 set.seed(123)
-W.diag(rexp(1000), model = 'nhpp', k = 20, q1 = 0)
 # Parameter stability only
-W.diag(abs(rnorm(5000)), model = 'nhpp', k = 30, q1 = 0, plots = "PS")
-xbvn <- mvrnorm(6000, mu = rep(0, 2), Sigma = cbind(c(1, 0.7), c(0.7, 1)))
+W.diag(xdat = abs(rnorm(5000)), model = 'nhpp',
+       k = 30, q1 = 0, plots = "PS")
+W.diag(rexp(1000), model = 'nhpp', k = 20, q1 = 0)
+xbvn <- mvrnorm(n = 6000,
+                mu = rep(0, 2),
+                Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 # Transform margins to exponential manually
 xbvn.exp <- -log(1 - pnorm(xbvn))
-W.diag(apply(xbvn.exp, 1, min), model = 'exp', k = 30, q1 = 0) #rate parametrization
-W.diag(xbvn, model = 'exp', k = 30, q1 = 0)
-W.diag(apply(xbvn.exp, 1, min), model = 'invexp', k = 30, q1 = 0) #inverse rate parametrization
+#rate parametrization
+W.diag(xdat = apply(xbvn.exp, 1, min), model = 'exp',
+       k = 30, q1 = 0)
+W.diag(xdat = xbvn, model = 'exp', k = 30, q1 = 0)
+#inverse rate parametrization
+W.diag(xdat = apply(xbvn.exp, 1, min), model = 'invexp',
+       k = 30, q1 = 0)
 }
 }
 \references{

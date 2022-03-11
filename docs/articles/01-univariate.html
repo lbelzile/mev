@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.10000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.20000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -237,7 +237,7 @@ asymptotic regime is nonstandard <span class="citation">(Smith
 information matrix are unreliable; as such, <code>mev</code> does not
 report them and prints an optional warning.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lbelzile/mev/" class="external-link">mev</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev" class="external-link">mev</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">evd</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/evd/man/gpd.html" class="external-link">rgpd</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span>, shape <span class="op">=</span> <span class="op">-</span><span class="fl">0.8</span><span class="op">)</span>
 <span class="va">fitted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit.gpd.html">fit.gpd</a></span><span class="op">(</span><span class="va">dat</span>, threshold <span class="op">=</span> <span class="fl">0</span>, show <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
@@ -441,8 +441,8 @@ Alternatively, one can specify instead the number of periods
 used by the function, with <code>npp*np</code> theoretically equal to
 the number of exceedances.</p>
 <p>The tuning parameters impact the convergence of the estimation since
-the dependence between parameters becomes very strong: <span class="citation">(<strong>Sharkey/Tawn:2017?</strong>)</span> suggest to
-pick a value of <code>np</code> that near-orthogonalize the parameters.
+the dependence between parameters becomes very strong: <span class="citation">Sharkey and Tawn (2017)</span> suggest to pick a value
+of <code>np</code> that near-orthogonalize the parameters.
 Wadsworth:2011 recommended picking this to be the number of observations
 (so <code>npp=1</code>). Another option is to fit the generalized Pareto
 model: if the probability of exceeding threshold <span class="math inline">\(u\)</span> is small, the Poisson approximation to
@@ -594,7 +594,7 @@ distribution to threshold exceedances. We use the Venezuelian rainfall
 data, a time series of daily rainfall precipitations at Maiquetia
 airport in Venezuela, for the purpose of illustration.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lbelzile/mev/" class="external-link">mev</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev" class="external-link">mev</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"maiquetia"</span>, package <span class="op">=</span> <span class="st">"mev"</span><span class="op">)</span>
 <span class="va">day</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.Date.html" class="external-link">seq.Date</a></span><span class="op">(</span>from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"1961-01-01"</span><span class="op">)</span>, 
                 to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"1999-12-31"</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"day"</span><span class="op">)</span>
@@ -708,6 +708,11 @@ Threshold Selection.”</span> <em>Extremes</em> 1 (3): 251–61. <a href="https
 Grimshaw, Scott D. 1993. <span>“Computing Maximum Likelihood Estimates
 for the Generalized <span>P</span>areto Distribution.”</span>
 <em>Technometrics</em> 35 (2): 185–91. <a href="https://doi.org/10.1080/00401706.1993.10485040" class="external-link">https://doi.org/10.1080/00401706.1993.10485040</a>.
+</div>
+<div id="ref-Sharkey:2017" class="csl-entry">
+Sharkey, Paul, and Jonathan A. Tawn. 2017. <span>“A <span>P</span>oisson
+Process Reparameterisation for <span>B</span>ayesian Inference for
+Extremes.”</span> <em>Extremes</em> 20 (2): 239–63. <a href="https://doi.org/10.1007/s10687-016-0280-2" class="external-link">https://doi.org/10.1007/s10687-016-0280-2</a>.
 </div>
 <div id="ref-Smith:1985" class="csl-entry">
 Smith, Richard L. 1985. <span>“Maximum Likelihood Estimation in a Class
