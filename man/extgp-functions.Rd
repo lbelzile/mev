@@ -42,7 +42,16 @@ dextgp(
   log = FALSE
 )
 
-qextgp(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1)
+qextgp(
+  p,
+  prob = NA,
+  kappa = NA,
+  delta = NA,
+  sigma = NA,
+  xi = NA,
+  type = 1,
+  step = 0
+)
 
 rextgp(
   n,

@@ -24,6 +24,8 @@
 
 \item{type}{integer between 0 to 5 giving the model choice}
 
+\item{step}{function of step size for discretization with default \code{0}, corresponding to continuous quantiles}
+
 \item{log}{logical; should the log-density be returned (default to \code{FALSE})?}
 
 \item{unifsamp}{sample of uniform; if provided, the data will be used in place of new uniform random variates}

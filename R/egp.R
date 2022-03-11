@@ -403,31 +403,58 @@ egp2.fit <- function(data, model = 1, method = c("mle", "pwm"), init, censoring 
 #' @param direct logical; which method to use for sampling in model of \code{type} \code{4}?
 #' @author  Raphael Huser and Philippe Naveau
 #'
-#' @section Usage: \code{pextgp.G(u, type=1,prob, kappa, delta)}
-#' @section Usage: \code{dextgp.G(u,type=1, prob=NA, kappa=NA, delta=NA, log=FALSE)}
-#' @section Usage: \code{qextgp.G(u,type=1, prob=NA,kappa=NA,delta=NA)}
-#' @section Usage: \code{rextgp.G(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALSE,censoring=c(0,1))}
+#' @section Usage: \code{pextgp.G(u, type=1, prob, kappa, delta)}
+#' @section Usage: \code{dextgp.G(u, type=1, prob=NA, kappa=NA, delta=NA, log=FALSE)}
+#' @section Usage: \code{qextgp.G(u, type=1, prob=NA, kappa=NA, delta=NA)}
+#' @section Usage: \code{rextgp.G(n, prob=NA, kappa=NA, delta=NA,
+#' type=1, unifsamp=NULL, direct=FALSE, censoring=c(0,1))}
 NULL
 
 #' @rdname extgp-functions
 #' @export
 #' @keywords internal
 pextgp.G <- function(u, type = 1, prob, kappa, delta) {
+    type <- as.integer(type[1])
     if (!type %in% 1:5) {
         stop("Invalid \"type\" argument")
     }
-    type <- type[1]
-    if (type %in% c(1, 3, 4) && missing(kappa)) {
+    if (type %in% c(1, 3, 4)) {
+      if(missing(kappa)){
         stop("Argument \"kappa\" missing.")
+      } else{
+        if(!isTRUE(all(is.numeric(kappa),
+                             length(kappa) == 1L,
+                             kappa > 0))){
+          stop("Invalid \"kappa\" parameter.")
+        }
+      }
     }
-    if (type %in% c(2, 3, 4) && missing(delta)) {
+    if (type %in% c(2, 3, 4)){
+      if(missing(delta)) {
         stop("Argument \"delta\" missing.")
+      } else{
+        if(!isTRUE(all(is.numeric(delta),
+                       length(delta) == 1L,
+                       delta > 0))){
+          stop("Invalid \"delta\" parameter.")
+      }
+      }
     }
-    if (type == 4 && missing(prob)) {
+    if (type == 4){
+      if(missing(prob)) {
         stop("Argument \"prob\" missing.")
+      } else{
+        if(!isTRUE(all(is.numeric(prob),
+                       length(prob) == 1L,
+                       prob >= 0,
+                       prob <= 1))){
+          stop("Invalid \"prob\" parameter.")
+      }
+      }
     }
+    u <- pmax(pmin(u, 1), 0)
     if (type == 0) {
-        return(u)
+      return(u)
     } else if (type == 1) {
         return(u^kappa)
     } else if (type == 2) {
@@ -606,6 +633,7 @@ rextgp.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = 
 #' @param sigma scale parameter
 #' @param xi shape parameter
 #' @param type integer between 0 to 5 giving the model choice
+#' @param step function of step size for discretization with default \code{0}, corresponding to continuous quantiles
 #' @param log logical; should the log-density be returned (default to \code{FALSE})?
 #' @param unifsamp sample of uniform; if provided, the data will be used in place of new uniform random variates
 #' @param censoring numeric vector of length 2 containing the lower and upper bound for censoring
@@ -646,8 +674,14 @@ dextgp <- function(x, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, ty
 #' @rdname extgp-functions
 #' @export
 #' @keywords internal
-qextgp <- function(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1) {
+qextgp <- function(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, step = 0) {
+  stopifnot(length(step) == 1L, step >= 0, is.finite(step))
+  if(isTRUE(all.equal(step, 0, check.attributes = FALSE))){
     return(qgpd(qextgp.G(p, prob = prob, kappa = kappa, delta = delta, type = type), scale = sigma, shape = xi))
+  } else{
+    qcont <- qgpd(qextgp.G(p, prob = prob, kappa = kappa, delta = delta, type = type), scale = sigma, shape = xi)
+    return(step*floor((qcont-step)/step))
+  }
 }
 
 #' @rdname extgp-functions

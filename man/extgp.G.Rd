@@ -29,13 +29,14 @@ Density, distribution function, quantile function and random number
 generation for the carrier distributions of the extended Generalized Pareto distributions.
 }
 \section{Usage}{
- \code{pextgp.G(u, type=1,prob, kappa, delta)}
+ \code{pextgp.G(u, type=1, prob, kappa, delta)}
 
- \code{dextgp.G(u,type=1, prob=NA, kappa=NA, delta=NA, log=FALSE)}
+ \code{dextgp.G(u, type=1, prob=NA, kappa=NA, delta=NA, log=FALSE)}
 
- \code{qextgp.G(u,type=1, prob=NA,kappa=NA,delta=NA)}
+ \code{qextgp.G(u, type=1, prob=NA, kappa=NA, delta=NA)}
 
- \code{rextgp.G(n,prob=NA,kappa=NA,delta=NA,type=1,unifsamp=NULL,direct=FALSE,censoring=c(0,1))}
+ \code{rextgp.G(n, prob=NA, kappa=NA, delta=NA,
+type=1, unifsamp=NULL, direct=FALSE, censoring=c(0,1))}
 }
 
 \seealso{

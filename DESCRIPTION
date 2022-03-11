@@ -8,7 +8,6 @@ Description: Various tools for the analysis of univariate, multivariate and func
 License: GPL-3
 URL: https://lbelzile.github.io/mev, https://github.com/lbelzile/mev
 BugReports: https://github.com/lbelzile/mev/issues
-URL: https://github.com/lbelzile/mev/
 Depends: R (>= 2.10)
 Imports: 
     alabama,
