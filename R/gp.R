@@ -1162,12 +1162,12 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     matw <- head(cbind("exceedances" =  ret$exceedances,
                        "weights" = ret$weights,
                        "p-value" = rank(ret$weights)/length(ret$weights))[order(ret$exceedances, decreasing = TRUE),])
-    }
     rownames(matw) <- 1:6
     matw <- matw[matw[,2] != 1,]
     if(length(matw)> 0){
       cat("Largest observations: OBRE weights\n")
       print(round(matw, digits = 3))
+    }
     }
   }
   return(invisible(ret))
