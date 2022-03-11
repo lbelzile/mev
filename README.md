@@ -21,4 +21,3 @@ devtools::install_github("lbelzile/mev")
 after installing `devtools`.
 
 
-Notes from the tutorial given at EVA 2019 can be obtained from [lbelzile.github.io/mevtuto](https://lbelzile.github.io/mevtuto)

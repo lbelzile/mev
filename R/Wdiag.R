@@ -23,8 +23,7 @@
 #' @param alpha significance level of the LRT
 #' @param plots vector of strings indicating which plots to produce; \code{LRT}= likelihood ratio test, \code{WN} = white noise, \code{PS} = parameter stability
 #' @param UseQuantiles logical; use quantiles as the thresholds in the plot?
-#' @param pmar vector of length 4 giving the arguments for the plot margins in \code{par(mar=c(*,*,*,*))}.
-#' @param ... additional parameters passed to \code{plot}.
+#' @param ... additional parameters passed to \code{plot}, overriding defaults.
 #'
 #' @details The function is a wrapper for the univariate (non-homogeneous Poisson process model) and bivariate exponential dependence model.
 #' For the latter, the user can select either the rate or inverse rate parameter  (the inverse rate parametrization  works better for uniformity
@@ -51,21 +50,38 @@
 #' @examples
 #' \dontrun{
 #' set.seed(123)
-#' W.diag(rexp(1000), model = 'nhpp', k = 20, q1 = 0)
 #' # Parameter stability only
-#' W.diag(abs(rnorm(5000)), model = 'nhpp', k = 30, q1 = 0, plots = "PS")
-#' xbvn <- mvrnorm(6000, mu = rep(0, 2), Sigma = cbind(c(1, 0.7), c(0.7, 1)))
+#' W.diag(xdat = abs(rnorm(5000)), model = 'nhpp',
+#'        k = 30, q1 = 0, plots = "PS")
+#' par(mfrow = c(3,1), las = 1, mar = c(4,4,1,1), pch = 19)
+#' W.diag(rexp(1000), model = 'nhpp', k = 20, q1 = 0)
+#' xbvn <- mvrnorm(n = 6000,
+#'                 mu = rep(0, 2),
+#'                 Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 #' # Transform margins to exponential manually
 #' xbvn.exp <- -log(1 - pnorm(xbvn))
-#' W.diag(apply(xbvn.exp, 1, min), model = 'exp', k = 30, q1 = 0) #rate parametrization
-#' W.diag(xbvn, model = 'exp', k = 30, q1 = 0)
-#' W.diag(apply(xbvn.exp, 1, min), model = 'invexp', k = 30, q1 = 0) #inverse rate parametrization
+#' #rate parametrization
+#' W.diag(xdat = apply(xbvn.exp, 1, min), model = 'exp',
+#'        k = 30, q1 = 0)
+#' W.diag(xdat = xbvn, model = 'exp', k = 30, q1 = 0)
+#' #inverse rate parametrization
+#' W.diag(xdat = apply(xbvn.exp, 1, min), model = 'invexp',
+#'        k = 30, q1 = 0)
 #' }
 #' @export
-W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0, q2 = 1, par = NULL, M = NULL, nbs = 1000, alpha = 0.05,
-    plots = c("LRT", "WN", "PS"), UseQuantiles = TRUE, pmar = c(5, 5, 1, 1), ...) {
-    old.par <- par(no.readonly = TRUE)
-    on.exit(par(old.par))
+W.diag <- function(xdat,
+                   model = c("nhpp", "exp", "invexp"),
+                   u = NULL,
+                   k,
+                   q1 = 0,
+                   q2 = 1,
+                   par = NULL,
+                   M = NULL,
+                   nbs = 1000,
+                   alpha = 0.05,
+                   plots = c("LRT", "WN", "PS"),
+                   UseQuantiles = TRUE,
+                   ...) {
     model <- match.arg(model)
     if (ncol(as.matrix(xdat)) == 2 && model %in% c("exp", "invexp")) {
         xdat <- -log(1 - apply(xdat, 2, function(y) {
@@ -76,20 +92,19 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (ncol(as.matrix(xdat)) != 1) {
         stop("Invalid input for \"xdat")
     }
+
     switch(model,
            nhpp = .NHPP.diag(xdat = xdat, u = u, k = k, q1 = q1, q2 = q2, par = par, M = M, nbs = nbs, alpha = alpha, plots = plots,
-            UseQuantiles = UseQuantiles, pmar = pmar, ...),
+            UseQuantiles = UseQuantiles, ...),
             exp = .Expl.diag(x = xdat, u = u, k = k, q1 = q1, q2 = q2, nbs = nbs,
-              alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "Rate", pmar = pmar, ...),
-            invexp = .Expl.diag(x = xdat, u = u, k = k, q1 = q1, q2 = q2, nbs = nbs, alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "InvRate", pmar = pmar,
+              alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "Rate", ...),
+            invexp = .Expl.diag(x = xdat, u = u, k = k, q1 = q1, q2 = q2, nbs = nbs, alpha = alpha, plots = plots, UseQuantiles = UseQuantiles, param = "InvRate",
         ...))
 }
 
 
 .NHPP.diag <- function(xdat, u = NULL, k, q1 = 0, q2 = 1, par = NULL, M = NULL, nbs = 1000, alpha = 0.05, plots = c("LRT", "WN", "PS"),
-    UseQuantiles = TRUE, pmar = c(5, 5, 1, 1), ...) {
-
-
+    UseQuantiles = TRUE, ...) {
     unull <- is.null(u)
     if (unull) {
         thresh <- quantile(xdat, q1)
@@ -146,14 +161,16 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
     if (unull) {
         qs <- seq(q1, q2, len = k + 1)[-(k + 1)]
     }
-    oldpar <- par(no.readonly = TRUE)
-    on.exit(par(oldpar))
-    par(mfrow = c(length(plots), 1), las = 1, mar = pmar, pch = 19)
+    # Copy graphical elements from ellipsis
+
+    # oldpar <- par(no.readonly = TRUE)
+    # on.exit(par(oldpar))
+    # par(mfrow = c(length(plots), 1), las = 1, mar = pmar, pch = 19)
     if (is.element("LRT", plots)) {
         if (!UseQuantiles) {
-            plot(qs, c(rep(NA, 2), nl[, 2]), xlab = "quantile", ylab = "LR statistic", main = paste("p-value:", pval), ...)
+            plot(qs, c(rep(NA, 2), nl[, 2]), xlab = "quantile", ylab = "likelihood ratio statistic", main = paste("p-value:", pval), ...)
         } else {
-            plot(u[-c(k + 1)], c(rep(NA, 2), nl[, 2]),  bty = "l", xlab = "threshold", ylab = "LR statistic", main = paste("p-value:", pval),
+            plot(u[-c(k + 1)], c(rep(NA, 2), nl[, 2]),  bty = "l", xlab = "threshold", ylab = "likelihood ratio statistic", main = paste("p-value:", pval),
                 ...)
         }
     }
@@ -192,14 +209,14 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 #############################################################################################################
 
 .Expl.diag <- function(x, u = NULL, k, q1, q2 = 1, nbs = 1000, alpha = 0.05, plots = c("LRT", "WN", "PS"), UseQuantiles = TRUE, param = "InvRate",
-    pmar = c(5, 5, 1, 1), ...) {
+    ...) {
     unull <- is.null(u)
     if (!unull) {
         k <- length(u)
     }
-    oldpar <- par(no.readonly = TRUE)
-    on.exit(par(oldpar))
-    par(mfrow = c(length(plots), 1), mar = pmar, las = 1)
+    # oldpar <- par(no.readonly = TRUE)
+    # on.exit(par(oldpar))
+    # par(mfrow = c(length(plots), 1), mar = pmar, las = 1)
     J1 <- .Joint_MLE_Expl(x = x, u = u, k = k, q1 = q1, q2 = q2, param = param)
     warn <- any(eigen(J1$Cov)$val <= .Machine$double.eps)
     if (!unull && warn) {
@@ -240,19 +257,19 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
 
     if (is.element("LRT", plots)) {
         if (unull && UseQuantiles) {
-            plot(qs, c(NA, NA, nl[, 2]), bty = "l", xlab = "Quantile", ylab = "LR statistic", main = paste("p-value:", pval), ...)
+            plot(qs, c(NA, NA, nl[, 2]), bty = "l", xlab = "quantile", ylab = "likelihood ratio statistic", main = paste("p-value:", pval), ...)
         } else {
-            plot(u[-c(k + 1)], c(NA, NA, nl[, 2]), bty = "l", xlab = "Threshold", ylab = "LR statistic", main = paste("p-value:", pval), ...)
+            plot(u[-c(k + 1)], c(NA, NA, nl[, 2]), bty = "l", xlab = "threshold", ylab = "likelihood ratio statistic", main = paste("p-value:", pval), ...)
         }
     }
 
     if (is.element("WN", plots)) {
         if (unull && UseQuantiles) {
-            plot(qs, c(NA, wn), xlab = "Quantile", ylab = "White noise", bty = "l",...)
+            plot(qs, c(NA, wn), xlab = "quantile", ylab = "white noise", bty = "l",...)
             abline(h = 0, col = 2)
             abline(v = mean(x <= ustar), col = 4)
         } else {
-            plot(u[-c(k + 1)], c(NA, wn), xlab = "Threshold", ylab = "White noise", bty = "l", ...)
+            plot(u[-c(k + 1)], c(NA, wn), xlab = "threshold", ylab = "white noise", bty = "l", ...)
             abline(h = 0, col = 2)
             abline(v = ustar, col = 4)
         }
@@ -262,19 +279,19 @@ W.diag <- function(xdat, model = c("nhpp", "exp", "invexp"), u = NULL, k, q1 = 0
         TradCI <- cbind(J1$mle - qnorm(0.975) * sqrt(diag(J1$Cov)), J1$mle + qnorm(0.975) * sqrt(diag(J1$Cov)))
         if (UseQuantiles) {
             if (param == "InvRate") {
-                plot(qs, J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), bty = "l", xlab = "Quantile", ylab = expression(hat(eta)), ...)
+                plot(qs, J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), bty = "l", xlab = "quantile", ylab = expression(hat(eta)), ...)
             } else if (param == "Rate") {
-                plot(qs, J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), bty = "l", xlab = "Quantile", ylab = expression(hat(theta)), ...)
+                plot(qs, J1$mle, ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), bty = "l", xlab = "quantile", ylab = expression(hat(theta)), ...)
             }
             lines(qs, TradCI[, 1], lty = 2)
             lines(qs, TradCI[, 2], lty = 2)
             abline(v = mean(x <= ustar), col = 4)
         } else {
             if (param == "InvRate") {
-                plot(u[-(k + 1)], J1$mle, bty = "l", ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Threshold", ylab = expression(hat(eta)),
+                plot(u[-(k + 1)], J1$mle, bty = "l", ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "threshold", ylab = expression(hat(eta)),
                   ...)
             } else if (param == "InvRate") {
-                plot(u[-(k + 1)], J1$mle, bty = "l", ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "Threshold", ylab = expression(hat(theta)),
+                plot(u[-(k + 1)], J1$mle, bty = "l", ylim = c(min(TradCI[, 1]), max(TradCI[, 2])), xlab = "threshold", ylab = expression(hat(theta)),
                   ...)
             }
             lines(u[-(k + 1)], TradCI[, 1], lty = 2)
