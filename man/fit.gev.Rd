@@ -9,7 +9,8 @@ fit.gev(
   start = NULL,
   method = c("nlminb", "BFGS"),
   show = FALSE,
-  fpar = NULL
+  fpar = NULL,
+  warnSE = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ fit.gev(
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
 
 \item{fpar}{a named list with optional fixed components \code{loc}, \code{scale} and \code{shape}}
+
+\item{warnSE}{logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.}
 }
 \value{
 a list containing the following components:

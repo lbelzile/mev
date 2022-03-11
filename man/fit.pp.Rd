@@ -9,9 +9,11 @@ fit.pp(
   threshold = 0,
   npp = 1,
   np = NULL,
+  method = c("nlminb", "BFGS"),
   start = NULL,
   show = FALSE,
-  fpar = NULL
+  fpar = NULL,
+  warnSE = FALSE
 )
 }
 \arguments{
@@ -23,11 +25,15 @@ fit.pp(
 
 \item{np}{number of periods of data, if \code{xdat} only contains exceedances.}
 
+\item{method}{the method to be used. See \bold{Details}. Can be abbreviated.}
+
 \item{start}{named list of starting values}
 
 \item{show}{logical; if \code{TRUE} (the default), print details of the fit.}
 
 \item{fpar}{a named list with optional fixed components \code{loc}, \code{scale} and \code{shape}}
+
+\item{warnSE}{logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.}
 }
 \value{
 a list containing the following components:

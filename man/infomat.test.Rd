@@ -24,6 +24,7 @@ an invisible list of matrices containing
 \item \code{loglik} a matrix of log-likelihood values at MLE for each given pair (\code{u}, \code{K})
 \item \code{threshold} a vector of thresholds based on empirical quantiles at supplied levels.
 \item \code{q} the vector \code{q} supplied by the user
+\item \code{K} the largest gap number, supplied by the user
 }
 }
 \description{

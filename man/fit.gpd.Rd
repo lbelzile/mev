@@ -12,7 +12,8 @@ fit.gpd(
   MCMC = NULL,
   k = 4,
   tol = 1e-08,
-  fpar = NULL
+  fpar = NULL,
+  warnSE = FALSE
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ fit.gpd(
 \item{tol}{numerical tolerance for OBRE weights iterations (\code{method = "obre"}). Default to \code{1e-8}.}
 
 \item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
+
+\item{warnSE}{logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.}
 }
 \value{
 If \code{method} is neither \code{'zs'} nor \code{'zhang'}, a list containing the following components:
