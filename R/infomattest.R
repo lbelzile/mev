@@ -34,6 +34,7 @@
 #' \item \code{loglik} a matrix of log-likelihood values at MLE for each given pair (\code{u}, \code{K})
 #' \item \code{threshold} a vector of thresholds based on empirical quantiles at supplied levels.
 #' \item \code{q} the vector \code{q} supplied by the user
+#' \item \code{K} the largest gap number, supplied by the user
 #' }
 #' @examples
 #' infomat.test(x <- evd::rgpd(n = 10000), q = seq(0.1, 0.9, length = 10), K <- 3)
@@ -127,7 +128,13 @@ infomat.test <- function(x, q, K, plot = TRUE) {
             50), rep("white", 50))[ceiling(100 * pvals)])  #
         mtext(side = 3, line = 0, text = "Test statistic (p-value)", adj = 1)
     }
-    invisible(list(IMT = IMT, pvals = pvals, loglik = llval, mle = mles, threshold = threshold, q = q))
+    invisible(list(IMT = IMT,
+                   pvals = pvals,
+                   loglik = llval,
+                   mle = mles,
+                   threshold = threshold,
+                   q = q,
+                   K = K))
 }
 
 
