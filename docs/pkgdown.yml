@@ -1,0 +1,10 @@
+pandoc: 2.17.1.1
+pkgdown: 2.0.2
+pkgdown_sha: ~
+articles:
+  01-univariate: 01-univariate.html
+  02-threshold: 02-threshold.html
+  03-penultimate: 03-penultimate.html
+  04-simulation: 04-simulation.html
+last_built: 2022-03-11T20:53Z
+

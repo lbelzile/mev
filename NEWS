@@ -7,6 +7,7 @@ New:
 * anova methods for `mev_gpd` and `mev_gev` objects
 * `rmev` and `rmevspec` now accept a distance matrix in place of coordinates for spatial models.
 * new datasets
+* online website with vignettes
 
 Fixes:
 * ext.coef correctly handles arrays with missing values (reported by M. Jousset)
