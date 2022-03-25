@@ -43,6 +43,8 @@ provided. The other argument (\code{u} or \code{m} depending on the method) is i
 Alternatively, the user can provide functions \code{densF}, \code{quantF} and \code{distF} for the density,
 quantile function and distribution functions, respectively. The user can also supply the derivative
 of the density function, \code{ddensF}. If the latter is missing, it will be approximated using finite-differences.
+
+For \code{method = "pot"}, the function computes the reciprocal hazard and its derivative on the log scale to avoid numerical overflow. Thus, the density function should have argument \code{log} and the distribution function arguments \code{log.p} and \code{lower.tail}, respectively.
 }
 \examples{
 #Threshold exceedance for Normal variables

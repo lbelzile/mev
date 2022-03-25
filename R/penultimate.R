@@ -391,6 +391,8 @@ tstab.egp <- function(xdat,
 #' quantile function and distribution functions, respectively. The user can also supply the derivative
 #' of the density function, \code{ddensF}. If the latter is missing, it will be approximated using finite-differences.
 #'
+#'
+#' @details For \code{method = "pot"}, the function computes the reciprocal hazard and its derivative on the log scale to avoid numerical overflow. Thus, the density function should have argument \code{log} and the distribution function arguments \code{log.p} and \code{lower.tail}, respectively.
 #' @param family the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}
 #' @param method either block maxima (\code{'bm'}) or peaks-over-threshold (\code{'pot'}) are supported
 #' @param u vector of thresholds for method \code{'pot'}
@@ -465,6 +467,7 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
     }
     # Matching extra arguments with additional ones passed via ellipsis
     # Which are formals of the function
+    ellips$log <- ellips$log.p <- ellips$lower.tail <- NULL
     indf <- names(ellips) %in% formalArgs(densF)
     indF <- names(ellips) %in% formalArgs(distF)
     if (!is.null(quantF)) {
@@ -472,6 +475,12 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
     }
     fn.arg <- ellips[which(indf * (indf == indF) == 1)]
     method <- match.arg(method)
+    logRecipHaz <- FALSE
+    if(isTRUE(all("log" %in% formalArgs(densF),
+                  c("log.p", "lower.tail")%in% formalArgs(distF)))){
+      logRecipHaz <- TRUE
+    }
+
     # Distribution function, density and density derivative
     densFn <- function(x) {
         do.call(densF, c(x = x, fn.arg))
@@ -548,16 +557,36 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
         }  else if(!missing(u) && missing(qu)){
          qu <-  sapply(u, function(q){distFn(x = q)})
         }
+      if(logRecipHaz){
+        # Compute reciprocal hazard on log scale to avoid overflow
+        phi <- function(x){
+          exp(do.call(distF,
+                      c(list(q = x),
+                        fn.arg,
+                        lower.tail = FALSE,
+                        log.p = TRUE)) -
+                do.call(densF, c(list(x = x),
+                                 fn.arg,
+                                 log = TRUE))
+              )
+        }
+        dphi <- function(x) {
+          sapply(x, function(xval) {
+            - 1 - sign(ddensFn(xval))*exp(do.call(distF, c(q = xval, fn.arg, lower.tail = FALSE, log.p = TRUE)) + log(abs(ddensFn(xval)))  - 2*do.call(densF, c(x = xval, fn.arg, log = TRUE)))
+          })
+        }
+      } else {
         phi <- function(x) {
             sapply(x, function(xval) {
-                (1 - distFn(xval))/densFn(xval)
+                 (1 - distFn(xval))/densFn(xval)
             })
         }
         dphi <- function(x) {
             sapply(x, function(xval) {
-                -1 - (1 - distFn(xval)) * ddensFn(xval)/(densFn(xval)^2)
-            })
+                 -1 - (1 - distFn(xval)) *
+                ddensFn(xval)/(densFn(xval)^2)})
         }
+      }
         if (returnList) {
             params <- list(u = u, scale = phi(u), shape = dphi(u),  qu = qu)
         } else {
