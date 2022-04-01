@@ -5,17 +5,18 @@
 \title{Score and likelihood ratio tests fit of equality of shape over multiple thresholds}
 \usage{
 NC.diag(
-  x,
+  xdat,
   u,
   GP.fit = c("Grimshaw", "nlm", "optim", "ismev"),
   do.LRT = FALSE,
   size = NULL,
-  my.xlab = NULL,
+  plot = TRUE,
+  ...,
   xi.tol = 0.001
 )
 }
 \arguments{
-\item{x}{raw data}
+\item{xdat}{numeric vector of raw data}
 
 \item{u}{\code{m}-vector of thresholds (sorted from smallest to largest)}
 
@@ -25,7 +26,9 @@ NC.diag(
 
 \item{size}{level at which a horizontal line is drawn on multiple threshold plot}
 
-\item{my.xlab}{(optional) x-axis label}
+\item{plot}{logical; if \code{TRUE}, return a plot of p-values against threshold.}
+
+\item{...}{additional parameters passed to \code{plot}}
 
 \item{xi.tol}{numerical tolerance for threshold distance; if the absolute value of \code{xi1.hat} is less than \code{xi.tol} use linear interpolation
 to evaluate score vectors, expected Fisher information matrices, Hessians}

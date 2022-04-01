@@ -5,7 +5,7 @@
 \title{Parameter stability plots for peaks-over-threshold}
 \usage{
 tstab.gpd(
-  dat,
+  xdat,
   thresh,
   method = c("wald", "profile", "post"),
   level = 0.95,
@@ -14,7 +14,7 @@ tstab.gpd(
 )
 }
 \arguments{
-\item{dat}{a vector of observations}
+\item{xdat}{a vector of observations}
 
 \item{thresh}{a vector of candidate thresholds at which to compute the estimates.}
 
@@ -51,10 +51,10 @@ The latter two methods better reflect the asymmetry of the estimates than the Wa
 \examples{
 dat <- abs(rnorm(10000))
 u <- qnorm(seq(0.9,0.99, by= 0.01))
-tstab.gpd(dat = dat, thresh = u)
+tstab.gpd(xdat = dat, thresh = u)
 \dontrun{
-tstab.gpd(dat = dat, thresh = u, method = "profile")
-tstab.gpd(dat = dat, thresh = u, method = "post")
+tstab.gpd(xdat = dat, thresh = u, method = "profile")
+tstab.gpd(xdat = dat, thresh = u, method = "post")
 }
 }
 \seealso{

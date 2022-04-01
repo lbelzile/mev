@@ -21,7 +21,7 @@
 #' @param M number of superpositions or 'blocks' / 'years' the process corresponds to (can affect the optimization)
 #' @param nbs number of simulations used to assess the null distribution of the LRT, and produce the p-value
 #' @param alpha significance level of the LRT
-#' @param plots vector of strings indicating which plots to produce; \code{LRT}= likelihood ratio test, \code{WN} = white noise, \code{PS} = parameter stability
+#' @param plots vector of strings indicating which plots to produce; \code{LRT}= likelihood ratio test, \code{WN} = white noise, \code{PS} = parameter stability. Use \code{NULL} if you do not want plots to be produced
 #' @param UseQuantiles logical; use quantiles as the thresholds in the plot?
 #' @param changepar logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.
 #' @param ... additional parameters passed to \code{plot}, overriding defaults.
@@ -84,6 +84,9 @@ W.diag <- function(xdat,
                    changepar = TRUE,
                    ...) {
   model <- match.arg(model)
+  if(!is.null(plots)){
+    plots <- match.arg(plots)
+  }
   if (ncol(as.matrix(xdat)) == 2 &&
       model %in% c("exp", "invexp")) {
     xdat <- -log(1 - apply(xdat, 2, function(y) {
@@ -94,7 +97,8 @@ W.diag <- function(xdat,
   if (ncol(as.matrix(xdat)) != 1) {
     stop("Invalid input for \"xdat")
   }
-  stopifnot(is.logical(changepar), length(changepar) == 1L)
+  stopifnot(is.logical(changepar),
+            length(changepar) == 1L)
   switch(
     model,
     nhpp = .NHPP.diag(
@@ -244,6 +248,7 @@ W.diag <- function(xdat,
     if (unull) {
       qs <- seq(q1, q2, len = k + 1)[-(k + 1)]
     }
+    if(!is.null(plots)){
     # Copy graphical elements from ellipsis
     if (changepar) {
       old.par <- par(no.readonly = TRUE)
@@ -328,7 +333,7 @@ W.diag <- function(xdat,
         abline(v = ustar, col = 4)
       }
     }
-
+  }
     invisible(
       list(
         MLE = J1$mle,
@@ -362,12 +367,6 @@ W.diag <- function(xdat,
     unull <- is.null(u)
     if (!unull) {
       k <- length(u)
-    }
-    if (changepar) {
-      old.par <- par(no.readonly = TRUE)
-      on.exit(par(old.par))
-      par(mfrow = c(length(plots), 1),
-          mar = c(4.5, 4.5, 0.1, 0.1))
     }
     J1 <-
       .Joint_MLE_Expl(
@@ -429,7 +428,13 @@ W.diag <- function(xdat,
     if (unull) {
       qs <- seq(q1, q2, len = k + 1)[-(k + 1)]
     }
-
+    if(!is.null(plots)){
+      if (changepar) {
+        old.par <- par(no.readonly = TRUE)
+        on.exit(par(old.par))
+        par(mfrow = c(length(plots), 1),
+            mar = c(4.5, 4.5, 0.1, 0.1))
+      }
     if (is.element("LRT", plots)) {
       if (unull && UseQuantiles) {
         plot(
@@ -532,7 +537,7 @@ W.diag <- function(xdat,
         abline(v = ustar, col = 4)
       }
     }
-
+    }
     invisible(
       list(
         MLE = J1$mle,

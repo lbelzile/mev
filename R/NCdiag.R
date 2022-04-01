@@ -10,15 +10,15 @@
 #' test for equality of the shape parameters over
 #' multiple thresholds under the generalized Pareto model.
 #'
-#' @param x  raw data
+#' @param xdat numeric vector of raw data
 #' @param u \code{m}-vector of thresholds (sorted from smallest to largest)
 #' @param GP.fit function used to optimize the generalized Pareto model.
 #' @param do.LRT boolean indicating whether to perform the likelihood ratio test (in addition to the score test)
 #' @param size level at which a horizontal line is drawn on multiple threshold plot
-#' @param my.xlab (optional) x-axis label
 #' @param xi.tol numerical tolerance for threshold distance; if the absolute value of \code{xi1.hat} is less than \code{xi.tol} use linear interpolation
 #'                to evaluate score vectors, expected Fisher information matrices, Hessians
-#'
+#' @param plot logical; if \code{TRUE}, return a plot of p-values against threshold.
+#' @param ... additional parameters passed to \code{plot}
 #' @details The default method is \code{'Grimshaw'} using the reduction of the parameters to a one-dimensional
 #' maximization. Other options are one-dimensional maximization of the profile the \code{nlm} function or \code{optim}.
 #' Two-dimensional optimisation using 2D-optimization \code{\link[ismev]{ismev}} using the routine
@@ -43,11 +43,22 @@
 #' u <- seq(65,90, by = 1L)
 #' NC.diag(nidd, u, size = 0.05)
 #' }
-NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LRT = FALSE, size = NULL, my.xlab = NULL, xi.tol = 0.001) {
+NC.diag <- function(
+    xdat,
+    u,
+    GP.fit = c("Grimshaw", "nlm", "optim", "ismev"),
+    do.LRT = FALSE,
+    size = NULL,
+    plot = TRUE,
+    ...,
+    xi.tol = 0.001
+) {
+
+  args <- list(...)
   if (any(diff(u) <= 0)) {
     warning("Thresholds supplied in u are not in increasing order")
   }
-  x <- as.vector(x)
+  x <- as.numeric(xdat[is.finite(xdat)])
   u <- sort(u)
   n_u <- length(u)  # total number of thresholds
   #------------------------------------------------------------------------------#
@@ -222,20 +233,44 @@ NC.diag <- function(x, u, GP.fit = c("Grimshaw", "nlm", "optim", "ismev"), do.LR
     }
   }  #.......................# end of loop over thresholds
   z$u <- u[1:(n_u - 1)]  # (lowest) thresholds for each test
-
+  if(isTRUE(plot)){
+    # Backward compatibility
+    if(!is.null(args$my.xlab)){
+      args$xlab <- args$my.xlab
+      args$my.xlab <- NULL
+    }
   # Produce the plot ......
-
-  my.ylab <- "p-value"
-  if (is.null(my.xlab))
-    my.xlab <- "threshold"
-  plot(z$u, z$e.p.values, type = "b", xlab = my.xlab, ylab = "p-value", pch = 16, ylim = c(0, 1))
-  # axis(3, at=u[1:num.u], labels=z$n.between, cex.axis=0.7)
-  axis(3, at = u[1:n_u], labels = z$nexc[1:n_u], cex.axis = 0.7)
-  if (do.LRT)
-    lines(z$u, z$LRT.p.values, type = "b", lty = 4, pch = 2)
-  if (!is.null(size))
+  if(is.null(args$ylab)){
+    args$ylab <- "p-value"
+  }
+  if (is.null(args$xlab)){
+    args$xlab <- "threshold"
+  }
+  if(is.null(args$type)){
+    args$type <- "b"
+  }
+    if(is.null(args$pch)){
+      args$pch <- 16
+    }
+    if(is.null(args$ylim)){
+      args$ylim <- c(0,1)
+    }
+  args$x <- z$u
+  args$y <- z$e.p.values
+  do.call(what = "plot", args = args)
+  axis(3, at = u[1:n_u],
+       labels = z$nexc[1:n_u],
+       cex.axis = 0.7)
+  if (do.LRT){
+    lines(z$u, z$LRT.p.values,
+          type = "b",
+          lty = 4,
+          pch = 2)
+  }
+  if (!is.null(size)){
     abline(h = size, lty = 2)
-  #
+  }
+  }
   invisible(z)
 }
 

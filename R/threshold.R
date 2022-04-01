@@ -8,7 +8,7 @@
 #' The latter two methods better reflect the asymmetry of the estimates than the Wald confidence intervals.
 #'
 #'
-#' @param dat a vector of observations
+#' @param xdat a vector of observations
 #' @param thresh a vector of candidate thresholds at which to compute the estimates.
 #' @param method string indicating the method for computing confidence or credible intervals.
 #' Must be one of \code{"wald"}, \code{"profile"} or \code{"post"}.
@@ -31,15 +31,17 @@
 #' @examples
 #' dat <- abs(rnorm(10000))
 #' u <- qnorm(seq(0.9,0.99, by= 0.01))
-#' tstab.gpd(dat = dat, thresh = u)
+#' tstab.gpd(xdat = dat, thresh = u)
 #' \dontrun{
-#' tstab.gpd(dat = dat, thresh = u, method = "profile")
-#' tstab.gpd(dat = dat, thresh = u, method = "post")
+#' tstab.gpd(xdat = dat, thresh = u, method = "profile")
+#' tstab.gpd(xdat = dat, thresh = u, method = "post")
 #' }
-tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level = 0.95, plot = TRUE, ...){
+tstab.gpd <- function(xdat, thresh, method = c("wald", "profile", "post"), level = 0.95, plot = TRUE, ...){
   args <- list(...)
-  if(missing(dat) && !is.null(args$xdat)){
-    dat <- args$xdat
+  if(missing(xdat) && !is.null(args$dat)){
+    dat <- args$dat
+  } else{
+    dat <- xdat
   }
   dat <- as.vector(dat)
   thresh <- unique(sort(thresh))
@@ -95,7 +97,7 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
      grid_psi <- seq(parmat[i,1] - 3 * stderr.transfo, parmat[i,1] + 3.5 * stderr.transfo, length = k)
      xmaxui <- xmax - thresh[i]
      #Profile for scale := sigma_u - xi (u - u_0)
-      for(j in 1:k){
+      for(j in seq_length(k)){
         opt_prof <- optimize(f = pllsigmainv, upper = 1.5,
                              lower = max(-grid_psi[j]/(thresh[i]-thresh[1]), -grid_psi[j]/(xmaxui+thresh[i]-thresh[1]))+1e-10,
                              sigmat = grid_psi[j], dat = gpdu$exceedances, thresh = thresh[i]-thresh[1])
@@ -106,12 +108,17 @@ tstab.gpd <- function(dat, thresh, method = c("wald", "profile", "post"), level 
                             maxpll = -gpdu$nllh, std.err = stderr.transfo), class = "eprof")
      confintmat[i, 1:2] <- confint(prof, level = level, print = FALSE)[2:3]
    } else if(method == "post"){
-      postsim <- suppressWarnings(revdbayes::rpost_rcpp(n = 1000, model = "gp", init_ests = gpdu$estimate,
-                                     data = c(-1, gpdu$exceedances), trans = "BC",
-                                     prior = revdbayes::set_prior(prior = "norm",
-                                                                  model = "gp",
-                                                                  mean = rep(0, 2),
-                                                                  cov = c(100*gpdu$estimate[1], 1)*diag(np)))$sim_vals)
+      postsim <- #suppressWarnings(
+        revdbayes::rpost_rcpp(n = 1000, thresh = 0,
+                              model = "gp",
+                              init_ests = gpdu$estimate,
+                              data = c(-1, gpdu$exceedances),
+                              trans = "BC",
+                              prior = revdbayes::set_prior(prior = "norm",
+                                                           model = "gp",
+                                                           mean = rep(0, 2),
+                                                           cov = c(100*gpdu$estimate[1], 1)*diag(np)))$sim_vals
+        # )
     postsim[,1] <- postsim[,1] - postsim[,2]*(thresh[i]-thresh[1])
     confintmat[i,] <- apply(postsim, 2, quantile, c(alpha/2, 1-alpha/2))
     }

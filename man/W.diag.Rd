@@ -44,7 +44,7 @@ but rather the uppermost threshold will be at the \eqn{(q_2-1/k)}{q2-1/k} quanti
 
 \item{alpha}{significance level of the LRT}
 
-\item{plots}{vector of strings indicating which plots to produce; \code{LRT}= likelihood ratio test, \code{WN} = white noise, \code{PS} = parameter stability}
+\item{plots}{vector of strings indicating which plots to produce; \code{LRT}= likelihood ratio test, \code{WN} = white noise, \code{PS} = parameter stability. Use \code{NULL} if you do not want plots to be produced}
 
 \item{UseQuantiles}{logical; use quantiles as the thresholds in the plot?}
 
