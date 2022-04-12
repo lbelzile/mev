@@ -57,8 +57,18 @@ NULL
 #'
 #' @export
 #' @keywords internal
-egp.fit <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE){
-  fit.egp(xdat = xdat, thresh = thresh, model = model, init = init, show = show)
+egp.fit <- function(xdat,
+                    thresh,
+                    model = c("egp1", "egp2", "egp3"),
+                    init,
+                    show = FALSE) {
+  fit.egp(
+    xdat = xdat,
+    thresh = thresh,
+    model = model,
+    init = init,
+    show = show
+  )
 }
 
 #' Extended generalised Pareto families of Papastathopoulos and Tawn (functions)
@@ -70,7 +80,12 @@ egp.fit <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show 
 #' @inheritParams egp
 #' @name egp-function
 #' @keywords internal
-egp.ll <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3")) {
+egp.ll <- function(xdat,
+                   thresh,
+                   par,
+                   model = c("egp1", "egp2", "egp3")
+) {
+
     if (!(model %in% c("egp1", "egp2", "egp3")) || length(model) != 1) {
         stop("Invalid model selection")
     }
@@ -100,7 +115,13 @@ egp.ll <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3")) {
 #' @export
 #' @inheritParams egp
 #' @keywords internal
-egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, plot = TRUE) {
+egp.retlev <- function(xdat,
+                       thresh,
+                       par,
+                       model = c("egp1", "egp2", "egp3"),
+                       p,
+                       plot = TRUE
+) {
     if (!(model %in% c("egp1", "egp2", "egp3")) || length(model) != 1) {
         stop("Invalid model selection")
     }
@@ -162,7 +183,9 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
 #' @param init vector of initial values, with \eqn{\log(\kappa)}{log(\kappa)} and \eqn{\log(\sigma)}{log(\sigma)}; can be omitted.
 #' @return \code{fit.egp} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
 #' @name fit.egp
-#' @description The function \code{tstab.egp} provides classical threshold stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
+#' @description The function \code{tstab.egp} provides classical threshold stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}).
+#' The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
+#' The function returns an invisible list with parameter estimates and standard errors, and p-values for the Wald test that \eqn{\kappa=1}.
 #'  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
 #' \code{tstab.egp} can also be used to fit the model to multiple thresholds.
 #' @param plots vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots
@@ -175,11 +198,28 @@ egp.retlev <- function(xdat, thresh, par, model = c("egp1", "egp2", "egp3"), p, 
 #' @importFrom graphics arrows points polygon title
 #' @export
 #' @examples
-#' xdat <- evd::rgpd(n = 100, loc = 0, scale = 1, shape = 0.5)
-#' fitted <- fit.egp(xdat = xdat, thresh = 1, model = "egp2", show = TRUE)
+#' xdat <- evd::rgpd(
+#'   n = 100,
+#'   loc = 0,
+#'   scale = 1,
+#'   shape = 0.5)
+#' fitted <- fit.egp(
+#'   xdat = xdat,
+#'   thresh = 1,
+#'   model = "egp2",
+#'   show = TRUE)
 #' thresh <- evd::qgpd(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
-#' tstab.egp(xdat = xdat, thresh = thresh, model = "egp2", plots = 1:3)
-fit.egp <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), init, show = FALSE) {
+#' tstab.egp(
+#'    xdat = xdat,
+#'    thresh = thresh,
+#'    model = "egp2",
+#'    plots = 1:3)
+fit.egp <- function(xdat,
+                    thresh,
+                    model = c("egp1", "egp2", "egp3"),
+                    init,
+                    show = FALSE) {
+
     if (!(model %in% c("egp1", "egp2", "egp3")) || length(model) != 1) {
         stop("Invalid model  argument: must be one of \"egp1\", \"egp2\" or \"egp3\".")
     }
@@ -296,8 +336,23 @@ print.mev_egp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 #'
 #' @export
 #' @keywords internal
-egp.fitrange <- function(xdat, thresh, model = c("egp1", "egp2", "egp3"), plots = 1:3, umin, umax, nint){
-  tstab.egp(xdat = xdat, thresh = thresh, model = model, plots = plots, umin = umin, umax = umax, nint = nint)
+egp.fitrange <-
+  function(xdat,
+           thresh,
+           model = c("egp1", "egp2", "egp3"),
+           plots = 1:3,
+           umin,
+           umax,
+           nint) {
+    tstab.egp(
+      xdat = xdat,
+      thresh = thresh,
+      model = model,
+      plots = plots,
+      umin = umin,
+      umax = umax,
+      nint = nint
+    )
 }
 
 #' @inheritParams egp
@@ -329,6 +384,7 @@ tstab.egp <- function(xdat,
     conv <- rep(0, length(thresh))
     fit <- suppressWarnings(fit.egp(xdat = xdat, thresh = thresh[1], model = model))
     pe[1, -4] <- fit$param
+    colnames(pe) <- colnames(se) <- c(names(fit$param), "modif scale")
     se[1, -4] <- fit$std.err
     conv[1] <- ifelse(is.character(fit$convergence), 0, fit$convergence)
     se[1, 4] <- sqrt(cbind(1, -thresh[1]) %*% solve(fit$hessian[-1, -1]) %*% rbind(1, -thresh[1]))[1]
@@ -344,7 +400,8 @@ tstab.egp <- function(xdat,
     pe[, 4] <- pe[, 2] - pe[, 3] * thresh
 
     # Graphics
-    if (!(length(plots) == 1 && is.na(plots))) {
+    plots <- plots[is.finite(plots)]
+    if (length(plots) > 0) {
         plots <- sort(unique(plots))
         if (!isTRUE(all(plots %in% 1:3))) {
             stop("Invalid plot selection. Must be a vector of integers containing indices 1, 2 or 3.")
@@ -352,28 +409,56 @@ tstab.egp <- function(xdat,
         if(changepar){
           old.par <- par(no.readonly = TRUE)
           on.exit(par(old.par))
-          par(mfrow = c(length(plots), 1), mar = c(4.5, 4.5, 3.1, 0.1))
+          par(mfrow = c(length(plots), 1),
+              mar = c(4.5, 4.5, 3.1, 0.1))
         }
         for (i in plots) {
             if (i == 2) {  i <- 4  }  #Get modified scale
             # Plotting devices limits
-            ylims = c(min(pe[, i]) - qnorm(0.975) * max(se[, i]), max(pe[, i]) + qnorm(0.975) * max(se[, i]))
-            plot(x = thresh, y = pe[, i], pch = 20, xlab = "Threshold", bty = "l", ylab = switch(i, expression(kappa), expression(sigma),
-                expression(xi), expression(tilde(sigma))), ylim = ylims, type = "n")  #,cex.lab=1.25)
-            polygon(c(thresh, rev(thresh)), c(pe[, i] - qnorm(0.975) * se[, i], rev(pe[, i] + qnorm(0.975) * se[, i])), col = "gray95",
-                border = FALSE)
+            ylims = c(min(pe[, i]) - qnorm(0.975) * max(se[, i]),
+                      max(pe[, i]) + qnorm(0.975) * max(se[, i]))
+            plot(x = thresh,
+                 y = pe[, i],
+                 pch = 20,
+                 xlab = "threshold",
+                 bty = "l",
+                 ylab = switch(i,
+                               expression(kappa),
+                               expression(sigma),
+                               expression(xi),
+                               expression(tilde(sigma))),
+                 ylim = ylims,
+                 type = "n")
+            polygon(x = c(thresh, rev(thresh)),
+                    y = c(pe[, i] - qnorm(0.975) * se[, i],
+                      rev(pe[, i] + qnorm(0.975) * se[, i])),
+                    col = "gray95",
+                    border = FALSE)
             if (i == min(plots)) {
                 title(paste0("Parameter stability plots for EGP", substr(model, 4, 4), ""), outer = FALSE)
             }
             if (i == 1) {
                 abline(h = 1, lwd = 0.5, col = "gray20", lty = 2)
             }
-            arrows(x0 = thresh, y0 = pe[, i] - qnorm(0.975) * se[, i], y1 = pe[, i] + qnorm(0.975) * se[, i], length = 0.05, angle = 90,
-                code = 3)
-            points(x = thresh, y = pe[, i], type = "b", pch = 20)
+            arrows(x0 = thresh,
+                   y0 = pe[, i] - qnorm(0.975) * se[, i],
+                   y1 = pe[, i] + qnorm(0.975) * se[, i],
+                   length = 0.05,
+                   angle = 90,
+                   code = 3)
+            points(x = thresh,
+                   y = pe[, i],
+                   type = "b",
+                   pch = 20)
         }
-      }
-    return(invisible(list(par = pe[, -4], se = se[, -4], model = model, conv = conv, thresh = thresh)))
+    }
+    pval <- 2*pnorm(abs(pe[,1]-1)/se[,1], lower.tail = FALSE)
+    return(invisible(list(par = pe[, -4],
+                          se = se[, -4],
+                          model = model,
+                          pval = pval,
+                          conv = conv,
+                          thresh = thresh)))
 }
 
 

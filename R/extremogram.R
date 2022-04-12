@@ -59,11 +59,21 @@
 #' stopifnot(opt$kkt1, opt$kkt2)
 #' # Plotting the extremogram in the deformed space
 #' distfa <- distg(loc = coord, opt$par[3], opt$par[4])
-#' plot(c(distfa[lower.tri(distfa)]), extdat[,2], pch = 20,
-#' col = scales::alpha(1,0.1), yaxs = "i", xaxs = "i", bty = 'l',
-#'      xlab = "distance", ylab= "cond. prob. of exceedance", ylim = c(0,1))
-#' lines(x = (distvec <- seq(0,200, length = 1000)), col = 2, lwd = 2,
-#'       2*(1-pnorm(sqrt(power.vario(distvec, alpha = opt$par[1], scale = opt$par[2])/2))))
+#' plot(
+#'  x = c(distfa[lower.tri(distfa)]), 
+#'  y = extdat[,2], 
+#'  pch = 20,
+#'  yaxs = "i", 
+#'  xaxs = "i", 
+#'  bty = 'l',
+#'  xlab = "distance", 
+#'  ylab= "cond. prob. of exceedance", 
+#'  ylim = c(0,1))
+#' lines(
+#'   x = (distvec <- seq(0,200, length = 1000)), 
+#'   col = 2, lwd = 2,
+#'   y = 2*(1-pnorm(sqrt(power.vario(distvec, alpha = opt$par[1],
+#'                                scale = opt$par[2])/2))))
 #' }
 extremo <- function(dat, margp, coord, scale = 1, rho = 0, plot = FALSE, ...){
   stopifnot(isTRUE(all(margp >= 0, margp < 1, length(margp) == 1, nrow(coord) == ncol(dat))))

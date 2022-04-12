@@ -36,10 +36,17 @@
 #' tstab.gpd(xdat = dat, thresh = u, method = "profile")
 #' tstab.gpd(xdat = dat, thresh = u, method = "post")
 #' }
-tstab.gpd <- function(xdat, thresh, method = c("wald", "profile", "post"), level = 0.95, plot = TRUE, ...){
+tstab.gpd <- function(xdat,
+                      thresh,
+                      method = c("wald", "profile", "post"),
+                      level = 0.95,
+                      plot = TRUE,
+                      ...
+){
   args <- list(...)
   if(missing(xdat) && !is.null(args$dat)){
     dat <- args$dat
+    args$dat <- NULL
   } else{
     dat <- xdat
   }
@@ -97,7 +104,7 @@ tstab.gpd <- function(xdat, thresh, method = c("wald", "profile", "post"), level
      grid_psi <- seq(parmat[i,1] - 3 * stderr.transfo, parmat[i,1] + 3.5 * stderr.transfo, length = k)
      xmaxui <- xmax - thresh[i]
      #Profile for scale := sigma_u - xi (u - u_0)
-      for(j in seq_length(k)){
+      for(j in seq_len(k)){
         opt_prof <- optimize(f = pllsigmainv, upper = 1.5,
                              lower = max(-grid_psi[j]/(thresh[i]-thresh[1]), -grid_psi[j]/(xmaxui+thresh[i]-thresh[1]))+1e-10,
                              sigmat = grid_psi[j], dat = gpdu$exceedances, thresh = thresh[i]-thresh[1])
