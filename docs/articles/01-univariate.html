@@ -359,9 +359,6 @@ using running mean and variance estimators.</p>
                       threshold <span class="op">=</span> <span class="fl">0</span>, 
                       show <span class="op">=</span> <span class="cn">TRUE</span>, 
                       method <span class="op">=</span> <span class="st">"obre"</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## Warning in log1p(dat * xi/sigma): NaNs produced</span>
-
-<span class="co">## Warning in log1p(dat * xi/sigma): NaNs produced</span></code></pre>
 <pre><code><span class="co">## Method: obre </span>
 <span class="co">## Log-likelihood: -Inf </span>
 <span class="co">## </span>
@@ -380,7 +377,7 @@ using running mean and variance estimators.</p>
 <span class="co">## Optimization Information</span>
 <span class="co">##   Convergence: Solution not feasible; algorithm aborted. </span>
 <span class="co">##   Function Evaluations: 4</span></code></pre>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># See fit_robust$weights</span>
 
 <span class="co"># First-order bias corrected estimates</span>
@@ -593,7 +590,7 @@ peaks-over-threshold analysis based on fitting a generalized Pareto
 distribution to threshold exceedances. We use the Venezuelian rainfall
 data, a time series of daily rainfall precipitations at Maiquetia
 airport in Venezuela, for the purpose of illustration.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev/" class="external-link">mev</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"maiquetia"</span>, package <span class="op">=</span> <span class="st">"mev"</span><span class="op">)</span>
 <span class="va">day</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.Date.html" class="external-link">seq.Date</a></span><span class="op">(</span>from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"1961-01-01"</span><span class="op">)</span>, 
@@ -633,7 +630,7 @@ errors are based on the inverse observed information matrix and provided
 only if <span class="math inline">\(\xi&gt;-1/2\)</span>. We can verify
 that our maximum likelihood estimate is indeed a maximum by checking if
 it solves the score equation if <span class="math inline">\(\hat{\xi}&gt;-1\)</span>.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Logic.html" class="external-link">isTRUE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span>
   <span class="fu"><a href="../reference/gpd.score.html">gpd.score</a></span><span class="op">(</span><span class="va">gpdf</span><span class="op">$</span><span class="va">estimate</span>, dat <span class="op">=</span> <span class="va">gpdf</span><span class="op">$</span><span class="va">exceedances</span><span class="op">)</span>,
   <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>, tolerance <span class="op">=</span> <span class="fl">1e-5</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -653,7 +650,7 @@ correction, derived through asymptotic arguments from the generalized
 Pareto distribution likelihood, is small. Note that the bias correction
 requires <span class="math inline">\(\xi &gt; -1/3\)</span>, since it is
 based on third-order cumulants of the distribution.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">gpdbcor</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gpd.bcor.html">gpd.bcor</a></span><span class="op">(</span>dat <span class="op">=</span> <span class="va">gpdf</span><span class="op">$</span><span class="va">exceedances</span>, par <span class="op">=</span> <span class="va">gpdf</span><span class="op">$</span><span class="va">estimate</span><span class="op">)</span>
 <span class="co">#print the differences between MLE and bias-corrected estimates</span>
 <span class="va">gpdf</span><span class="op">$</span><span class="va">estimate</span> <span class="op">-</span> <span class="va">gpdbcor</span></code></pre></div>

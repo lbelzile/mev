@@ -1056,7 +1056,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     xi = as.vector(par[2])
     if (!isTRUE(all.equal(0, xi))) {
       rbind(dat * (xi + 1)/(sigma^2 * (dat * xi/sigma + 1)) - 1/sigma,
-            (-dat * (1/xi + 1)/(sigma *(dat * xi/sigma + 1)) + log1p(dat * xi/sigma)/xi^2))
+            (-dat * (1/xi + 1)/(sigma *(dat * xi/sigma + 1)) + log1p(pmax(-1, dat * xi/sigma))/xi^2))
     } else {
       rbind((dat - sigma)/sigma^2, (1/2 * (dat - 2 * sigma) * dat/sigma^2))
     }
