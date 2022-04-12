@@ -138,7 +138,7 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
 #' @param m location vector of Gaussian distribution.
 #' @return \code{n} by d matrix of observations
 #' @references Ho, Z. W. O and C. Dombry (2019), Simple models for multivariate regular variations and the
-#'   Huesler-Reiss Pareto distribution, Journal of Multivariate Analysis (\bold{173}), p. 525-550, \url{https://doi.org/10.1016/j.jmva.2019.04.008}
+#'   Huesler-Reiss Pareto distribution, Journal of Multivariate Analysis (\bold{173}), p. 525-550, \doi{10.1016/j.jmva.2019.04.008}
 #' @export
 #' @examples
 #' D <- 20L
