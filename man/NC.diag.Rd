@@ -47,8 +47,7 @@ maximization. Other options are one-dimensional maximization of the profile the 
 Two-dimensional optimisation using 2D-optimization \code{\link[ismev]{ismev}} using the routine
 from \code{gpd.fit} from the \code{ismev} library, with the addition of the algebraic gradient.
 The choice of \code{GP.fit} should make no difference but the options were kept.
-\bold{Warning}: the function is not robust
-and will not recover from failure of the maximization routine, returning various error messages.
+\bold{Warning}: the function will not recover from failure of the maximization routine, returning various error messages.
 }
 \examples{
 \dontrun{

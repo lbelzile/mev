@@ -27,7 +27,7 @@ Suggests:
     gmm,
     revdbayes,
     ismev,
-    testthat,
+    tinytest,
     TruncatedNormal (>= 1.1)
 LinkingTo: Rcpp, RcppArmadillo
 LazyData: true

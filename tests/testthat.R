@@ -1,4 +1,6 @@
-library(testthat)
 library(mev)
 
-test_check("mev")
+if ( requireNamespace("tinytest", quietly=TRUE) ){
+  tinytest::test_package("mev")
+}
+

@@ -16,7 +16,7 @@ W.diag(
   nbs = 1000,
   alpha = 0.05,
   plots = c("LRT", "WN", "PS"),
-  UseQuantiles = TRUE,
+  UseQuantiles = FALSE,
   changepar = TRUE,
   ...
 )
@@ -50,20 +50,10 @@ but rather the uppermost threshold will be at the \eqn{(q_2-1/k)}{q2-1/k} quanti
 
 \item{changepar}{logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.}
 
-\item{...}{additional parameters passed to \code{plot}, overriding defaults.}
+\item{...}{additional parameters passed to \code{plot}, overriding defaults including}
 }
 \value{
-plots of the requested diagnostics and an invisible list with components
-\itemize{
-\item \code{MLE}  maximum likelihood estimates from all thresholds
-\item \code{Cov}  joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{\eta^{-1}}{1/\eta}.
-\item \code{WN}  values of the white noise process.
-\item \code{LRT} values of the likelihood ratio test statistic vs threshold.
-\item \code{pval} P-value of the likelihood ratio test.
-\item \code{k}  final number of thresholds used.
-\item \code{thresh} threshold selected by the likelihood ratio procedure.
-\item \code{mle.u} maximum likelihood estimates from selected threshold.
-}
+
 }
 \description{
 Function to produce diagnostic plots and test statistics for the

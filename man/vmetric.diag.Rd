@@ -10,7 +10,8 @@ vmetric.diag(
   B = 199L,
   type = c("qq", "pp"),
   dist = c("l1", "l2"),
-  neval = 1000L
+  neval = 1000L,
+  ci = 0.95
 )
 }
 \arguments{
