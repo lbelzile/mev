@@ -39,7 +39,7 @@ test_that("GP: Profile yields same maximum as full likelihood", {
 })
 
 test_that("GP: Profile yields same maximum as full likelihood", {
-  expect_equal(mev::fit.p(xdat, fpar = list(scale = mle$param[1]))$param, mle$param,tolerance = 1e-5)
+  expect_equal(mev::fit.pp(xdat, fpar = list(scale = mle$param[1]))$param, mle$param,tolerance = 1e-5)
   expect_equal(mev::fit.gpd(xdat, fpar = list(shape = mle$param[2]))$param, mle$param,tolerance = 1e-5)
 })
 
