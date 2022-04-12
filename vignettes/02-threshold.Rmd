@@ -1,12 +1,12 @@
 ---
-title: "Threshold selection tools"
+title: "Threshold selection"
 author: "Léo Belzile"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Threshold selection tools}
+  %\VignetteIndexEntry{Threshold selection}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: mev_vignette.bib
@@ -92,7 +92,7 @@ nzrain <- maiquetia[substr(day, 1, 4) < 1999 & maiquetia > 0]
 nzrain <- maiquetia[substr(day, 3, 4) < 99 & maiquetia > 0]
 thcan <- quantile(nzrain, 
                   seq(0.8, 0.99, length.out = 25))
-tstab.gpd(dat = nzrain, 
+tstab.gpd(xdat = nzrain, 
           thresh = thcan, 
           method = "profile")
 ```
@@ -125,7 +125,7 @@ fWdiag <-
 ```
 
 
-## Your turn
+## Exercice
 
 1. Try using the threshold diagnostic tests on the `nidd` river flow data. Which threshold would you choose based on the conclusions of the test? Repeat the analysis on your favorite dataset. 
 2. Compare the inference obtained by using the different threshold (by comparing, for example, return levels or quantiles of a distribution of interest). Are your results sensitive to the choice of threshold?

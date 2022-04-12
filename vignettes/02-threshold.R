@@ -12,7 +12,7 @@ nzrain <- maiquetia[substr(day, 1, 4) < 1999 & maiquetia > 0]
 nzrain <- maiquetia[substr(day, 3, 4) < 99 & maiquetia > 0]
 thcan <- quantile(nzrain, 
                   seq(0.8, 0.99, length.out = 25))
-tstab.gpd(dat = nzrain, 
+tstab.gpd(xdat = nzrain, 
           thresh = thcan, 
           method = "profile")
 

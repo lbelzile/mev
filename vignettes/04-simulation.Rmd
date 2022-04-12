@@ -342,9 +342,9 @@ lines(
 ```
 
 
-## Your turn
+## Exercice
 
-1. Simulate Gaussian random vector (using e.g. the function `mvrnorm` or through the package `RandomFields`) with independent observations and vectors with covariance matrix $\alpha \boldsymbol{1}_D\boldsymbol{1}_D^\top + (1-\alpha)\mathrm{diag}(\boldsymbol{1}_D)$ for $\alpha \in \{0,0.25,0.5,0.75\}$. Use `maxstabtest` on your simulated data and comment on the diagnostic plots.
+1. Simulate Gaussian random vector (using, e.g., the function `mvrnorm` or through the package `RandomFields`) with independent observations and vectors with covariance matrix $\alpha \boldsymbol{1}_D\boldsymbol{1}_D^\top + (1-\alpha)\mathrm{diag}(\boldsymbol{1}_D)$ for $\alpha \in \{0,0.25,0.5,0.75\}$. Use `maxstabtest` on your simulated data and comment on the diagnostic plots.
 2. Simulate 100 realizaions from a $\mathcal{R}$-Pareto process with risk function $\max$ and $\min$ for the Brown--Resnick model with power variogram function `power.vario` with shape `alpha = 1` and `scale = 2` on a grid $\{1,2,\ldots, 4\}^2$ using `rparp` and `rparpcs`. Benchmark the two methods: which is fastest and what is the acceptance rate of the accept-reject?
  Partial sample code for doing this is given below:
 ```{r snippetsimurparp, eval = FALSE}

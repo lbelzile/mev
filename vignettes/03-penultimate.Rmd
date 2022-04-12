@@ -39,15 +39,21 @@ The maximum likelihood estimate of the shape should change as the threshold or t
 
 We illustrate the previous discussion  by looking at block maximum from a log-normal distribution.
 
-```{r penult, fig.width = 10, out.width = '90%', fig.align = "center"}
+```{r penult, 
+fig.width = 10, out.width = '90%', fig.align = "center"}
 library(mev)
 set.seed(123)
 x  <- seq(1, 30, length = 200)
-fitted <- t(replicate(n = 1000,
-                      fit.gev(apply(
-                        matrix(rlnorm(30 * 100), ncol = 30), 1, max
-                      ),
-                      method = "BFGS")$est))
+fitted <- t(
+  replicate(
+    n = 200,
+    fit.gev(
+      xdat = apply(
+        X = matrix(rlnorm(30 * 100), 
+               ncol = 30), 
+        MARGIN = 1, 
+        FUN = max),
+      method = "BFGS")$est))
 penult.bm.lnorm <-
   mev::smith.penult(model = "bm",
                     m = (m <- 30),
@@ -183,7 +189,7 @@ For threshold exceedances, we start with the reciprocal hazard $r(x) = \{1-F(x)\
 
 We can relate threshold exceedances to the distribution of maxima as follows: suppose a generalized Pareto distribution $F$ is fitted to threshold exceedances above a threshold $u$, with parameters $(\zeta_u, \sigma_u, \xi)$, where $\zeta_u$ denotes the unknown  proportion of points above the threshold $u$.  If there are $n_y$ observations per year on average, then the $T$-year return level is $z_{1/T}=u+\sigma_u/\xi\{(Tn_y\zeta_u)^\xi-1\}$. We take $F^{\zeta_uTn_y}$ as the approximation to the $T$-year maxima distribution, conditional on exceeding $u$.
 
-## Your turn
+## Exercice
 
 1. Sample observations from the standard Gaussian distribution $\mathsf{No}(0,1)$ for $m = 25, 50, 100, 1000$ and $k=1000$ replications.
 2. Fit a generalized extreme value distribution to block maxima of size $m$. Obtain an estimate of the distribution of $m = 1000000$ observations from a standard Gaussian using max-stability (the functions `fit.gev` and `gev.mle` can be useful).
