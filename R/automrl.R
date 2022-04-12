@@ -26,11 +26,15 @@
 #' @param thresh [numeric] vector of thresholds; if missing, uses all order statistics from the 20th largest until \code{kmax} as candidates
 #' @param plot [logical] if \code{TRUE}, return a plot of the mean residual life plot with the fitted slope
 #' and the chosen threshold
+#' @param ... additional arguments, currently ignored
+#' @export
+#'
 automrl <- function(
       xdat,
       kmax,
       thresh,
-      plot = FALSE){
+      plot = FALSE,
+      ...){
    k <- 9
    # expected conditional exceedances based
    # on at least k+1 obs (default to 10, hardcoded)
@@ -103,7 +107,7 @@ automrl <- function(
       abline(a = coefs[index, 1],
              b = coefs[index, 2])
    }
-   return(list(thresh = cthresh,
+   return(invisible(list(thresh = cthresh,
                scale = scale,
-               shape = shape))
+               shape = shape)))
 }
