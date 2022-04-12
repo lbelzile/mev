@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.20000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.5000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/01-univariate.html">Likelihood based inference for univariate extremes</a>
-    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection tools</a>
+    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection</a>
     <a class="dropdown-item" href="../articles/03-penultimate.html">Penultimate approximations</a>
     <a class="dropdown-item" href="../articles/04-simulation.html">Simulation of multivariate extreme value distributions and processes</a>
   </div>
@@ -75,7 +75,7 @@
                         <h4 data-toc-skip class="author">Léo
 Belzile</h4>
             
-            <h4 data-toc-skip class="date">2022-03-11</h4>
+            <h4 data-toc-skip class="date">2022-04-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/lbelzile/mev/blob/HEAD/vignettes/04-simulation.Rmd" class="external-link"><code>vignettes/04-simulation.Rmd</code></a></small>
       <div class="d-none name"><code>04-simulation.Rmd</code></div>
@@ -228,7 +228,7 @@ special case of max-stability). Uncertainty quantification is performed
 using a nonparametric bootstrap. The function <code>maxstabtest</code>
 implements this for the special case <span class="math inline">\(J=D\)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev" class="external-link">mev</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev/" class="external-link">mev</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>
 <span class="va">samp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rmev.html">rmev</a></span><span class="op">(</span>
   n <span class="op">=</span> <span class="fl">1000</span>,
@@ -562,10 +562,10 @@ the analysis.</p>
 <p><img src="04-simulation_files/figure-html/fitvariocloud-2.png" width="90%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
-<h2 id="your-turn">Your turn<a class="anchor" aria-label="anchor" href="#your-turn"></a>
+<h2 id="exercice">Exercice<a class="anchor" aria-label="anchor" href="#exercice"></a>
 </h2>
 <ol style="list-style-type: decimal">
-<li>Simulate Gaussian random vector (using e.g. the function
+<li>Simulate Gaussian random vector (using, e.g., the function
 <code>mvrnorm</code> or through the package <code>RandomFields</code>)
 with independent observations and vectors with covariance matrix <span class="math inline">\(\alpha \boldsymbol{1}_D\boldsymbol{1}_D^\top +
 (1-\alpha)\mathrm{diag}(\boldsymbol{1}_D)\)</span> for <span class="math inline">\(\alpha \in \{0,0.25,0.5,0.75\}\)</span>. Use

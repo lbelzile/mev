@@ -18,7 +18,7 @@ is asymptotically \(\chi^2\) with one degree of freedom. The approximation is go
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.20000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.5000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@ is asymptotically \(\chi^2\) with one degree of freedom. The approximation is go
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/01-univariate.html">Likelihood based inference for univariate extremes</a>
-    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection tools</a>
+    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection</a>
     <a class="dropdown-item" href="../articles/03-penultimate.html">Penultimate approximations</a>
     <a class="dropdown-item" href="../articles/04-simulation.html">Simulation of multivariate extreme value distributions and processes</a>
   </div>
@@ -69,19 +69,23 @@ is asymptotically \(\chi^2\) with one degree of freedom. The approximation is go
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">infomat.test</span><span class="op">(</span><span class="va">x</span>, <span class="va">q</span>, <span class="va">K</span>, plot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">infomat.test</span><span class="op">(</span><span class="va">xdat</span>, <span class="va">thresh</span>, <span class="va">q</span>, <span class="va">K</span>, plot <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>x</dt>
+    <dl><dt>xdat</dt>
 <dd><p>data vector</p></dd>
+<dt>thresh</dt>
+<dd><p>threshold vector</p></dd>
 <dt>q</dt>
-<dd><p>vector of thresholds</p></dd>
+<dd><p>vector of probability levels to define threshold if <code>thresh</code> is missing.</p></dd>
 <dt>K</dt>
 <dd><p>int specifying the largest K-gap</p></dd>
 <dt>plot</dt>
 <dd><p>logical: should the graphical diagnostic be plotted?</p></dd>
+<dt>...</dt>
+<dd><p>additional arguments, currently ignored</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -116,7 +120,9 @@ The condition \(D^{(K)}(u_n)\) should be checked by the user.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu">infomat.test</span><span class="op">(</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">evd</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/evd/man/gpd.html" class="external-link">rgpd</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10000</span><span class="op">)</span>, q <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.9</span>, length <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, <span class="va">K</span> <span class="op">&lt;-</span> <span class="fl">3</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu">infomat.test</span><span class="op">(</span>xdat <span class="op">=</span> <span class="fu">evd</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/evd/man/gpd.html" class="external-link">rgpd</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10000</span><span class="op">)</span>,</span>
+<span class="r-in">             q <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.9</span>, length <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span class="r-in">             K <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="infomat.test-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>

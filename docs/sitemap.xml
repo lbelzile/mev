@@ -46,6 +46,9 @@
     <loc>/reference/angmeasdir.html</loc>
   </url>
   <url>
+    <loc>/reference/automrl.html</loc>
+  </url>
+  <url>
     <loc>/reference/chibar.html</loc>
   </url>
   <url>
@@ -53,6 +56,9 @@
   </url>
   <url>
     <loc>/reference/confint.eprof.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cvselect.html</loc>
   </url>
   <url>
     <loc>/reference/distg.html</loc>
@@ -328,6 +334,9 @@
     <loc>/reference/gpd.bias.html</loc>
   </url>
   <url>
+    <loc>/reference/gpd.boot.html</loc>
+  </url>
+  <url>
     <loc>/reference/gpd.html</loc>
   </url>
   <url>
@@ -527,6 +536,9 @@
   </url>
   <url>
     <loc>/reference/venice.html</loc>
+  </url>
+  <url>
+    <loc>/reference/vmetric.diag.html</loc>
   </url>
   <url>
     <loc>/reference/w1500m.html</loc>

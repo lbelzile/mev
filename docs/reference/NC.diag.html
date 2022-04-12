@@ -14,7 +14,7 @@ multiple thresholds under the generalized Pareto model."><!-- mathjax --><script
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.20000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.5000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,7 +29,7 @@ multiple thresholds under the generalized Pareto model."><!-- mathjax --><script
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/01-univariate.html">Likelihood based inference for univariate extremes</a>
-    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection tools</a>
+    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection</a>
     <a class="dropdown-item" href="../articles/03-penultimate.html">Penultimate approximations</a>
     <a class="dropdown-item" href="../articles/04-simulation.html">Simulation of multivariate extreme value distributions and processes</a>
   </div>
@@ -64,20 +64,21 @@ multiple thresholds under the generalized Pareto model.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">NC.diag</span><span class="op">(</span>
-  <span class="va">x</span>,
+  <span class="va">xdat</span>,
   <span class="va">u</span>,
   GP.fit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Grimshaw"</span>, <span class="st">"nlm"</span>, <span class="st">"optim"</span>, <span class="st">"ismev"</span><span class="op">)</span>,
   do.LRT <span class="op">=</span> <span class="cn">FALSE</span>,
   size <span class="op">=</span> <span class="cn">NULL</span>,
-  my.xlab <span class="op">=</span> <span class="cn">NULL</span>,
+  plot <span class="op">=</span> <span class="cn">TRUE</span>,
+  <span class="va">...</span>,
   xi.tol <span class="op">=</span> <span class="fl">0.001</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>x</dt>
-<dd><p>raw data</p></dd>
+    <dl><dt>xdat</dt>
+<dd><p>numeric vector of raw data</p></dd>
 <dt>u</dt>
 <dd><p><code>m</code>-vector of thresholds (sorted from smallest to largest)</p></dd>
 <dt>GP.fit</dt>
@@ -86,8 +87,10 @@ multiple thresholds under the generalized Pareto model.</p>
 <dd><p>boolean indicating whether to perform the likelihood ratio test (in addition to the score test)</p></dd>
 <dt>size</dt>
 <dd><p>level at which a horizontal line is drawn on multiple threshold plot</p></dd>
-<dt>my.xlab</dt>
-<dd><p>(optional) x-axis label</p></dd>
+<dt>plot</dt>
+<dd><p>logical; if <code>TRUE</code>, return a plot of p-values against threshold.</p></dd>
+<dt>...</dt>
+<dd><p>additional parameters passed to <code>plot</code></p></dd>
 <dt>xi.tol</dt>
 <dd><p>numerical tolerance for threshold distance; if the absolute value of <code>xi1.hat</code> is less than <code>xi.tol</code> use linear interpolation
 to evaluate score vectors, expected Fisher information matrices, Hessians</p></dd>

@@ -18,7 +18,7 @@ provided. The other argument (u or m depending on the method) is ignored."><!-- 
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.20000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.5000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@ provided. The other argument (u or m depending on the method) is ignored."><!-- 
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/01-univariate.html">Likelihood based inference for univariate extremes</a>
-    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection tools</a>
+    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection</a>
     <a class="dropdown-item" href="../articles/03-penultimate.html">Penultimate approximations</a>
     <a class="dropdown-item" href="../articles/04-simulation.html">Simulation of multivariate extreme value distributions and processes</a>
   </div>
@@ -103,6 +103,7 @@ provided. The other argument (<code>u</code> or <code>m</code> depending on the 
     <p>Alternatively, the user can provide functions <code>densF</code>, <code>quantF</code> and <code>distF</code> for the density,
 quantile function and distribution functions, respectively. The user can also supply the derivative
 of the density function, <code>ddensF</code>. If the latter is missing, it will be approximated using finite-differences.</p>
+<p>For <code>method = "pot"</code>, the function computes the reciprocal hazard and its derivative on the log scale to avoid numerical overflow. Thus, the density function should have argument <code>log</code> and the distribution function arguments <code>log.p</code> and <code>lower.tail</code>, respectively.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

@@ -39,8 +39,7 @@ The maximum likelihood estimate of the shape should change as the threshold or t
 
 We illustrate the previous discussion  by looking at block maximum from a log-normal distribution.
 
-```{r penult, 
-fig.width = 10, out.width = '90%', fig.align = "center"}
+```{r penult, fig.width = 10, out.width = '90%', fig.align = "center"}
 library(mev)
 set.seed(123)
 x  <- seq(1, 30, length = 200)

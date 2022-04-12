@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.20000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.5000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/01-univariate.html">Likelihood based inference for univariate extremes</a>
-    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection tools</a>
+    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection</a>
     <a class="dropdown-item" href="../articles/03-penultimate.html">Penultimate approximations</a>
     <a class="dropdown-item" href="../articles/04-simulation.html">Simulation of multivariate extreme value distributions and processes</a>
   </div>
@@ -75,7 +75,7 @@
                         <h4 data-toc-skip class="author">Léo
 Belzile</h4>
             
-            <h4 data-toc-skip class="date">2022-03-11</h4>
+            <h4 data-toc-skip class="date">2022-04-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/lbelzile/mev/blob/HEAD/vignettes/01-univariate.Rmd" class="external-link"><code>vignettes/01-univariate.Rmd</code></a></small>
       <div class="d-none name"><code>01-univariate.Rmd</code></div>
@@ -237,7 +237,7 @@ asymptotic regime is nonstandard <span class="citation">(Smith
 information matrix are unreliable; as such, <code>mev</code> does not
 report them and prints an optional warning.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev" class="external-link">mev</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev/" class="external-link">mev</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">evd</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/evd/man/gpd.html" class="external-link">rgpd</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span>, shape <span class="op">=</span> <span class="op">-</span><span class="fl">0.8</span><span class="op">)</span>
 <span class="va">fitted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit.gpd.html">fit.gpd</a></span><span class="op">(</span><span class="va">dat</span>, threshold <span class="op">=</span> <span class="fl">0</span>, show <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
@@ -594,7 +594,7 @@ distribution to threshold exceedances. We use the Venezuelian rainfall
 data, a time series of daily rainfall precipitations at Maiquetia
 airport in Venezuela, for the purpose of illustration.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev" class="external-link">mev</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lbelzile.github.io/mev/" class="external-link">mev</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"maiquetia"</span>, package <span class="op">=</span> <span class="st">"mev"</span><span class="op">)</span>
 <span class="va">day</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.Date.html" class="external-link">seq.Date</a></span><span class="op">(</span>from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"1961-01-01"</span><span class="op">)</span>, 
                 to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"1999-12-31"</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"day"</span><span class="op">)</span>
@@ -668,7 +668,7 @@ distribution, excepted shortfall, return levels, <span class="math inline">\(N\)
 quantiles).</p>
 </div>
 <div class="section level2">
-<h2 id="your-turn">Your turn<a class="anchor" aria-label="anchor" href="#your-turn"></a>
+<h2 id="exercice">Exercice<a class="anchor" aria-label="anchor" href="#exercice"></a>
 </h2>
 <ol style="list-style-type: decimal">
 <li>Simulate 200 observations from the <span class="math inline">\(r\)</span>-largest likelihood using

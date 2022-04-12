@@ -14,7 +14,7 @@ based on the non-homogeneous Poisson process likelihood"><!-- mathjax --><script
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.20000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.5000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,7 +29,7 @@ based on the non-homogeneous Poisson process likelihood"><!-- mathjax --><script
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/01-univariate.html">Likelihood based inference for univariate extremes</a>
-    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection tools</a>
+    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection</a>
     <a class="dropdown-item" href="../articles/03-penultimate.html">Penultimate approximations</a>
     <a class="dropdown-item" href="../articles/04-simulation.html">Simulation of multivariate extreme value distributions and processes</a>
   </div>
@@ -76,6 +76,7 @@ based on the non-homogeneous Poisson process likelihood</p>
   alpha <span class="op">=</span> <span class="fl">0.05</span>,
   plots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"LRT"</span>, <span class="st">"WN"</span>, <span class="st">"PS"</span><span class="op">)</span>,
   UseQuantiles <span class="op">=</span> <span class="cn">TRUE</span>,
+  changepar <span class="op">=</span> <span class="cn">TRUE</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -105,9 +106,11 @@ but rather the uppermost threshold will be at the \((q_2-1/k)\) quantile).</p></
 <dt>alpha</dt>
 <dd><p>significance level of the LRT</p></dd>
 <dt>plots</dt>
-<dd><p>vector of strings indicating which plots to produce; <code>LRT</code>= likelihood ratio test, <code>WN</code> = white noise, <code>PS</code> = parameter stability</p></dd>
+<dd><p>vector of strings indicating which plots to produce; <code>LRT</code>= likelihood ratio test, <code>WN</code> = white noise, <code>PS</code> = parameter stability. Use <code>NULL</code> if you do not want plots to be produced</p></dd>
 <dt>UseQuantiles</dt>
 <dd><p>logical; use quantiles as the thresholds in the plot?</p></dd>
+<dt>changepar</dt>
+<dd><p>logical; if <code>TRUE</code>, the graphical parameters (via a call to <code>par</code>) are modified.</p></dd>
 <dt>...</dt>
 <dd><p>additional parameters passed to <code>plot</code>, overriding defaults.</p></dd>
 </dl></div>
@@ -147,7 +150,6 @@ is transformed to exponential margins using the empirical distribution function.
 <span class="r-in"><span class="co"># Parameter stability only</span></span>
 <span class="r-in"><span class="fu">W.diag</span><span class="op">(</span>xdat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">5000</span><span class="op">)</span><span class="op">)</span>, model <span class="op">=</span> <span class="st">'nhpp'</span>,</span>
 <span class="r-in">       k <span class="op">=</span> <span class="fl">30</span>, q1 <span class="op">=</span> <span class="fl">0</span>, plots <span class="op">=</span> <span class="st">"PS"</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">)</span>, las <span class="op">=</span> <span class="fl">1</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">W.diag</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">1000</span><span class="op">)</span>, model <span class="op">=</span> <span class="st">'nhpp'</span>, k <span class="op">=</span> <span class="fl">20</span>, q1 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">xbvn</span> <span class="op">&lt;-</span> <span class="fu"><a href="mvrnorm.html">mvrnorm</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">6000</span>,</span>
 <span class="r-in">                mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span>,</span>
