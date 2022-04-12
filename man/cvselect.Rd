@@ -5,7 +5,7 @@
 \title{Threshold selection via coefficient of variation}
 \usage{
 cvselect(
-  data,
+  xdat,
   thresh,
   method = c("mle", "wcv", "cv"),
   nsim = 999L,
@@ -15,7 +15,7 @@ cvselect(
 )
 }
 \arguments{
-\item{data}{[vector] vector of observations}
+\item{xdat}{[vector] vector of observations}
 
 \item{thresh}{[vector] vector of threshold. If missing, set to \eqn{p^k} for \eqn{k=0} to \eqn{k=}\code{nthresh}}
 

@@ -4,16 +4,20 @@
 \alias{infomat.test}
 \title{Information matrix test statistic and MLE for the extremal index}
 \usage{
-infomat.test(x, q, K, plot = TRUE)
+infomat.test(xdat, thresh, q, K, plot = TRUE, ...)
 }
 \arguments{
-\item{x}{data vector}
+\item{xdat}{data vector}
 
-\item{q}{vector of thresholds}
+\item{thresh}{threshold vector}
+
+\item{q}{vector of probability levels to define threshold if \code{thresh} is missing.}
 
 \item{K}{int specifying the largest K-gap}
 
 \item{plot}{logical: should the graphical diagnostic be plotted?}
+
+\item{...}{additional arguments, currently ignored}
 }
 \value{
 an invisible list of matrices containing
@@ -48,7 +52,9 @@ Fukutome et al. (2015) propose an ad hoc automated procedure
 }
 }
 \examples{
-infomat.test(x <- evd::rgpd(n = 10000), q = seq(0.1, 0.9, length = 10), K <- 3)
+infomat.test(xdat = evd::rgpd(n = 10000),
+             q = seq(0.1, 0.9, length = 10),
+             K = 3)
 }
 \references{
 Fukutome, Liniger and Suveges (2015), Automatic threshold and run parameter selection: a climatology for extreme hourly precipitation in Switzerland. \emph{Theoretical and Applied Climatology}, \strong{120}(3), 403-416.

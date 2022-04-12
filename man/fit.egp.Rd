@@ -46,7 +46,9 @@ tstab.egp(
 \code{tstab.egp} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
 }
 \description{
-The function \code{tstab.egp} provides classical threshold stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}). The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
+The function \code{tstab.egp} provides classical threshold stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}).
+The fitted parameter values are displayed with pointwise normal 95\% confidence intervals.
+The function returns an invisible list with parameter estimates and standard errors, and p-values for the Wald test that \eqn{\kappa=1}.
  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
 \code{tstab.egp} can also be used to fit the model to multiple thresholds.
 }
@@ -55,10 +57,22 @@ The function \code{tstab.egp} provides classical threshold stability plot for (\
 using maximum likelihood estimation.
 }
 \examples{
-xdat <- evd::rgpd(n = 100, loc = 0, scale = 1, shape = 0.5)
-fitted <- fit.egp(xdat = xdat, thresh = 1, model = "egp2", show = TRUE)
+xdat <- evd::rgpd(
+  n = 100,
+  loc = 0,
+  scale = 1,
+  shape = 0.5)
+fitted <- fit.egp(
+  xdat = xdat,
+  thresh = 1,
+  model = "egp2",
+  show = TRUE)
 thresh <- evd::qgpd(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
-tstab.egp(xdat = xdat, thresh = thresh, model = "egp2", plots = 1:3)
+tstab.egp(
+   xdat = xdat,
+   thresh = thresh,
+   model = "egp2",
+   plots = 1:3)
 }
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
