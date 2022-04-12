@@ -188,18 +188,6 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
     }
   }
 
-  # Copy from ellipsis
-  mmin <- ellips$mmin
-  mmax <- ellips$mmax
-  genvec1 <- ellips$genvec1
-  B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
-  antithetic <- ifelse(is.null(ellips$antithetic), FALSE, ellips$antithetic)
-  if (is.null(genvec1)) {
-    genvec1 <- mvPot::genVecQMC(B1, ncol(dat) - 1L)$genVec
-  }
-  M1 <- ifelse(is.null(ellips$M1), 1L, ellips$M1)
-  ncores <- ifelse(is.null(ellips$ncores), 1L, ellips$ncores)
-
 
   # Schur complement of submatrix \code{Sigma} excluding indices \code{ind}
   schurcompC <- function(Sigma, ind) {
@@ -243,7 +231,20 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
       call. = FALSE
     )
   }
- }
+  }
+
+  # Copy from ellipsis
+  mmin <- ellips$mmin
+  mmax <- ellips$mmax
+  genvec1 <- ellips$genvec1
+  B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
+  antithetic <- ifelse(is.null(ellips$antithetic), FALSE, ellips$antithetic)
+  if (is.null(genvec1)) {
+    genvec1 <- mvPot::genVecQMC(B1, ncol(dat) - 1L)$genVec
+  }
+  M1 <- ifelse(is.null(ellips$M1), 1L, ellips$M1)
+  ncores <- ifelse(is.null(ellips$ncores), 1L, ellips$ncores)
+
   if (model == "br") {
     intens <- intensBR(tdat = tdat, Lambda = Lambda)
     exponentMeasure <- sum(.weightsBR(z = tu, Lambda = Lambda, prime = B1, method = "mvPot", genvec = genvec1, nrep = 1) / tu)
