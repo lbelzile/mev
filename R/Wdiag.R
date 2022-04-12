@@ -24,7 +24,7 @@
 #' @param plots vector of strings indicating which plots to produce; \code{LRT}= likelihood ratio test, \code{WN} = white noise, \code{PS} = parameter stability. Use \code{NULL} if you do not want plots to be produced
 #' @param UseQuantiles logical; use quantiles as the thresholds in the plot?
 #' @param changepar logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.
-#' @param ... additional parameters passed to \code{plot}, overriding defaults.
+#' @param ... additional parameters passed to \code{plot}, overriding defaults including
 #'
 #' @details The function is a wrapper for the univariate (non-homogeneous Poisson process model) and bivariate exponential dependence model.
 #' For the latter, the user can select either the rate or inverse rate parameter  (the inverse rate parametrization  works better for uniformity
@@ -39,14 +39,18 @@
 #' @author Jennifer L. Wadsworth
 #' @return plots of the requested diagnostics and an invisible list with components
 #' \itemize{
-#' \item \code{MLE}  maximum likelihood estimates from all thresholds
-#' \item \code{Cov}  joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{\eta^{-1}}{1/\eta}.
-#' \item \code{WN}  values of the white noise process.
-#' \item \code{LRT} values of the likelihood ratio test statistic vs threshold.
-#' \item \code{pval} P-value of the likelihood ratio test.
-#' \item \code{k}  final number of thresholds used.
-#' \item \code{thresh} threshold selected by the likelihood ratio procedure.
-#' \item \code{mle.u} maximum likelihood estimates from selected threshold.
+#' \item{\code{MLE}{maximum likelihood estimates from all thresholds}
+#' \item{\code{Cov} {joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{\eta^{-1}}{1/\eta}}.
+#' \item{\code{WN{values of the white noise process}
+#' \item{\code{LRT}{values of the likelihood ratio test statistic vs threshold}
+#' \item{\code{pval}{\emph{P}-value of the likelihood ratio test}
+#' \item{\code{k}{final number of thresholds used}
+#' \item{\code{thresh}{threshold selected by the likelihood ratio procedure}
+#' \item{\code{qthresh}{quantile level of threshold selected by the likelihood ratio procedure}
+#' \item{\code{cthresh}{vector of candidate thresholds}
+#' \item{\code{qcthresh}{quantile level of candidate thresholds}
+#' \item{\code{mle.u}}{maximum likelihood estimates for the selected threshold}
+#' \item{\code{model}}{model fitted}
 #' }
 #' @examples
 #' \dontrun{
@@ -80,12 +84,18 @@ W.diag <- function(xdat,
                    nbs = 1000,
                    alpha = 0.05,
                    plots = c("LRT", "WN", "PS"),
-                   UseQuantiles = TRUE,
+                   UseQuantiles = FALSE,
                    changepar = TRUE,
                    ...) {
+    stopifnot(is.logical(UseQuantiles),
+              length(UseQuantiles) == 1L,
+              is.logical(changepar),
+              length(changepar) == 1L)
   model <- match.arg(model)
   if(!is.null(plots)){
-    plots <- match.arg(plots)
+    plots <- match.arg(plots,
+                       choices = c("LRT", "WN", "PS"),
+                       several.ok = TRUE)
   }
   if (ncol(as.matrix(xdat)) == 2 &&
       model %in% c("exp", "invexp")) {
@@ -95,10 +105,8 @@ W.diag <- function(xdat,
     xdat <- pmin(xdat[, 1], xdat[, 2])
   }
   if (ncol(as.matrix(xdat)) != 1) {
-    stop("Invalid input for \"xdat")
+    stop("Invalid input for \"xdat\"")
   }
-  stopifnot(is.logical(changepar),
-            length(changepar) == 1L)
   switch(
     model,
     nhpp = .NHPP.diag(
@@ -244,108 +252,124 @@ W.diag <- function(xdat,
     }
     ind <- u[-(k + 1)] == ustar
     theta.hat <- J1$mle[ind,]
-
-    if (unull) {
+    if (isTRUE(unull)) {
       qs <- seq(q1, q2, len = k + 1)[-(k + 1)]
+      qlthresh <- mean(xdat <= ustar)
+    } else{
+      qs <- NULL
+      qlthresh <- NULL
     }
-    if(!is.null(plots)){
-    # Copy graphical elements from ellipsis
-    if (changepar) {
-      old.par <- par(no.readonly = TRUE)
-      on.exit(par(old.par))
-      par(mfrow = c(length(plots), 1),
-          mar = c(4.5, 4.5, 0.1, 0.1))
-    }
-    if (is.element("LRT", plots)) {
-      if (!UseQuantiles) {
-        plot(
-          qs,
-          c(rep(NA, 2), nl[, 2]),
-          xlab = "quantile",
-          ylab = "likelihood ratio statistic",
-          main = paste("p-value:", pval),
-          ...
-        )
-      } else {
-        plot(
-          u[-c(k + 1)],
-          c(rep(NA, 2), nl[, 2]),
-          bty = "l",
-          xlab = "threshold",
-          ylab = "likelihood ratio statistic",
-          main = paste("p-value:", pval),
-          ...
-        )
-      }
-    }
-
-    if (is.element("WN", plots)) {
-      if (!UseQuantiles) {
-        plot(qs,
-             c(NA, wn),
-             xlab = "quantile",
-             ylab = "white noise",
-             bty = "l",
-             ...)
-        abline(h = 0, col = 2)
-        abline(v = mean(xdat <= ustar), col = 4)
-      } else {
-        plot(u[-c(k + 1)],
-             c(NA, wn),
-             xlab = "threshold",
-             ylab = "white noise",
-             bty = "l",
-             ...)
-        abline(h = 0, col = 2)
-        abline(v = ustar, col = 4)
-      }
-    }
-
-    if (is.element("PS", plots)) {
-      TradCI <-
-        cbind(J1$mle[, 3] - qnorm(0.975) * sqrt(diag(J1$Cov.xi)),
-              J1$mle[, 3] + qnorm(0.975) * sqrt(diag(J1$Cov.xi)))
-      if (!UseQuantiles) {
-        plot(
-          qs,
-          J1$mle[, 3],
-          ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
-          xlab = "quantile",
-          bty = "l",
-          ylab = "shape",
-          ...
-        )
-        lines(qs, TradCI[, 1], lty = 2)
-        lines(qs, TradCI[, 2], lty = 2)
-        abline(v = mean(xdat <= ustar), col = 4)
-      } else {
-        plot(
-          u[-(k + 1)],
-          J1$mle[, 3],
-          ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
-          bty = "l",
-          xlab = "threshold",
-          ylab = "shape",
-          ...
-        )
-        lines(u[-(k + 1)], TradCI[, 1], lty = 2)
-        lines(u[-(k + 1)], TradCI[, 2], lty = 2)
-        abline(v = ustar, col = 4)
-      }
-    }
-  }
-    invisible(
-      list(
-        MLE = J1$mle,
-        Cov = J1$Cov.xi,
-        WN = wn,
-        LRT = nl,
-        pval = pval,
-        k = k,
-        thresh = ustar,
-        mle.u = theta.hat
-      )
+  #   if(!is.null(plots)){
+  #   # Copy graphical elements from ellipsis
+  #   if (changepar) {
+  #     old.par <- par(no.readonly = TRUE)
+  #     on.exit(par(old.par))
+  #     par(mfrow = c(length(plots), 1),
+  #         mar = c(4.5, 4.5, 0.1, 0.1))
+  #   }
+  #   if (is.element("LRT", plots)) {
+  #     if (!UseQuantiles) {
+  #       plot(
+  #         qs,
+  #         c(rep(NA, 2), nl[, 2]),
+  #         xlab = "quantile",
+  #         ylab = "likelihood ratio statistic",
+  #         main = paste("p-value:", pval),
+  #         ...
+  #       )
+  #     } else {
+  #       plot(
+  #         u[-c(k + 1)],
+  #         c(rep(NA, 2), nl[, 2]),
+  #         bty = "l",
+  #         xlab = "threshold",
+  #         ylab = "likelihood ratio statistic",
+  #         main = paste("p-value:", pval),
+  #         ...
+  #       )
+  #     }
+  #   }
+  #
+  #   if (is.element("WN", plots)) {
+  #     if (!UseQuantiles) {
+  #       plot(qs,
+  #            c(NA, wn),
+  #            xlab = "quantile",
+  #            ylab = "white noise",
+  #            bty = "l",
+  #            ...)
+  #       abline(h = 0, col = 2)
+  #       abline(v = mean(xdat <= ustar), col = 4)
+  #     } else {
+  #       plot(u[-c(k + 1)],
+  #            c(NA, wn),
+  #            xlab = "threshold",
+  #            ylab = "white noise",
+  #            bty = "l",
+  #            ...)
+  #       abline(h = 0, col = 2)
+  #       abline(v = ustar, col = 4)
+  #     }
+  #   }
+  #
+  #   if (is.element("PS", plots)) {
+  #     TradCI <-
+  #       cbind(J1$mle[, 3] - qnorm(0.975) * sqrt(diag(J1$Cov.xi)),
+  #             J1$mle[, 3] + qnorm(0.975) * sqrt(diag(J1$Cov.xi)))
+  #     if (!UseQuantiles) {
+  #       plot(
+  #         qs,
+  #         J1$mle[, 3],
+  #         ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+  #         xlab = "quantile",
+  #         bty = "l",
+  #         ylab = "shape",
+  #         ...
+  #       )
+  #       lines(qs, TradCI[, 1], lty = 2)
+  #       lines(qs, TradCI[, 2], lty = 2)
+  #       abline(v = mean(xdat <= ustar), col = 4)
+  #     } else {
+  #       plot(
+  #         u[-(k + 1)],
+  #         J1$mle[, 3],
+  #         ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+  #         bty = "l",
+  #         xlab = "threshold",
+  #         ylab = "shape",
+  #         ...
+  #       )
+  #       lines(u[-(k + 1)], TradCI[, 1], lty = 2)
+  #       lines(u[-(k + 1)], TradCI[, 2], lty = 2)
+  #       abline(v = ustar, col = 4)
+  #     }
+  #   }
+  # }
+    colnames(J1$mle) <- names(theta.hat) <- c("location", "scale", "shape")
+    colnames(J1$Cov.xi) <- rownames(J1$Cov.xi) <- NULL
+    ret_list <- list(
+      MLE = J1$mle,
+      Cov = J1$Cov.xi,
+      WN = as.numeric(wn),
+      LRT = nl,
+      pval = as.numeric(pval),
+      k = as.integer(k),
+      thresh = as.numeric(ustar),
+      qthresh = qlthresh,
+      cthresh = as.numeric(u),
+      qcthresh = qs,
+      mle.u = theta.hat,
+      model = "nhpp"
     )
+    class(ret_list) <- "mev_thdiag_wadsworth"
+    if(!is.null(plots)){
+      plot(ret_list,
+           plots = plots,
+           changepar = changepar,
+           UseQuantiles = UseQuantiles,
+           ...)
+    }
+    invisible(ret_list)
   }
 
 
@@ -403,7 +427,7 @@ W.diag <- function(xdat,
         )
       )
     }
-    if (unull) {
+    if (unull & !UseQuantiles) {
       u <- quantile(x, seq(q1, 1, len = k + 1))
     }
     wn <-
@@ -411,7 +435,7 @@ W.diag <- function(xdat,
     nl <- .norm_LRT(x = wn, u = u[-c(1, k + 1)])
 
     nlt <- NULL
-    for (j in 1:nbs) {
+    for (j in seq_len(nbs)) {
       nlt[j] <- max(.norm_LRT(x = rnorm(k - 1), u[-c(1, k + 1)])[, 2])
     }
 
@@ -425,131 +449,148 @@ W.diag <- function(xdat,
     ind <- u[-(k + 1)] == ustar
     theta.hat <- J1$mle[ind]
 
-    if (unull) {
-      qs <- seq(q1, q2, len = k + 1)[-(k + 1)]
+    if (isTRUE(unull)) {
+      qs <- as.numeric(seq(q1, q2, len = k + 1)[-(k + 1)])
+      qlthresh <- mean(x <= ustar)
+    } else{
+      qs <- NULL
+      qlthresh <- NULL
     }
-    if(!is.null(plots)){
-      if (changepar) {
-        old.par <- par(no.readonly = TRUE)
-        on.exit(par(old.par))
-        par(mfrow = c(length(plots), 1),
-            mar = c(4.5, 4.5, 0.1, 0.1))
-      }
-    if (is.element("LRT", plots)) {
-      if (unull && UseQuantiles) {
-        plot(
-          qs,
-          c(NA, NA, nl[, 2]),
-          bty = "l",
-          xlab = "quantile",
-          ylab = "likelihood ratio statistic",
-          main = paste("p-value:", pval),
-          ...
-        )
-      } else {
-        plot(
-          u[-c(k + 1)],
-          c(NA, NA, nl[, 2]),
-          bty = "l",
-          xlab = "threshold",
-          ylab = "likelihood ratio statistic",
-          main = paste("p-value:", pval),
-          ...
-        )
-      }
-    }
-
-    if (is.element("WN", plots)) {
-      if (unull && UseQuantiles) {
-        plot(qs,
-             c(NA, wn),
-             xlab = "quantile",
-             ylab = "white noise",
-             bty = "l",
-             ...)
-        abline(h = 0, col = 2)
-        abline(v = mean(x <= ustar), col = 4)
-      } else {
-        plot(u[-c(k + 1)],
-             c(NA, wn),
-             xlab = "threshold",
-             ylab = "white noise",
-             bty = "l",
-             ...)
-        abline(h = 0, col = 2)
-        abline(v = ustar, col = 4)
-      }
-    }
-
-    if (is.element("PS", plots)) {
-      TradCI <-
-        cbind(J1$mle - qnorm(0.975) * sqrt(diag(J1$Cov)),
-              J1$mle + qnorm(0.975) * sqrt(diag(J1$Cov)))
-      if (UseQuantiles) {
-        if (param == "InvRate") {
-          plot(
-            qs,
-            J1$mle,
-            ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
-            bty = "l",
-            xlab = "quantile",
-            ylab = expression(hat(eta)),
-            ...
-          )
-        } else if (param == "Rate") {
-          plot(
-            qs,
-            J1$mle,
-            ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
-            bty = "l",
-            xlab = "quantile",
-            ylab = expression(hat(theta)),
-            ...
-          )
-        }
-        lines(qs, TradCI[, 1], lty = 2)
-        lines(qs, TradCI[, 2], lty = 2)
-        abline(v = mean(x <= ustar), col = 4)
-      } else {
-        if (param == "InvRate") {
-          plot(
-            u[-(k + 1)],
-            J1$mle,
-            bty = "l",
-            ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
-            xlab = "threshold",
-            ylab = expression(hat(eta)),
-            ...
-          )
-        } else if (param == "InvRate") {
-          plot(
-            u[-(k + 1)],
-            J1$mle,
-            bty = "l",
-            ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
-            xlab = "threshold",
-            ylab = expression(hat(theta)),
-            ...
-          )
-        }
-        lines(u[-(k + 1)], TradCI[, 1], lty = 2)
-        lines(u[-(k + 1)], TradCI[, 2], lty = 2)
-        abline(v = ustar, col = 4)
-      }
-    }
-    }
-    invisible(
-      list(
+    # if(!is.null(plots)){
+    #   if (changepar) {
+    #     old.par <- par(no.readonly = TRUE)
+    #     on.exit(par(old.par))
+    #     par(mfrow = c(length(plots), 1),
+    #         mar = c(4.5, 4.5, 0.1, 0.1))
+    #   }
+    #   if (is.element("LRT", plots)) {
+    #     if (unull && UseQuantiles) {
+    #       plot(
+    #         qs,
+    #         c(NA, NA, nl[, 2]),
+    #         bty = "l",
+    #         xlab = "quantile",
+    #         ylab = "likelihood ratio statistic",
+    #         main = paste("p-value:", pval),
+    #         ...
+    #       )
+    #     } else {
+    #       plot(
+    #         u[-c(k + 1)],
+    #         c(NA, NA, nl[, 2]),
+    #         bty = "l",
+    #         xlab = "threshold",
+    #         ylab = "likelihood ratio statistic",
+    #         main = paste("p-value:", pval),
+    #         ...
+    #       )
+    #     }
+    #   }
+    #
+    #   if (is.element("WN", plots)) {
+    #     if (unull && UseQuantiles) {
+    #       plot(qs,
+    #            c(NA, wn),
+    #            xlab = "quantile",
+    #            ylab = "white noise",
+    #            bty = "l",
+    #            ...)
+    #       abline(h = 0, col = 2)
+    #       abline(v = mean(x <= ustar), col = 4)
+    #     } else {
+    #       plot(u[-c(k + 1)],
+    #            c(NA, wn),
+    #            xlab = "threshold",
+    #            ylab = "white noise",
+    #            bty = "l",
+    #            ...)
+    #       abline(h = 0, col = 2)
+    #       abline(v = ustar, col = 4)
+    #     }
+    #   }
+    #
+    #   if (is.element("PS", plots)) {
+    #     TradCI <-
+    #       cbind(J1$mle - qnorm(0.975) * sqrt(diag(J1$Cov)),
+    #             J1$mle + qnorm(0.975) * sqrt(diag(J1$Cov)))
+    #     if (UseQuantiles) {
+    #       if (param == "InvRate") {
+    #         plot(
+    #           qs,
+    #           J1$mle,
+    #           ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+    #           bty = "l",
+    #           xlab = "quantile",
+    #           ylab = expression(hat(eta)),
+    #           ...
+    #         )
+    #       } else if (param == "Rate") {
+    #         plot(
+    #           qs,
+    #           J1$mle,
+    #           ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+    #           bty = "l",
+    #           xlab = "quantile",
+    #           ylab = expression(hat(theta)),
+    #           ...
+    #         )
+    #       }
+    #       lines(qs, TradCI[, 1], lty = 2)
+    #       lines(qs, TradCI[, 2], lty = 2)
+    #       abline(v = mean(x <= ustar), col = 4)
+    #     } else {
+    #       if (param == "InvRate") {
+    #         plot(
+    #           u[-(k + 1)],
+    #           J1$mle,
+    #           bty = "l",
+    #           ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+    #           xlab = "threshold",
+    #           ylab = expression(hat(eta)),
+    #           ...
+    #         )
+    #       } else if (param == "InvRate") {
+    #         plot(
+    #           u[-(k + 1)],
+    #           J1$mle,
+    #           bty = "l",
+    #           ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+    #           xlab = "threshold",
+    #           ylab = expression(hat(theta)),
+    #           ...
+    #         )
+    #       }
+    #       lines(u[-(k + 1)], TradCI[, 1], lty = 2)
+    #       lines(u[-(k + 1)], TradCI[, 2], lty = 2)
+    #       abline(v = ustar, col = 4)
+    #     }
+    #   }
+    # }
+    ret_list <- list(
         MLE = J1$mle,
         Cov = J1$Cov,
-        WN = wn,
+        WN = as.numeric(wn),
         LRT = nl,
-        pval = pval,
-        k = k,
-        thresh = ustar,
-        mle.u = theta.hat
+        pval = as.numeric(pval),
+        k = as.integer(k),
+        thresh = as.numeric(ustar),
+        qthresh = qlthresh,
+        cthresh = as.numeric(u),
+        qcthresh = qs,
+        mle.u = as.numeric(theta.hat),
+        model = switch(param,
+                       "InvRate" = "invexp",
+                       "Rate" = "exp")
       )
-    )
+    class(ret_list) <- "mev_thdiag_wadsworth"
+    if(!is.null(plots)){
+      plot(ret_list,
+           plots = plots,
+           changepar = changepar,
+           UseQuantiles = UseQuantiles,
+           ...)
+    }
+    invisible(ret_list)
   }
 
 
@@ -787,3 +828,115 @@ W.diag <- function(xdat,
   C[row(C) + 1 == col(C)] <- -1
   return(C)
 }
+
+
+plot.mev_thdiag_wadsworth <-
+  function(x,
+           plots = c("LRT", "WN", "PS"),
+           ...) {
+    args <- list(...)
+    args$`...` <- NULL #probably not needed anymore
+    if(is.null(args$UseQuantiles)){
+      UseQuantiles <- FALSE
+    } else{
+      UseQuantiles <- args$UseQuantiles
+      args$UseQuantiles <- NULL
+      if(is.null(x$qlevel)){
+        UseQuantiles <- FALSE
+      }
+    }
+    model <- match.arg(arg = x$model,
+                       choices = c("nhpp","exp", "invexp"),
+                       several.ok = FALSE)
+    plots <- match.arg(plots,
+                       choices = c("LRT", "WN", "PS"),
+                       several.ok = TRUE)
+    if(length(plots) < 1){
+      stop("No choice selected; aborting.")
+    }
+    # Copy graphical elements from ellipsis
+    if (isTRUE(args$changepar)) {
+      old.par <- par(no.readonly = TRUE)
+      on.exit(par(old.par))
+      par(mfrow = c(length(plots), 1),
+          mar = c(4.5, 4.5, 0.5, 0.5))
+    }
+    args$changepar <- NULL
+    if(!UseQuantiles){
+      xp <- x$cthresh[-c(x$k + 1)]
+      xlab <- "threshold"
+    } else{
+      xp <- x$qthresh
+      xlab <- "quantile"
+    }
+    args$x <- args$y <- args$xlab <- args$ylab <- NULL
+    if(is.null(args$bty)){
+      args$bty = "l"
+    }
+    if (is.element("LRT", plots)) {
+      do.call(what = plot,
+              args = c(list(
+        x = xp,
+        y = c(rep(NA, 2), x$LRT[, 2]),
+        xlab = xlab,
+        ylab = "likelihood ratio"
+              ), args)
+      )
+      mtext(cex = 0.8,
+            text = paste("p-value:", format.pval(pv = x$pval, eps = 1e-4)),
+            side = 3,
+            adj = 1)
+    }
+
+    if (is.element("WN", plots)) {
+      do.call(what = plot,
+              args = c(list(
+                x = xp,
+                 y = c(NA, x$WN),
+                 xlab = xlab,
+                 ylab = "white noise"),
+                args))
+      abline(h = 0, col = 2)
+      abline(v = ifelse(is.null(x$qlevel),
+                        x$qthresh,
+                        x$thresh),
+             col = 4)
+    }
+    # browser()
+    if (is.element("PS", plots)) {
+      col <- switch(model, nhpp = 3, exp = 1, invexp = 1)
+      TradCI <-
+        cbind(as.matrix(x$MLE)[, col] - qnorm(0.975) * sqrt(diag(x$Cov)),
+              as.matrix(x$MLE)[, col] + qnorm(0.975) * sqrt(diag(x$Cov)))
+      do.call(plot, args = c(list(
+        x = xp,
+        y = as.matrix(x$MLE)[, col],
+        ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+        xlab = xlab,
+        ylab = switch(model,
+                      "nhpp" = "shape",
+                      "invexp" = expression(hat(eta)),
+                      "exp" = expression(hat(theta)))),
+        args))
+      lines(xp, TradCI[, 1], lty = 2)
+      lines(xp, TradCI[, 2], lty = 2)
+      abline(v = ifelse(is.null(x$qlevel),
+                        x$qthresh,
+                        x$thresh),
+             col = 4)
+    }
+    return(invisible(NULL))
+  }
+
+
+
+print.mev_thdiag_wadsworth <-
+  function(x, digits = max(3, getOption("digits") - 3), ...) {
+    cat("Threshold selection method: Wadsworth's white noise test\n based on sequential Poisson process superposition")
+    cat(switch(x$model,
+               "nhpp" = "inhomogeneous Poisson process (shape)",
+               "invexp" = "coefficient of tail dependence \n(exponential, reciprocal rate)",
+               "exp" = "coefficient of tail dependence \n(exponential, rate)"), "\n")
+    cat("Selected threshold:", round(x$thresh, digits), "\n")
+    return(invisible(NULL))
+  }
