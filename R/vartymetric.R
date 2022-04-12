@@ -22,6 +22,7 @@
 #' @param dist string indicating norm, either \code{l1} for absolute error or \code{l2} for quadratic error
 #' @param B number of bootstrap replications
 #' @param neval number of points at which to estimate the metric. Default to 1000L
+#' @param ci level of symmetric confidence interval. Default to 0.95
 #' @return an invisible list with components
 #' \itemize{
 #' \item{\code{thresh}}{scalar threshold minimizing criterion}

@@ -356,6 +356,7 @@ egp.fitrange <-
 }
 
 #' @inheritParams egp
+#' @param ... additional arguments for the plot function, currently ignored
 #' @rdname fit.egp
 #' @export
 tstab.egp <- function(xdat,
