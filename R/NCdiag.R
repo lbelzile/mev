@@ -24,8 +24,7 @@
 #' Two-dimensional optimisation using 2D-optimization \code{\link[ismev]{ismev}} using the routine
 #' from \code{gpd.fit} from the \code{ismev} library, with the addition of the algebraic gradient.
 #' The choice of \code{GP.fit} should make no difference but the options were kept.
-#' \bold{Warning}: the function is not robust
-#' and will not recover from failure of the maximization routine, returning various error messages.
+#' \bold{Warning}: the function will not recover from failure of the maximization routine, returning various error messages.
 #'
 #'
 #' @references Grimshaw (1993). Computing Maximum Likelihood Estimates for the Generalized
@@ -72,7 +71,7 @@ NC.diag <- function(
   }))  # number of excesses of each threshold
   z$n.between <- c(-diff(z$nexc), z$nexc[n_u])
   # sample sizes between thresholds (and above the highest threshold)
-  for (i in 1:n_u) {
+  for (i in seq_len(n_u)) {
     # loop over all thresholds
     if (GP.fit == "nlm") {
       temp <- .gpd_1D_fit(x, u[i], show = FALSE, xi.tol = xi.tol, calc.se = F)  # threshold u[j1], 1D max, algebraic Hessian
@@ -232,48 +231,75 @@ NC.diag <- function(
       z$LRT.test.stats[i] <- temp[1]
     }
   }  #.......................# end of loop over thresholds
-  z$u <- u[1:(n_u - 1)]  # (lowest) thresholds for each test
+  z$u <- u[seq_len(n_u - 1)]  # (lowest) thresholds for each test
+  class(z) <- "mev_thdiag_northropcoleman"
   if(isTRUE(plot)){
+    plot(z, size = size, ...)
+  }
+  invisible(z)
+}
+
+plot.mev_thdiag_northropcoleman <- function(x, size = 0.05, ...){
+  args <- list(...)
+  n_u <- length(x$u) + 1L
     # Backward compatibility
     if(!is.null(args$my.xlab)){
       args$xlab <- args$my.xlab
       args$my.xlab <- NULL
     }
-  # Produce the plot ......
-  if(is.null(args$ylab)){
-    args$ylab <- "p-value"
-  }
-  if (is.null(args$xlab)){
-    args$xlab <- "threshold"
-  }
-  if(is.null(args$type)){
-    args$type <- "b"
-  }
+    # Produce the plot ......
+    if(is.null(args$ylab)){
+      args$ylab <- "p-value"
+    }
+    if (is.null(args$xlab)){
+      args$xlab <- "threshold"
+    }
+    if(is.null(args$type)){
+      args$type <- "b"
+    }
     if(is.null(args$pch)){
       args$pch <- 16
     }
     if(is.null(args$ylim)){
       args$ylim <- c(0,1)
     }
-  args$x <- z$u
-  args$y <- z$e.p.values
-  do.call(what = "plot", args = args)
-  axis(3, at = u[1:n_u],
-       labels = z$nexc[1:n_u],
-       cex.axis = 0.7)
-  if (do.LRT){
-    lines(z$u, z$LRT.p.values,
-          type = "b",
-          lty = 4,
-          pch = 2)
-  }
-  if (!is.null(size)){
-    abline(h = size, lty = 2)
-  }
-  }
-  invisible(z)
+    args$x <- x$u
+    args$y <- x$e.p.values
+    do.call(what = "plot", args = args)
+    axis(3, at = x$u,
+         labels = x$nexc[-length(x$nexc)],
+         cex.axis = 0.7)
+    if (!is.null(x$LRT.p.values)){
+      lines(x$u, x$LRT.p.values,
+            type = "b",
+            lty = 4,
+            pch = 2)
+    }
+    if (!is.null(size)){
+      if(isTRUE(all(is.numeric(size),
+                    size < 1, size > 0))){
+      abline(h = size, lty = 2)
+      }
+    }
+  return(invisible(NULL))
 }
 
+
+print.mev_thdiag_northropcoleman <-
+  function(x, digits = max(3, getOption("digits") - 3), level = 0.05, ...) {
+    cat("Threshold selection method: Northrop and Coleman penultimate model.\n")
+    method <- "Score test"
+    thselect <- x$thresh[which.max(which(x$e.p.values > level))]
+    if(!is.null(x$LRT.p.values)){
+      method <- "Likelihood ratio test"
+      thselect <- x$thresh[which.max(which(x$LRT.p.values > level))]
+    }
+    cat(method, "for piecewise generalized Pareto models.", "\n")
+    cat("Largest threshold above which we always fail to reject null hypothesis of common generalized Pareto at level", level,"\n")
+    cat("Selected threshold:", round(thselect, digits), "\n")
+
+    return(invisible(NULL))
+  }
 #------------------------------------------------------------------------------#
 # Algebraic calculation of score vector #
 #------------------------------------------------------------------------------#
