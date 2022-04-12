@@ -897,12 +897,11 @@ plot.mev_thdiag_wadsworth <-
                  ylab = "white noise"),
                 args))
       abline(h = 0, col = 2)
-      abline(v = ifelse(is.null(x$qlevel),
+      abline(v = ifelse(UseQuantiles,
                         x$qthresh,
                         x$thresh),
              col = 4)
     }
-    # browser()
     if (is.element("PS", plots)) {
       col <- switch(model, nhpp = 3, exp = 1, invexp = 1)
       TradCI <-
@@ -920,7 +919,7 @@ plot.mev_thdiag_wadsworth <-
         args))
       lines(xp, TradCI[, 1], lty = 2)
       lines(xp, TradCI[, 2], lty = 2)
-      abline(v = ifelse(is.null(x$qlevel),
+      abline(v = ifelse(UseQuantiles,
                         x$qthresh,
                         x$thresh),
              col = 4)
