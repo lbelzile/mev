@@ -14,7 +14,7 @@ based on the non-homogeneous Poisson process likelihood"><!-- mathjax --><script
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.5000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,7 @@ based on the non-homogeneous Poisson process likelihood</p>
   nbs <span class="op">=</span> <span class="fl">1000</span>,
   alpha <span class="op">=</span> <span class="fl">0.05</span>,
   plots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"LRT"</span>, <span class="st">"WN"</span>, <span class="st">"PS"</span><span class="op">)</span>,
-  UseQuantiles <span class="op">=</span> <span class="cn">TRUE</span>,
+  UseQuantiles <span class="op">=</span> <span class="cn">FALSE</span>,
   changepar <span class="op">=</span> <span class="cn">TRUE</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
@@ -112,18 +112,22 @@ but rather the uppermost threshold will be at the \((q_2-1/k)\) quantile).</p></
 <dt>changepar</dt>
 <dd><p>logical; if <code>TRUE</code>, the graphical parameters (via a call to <code>par</code>) are modified.</p></dd>
 <dt>...</dt>
-<dd><p>additional parameters passed to <code>plot</code>, overriding defaults.</p></dd>
+<dd><p>additional parameters passed to <code>plot</code>, overriding defaults including</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>plots of the requested diagnostics and an invisible list with components</p><ul><li><p><code>MLE</code>  maximum likelihood estimates from all thresholds</p></li>
-<li><p><code>Cov</code>  joint asymptotic covariance matrix for \(\xi\), \(\eta\) or \(\eta^{-1}\).</p></li>
-<li><p><code>WN</code>  values of the white noise process.</p></li>
-<li><p><code>LRT</code> values of the likelihood ratio test statistic vs threshold.</p></li>
-<li><p><code>pval</code> P-value of the likelihood ratio test.</p></li>
-<li><p><code>k</code>  final number of thresholds used.</p></li>
-<li><p><code>thresh</code> threshold selected by the likelihood ratio procedure.</p></li>
-<li><p><code>mle.u</code> maximum likelihood estimates from selected threshold.</p></li>
+    <p>plots of the requested diagnostics and an invisible list with components</p><ul><li><p><code>MLE</code>maximum likelihood estimates from all thresholds</p></li>
+<li><p><code>Cov</code>joint asymptotic covariance matrix for \(\xi\), \(\eta\) or \(\eta^{-1}\).</p></li>
+<li><p><code>WN</code>values of the white noise process</p></li>
+<li><p><code>LRT</code>values of the likelihood ratio test statistic vs threshold</p></li>
+<li><p><code>pval</code><em>P</em>-value of the likelihood ratio test</p></li>
+<li><p><code>k</code>final number of thresholds used</p></li>
+<li><p><code>thresh</code>threshold selected by the likelihood ratio procedure</p></li>
+<li><p><code>qthresh</code>quantile level of threshold selected by the likelihood ratio procedure</p></li>
+<li><p><code>cthresh</code>vector of candidate thresholds</p></li>
+<li><p><code>qcthresh</code>quantile level of candidate thresholds</p></li>
+<li><p><code>mle.u</code>maximum likelihood estimates for the selected threshold</p></li>
+<li><p><code>model</code>model fitted</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -177,7 +181,7 @@ Scott D. Grimshaw, Raphael Huser.</p>
 
 <div class="pkgdown-footer-right">
   <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+2.0.2.9000.</p>
 </div>
 
     </footer></div>

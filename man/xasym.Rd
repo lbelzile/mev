@@ -64,7 +64,7 @@ Define
 \deqn{ \varphi(u) = \frac{\varphi_{+} - \varphi_{-}}{\varphi_{+} + \varphi_{-}}}
 
 The empirical likelihood estimator, derived for max-stable vectors with unit Frechet margins, is
-\deqn{\frac{\sum_i p_i I(w_i \leq 0.5) - 0.5}{0.5 - 2*\sum_i p_i(0.5-w_i)*I(w_i \leq 0.5)}}
+\deqn{\frac{\sum_i p_i I(w_i \leq 0.5) - 0.5}{0.5 - 2\sum_i p_i(0.5-w_i) I(w_i \leq 0.5)}}
 where \eqn{p_i} is the empirical likelihood weight for observation \eqn{i} and \eqn{w_i} is the pseudo-angle associated to the first coordinate.
 }
 \examples{

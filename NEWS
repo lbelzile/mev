@@ -7,6 +7,7 @@ New:
 * maximum likelihood estimation routines (`fit.gpd`, `fit.gev`, etc.) now accept fixed parameters
 * mean residual life plots with weighted least square fit
 * coefficient of variation tests for threshold selection
+* Varty et al. metric based threshold selection diagnostic
 * anova methods for `mev_gpd` and `mev_gev` objects
 * `rmev` and `rmevspec` now accept a distance matrix in place of coordinates for spatial models.
 * new datasets
@@ -14,7 +15,7 @@ New:
 
 Changes
 
-* Functions W.diag and NC.diag now have additional arguments to control plot and remove graphics
+* Functions W.diag and NC.diag now have S3 plot and print methods
 * Changes to arguments (backward compatible) to xdat throughout
 * Many dependencies used by single functions are now listed in Suggest.
 

@@ -26,6 +26,8 @@ vmetric.diag(
 \item{dist}{string indicating norm, either \code{l1} for absolute error or \code{l2} for quadratic error}
 
 \item{neval}{number of points at which to estimate the metric. Default to 1000L}
+
+\item{ci}{level of symmetric confidence interval. Default to 0.95}
 }
 \value{
 an invisible list with components

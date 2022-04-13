@@ -4,14 +4,14 @@ year <- sub("-.*", "", meta$Date)
 note <- sprintf("R package version %s", meta$Version)
 citEntry(
   entry    = "manual",
-  title    = "{mev}: Multivariate Extreme Value Distributions",
+  title    = "{mev}: Modelling Extreme Values",
   author   = "Leo Belzile et al.",
   year     = year,
   url      = "https://cran.r-project.org/web/packages/mev/",
   note     = note,
   textVersion =
          paste("L. Belzile et al.",
-               "mev: Multivariate Extreme Value Distributions.",
+               "\texttt{mev}: Multivariate Extreme Value Distributions.",
                "R Package",
                "URL: https://cran.r-project.org/web/packages/mev/")
 )

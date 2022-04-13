@@ -39,6 +39,8 @@ tstab.egp(
 \item{nint}{optional integer number specifying the number of thresholds to test.}
 
 \item{changepar}{logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.}
+
+\item{...}{additional arguments for the plot function, currently ignored}
 }
 \value{
 \code{fit.egp} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors

@@ -13,7 +13,7 @@
 # and the coefficient of extremal asymmetry as \eqn{\varphi = \lim_{u \to 1} \varphi(u)}.
 #'
 #' The empirical likelihood estimator, derived for max-stable vectors with unit Frechet margins, is
-#' \deqn{\frac{\sum_i p_i I(w_i \leq 0.5) - 0.5}{0.5 - 2*\sum_i p_i(0.5-w_i)*I(w_i \leq 0.5)}}
+#' \deqn{\frac{\sum_i p_i I(w_i \leq 0.5) - 0.5}{0.5 - 2\sum_i p_i(0.5-w_i) I(w_i \leq 0.5)}}
 #' where \eqn{p_i} is the empirical likelihood weight for observation \eqn{i} and \eqn{w_i} is the pseudo-angle associated to the first coordinate.
 #' @param data an \code{n} by 2 matrix of observations
 #' @param u vector of probability levels at which to evaluate extremal asymmetry
