@@ -239,6 +239,7 @@ NC.diag <- function(
   invisible(z)
 }
 
+#' @export
 plot.mev_thdiag_northropcoleman <- function(x, size = 0.05, ...){
   args <- list(...)
   n_u <- length(x$u) + 1L

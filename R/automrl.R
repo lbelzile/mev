@@ -24,7 +24,7 @@
 #' @param xdat [numeric] vector of observations
 #' @param kmax [integer] maximum number of order statistics
 #' @param thresh [numeric] vector of thresholds; if missing, uses all order statistics from the 20th largest until \code{kmax} as candidates
-#' @param plot [logical] if \code{TRUE}, return a plot of the mean residual life plot with the fitted slope
+#' @param plot [logical] if \code{TRUE} (default), return a plot of the mean residual life plot with the fitted slope
 #' and the chosen threshold
 #' @param ... additional arguments, currently ignored
 #' @export
@@ -33,7 +33,7 @@ automrl <- function(
       xdat,
       kmax,
       thresh,
-      plot = FALSE,
+      plot = TRUE,
       ...){
    k <- 9
    # expected conditional exceedances based

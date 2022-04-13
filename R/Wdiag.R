@@ -830,7 +830,7 @@ W.diag <- function(xdat,
   return(C)
 }
 
-
+#' @export
 plot.mev_thdiag_wadsworth <-
   function(x,
            plots = c("LRT", "WN", "PS"),

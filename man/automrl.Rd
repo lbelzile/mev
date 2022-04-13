@@ -4,7 +4,7 @@
 \alias{automrl}
 \title{Automated mean residual life plots}
 \usage{
-automrl(xdat, kmax, thresh, plot = FALSE, ...)
+automrl(xdat, kmax, thresh, plot = TRUE, ...)
 }
 \arguments{
 \item{xdat}{[numeric] vector of observations}
@@ -13,7 +13,7 @@ automrl(xdat, kmax, thresh, plot = FALSE, ...)
 
 \item{thresh}{[numeric] vector of thresholds; if missing, uses all order statistics from the 20th largest until \code{kmax} as candidates}
 
-\item{plot}{[logical] if \code{TRUE}, return a plot of the mean residual life plot with the fitted slope
+\item{plot}{[logical] if \code{TRUE} (default), return a plot of the mean residual life plot with the fitted slope
 and the chosen threshold}
 
 \item{...}{additional arguments, currently ignored}

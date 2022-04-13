@@ -5,7 +5,7 @@ note <- sprintf("R package version %s", meta$Version)
 citEntry(
   entry    = "manual",
   title    = "{mev}: Modelling Extreme Values",
-  author   = "Leo Belzile et al.",
+  author   = "Leo Belzile and others",
   year     = year,
   url      = "https://cran.r-project.org/web/packages/mev/",
   note     = note,
