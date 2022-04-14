@@ -62,7 +62,7 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
           stop("Invalid vector of probabilities specified")
       }
     } else if(!missing(thresh) & missing(q)){
-      q <- thresh
+      q <- NULL #ecdf(xdat)[thresh]
     }
     # Define functions
 
@@ -94,15 +94,18 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
     }
     Vn <- function(par, Ck, N0) {
         mean((2 * I(Ck != 0)/par^2 + Ck^2 - 4 * Ck/par - Dpn(par, Ck, N0)/In(par, Ck, N0) * ll.gap.score.i(par, Ck))^2)
-        # Typo in Suveges and Davison (2010) and Suveges(2015) - should be squared Otherwise the second part of the expression vanishes
+        # Typo in Suveges and Davison (2010) and Suveges(2015) - should be squared
+        # Otherwise the second part of the expression vanishes
         # since it equals cst * score equation
     }
     Tn <- function(par, Ck, N0) {
         length(Ck) * (Jn(par, Ck, N0) - In(par, Ck, N0))^2/Vn(par, Ck, N0)
     }
 
-    # Interexceedance time Define containers
-    IMT <- llval <- mles <- matrix(0, ncol = K, nrow = length(q))
+    # Interexceedance time
+    # Define containers
+    IMT <- llval <- mles <-
+      matrix(0, ncol = K, nrow = length(thresh))
     # Exceedance values
     if (length(thresh) > 1) {
         exceeds <- lapply(sapply(thresh, function(th) {
@@ -113,8 +116,8 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
     } else {
         stop("Invalid threshold")
     }
-    for (k in 1:K) {
-        for (ind in 1:length(q)) {
+    for (k in seq_len(K)) {
+        for (ind in seq_along(thresh)) {
             # Interexceedance times, scaled by frequency
             Ck <- ((length(exceeds[[ind]]) + 1)/length(xdat)) * pmax(exceeds[[ind]] - k, 0)
             N0 <- sum(Ck == 0)  #Interclusters
@@ -131,56 +134,112 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
         }
         pvals <- 1 - pchisq(IMT, df = 1)
     }
+  ret_list <- list(IMT = IMT,
+                  pvals = pvals,
+                  loglik = llval,
+                  mle = mles,
+                  threshold = thresh,
+                  q = q,
+                  K = K)
+  class(ret_list) <- "mev_thdiag_infomat"
+  if(isTRUE(plot)){
+    plot(ret_list)
+  }
+  invisible(ret_list)
+}
 
-    if (plot) {
-      cols <-
-        colorRampPalette(
-          colors = c("red", "white", "blue"),
-          bias = 4.5,
-          space = "rgb"
-        )(100)
-      image(
-        x = q,
-        y = seq(0.5, K + 0.5, by = 1),
-        z = ceiling(100 * pvals),
-        breaks = 1:101,
-        col = cols,
-        ylab = "K",
-        main = "Information matrix test",
-        xlab = "quantile",
-        lab = c(length(q), K, 3)
-      )
-      allpos <- expand.grid(1:length(q), 1:K)
-      text(
-        x = q[allpos[, 1]],
-        y = allpos[, 2],
-        labels = round(IMT, 2),
-        col = c(rep("black", 50), rep("white", 50))[ceiling(100 *
-                                                              pvals)]
-      )  #
-      text(
-        x = q[allpos[, 1]],
-        y = allpos[, 2],
-        labels = paste0("(", round(pvals, 2), ")"),
-        cex = 0.75,
-        pos = 1,
-        col = c(rep("black",
-                    50), rep("white", 50))[ceiling(100 * pvals)]
-      )  #
-      mtext(
-        side = 3,
-        line = 0,
-        text = "Test statistic (p-value)",
-        adj = 1
-      )
-    }
-    invisible(list(IMT = IMT,
-                   pvals = pvals,
-                   loglik = llval,
-                   mle = mles,
-                   threshold = thresh,
-                   q = q,
-                   K = K))
+#' @export
+print.mev_thdiag_infomat <-
+  function(x,
+           ...){
+  pvals <- as.data.frame(formatC(x$pvals,
+                                 digits = 2,
+                                 width = 3,
+                                 format = "f"))
+  pvals[x$pvals < 0.01] <- "<0.01"
+  colnames(pvals) <- paste0("K=",seq_len(x$K))
+  rownames(pvals) <- format(as.numeric(x$threshold),
+                            trim = TRUE,
+                            digits = 3,
+                            nsmall=0)
+  cat("Suveges and Davison information matrix test\n")
+  cat("p-values for thresholds (row) and gap size (col)\n\n")
+  print(pvals)
+  }
+
+#' @export
+plot.mev_thdiag_infomat <- function(x,
+                                    type = c("matplot",
+                                             "heatmap"),
+                                    xlab = c("threshold",
+                                             "quantile"),
+                                    ...){
+  type <- match.arg(type)
+  xlab <- match.arg(xlab)
+  if(is.null(x$q)){
+    xlab <- "threshold"
+  }
+  xp <- switch(xlab,
+               "threshold" = x$threshold,
+               "quantile" = x$q)
+  if(type == "heatmap"){
+    cols <-
+      colorRampPalette(
+        colors = c("red", "white", "blue"),
+        bias = 4.5,
+        space = "rgb"
+      )(100)
+    image(
+      x = 1:length(xp),
+      y = seq(0.5, x$K + 0.5, by = 1),
+      z = ceiling(100 * x$pvals),
+      breaks = 1:101,
+      col = cols,
+      ylab = "K",
+      main = "Information matrix test",
+      xlab = xlab,
+      lab = c(length(x$threshold), x$K, 3),
+      xaxt = 'n'
+    )
+    axis(side = 1,
+         at = 1:length(xp),
+         labels = format(xp,
+                         trim = TRUE,
+                         digits = 3, nsmall=0))
+    allpos <- expand.grid(1:length(x$threshold), 1:x$K)
+    text(
+      x = allpos[, 1],
+      y = allpos[, 2],
+      labels = round(x$IMT, 2),
+      col = c(rep("black", 50),
+              rep("white", 50))[ceiling(100 *
+                                                            x$pvals)]
+    )  #
+    text(
+      x = allpos[, 1],
+      y = allpos[, 2],
+      labels = paste0("(", round(x$pvals, 2), ")"),
+      cex = 0.75,
+      pos = 1,
+      col = c(rep("black",
+                  50), rep("white", 50))[ceiling(100 * x$pvals)]
+    )  #
+    mtext(
+      side = 3,
+      line = 0,
+      text = "Test statistic (p-value)",
+      adj = 1
+    )
+  } else if(type == "matplot"){
+    matplot(x = xp,
+            y = x$pvals,
+            type = "b",
+            xlab = xlab,
+            ylab = "p-value",
+            yaxs = "i",
+            ylim = c(0,1),
+            bty = "l")
+  }
 }
 
 
