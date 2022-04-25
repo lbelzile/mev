@@ -472,7 +472,7 @@ NumericVector rPBrownResnick_old (int index, NumericMatrix Sigma){
 
 NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
   int d = loc.n_rows;
-  if(index < 0 || (unsigned) index >= d) Rcpp::stop("Invalid index in rPSmith");
+  if(index < 0 || index >= d) Rcpp::stop("Invalid index in rPSmith");
   arma::vec mu = arma::vec(Sigma.n_cols);
   //arma::rowvec mut = arma::rowvec(d);
   mu.zeros(); //mut.zeros();
@@ -500,7 +500,7 @@ NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
 //[[Rcpp::export(.rPSmith)]]
 NumericVector rPSmith (int index, arma::mat Sigma_chol, arma::mat loc){
   int d = loc.n_rows;
-  if(index < 0 || (unsigned) index >= d) Rcpp::stop("Invalid index in rPSmith");
+  if(index < 0 || index >= d) Rcpp::stop("Invalid index in rPSmith");
   arma::vec mu = arma::vec(Sigma_chol.n_cols);
   //arma::rowvec mut = arma::rowvec(d);
   mu.zeros(); //mut.zeros();
@@ -709,7 +709,7 @@ NumericMatrix rexstudspec(int n, arma::mat sigma, NumericVector al){
   arma::mat samp(n, d);
   IntegerVector intsamps = sample_qty(n, d);
   int r = 0;
-  for(int j = 0; (unsigned) j < d; j++){
+  for(int j = 0; j < d; j++){
     if(intsamps[j] > 0){
       samp.rows(r, r+intsamps[j]-1) = mvrtXstud(intsamps[j], sigma, alpha, j);
       r += intsamps[j];
@@ -909,7 +909,7 @@ NumericMatrix rpairbetaspec(int n, int d, double alpha, NumericVector beta){
   }
   int nmix = d*(d-1)/2;
   IntegerVector ncat = sample_qty(n, nmix);
-  IntegerVector order = Rcpp::sample(n = n, n, false);
+  IntegerVector order = Rcpp::sample(n, n, false);
   int ncatot = 0;
   int m = 0;
   for(int i=0; i<(d-1); i++){
@@ -1061,7 +1061,7 @@ NumericMatrix rwexpbsspec(int n, int d, NumericVector alpha, NumericVector beta)
     Rcpp::stop("Invalid input for the weighted exponential model.");
   }
   IntegerVector ncat = sample_qty(n, d);
-  IntegerVector order = Rcpp::sample(n = n, n, false);
+  IntegerVector order = Rcpp::sample(n, n, false);
   NumericMatrix vtheta(1, d-1);
   int ncatot = 0;
   for(int i=0; i<d; i++){

@@ -55,6 +55,8 @@ List Zhang_Stephens(NumericVector x, NumericVector init, NumericVector adapt_sd=
     std::sort(sigmap.begin(), sigmap.end());
     scale0 = 1.0/(2*sigmap[3]);
     xi0 = 1.0;
+  } else{
+   Rcpp::stop("Invalid `method` for Zhang and Stephens algorithm");
   }
 
   //Initialization of the algorithm

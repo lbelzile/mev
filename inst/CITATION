@@ -7,11 +7,11 @@ citEntry(
   title    = "{mev}: Modelling Extreme Values",
   author   = "Leo Belzile and others",
   year     = year,
-  url      = "https://cran.r-project.org/web/packages/mev/",
+  url      = "https://CRAN.R-project.org/package=mev",
   note     = note,
   textVersion =
          paste("L. Belzile et al.",
                "\texttt{mev}: Multivariate Extreme Value Distributions.",
                "R Package",
-               "URL: https://cran.r-project.org/web/packages/mev/")
+               "URL: https://CRAN.R-project.org/package=mev")
 )
