@@ -52,9 +52,9 @@ taildep <- function (data, u = NULL,
   if((! length(depmeas) %in% c(1L, 2L)) || !all(depmeas  %in% c(1L, 2L))){
     stop("Invalid argument for \"depmeas\": must be either \"eta\",\"chi\" or both.")
   }
-  if(! (is.list(method) && isTRUE(all(names(method) %in% depmeas_names)))){
+  if(! (is.list(method) && isTRUE(all(depmeas_names %in% names(method))))){
     stop(paste0("\"method\" should be a list with components ",
-               paste(depmeas, collapse = " and "),"."))
+               paste(depmeas_names[depmeas], collapse = " and "),"."))
   }
   data <- as.matrix(data)
   data <- na.omit(data)

@@ -1,5 +1,13 @@
+# mev v. current
+==============
+
+## Fixes:
+
+* `taildep` function now correctly check choice of estimators against list of methods
+
 # mev v.1.14
 ==============
+
 ## New:
 
 * bivariate coefficient of extremal asymmetry
@@ -151,6 +159,7 @@
 
 # mev v1.7 (Release date: 2016-06-07)
 ==============
+
 ## New:
 
 * ext.index Extremal index estimates based on interexceedance and gap times
