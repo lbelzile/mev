@@ -145,6 +145,8 @@ gpdtopar <- function(dat, loc = 0, scale, shape, lambdau = 1) {
 likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud", "log"),
                    likt = c("mgp", "pois", "binom"), lambdau = 1, ...) {
   # Rename arguments
+  stopifnot(length(thresh) == 1L,
+            is.numeric(thresh))
   tdat <- dat
   N <- nrow(dat)
   D <- ncol(dat)
@@ -307,6 +309,8 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
 #' @export
 clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model = c("br", "xstud", "log"),
                     likt = c("mgp", "pois", "binom"), lambdau = 1, ...) {
+  stopifnot(length(thresh) == 1L,
+            is.numeric(thresh))
 
   # Rename arguments
   tdat <- dat
@@ -401,6 +405,7 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
   # if(isTRUE(any(ifelse(shape >= 0, margmthresh < (B - shape / A), mmax > (B - shape/A))))){
   #  return(-Inf)
   # }
+
   # Compute marginal transformation and Jacobian
   tu <- rep(0, D)
   yth <- rep(0, D)
@@ -533,7 +538,8 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
     }
     exponentMeasure <- sum(unlist(pro)[(1 + N):(D + N)] / tu)
     intens <- sum(unlist(pro)[1:N])
-  } else { # Model is logistic
+  } else { # Logistic (Gumbel) multivariate model
+    #tdat <- tdat[,numAbovePerRow>0]
     lVfunlog <- function(x, alpha) {
       if (is.null(dim(x))) {
         alpha * log(sum(x^(-1 / alpha)))
@@ -553,7 +559,7 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
       falf <- c(log(alpha), sapply(2:D, function(s) {
         lfalfacto1(alpha, s)
       }))
-      sum(-numAbovePerRow * log(alpha) + falf[numAbovePerRow]) -
+      -sum(numAbovePerRow) * log(alpha) + sum(falf[numAbovePerRow]) -
         (1 / alpha + 1) * sum(log(x[!censored])) + sum((alpha - numAbovePerRow) * lV) / alpha
     }
     intens <- ldVfunlog(x = cdat, censored = censored, alpha = alpha, numAbovePerRow = numAbovePerRow, lV = lVx)
