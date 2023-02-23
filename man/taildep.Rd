@@ -10,11 +10,11 @@ taildep(
   nq = 40,
   qlim = c(0.8, 0.99),
   depmeas = c("eta", "chi"),
-  method = list(eta = c("emp", "betacop", "gpd", "hill"), chi = c("emp", "betacop",
-    "emplik")),
+  method = list(eta = c("emp", "betacop", "gpd", "hill"), chi = c("emp", "betacop")),
   confint = c("wald", "lrt"),
   level = 0.95,
   trunc = TRUE,
+  empirical.transformation = TRUE,
   ties.method = "random",
   plot = TRUE,
   ...
@@ -23,11 +23,11 @@ taildep(
 \arguments{
 \item{data}{an \eqn{n} by \eqn{d} matrix of multivariate observations}
 
-\item{u}{vector of percentiles between 0 and 1 at which to evaluate the plot}
+\item{u}{vector of percentiles between 0 and 1}
 
-\item{nq}{number of quantiles at which to form a grid; only used if \code{u = NULL}.}
+\item{nq}{number of quantiles of the structural variable at which to form a grid; only used if \code{u = NULL}.}
 
-\item{qlim}{limits for the sequence \code{u}}
+\item{qlim}{limits for the sequence \code{u} of the structural variable}
 
 \item{depmeas}{dependence measure, either of \code{"eta"} or \code{"chi"}}
 
@@ -38,6 +38,8 @@ taildep(
 \item{level}{the confidence level required (default to 0.95).}
 
 \item{trunc}{logical indicating whether the estimates and confidence intervals should be truncated in \eqn{[0,1]}}
+
+\item{empirical.transformation}{logical indicating whether observations should be transformed to pseudo-uniform scale (default to \code{TRUE}); otherwise, they are assumed to be uniform}
 
 \item{ties.method}{string indicating the type of method for \code{rank}; see \code{\link[base]{rank}} for a list of options. Default to \code{"random"}}
 
@@ -55,7 +57,7 @@ a named list with elements
 }
 \description{
 For data with unit Pareto margins, the coefficient of tail dependence \eqn{\eta} is defined  via \deqn{\Pr(\min(X) > x) = L(x)x^{-1/\eta},}
-where \eqn{L(x)} is a slowly varying function; \eqn{0 < \eta}. Ignoring the latter, several estimators of \eqn{\eta} can be defined. In unit Pareto margins, \eqn{\eta} is a shape parameter that can be estimated by fitting a generalized Pareto distribution above a high threshold. In exponential margins, \eqn{\eta} is a scale parameter and the maximum likelihood estimator of the latter is the Hill estimator. Both methods are based on peaks-over-threshold and the user can choose between pointwise confidence confint obtained through a likelihood ratio test statistic (\code{"lrt"}) or the Wald statistic (\code{"wald"}).
+where \eqn{L(x)} is a slowly varying function. Ignoring the latter, several estimators of \eqn{\eta} can be defined. In unit Pareto margins, \eqn{\eta} is a nonnegative shape parameter that can be estimated by fitting a generalized Pareto distribution above a high threshold. In exponential margins, \eqn{\eta} is a scale parameter and the maximum likelihood estimator of the latter is the Hill estimator. Both methods are based on peaks-over-threshold and the user can choose between pointwise confidence confint obtained through a likelihood ratio test statistic (\code{"lrt"}) or the Wald statistic (\code{"wald"}).
 }
 \details{
 The most common approach for estimation is the empirical survival copula, by evaluating the proportion of sample minima with uniform margins that exceed a given \eqn{x}. An alternative estimator uses a smoothed estimator of the survival copula using Bernstein polynomial, resulting in the so-called \code{betacop} estimator. Approximate pointwise confidence confint for the latter are obtained by assuming the proportion of points is binomial.
@@ -63,6 +65,10 @@ The most common approach for estimation is the empirical survival copula, by eva
 The coefficient of tail correlation \eqn{\chi} is
 \deqn{\chi = \lim_{u \to 1} \frac{\Pr(F_1(X_1)>u, \ldots, F_D(X_D)>u)}{1-u}.}
 Asymptotically independent vectors have \eqn{\chi = 0}. The estimator uses an estimator of the survival copula
+}
+\note{
+As of version 1.15, the percentiles used are from the minimum variable. This ensures that, regardless of the number of variables,
+there is no error message returned because the quantile levels are too low for there to be observations
 }
 \examples{
 \dontrun{

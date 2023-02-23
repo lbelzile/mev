@@ -2,9 +2,7 @@
 % Please edit documentation in R/univdist.R
 \name{pp.score}
 \alias{pp.score}
-\title{Score vector for the Poisson process of threshold exceedances
-
-Returns the score vector of the NHPP.}
+\title{Score vector for the Poisson process of threshold exceedances}
 \usage{
 pp.score(par, dat, u, np = 1)
 }
@@ -21,8 +19,6 @@ pp.score(par, dat, u, np = 1)
 score vector of NHPP
 }
 \description{
-Score vector for the Poisson process of threshold exceedances
-
 Returns the score vector of the NHPP.
 }
 \seealso{

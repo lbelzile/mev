@@ -2459,7 +2459,7 @@ pp.ll <- function(par, dat, u, np = 1){
   }
 }
 
-#' @title Score vector for the Poisson process of threshold exceedances
+#' Score vector for the Poisson process of threshold exceedances
 #'
 #' Returns the score vector of the NHPP.
 #'
