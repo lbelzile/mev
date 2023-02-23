@@ -90,21 +90,19 @@ taildep <- function (data,
     }
   }
    datarank <- apply(data, 2, rank, ties.method = ties.method)
-   rowmax <- apply(datarank, 1, max)/(n+1)
    rowmin <- apply(datarank, 1, min)/(n+1)
   } else{
   if("betacop" %in% method){
-    warning("Beta copula is rank-based; ignoring argument \"empirical.transformation\"")
+    warning("Beta copula is rank-based; ignoring argument \"empirical.transformation\".")
     datarank <- apply(data, 2, rank, ties.method = ties.method)
   }
   # observations are already uniform
-   rowmax <- apply(data, 1, max)
    rowmin <- apply(data, 1, min)
    stopifnot(min(rowmin) > 0,
-             max(rowmax) < 1)
+             max(rowmin) < 1)
   }
   eps <- .Machine$double.eps^0.5
-  qlim2 <- c(min(rowmax) + eps, max(rowmin) - eps)
+  qlim2 <- c(min(rowmin) + eps, max(rowmin) - eps)
   if(is.null(u)){
      if (!is.null(qlim)) {
        qlim <- sort(qlim)
@@ -114,26 +112,17 @@ taildep <- function (data,
      } else{
        stop("Invalid input: neither \"qlim\" nor \"u\" is provided.")
      }
-    #   if (qlim[1] < qlim2[1]){
-    #     stop("lower quantile limit is too low")
-    #   }
-    #   if (qlim[2] > qlim2[2]) {
-    #     stop("upper quantile limit is too high")
-    #   }
-    #   if (qlim[1] > qlim[2]) {
-    #     stop("lower quantile limit is less than upper quantile limit")
-    #   }
-    # }  else{ qlim <- qlim2
-    # }
     # Define u in terms of quantiles of the structure variable min Y
     qlims <- quantile(x = rowmin, probs = c(qlim[1], qlim[2]))
     u <- seq(from = qlims[1], to = qlims[2], length = nq)
   } else{
     u <- sort(u)
-    nq <- length(u)
+
     if(min(u) < qlim2[1] || max(u) >  qlim2[2]){
       warning("upper quantile limit is too high or lower quantile limit is too low")
     }
+    u <- u[u < qlim2[2] & u > qlim2[1]]
+    nq <- length(u)
   }
 
 
@@ -208,15 +197,18 @@ taildep <- function (data,
     }))
   }
     if("betacop" %in% method){
-    # This uses the ranks, so not the real observations
+    # This uses the ranks, not the observations
     cbaru <- numeric(nq)
-    for(i in 1:nq){
-    # TODO: clean this mess
-      Fu <- sapply(1:n, function(r){suppressWarnings(pbeta(u[i], r, n+1-r, log.p = TRUE))})
-      cbaru[i] <- 1 - D*u[i] + sum(sapply(2:D, function(j){
-        ((-1)^j)*sum(apply(combn(1:D, j), 2,
-                           function(i){mean(exp(rowSums(matrix(Fu[datarank[,i]],
-                           nrow = n))))}))}))
+    for(i in seq_len(nq)){
+      # Beta copula
+      # Evaluate quantiles of beta at u
+      # Model defined in terms of the survival copula Pr(V_i > u, i = 1,...,d)
+      # Flip arguments u -> 1-u
+      # and ranks (via n:1 instead of 1:n)
+      Fu <- sapply(rev(seq_len(n)), function(r){
+        suppressWarnings(pbeta(1 - u[i], r, n+1-r, log.p = TRUE))
+        })
+      cbaru[i] <- mean(exp(rowSums(matrix(Fu[datarank], nrow = n))))
     }
     cbaru <- pmax(cbaru, 0)
     if(2 %in% depmeas && methodchi == "betacop"){
