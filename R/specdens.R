@@ -274,7 +274,7 @@ emplik <- function(dat, mu = rep(0, ncol(dat)), lam = rep(0, ncol(dat)), eps = 1
     .emplik_intern(z = dat, mu = mu, lam, eps = eps, M = M, thresh = thresh, itermax = itermax)
 }
 
-#' Dirichlet mixture model for the spectral density
+#' Dirichlet mixture smoothing of the angular measure
 #'
 #' This function computes the empirical or Euclidean likelihood
 #' estimates of the spectral measure and uses the points returned from a call to \code{angmeas} to compute the Dirichlet
