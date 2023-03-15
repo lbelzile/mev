@@ -2015,8 +2015,8 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
 
 #' Plot of tangent exponential model profile likelihood
 #'
-#' This function is adapted from \code{\link[hoa]{plot.fr}}. It differs mostly in
-#' the placement of legends.
+#' This function is adapted from the \code{plot.fr} function from the \code{hoa} package bundle. 
+#' It differs from the latter mostly in the placement of legends.
 #'
 #' @param x an object of class \code{fr} returned by \code{\link{gpd.tem}} or \code{\link{gev.tem}}.
 #' @param ... further arguments to \code{plot} currently ignored. Providing a numeric vector \code{which} allows for custom selection of the plots. A logical \code{all}. See \strong{Details}.
@@ -2266,7 +2266,7 @@ tem.corr <- function(fr, print.warning = FALSE) {
 #' @param plot logical indicating whether \code{plot.fr} should be called upon exit
 #' @param correction logical indicating whether \link{spline.corr} should be called.
 #' @author Leo Belzile
-#' @return an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
+#' @return an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 #' \itemize{
 #' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
 #' \item{\code{par.hat}: }{maximum likelihood estimates}
@@ -2337,7 +2337,7 @@ gev.tem <- function(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant
 #' @param plot logical indicating whether \code{plot.fr} should be called upon exit
 #' @param correction logical indicating whether \link{spline.corr} should be called.
 #' @author Leo Belzile
-#' @return an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
+#' @return an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 #' \itemize{
 #' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
 #' \item{\code{par.hat}: }{maximum likelihood estimates}

@@ -129,7 +129,7 @@
 
 * Fixed argument matching in function 'egp2'
 
-# mev v.1.9x
+# mev v.1.9
 ==============
 
 ## New:
@@ -140,7 +140,7 @@
 
 * Fixed bug affecting angmeas in the bivariate case that would cause the method to crash
 
-# mev v.1.8x
+# mev v.1.8.2 (Release date: 2016-08-24)
 ==============
 
 ## New:

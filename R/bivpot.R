@@ -1,11 +1,11 @@
 #' Interpret bivariate threshold exceedance models
 #'
-#' This is an adaptation of the \pkg{evir} package \code{\link[evir]{interpret.gpdbiv}} function.
-#' \code{interpret.fbvpot} was adapted to deal with the output of a call to
+#' This is an adaptation of the \code{evir} package \code{interpret.gpdbiv} function.
+#' \code{interpret.fbvpot} deals with the output of a call to
 #' \code{\link[evd]{fbvpot}} from the \pkg{evd} and to handle families other than the logistic distribution.
 #' The likelihood derivation comes from expression 2.10 in Smith et al. (1997).
 #' @importFrom evd pbvevd
-#' @seealso \code{\link[evir]{interpret.gpdbiv}}
+#' @seealso \code{interpret.gpdbiv} in package \code{evir}
 #' @author Leo Belzile, adapting original S code by Alexander McNeil
 #' @export
 #' @references Smith, Tawn and Coles (1997), Markov chain models for threshold exceedances. \emph{Biometrika},
@@ -16,7 +16,7 @@
 #' @return an invisible numeric vector containing marginal, joint and conditional exceedance probabilities.
 #' @details The list \code{fitted} must contain
 #' \itemize{
-#' \item \code{model} a string; see \code{\link[evd]{bvevd}} for options
+#' \item \code{model} a string; see \code{bvevd} from package \code{evd} for options
 #' \item \code{param} a named vector containing the parameters of the \code{model}, as well as parameters
 #' \code{scale1}, \code{shape1},\code{scale2} and \code{shape2}, corresponding to marginal GPD parameters.
 #' \item \code{threshold} a vector of length 2 containing the two thresholds.

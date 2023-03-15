@@ -86,7 +86,7 @@ NULL
 #' @references Davison, A.C. and R.L. Smith (1990). Models for Exceedances over High Thresholds, \emph{Journal of the Royal Statistical Society. Series B (Methodological)}, \bold{52}(3), 393--442. With discussion.
 #' @format a vector of size 154
 #' @name nidd
-#' @seealso \code{\link[evir]{nidd.thresh}}
+#' @seealso \code{nidd.thresh} from the \code{evir} package
 #' @docType data
 NULL
 
