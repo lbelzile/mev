@@ -70,8 +70,8 @@ tstab.gpd <- function(xdat,
   # }
   nt <- length(thresh)
   np <- 2
-  parmat <- matrix(0, ncol = np, nrow = nt)
-  confintmat <- matrix(0, ncol = 2 * np, nrow = nt)
+  parmat <- matrix(NA, ncol = np, nrow = nt)
+  confintmat <- matrix(NA, ncol = 2 * np, nrow = nt)
   #Some quantities for profile
   if(method == "profile"){
     xmax <- max(dat)
@@ -85,23 +85,50 @@ tstab.gpd <- function(xdat,
       }
     }
   }
-  for(i in 1:nt){
+
+  for(i in seq_len(nt)){
     gpdu <- fit.gpd(xdat = dat, threshold = thresh[i])
     parmat[i,] <- gpdu$estimate
     parmat[i,1] <- parmat[i,1] - parmat[i,2]*(thresh[i]-thresh[1])
-    stderr.transfo <- sqrt(t(c(1, -thresh[i]+thresh[1])) %*% gpdu$vcov %*% c(1, -thresh[i]+thresh[1]))[1,1]
+    if(is.matrix(gpdu$vcov)){
+    stderr.transfo <- try(sqrt(t(c(1, -thresh[i]+thresh[1])) %*% gpdu$vcov %*% c(1, -thresh[i]+thresh[1]))[1,1], silent = TRUE)
+    }
+    if(!is.matrix(gpdu$vcov) | inherits(stderr.transfo, "try-error")){
+      stderr.transfo <- NA
+    }
    if(method == "wald"){
     confintmat[i,3] <- gpdu$estimate['shape'] - gpdu$std.err['shape']*qnorm(1-alpha/2)
     confintmat[i,4] <- gpdu$estimate['shape'] + gpdu$std.err['shape']*qnorm(1-alpha/2)
     confintmat[i,1] <- parmat[i,1] - stderr.transfo * qnorm(1-alpha/2)
     confintmat[i,2] <- parmat[i,1] + stderr.transfo * qnorm(1-alpha/2)
    } else if(method == "profile"){
-     profxi <- gpd.pll(param = "shape", mod = "profile", mle = gpdu$estimate, dat = gpdu$exceedances, plot = FALSE)
+     if(gpdu$estimate['shape'] == -1){
+       # Specify grid of psi values (only one-sided)
+       profxi <- gpd.pll(psi = seq(-1, 0, by = 0.01),
+                         param = "shape",
+                         mod = "profile",
+                         mle = gpdu$estimate,
+                         dat = gpdu$exceedances,
+                         plot = FALSE)
+       confintmat[i,3:4] <- confint(profxi, level = level, print = FALSE)[2:3]
+       confintmat[i,3] <- -1
+     } else{
+     profxi <- gpd.pll(param = "shape",
+                       mod = "profile",
+                       mle = gpdu$estimate,
+                       dat = gpdu$exceedances,
+                       plot = FALSE)
+
      confintmat[i,3:4] <- confint(profxi, level = level, print = FALSE)[2:3]
+     }
      k <- 30L
      prof_vals <- rep(0, k)
      xi_sigma_vals <- rep(0, k)
-     grid_psi <- seq(parmat[i,1] - 3 * stderr.transfo, parmat[i,1] + 3.5 * stderr.transfo, length = k)
+     if(!is.na(stderr.transfo)){
+     grid_psi <- parmat[i,1] + seq( - 3 * stderr.transfo, 3.5 * stderr.transfo, length = k)
+   } else{
+     grid_psi <- seq( - 3 *parmat[i,1]/sqrt(gpdu$nat), 3.5 * parmat[i,1]/sqrt(gpdu$nat), length = k)
+   }
      xmaxui <- xmax - thresh[i]
      #Profile for scale := sigma_u - xi (u - u_0)
       for(j in seq_len(k)){
@@ -113,7 +140,10 @@ tstab.gpd <- function(xdat,
       }
      prof <- structure(list(psi = grid_psi, psi.max = parmat[i,1], pll = -prof_vals,
                             maxpll = -gpdu$nllh, std.err = stderr.transfo), class = "eprof")
-     confintmat[i, 1:2] <- confint(prof, level = level, print = FALSE)[2:3]
+     conf <- try(confint(prof, level = level, print = FALSE)[2:3], silent = TRUE)
+     if(!inherits(conf, "try-error")){
+     confintmat[i, 1:2] <- conf
+     }
    } else if(method == "post"){
       postsim <- #suppressWarnings(
         revdbayes::rpost_rcpp(n = 1000, thresh = 0,
