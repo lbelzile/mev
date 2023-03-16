@@ -1070,16 +1070,16 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     c(integrate(f = function(x){
       gpd.score.i(par = par, dat = x)[1,] *
         Wfun(dat = x, par = par, A = A, a = a, k = k) *
-        dgpd(x = x, loc = 0, scale = par[1], shape = par[2])
+        mev::dgp(x = x, loc = 0, scale = par[1], shape = par[2])
     }, lower = 0, upper = upbound)$value,
     integrate(f = function(x){
       gpd.score.i(par = par, dat = x)[2,] *
         Wfun(dat = x, par = par, A = A, a = a, k = k) *
-        dgpd(x = x, loc = 0, scale = par[1], shape = par[2])
+        mev::dgp(x = x, loc = 0, scale = par[1], shape = par[2])
     }, lower = 0, upper = upbound)$value)/
       integrate(f = function(x){
         Wfun(dat = x, par = par, A = A, a = a, k = k) *
-          dgpd(x = x, loc = 0, scale = par[1], shape = par[2])
+          mev::dgp(x = x, loc = 0, scale = par[1], shape = par[2])
       }, lower = 0, upper = upbound)$value
   }
   #Initialize algorithm
@@ -1099,7 +1099,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
       par_val <- par_val + dtheta
     }
     #Monte-Carlo integration with antithetic variables
-    xd <- evd::qgpd(c(u, 1-u), loc = 0, scale = par_val[1], shape = par_val[2])
+    xd <- mev::qgp(c(u, 1-u), loc = 0, scale = par_val[1], shape = par_val[2])
     score <- gpd.score.i(par = par_val, dat = xd)
     Wc <- Wfun(dat = xd, par = par_val, A = A, a = a, k = k)
     a <- rowSums(score %*% Wc)/ sum(Wc)

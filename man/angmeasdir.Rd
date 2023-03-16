@@ -2,7 +2,7 @@
 % Please edit documentation in R/specdens.R
 \name{angmeasdir}
 \alias{angmeasdir}
-\title{Dirichlet mixture model for the spectral density}
+\title{Dirichlet mixture smoothing of the angular measure}
 \usage{
 angmeasdir(
   x,

@@ -95,17 +95,17 @@ vmetric.diag <- function(
    stat <- rep(NA, B)
    boot_samp_mat <- matrix(0, nrow = nobs(mle), ncol = B)
    for(j in seq_len(B)){
-     # boot_samp <- evd::rgpd(n = nobs(mle),
+     # boot_samp <- mev::rgp(n = nobs(mle),
      #                        scale = boot_par[j,1],
      #                        shape = boot_par[j,2])
      # boot_mle <- try(mev::fit.gpd(boot_samp,
      #                          threshold = 0))
      # if(!inherits(boot_mle, "try-error")){
      boot_samp_mat[, j] <-
-       sort(qexp(evd::pgpd(q = mle$exceedances,
+       sort(qexp(mev::pgp(q = mle$exceedances,
                       scale = boot_par[j,1],
                       shape = boot_par[j,2])))
-       # qexp(evd::pgpd(q = mle$exceedances,
+       # qexp(mev::pgp(q = mle$exceedances,
        #           scale = coef(boot_mle)[1],
        #           shape = coef(boot_mle)[2]))
     stat[j] <- compute_metric(expdat = boot_samp_mat[, j],
@@ -201,7 +201,7 @@ plot.mev_thdiag_varty <-
                   thid >= 1)
         thresh <- x$cthresh[thid]
       }
-      expdat <- qexp(evd::pgpd(q = sort(x$xdat[x$xdat > thresh]),
+      expdat <- qexp(mev::pgp(q = sort(x$xdat[x$xdat > thresh]),
                           loc = thresh,
                           scale = x$scale[thid],
                           shape = x$shape[thid]))
@@ -255,7 +255,7 @@ plot.mev_thdiag_varty <-
                   thid >= 1)
         thresh <- x$cthresh[thid]
       }
-      unifdat <- evd::pgpd(q = sort(x$xdat[x$xdat > thresh]),
+      unifdat <- mev::pgp(q = sort(x$xdat[x$xdat > thresh]),
                                loc = thresh,
                                scale = x$scale[thid],
                                shape = x$shape[thid])

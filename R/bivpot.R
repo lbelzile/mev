@@ -2,9 +2,8 @@
 #'
 #' This is an adaptation of the \code{evir} package \code{interpret.gpdbiv} function.
 #' \code{interpret.fbvpot} deals with the output of a call to
-#' \code{\link[evd]{fbvpot}} from the \pkg{evd} and to handle families other than the logistic distribution.
+#' \code{fbvpot} from the \pkg{evd} and to handle families other than the logistic distribution.
 #' The likelihood derivation comes from expression 2.10 in Smith et al. (1997).
-#' @importFrom evd pbvevd
 #' @seealso \code{interpret.gpdbiv} in package \code{evir}
 #' @author Leo Belzile, adapting original S code by Alexander McNeil
 #' @export
@@ -24,17 +23,22 @@
 #' }
 #'
 #' @examples
-#' y <- evd::rgpd(1000,1,1,1)
-#' x <- y*rmevspec(n=1000,d=2,sigma=cbind(c(0,0.5),c(0.5,0)),model='hr')
-#' mod <- evd::fbvpot(x,threshold = c(1,1),model = 'hr',likelihood ='censored')
+#' if (requireNamespace("evd", quietly = TRUE)) {
+#' y <- rgp(1000,1,1,1)
+#' x <- y*rmevspec(n=1000,d=2,sigma=cbind(c(0,0.5),c(0.5,0)), model='hr')
+#' mod <- evd::fbvpot(x, threshold = c(1,1), model = 'hr', likelihood ='censored')
 #' ibvpot(mod, c(20,20))
+#' }
 ibvpot <- function(fitted, q, silent = FALSE) {
+if (!requireNamespace("evd", quietly = TRUE)) {
+ stop("Install package \"evd\" to use this function.")
+}
     # If input is an object resulting from a call to 'fpot'
     if (inherits(fitted, c("bvpot", "evd"))) {
         fitted$pat <- fitted$nat[1:2]/nrow(fitted$data)
     }
     if (any(is.null(fitted$model), is.null(fitted$pat), is.null(fitted$threshold), is.null(fitted$param))) {
-        stop("Invalid argument for \"fitted\". \nPlease provide a list with components \"model\", \"threshold\", \"pat\",\"param\"\n or elsethe output of \"evd::fbvpot\"")
+        stop("Invalid argument for \"fitted\". \nPlease provide a list with components \"model\", \"threshold\", \"pat\",\"param\"\n or else the output of \"fbvpot\" from package \"evd\".")
     }
     if (!all(c("shape1", "scale1", "shape2", "scale2") %in% names(fitted$param))) {
         stop("Invalid arguments for \"param\". Missing marginal parameters.")
@@ -69,14 +73,14 @@ ibvpot <- function(fitted, q, silent = FALSE) {
         }
     } else {
         Vfuncf <- function(q, fitted) {
-            f <- switch(fitted$model, log = pbvevd(q = q, model = "log", dep = fitted$param["dep"], mar1 = c(1, 1, 1)), alog = pbvevd(q = q,
-                model = "alog", dep = fitted$param["dep"], asy = fitted$param[c("asy1", "asy2")], mar1 = c(1, 1, 1)), hr = pbvevd(q = q,
-                model = "hr", dep = fitted$param["dep"], mar1 = c(1, 1, 1)), neglog = pbvevd(q = q, model = "neglog", dep = fitted$param["dep"],
-                mar1 = c(1, 1, 1)), aneglog = pbvevd(q = q, model = "aneglog", dep = fitted$param["dep"], asy = fitted$param[c("asy1",
-                "asy2")], mar1 = c(1, 1, 1)), bilog = pbvevd(q = q, model = "bilog", alpha = fitted$param["alpha"], beta = fitted$param["beta"],
-                mar1 = c(1, 1, 1)), negbilog = pbvevd(q = q, model = "negbilog", alpha = fitted$param["alpha"], beta = fitted$param["beta"],
-                mar1 = c(1, 1, 1)), ct = pbvevd(q = q, model = "ct", alpha = fitted$param["alpha"], beta = fitted$param["beta"], mar1 = c(1,
-                1, 1)), amix = pbvevd(q = q, model = "amix", alpha = fitted$param["alpha"], beta = fitted$param["beta"], mar1 = c(1,
+            f <- switch(fitted$model, log = evd::pbvevd(q = q, model = "log", dep = fitted$param["dep"], mar1 = c(1, 1, 1)), alog = evd::pbvevd(q = q,
+                model = "alog", dep = fitted$param["dep"], asy = fitted$param[c("asy1", "asy2")], mar1 = c(1, 1, 1)), hr = evd::pbvevd(q = q,
+                model = "hr", dep = fitted$param["dep"], mar1 = c(1, 1, 1)), neglog = evd::pbvevd(q = q, model = "neglog", dep = fitted$param["dep"],
+                mar1 = c(1, 1, 1)), aneglog = evd::pbvevd(q = q, model = "aneglog", dep = fitted$param["dep"], asy = fitted$param[c("asy1",
+                "asy2")], mar1 = c(1, 1, 1)), bilog = evd::pbvevd(q = q, model = "bilog", alpha = fitted$param["alpha"], beta = fitted$param["beta"],
+                mar1 = c(1, 1, 1)), negbilog = evd::pbvevd(q = q, model = "negbilog", alpha = fitted$param["alpha"], beta = fitted$param["beta"],
+                mar1 = c(1, 1, 1)), ct = evd::pbvevd(q = q, model = "ct", alpha = fitted$param["alpha"], beta = fitted$param["beta"], mar1 = c(1,
+                1, 1)), amix = evd::pbvevd(q = q, model = "amix", alpha = fitted$param["alpha"], beta = fitted$param["beta"], mar1 = c(1,
                 1, 1)))
             return(-log(f))
         }

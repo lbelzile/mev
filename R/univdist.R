@@ -2500,7 +2500,7 @@ pp.score <- function(par, dat, u, np = 1){
 #' @keywords internal
 #' @examples
 #' \dontrun{
-#' dat <- evd::rgpd(n <- 1e3, 0.1, 2, -0.1)
+#' dat <- rgp(n <- 1e3, 0.1, 2, -0.1)
 #' np <- 10
 #' mle <- fit.pp(dat, threshold = 0, np =  np)$par
 #' info_obs <- pp.infomat(par = mle, dat = dat, method = "obs", u = 0, np = np)

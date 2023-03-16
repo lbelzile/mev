@@ -45,7 +45,7 @@ This function returns an object of class \code{mev_gev}, with default methods fo
 The default starting values are the solution of the probability weighted moments.
 }
 \examples{
-xdat <- evd::rgev(n = 100)
+xdat <- mev::rgev(n = 100)
 fit.gev(xdat, show = TRUE)
 # Example with fixed parameter
 fit.gev(xdat, show = TRUE, fpar = list(shape = 0))

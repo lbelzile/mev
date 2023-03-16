@@ -36,7 +36,7 @@
 #' @return \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a matrix of return levels.
 #' @examples
 #' set.seed(123)
-#' xdat <- evd::rgpd(1000, loc = 0, scale = 2, shape = 0.5)
+#' xdat <- mev::rgp(1000, loc = 0, scale = 2, shape = 0.5)
 #' par <- fit.egp(xdat, thresh = 0, model = 'egp3')$par
 #' p <- c(1/1000, 1/1500, 1/2000)
 #' #With multiple thresholds
@@ -198,7 +198,7 @@ egp.retlev <- function(xdat,
 #' @importFrom graphics arrows points polygon title
 #' @export
 #' @examples
-#' xdat <- evd::rgpd(
+#' xdat <- mev::rgp(
 #'   n = 100,
 #'   loc = 0,
 #'   scale = 1,
@@ -208,7 +208,7 @@ egp.retlev <- function(xdat,
 #'   thresh = 1,
 #'   model = "egp2",
 #'   show = TRUE)
-#' thresh <- evd::qgpd(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
+#' thresh <- mev::qgp(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
 #' tstab.egp(
 #'    xdat = xdat,
 #'    thresh = thresh,
@@ -519,8 +519,8 @@ tstab.egp <- function(xdat,
 #' x <- seq(1, 5, by = 0.01)
 #' plot(x, m*dnorm(x)*exp((m-1)*pnorm(x,log.p=TRUE)),type='l', ylab='Density',
 #' main='Distribution of the maxima of\n 100 standard normal variates')
-#' lines(x, evd::dgev(x,loc=p[1], scale=p[2], shape=0),col=2)
-#' lines(x, evd::dgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
+#' lines(x, mev::dgev(x,loc=p[1], scale=p[2], shape=0),col=2)
+#' lines(x, mev::dgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
 #' legend(x = 'topright',lty = c(1,1,1,1), col = c(1,2,3,4),
 #'    legend = c('exact', 'ultimate', 'penultimate'), bty = 'n')
 #' @export
@@ -735,15 +735,15 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
 #' #First penultimate approximation
 #' plot(x, exp(m*pnorm(x, log.p=TRUE)),type='l', ylab='CDF',
 #' main='Distribution of the maxima of\n 100 standard normal variates')
-#' lines(x, evd::pgev(x,loc=p[1], scale=p[2], shape=0),col=2)
-#' lines(x, evd::pgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
+#' lines(x, mev::pgev(x,loc=p[1], scale=p[2], shape=0),col=2)
+#' lines(x, mev::pgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
 #' lines(x, approx$F(x),col=4)
 #' legend(x='bottomright',lty=c(1,1,1,1),col=c(1,2,3,4),
 #'    legend=c('Exact','1st approx.','2nd approx.','3rd approx'),bty='n')
 #' plot(x, m*dnorm(x)*exp((m-1)*pnorm(x,log.p=TRUE)),type='l', ylab='Density',
 #' main='Distribution of the maxima of\n 100 standard normal variates')
-#' lines(x, evd::dgev(x,loc=p[1], scale=p[2], shape=0),col=2)
-#' lines(x, evd::dgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
+#' lines(x, mev::dgev(x,loc=p[1], scale=p[2], shape=0),col=2)
+#' lines(x, mev::dgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
 #' lines(x, approx$f(x),col=4)
 #' legend(x='topright',lty=c(1,1,1,1),col=c(1,2,3,4),
 #'  legend=c('Exact','1st approx.','2nd approx.','3rd approx'),bty='n')
@@ -757,14 +757,14 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
 #' #Distribution function
 #' plot(x, 1-(1-pnorm(x))/(1-pnorm(par[1])),type='l', ylab='Conditional CDF',
 #' main='Exceedances over 4\n for standard normal variates')
-#' lines(x, evd::pgpd(x, loc=par[1], scale=par[2], shape=0),col=2)
-#' lines(x, evd::pgpd(x, loc=par[1], scale=par[2], shape=par[3]),col=3)
+#' lines(x, mev::pgp(x, loc=par[1], scale=par[2], shape=0),col=2)
+#' lines(x, mev::pgp(x, loc=par[1], scale=par[2], shape=par[3]),col=3)
 #' lines(x, approx$F(x),col=4)
 #' #Density
 #' plot(x, dnorm(x)/(1-pnorm(par[1])),type='l', ylab='Conditional density',
 #' main='Exceedances over 4\n for standard normal variates')
-#' lines(x, evd::dgpd(x, loc=par[1], scale=par[2], shape=0),col=2)
-#' lines(x, evd::dgpd(x, loc=par[1], scale=par[2], shape=par[3]),col=3)
+#' lines(x, dgp(x, loc=par[1], scale=par[2], shape=0),col=2)
+#' lines(x, dgp(x, loc=par[1], scale=par[2], shape=par[3]),col=3)
 #' lines(x, approx$f(x),col=4)
 #' @export
 smith.penult.fn <- function(loc, scale, shape, eps, rho = NULL, method = c("bm", "pot"), mdaGumbel = FALSE, ...) {

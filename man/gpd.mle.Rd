@@ -35,6 +35,6 @@ estimates for all quantities of interest, including scale and shape parameters, 
 expected shortfall and mean and quantiles of maxima of \code{N} threshold exceedances
 }
 \examples{
-xdat <- evd::rgpd(n = 30, shape = 0.2)
+xdat <- mev::rgp(n = 30, shape = 0.2)
 gpd.mle(xdat = xdat, N = 100, p = 0.01, q = 0.5, m = 100)
 }

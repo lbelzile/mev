@@ -59,7 +59,7 @@ The function returns an invisible list with parameter estimates and standard err
 using maximum likelihood estimation.
 }
 \examples{
-xdat <- evd::rgpd(
+xdat <- mev::rgp(
   n = 100,
   loc = 0,
   scale = 1,
@@ -69,7 +69,7 @@ fitted <- fit.egp(
   thresh = 1,
   model = "egp2",
   show = TRUE)
-thresh <- evd::qgpd(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
+thresh <- mev::qgp(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
 tstab.egp(
    xdat = xdat,
    thresh = thresh,

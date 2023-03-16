@@ -17,5 +17,5 @@ The data consists of exceedances over the threshold 65 cubic meter per second of
 Davison, A.C. and R.L. Smith (1990). Models for Exceedances over High Thresholds, \emph{Journal of the Royal Statistical Society. Series B (Methodological)}, \bold{52}(3), 393--442. With discussion.
 }
 \seealso{
-\code{\link[evir]{nidd.thresh}}
+\code{nidd.thresh} from the \code{evir} package
 }

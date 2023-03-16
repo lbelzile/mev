@@ -52,7 +52,7 @@ Fukutome et al. (2015) propose an ad hoc automated procedure
 }
 }
 \examples{
-infomat.test(xdat = evd::rgpd(n = 10000),
+infomat.test(xdat = rgp(n = 10000),
              q = seq(0.1, 0.9, length = 10),
              K = 3)
 }

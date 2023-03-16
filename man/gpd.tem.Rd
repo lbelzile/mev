@@ -42,7 +42,7 @@ gpd.tem(
 \item{correction}{logical indicating whether \link{spline.corr} should be called.}
 }
 \value{
-an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
+an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 \itemize{
 \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
 \item{\code{par.hat}: }{maximum likelihood estimates}
@@ -71,7 +71,7 @@ The interpretation for \code{m} is as follows: if there are on average \eqn{m_y}
 }
 \examples{
 set.seed(123)
-dat <- evd::rgpd(n = 40, scale = 1, shape = -0.1)
+dat <- rgp(n = 40, scale = 1, shape = -0.1)
 #with plots
 m1 <- gpd.tem(param = 'shape', n.psi = 50, dat = dat, plot = TRUE)
 \dontrun{

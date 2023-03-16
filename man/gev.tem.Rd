@@ -36,7 +36,7 @@ gev.tem(
 \item{correction}{logical indicating whether \link{spline.corr} should be called.}
 }
 \value{
-an invisible object of class \code{fr} (see \code{\link[hoa]{tem}}) with elements
+an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 \itemize{
 \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
 \item{\code{par.hat}: }{maximum likelihood estimates}
@@ -60,11 +60,11 @@ cover the range of options, but the fail may fit and return an error.
 \examples{
 \dontrun{
 set.seed(1234)
-dat <- evd::rgev(n = 40, loc = 0, scale = 2, shape = -0.1)
+dat <- rgev(n = 40, loc = 0, scale = 2, shape = -0.1)
 gev.tem('shape', dat = dat, plot = TRUE)
 gev.tem('quant', dat = dat, p = 0.01, plot = TRUE)
 gev.tem('scale', psi = seq(1, 4, by = 0.1), dat = dat, plot = TRUE)
-dat <- evd::rgev(n = 40, loc = 0, scale = 2, shape = 0.2)
+dat <- rgev(n = 40, loc = 0, scale = 2, shape = 0.2)
 gev.tem('loc', dat = dat, plot = TRUE)
 gev.tem('Nmean', dat = dat, p = 0.01, N=100, plot = TRUE)
 gev.tem('Nquant', dat = dat, q = 0.5, N=100, plot = TRUE)

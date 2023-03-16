@@ -1,4 +1,4 @@
-\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{xcolor}
 % maxwidth is the original width if it is less than linewidth
 % otherwise use linewidth (to make sure the graphics do not exceed the margin)
 \makeatletter
@@ -52,7 +52,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amssymb, amsfonts}
-\usepackage{fourier}
+\usepackage{times}
 \usepackage{geometry}
 \usepackage{natbib}
 \usepackage{hyperref}
@@ -103,9 +103,9 @@ The syntax is
 \end{alltt}
 \begin{verbatim}
 ##        [,1]   [,2]   [,3]   [,4]   [,5]
-## [1,] 1.0005 1.0004 0.9911 0.9406 0.9403
-## [2,] 0.9582 0.9733 0.9672 0.9235 0.9023
-## [3,] 0.9986 1.0175 0.9732 0.9954 0.9654
+## [1,] 0.9658 0.9849 0.9972 0.9976 0.9869
+## [2,] 0.9446 0.9860 0.9584 0.9783 0.9765
+## [3,] 1.0147 1.0129 0.9807 0.9764 0.9890
 \end{verbatim}
 \begin{alltt}
 \hlcom{#Sample from the corresponding spectral density}
@@ -121,7 +121,7 @@ The syntax is
 \hlkwd{round}\hlstd{(}\hlkwd{colMeans}\hlstd{(w),}\hlnum{2}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-## [1] 0.20 0.21 0.19 0.20 0.20
+## [1] 0.20 0.20 0.19 0.20 0.21
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -336,7 +336,7 @@ where $\{\zeta_i, \eta_i\}_{i \in \mathbb{N}}$ is a Poisson point process on $\R
 
 \clearpage
 \bibliographystyle{apalike}
-\bibliography{mev_vignette}
+\bibliography{mevvignette}
 
 
 \end{document}

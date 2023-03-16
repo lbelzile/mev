@@ -2,7 +2,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amssymb, amsfonts}
-\usepackage{fourier}
+\usepackage{times}
 \usepackage{geometry}
 \usepackage{natbib}
 \usepackage{hyperref}
@@ -278,7 +278,7 @@ where $\{\zeta_i, \eta_i\}_{i \in \mathbb{N}}$ is a Poisson point process on $\R
 
 \clearpage
 \bibliographystyle{apalike}
-\bibliography{mev_vignette}
+\bibliography{mevvignette}
 
 
 \end{document}

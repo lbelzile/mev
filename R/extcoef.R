@@ -124,7 +124,7 @@ extcoef <- function(dat,
       } else{ #parametric
         for(j in 1:ncol(dat)){
           fr[,j] <- -1/log(
-            do.call(what = evd::pgev,
+            do.call(what = mev::pgev,
                     c(list(q = dat[,j]),
                       fit.gev(dat[,j])$estimate)))
         }

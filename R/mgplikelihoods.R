@@ -75,15 +75,16 @@ jac <- function(dat, loc = 0, scale, shape, lambdau = 1, censored) {
       stop("\"dat\" must be a matrix")
     }
     N <- nrow(dat)
+    D <- ncol(dat)
     if (!all(dim(dat) == dim(censored))) {
       stop("Invalid input in Jacobian contribution.")
     }
-    loc <- rep(loc, length.out = ncol(dat))
-    scale <- rep(scale, length.out = ncol(dat))
-    shape <- rep(shape, length.out = ncol(dat))
-    lambdau <- rep(lambdau, length.out = ncol(dat))
+    loc <- rep(loc, length.out = D)
+    scale <- rep(scale, length.out = D)
+    shape <- rep(shape, length.out = D)
+    lambdau <- rep(lambdau, length.out = D)
     ll <- 0
-    for (j in 1:ncol(dat)) {
+    for (j in seq_len(D)) {
       ll <- ll - (N - sum(censored[, j])) * (log(scale[j]) + log(lambdau[j])) + (1 / shape[j] - 1) * sum(log(1 + shape[j] / scale[j] * pmax(0, dat[!censored[, j], j] - loc[j])))
     }
     return(ll)
@@ -99,6 +100,7 @@ jac <- function(dat, loc = 0, scale, shape, lambdau = 1, censored) {
 #' @export
 gpdtopar <- function(dat, loc = 0, scale, shape, lambdau = 1) {
   if (is.vector(dat)) {
+   stopifnot(length(loc) == 1L, length(scale) == 1L, length(shape) == 1L, length(lambdau) == 1L)
     return((1 + shape / scale * pmax(dat - loc, 0))^(1 / shape) / lambdau)
   } else {
     loc <- rep(loc, length.out = ncol(dat))
@@ -210,7 +212,7 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
   # Compute marginal transformation and Jacobian
   tu <- rep(0, D)
   jac <- -N * sum((log(A) + log(lambdau)))
-  for (j in 1:D) {
+  for (j in seq_len(D)) {
     if (abs(xi[j]) > 1e-5) {
       tdat[, j] <- pmax(0, (1 + xi[j] * (dat[, j] - B[j]) / A[j]))
       jac <- jac + (1 / xi[j] - 1) * sum(log(tdat[, j]))
@@ -380,7 +382,7 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
   censored <- ellips$censored
   if (is.null(censored)) {
     censored <- matrix(FALSE, nrow = nrow(tdat), ncol = ncol(tdat))
-    for (j in 1:ncol(tdat)) {
+    for (j in seq_len(D)) {
       censored[, j] <- tdat[, j] < mthresh[j]
     }
   }
@@ -410,7 +412,7 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
   tu <- rep(0, D)
   yth <- rep(0, D)
   jac <- -sum(numAbovePerCol * (log(A) + log(lambdau)))
-  for (j in 1:D) {
+  for (j in seq_len(D)) {
     if (abs(xi[j]) > 1e-5) {
       if (model == "br") {
         tdat[, j] <- log(pmax(0, 1 + xi[j] * (dat[, j] - B[j]) / A[j]))

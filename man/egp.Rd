@@ -46,7 +46,7 @@ to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
 
 \examples{
 set.seed(123)
-xdat <- evd::rgpd(1000, loc = 0, scale = 2, shape = 0.5)
+xdat <- mev::rgp(1000, loc = 0, scale = 2, shape = 0.5)
 par <- fit.egp(xdat, thresh = 0, model = 'egp3')$par
 p <- c(1/1000, 1/1500, 1/2000)
 #With multiple thresholds

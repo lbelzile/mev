@@ -374,7 +374,7 @@ gev.Fscore <- function(par, dat, method = "obs") {
 #' @export
 #' @examples
 #' set.seed(1)
-#' dat <- evd::rgpd(n=40, scale=1, shape=-0.2)
+#' dat <- rgp(n=40, scale=1, shape=-0.2)
 #' par <- gp.fit(dat, threshold=0, show=FALSE)$estimate
 #' gpd.bcor(par,dat, 'subtract')
 #' gpd.bcor(par,dat, 'firth') #observed information
@@ -493,11 +493,11 @@ gpd.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 #' @export
 #' @examples
 #' set.seed(1)
-#' dat <- evd::rgev(n=40, loc = 1, scale=1, shape=-0.2)
-#' par <- evd::fgev(dat)$estimate
-#' gev.bcor(par,dat, 'subtract')
-#' gev.bcor(par,dat, 'firth') #observed information
-#' gev.bcor(par,dat, 'firth','exp')
+#' dat <- mev::rgev(n=40, loc = 1, scale=1, shape=-0.2)
+#' par <- mev::fit.gev(dat)$estimate
+#' gev.bcor(par, dat, 'subtract')
+#' gev.bcor(par, dat, 'firth') #observed information
+#' gev.bcor(par, dat, 'firth','exp')
 gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", "exp")) {
     corr <- match.arg(corr)
     # Basic bias correction - substract bias at MLE parbc=par-bias(par) bcor1 <- function(par, dat){ par-gpd.bias(par,length(dat))}
@@ -614,8 +614,8 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 #' @keywords internal
 .gev.postpred <- function(x, posterior, Nyr = 100, type = c("density", "quantile")) {
     rowMeans(cbind(apply(rbind(posterior), 1, function(par) {
-        switch(type, density = evd::dgev(x = x, loc = par[1] - par[2] * (1 - Nyr^par[3])/par[3], scale = par[2] * Nyr^par[3], shape = par[3]),
-            quantile = evd::qgev(p = x, loc = par[1] - par[2] * (1 - Nyr^par[3])/par[3], scale = par[2] * Nyr^par[3], shape = par[3]))
+        switch(type, density = mev::dgev(x = x, loc = par[1] - par[2] * (1 - Nyr^par[3])/par[3], scale = par[2] * Nyr^par[3], shape = par[3]),
+            quantile = mev::qgev(p = x, loc = par[1] - par[2] * (1 - Nyr^par[3])/par[3], scale = par[2] * Nyr^par[3], shape = par[3]))
     })))
 }
 

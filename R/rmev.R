@@ -8,7 +8,7 @@
 #' @param param parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
 #' Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model. See \bold{Details}.
 #' @param sigma covariance matrix for Brown-Resnick and extremal Student-t distributions. Symmetric matrix of squared  coefficients \eqn{\lambda^2} for the Husler-Reiss model, with zero diagonal elements.
-#' @param asy list of asymmetry parameters, as in \code{\link[evd]{rmvevd}}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.
+#' @param asy list of asymmetry parameters, as in function \code{rmvevd} from pcakage \code{evd}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.
 #' @param alg algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.
 #' @param model for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
 #' the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.
@@ -72,7 +72,7 @@
 #'   semivario(sqrt(sum((coord[i,]-coord[j,])^2)), ...)))
 #' }
 #' rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
-#' # asymmetric logistic model - see evd::rmvevd
+#' # asymmetric logistic model - see function 'rmvevd' from package 'evd '
 #' asy <- list(0, 0, 0, 0, c(0,0), c(0,0), c(0,0), c(0,0), c(0,0), c(0,0),
 #'   c(.2,.1,.2), c(.1,.1,.2), c(.3,.4,.1), c(.2,.2,.2), c(.4,.6,.2,.5))
 #' rmev(n=1, d=4, param=0.3, asy=asy, model="alog")
@@ -361,6 +361,9 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
   # One-parameter families
   if (model %in% m1) {
     d <- as.integer(d)
+    if(is.null(d)){
+      stop("No dimension \"d\" provided. Aborting.")
+    }
     sigma = cbind(0)
     if (is.null(param) || param < 0 || d < 1) {
       stop("Invalid parameter value")

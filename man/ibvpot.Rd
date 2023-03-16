@@ -17,15 +17,15 @@ ibvpot(fitted, q, silent = FALSE)
 an invisible numeric vector containing marginal, joint and conditional exceedance probabilities.
 }
 \description{
-This is an adaptation of the \pkg{evir} package \code{\link[evir]{interpret.gpdbiv}} function.
-\code{interpret.fbvpot} was adapted to deal with the output of a call to
-\code{\link[evd]{fbvpot}} from the \pkg{evd} and to handle families other than the logistic distribution.
+This is an adaptation of the \code{evir} package \code{interpret.gpdbiv} function.
+\code{interpret.fbvpot} deals with the output of a call to
+\code{fbvpot} from the \pkg{evd} and to handle families other than the logistic distribution.
 The likelihood derivation comes from expression 2.10 in Smith et al. (1997).
 }
 \details{
 The list \code{fitted} must contain
 \itemize{
-\item \code{model} a string; see \code{\link[evd]{bvevd}} for options
+\item \code{model} a string; see \code{bvevd} from package \code{evd} for options
 \item \code{param} a named vector containing the parameters of the \code{model}, as well as parameters
 \code{scale1}, \code{shape1},\code{scale2} and \code{shape2}, corresponding to marginal GPD parameters.
 \item \code{threshold} a vector of length 2 containing the two thresholds.
@@ -33,17 +33,19 @@ The list \code{fitted} must contain
 }
 }
 \examples{
-y <- evd::rgpd(1000,1,1,1)
-x <- y*rmevspec(n=1000,d=2,sigma=cbind(c(0,0.5),c(0.5,0)),model='hr')
-mod <- evd::fbvpot(x,threshold = c(1,1),model = 'hr',likelihood ='censored')
+if (requireNamespace("evd", quietly = TRUE)) {
+y <- rgp(1000,1,1,1)
+x <- y*rmevspec(n=1000,d=2,sigma=cbind(c(0,0.5),c(0.5,0)), model='hr')
+mod <- evd::fbvpot(x, threshold = c(1,1), model = 'hr', likelihood ='censored')
 ibvpot(mod, c(20,20))
+}
 }
 \references{
 Smith, Tawn and Coles (1997), Markov chain models for threshold exceedances. \emph{Biometrika},
 \strong{84}(2), 249--268.
 }
 \seealso{
-\code{\link[evir]{interpret.gpdbiv}}
+\code{interpret.gpdbiv} in package \code{evir}
 }
 \author{
 Leo Belzile, adapting original S code by Alexander McNeil

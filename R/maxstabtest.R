@@ -142,14 +142,14 @@ maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L,
       min(max(log(n)-log(sum(exp(-csamp[(n*(i-1)+1):(n*i)]))), 0), log(m))
   }
   if(ntuples * n < 1000){
-    bsamp[1,] <- sort(evd::pgumbel(csamp, loc = 0, scale = 1))
+    bsamp[1,] <- sort(mev::pgev(csamp, loc = 0, scale = 1, shape = 0))
   } else{
-    bsamp[1,] <- quantile(evd::pgumbel(csamp, loc = 0, scale = 1), p, type = 3)
+    bsamp[1,] <- quantile(mev::pgev(csamp, loc = 0, scale = 1, shape = 0), p, type = 3)
   }
 
   for(b in 2:B){
     # if(ntuples == 1 && m == D){ #case m = D, taking maxima of all spatial replications
-    #   csamp[1:n] <- evd::rgumbel(n = n, loc = 0) #transform to ranks also
+    #   csamp[1:n] <- mev::rgev(n = n, loc = 0, shape = 0) #transform to ranks also
     #   csamp[1:n] <- csamp[1:n] - (log(n)-log(sum(exp(-csamp[1:n]))))
     # } else{
       #Nonparametric bootstrap procedure
@@ -160,9 +160,9 @@ maxstabtest <- function(dat, m = prod(dim(dat)[-1]), nmax = 500L, B = 1000L,
     #}
     }
     if(ntuples * n < 1000){
-      bsamp[b,] <- sort(evd::pgumbel(csamp, loc = 0, scale = 1))
+      bsamp[b,] <- sort(mev::pgev(csamp, loc = 0, scale = 1, shape = 0))
     } else{
-      bsamp[b,] <- quantile(evd::pgumbel(csamp, loc = 0, scale = 1), p, type = 3)
+      bsamp[b,] <- quantile(mev::pgev(csamp, loc = 0, scale = 1, shape = 0), p, type = 3)
     }
   }
   #Problem with size of matrix allocation, since we have ntuples * B * n elements in the matrix.

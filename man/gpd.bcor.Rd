@@ -38,7 +38,7 @@ will return a vector of \code{NA} as the bias correction does not exist then.
 }
 \examples{
 set.seed(1)
-dat <- evd::rgpd(n=40, scale=1, shape=-0.2)
+dat <- rgp(n=40, scale=1, shape=-0.2)
 par <- gp.fit(dat, threshold=0, show=FALSE)$estimate
 gpd.bcor(par,dat, 'subtract')
 gpd.bcor(par,dat, 'firth') #observed information

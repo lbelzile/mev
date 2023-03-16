@@ -189,7 +189,7 @@ rparpcshr <- function(n, u, alpha, Sigma, m) {
             Lst[-j, ]), Sig = Qjinv) + c(Qjinv %*% Lst[-j, ]))
         accu <- accu + tabu[i]
     }
-    R <- evd::rgpd(n = n, loc = 1, scale = 1, shape = 1)
+    R <- mev::rgp(n = n, loc = 1, scale = 1, shape = 1)
     samp <- R * t(ang[, sample.int(n, n, replace = FALSE)])
     for (j in 1:ncol(samp)) {
         samp[, j] <- u[j] * (samp[, j]^(alpha[j]))  #coro 4.3

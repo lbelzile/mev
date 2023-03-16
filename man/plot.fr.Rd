@@ -15,8 +15,8 @@
 graphs depending on argument \code{which}
 }
 \description{
-This function is adapted from \code{\link[hoa]{plot.fr}}. It differs mostly in
-the placement of legends.
+This function is adapted from the \code{plot.fr} function from the \code{hoa} package bundle. 
+It differs from the latter mostly in the placement of legends.
 }
 \details{
 Plots produced depend on the integers provided in \code{which}. \code{1} displays the Wald pivot, the likelihood root \code{r}, the modified likelihood root \code{rstar} and the likelihood modification \code{q} as functions of the parameter \code{psi}. \code{2} gives the renormalized profile log likelihood and adjusted form, with the maximum likelihood having ordinate value of zero. \code{3} provides the significance function, a transformation of \code{1}. Lastly, \code{4} plots the correction factor as a function of the likelihood root; it is a diagnostic plot aimed for detecting failure of

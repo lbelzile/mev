@@ -203,7 +203,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"),
                 isbr = 9)
   if (riskf == "sum") {
     # Generate from spectral measure
-    return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) *
+    return(mev::rgp(n = n, loc = 1, scale = 1, shape = shape) *
              .rmevspec_cpp(n = n, d = d, para = param, model = mod, Sigma = sigma, loc = coord))
   } else if (riskf == "site") {
     # Check now that siteindex corresponds to a particular site
@@ -212,7 +212,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"),
     if (siteindex < 1 || siteindex > d) {
       stop("Invalid site index")
     }
-    return(evd::rgpd(n = n, loc = 1, scale = 1, shape = shape) *
+    return(mev::rgp(n = n, loc = 1, scale = 1, shape = shape) *
              .rPsite(n = n, j = siteindex, d = d, para = param,
                      model = mod, Sigma = sigma, loc = coord))
   } else if (riskf %in% c("max", "min", "l2")) {
@@ -223,7 +223,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"),
     nsim <- ceiling(ifelse(n < 10, 4 * n, n))
     samp <- matrix(0, nrow = n, ncol = d)
     while (ind < n) {
-      candidate <- evd::rgpd(n = nsim, loc = 1, scale = 1, shape = shape) *
+      candidate <- mev::rgp(n = nsim, loc = 1, scale = 1, shape = shape) *
         .rmevspec_cpp(n = nsim, d = d, para = param, model = mod,
                       Sigma = sigma, loc = coord)/ustar
       accept <- switch(riskf,

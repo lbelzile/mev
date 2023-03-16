@@ -93,7 +93,7 @@ For the latter, the penalization is based on the TEM or an empirical covariance 
 }
 \examples{
 \dontrun{
-dat <- evd::rgpd(n = 100, scale = 2, shape = 0.3)
+dat <- rgp(n = 100, scale = 2, shape = 0.3)
 gpd.pll(psi = seq(-0.5, 1, by=0.01), param = 'shape', dat = dat)
 gpd.pll(psi = seq(0.1, 5, by=0.1), param = 'scale', dat = dat)
 gpd.pll(psi = seq(20, 35, by=0.1), param = 'quant', dat = dat, p = 0.01)

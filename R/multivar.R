@@ -17,7 +17,7 @@
 #' \dontrun{
 #' set.seed(765)
 #' # Max-stable model, chibar = 1
-#' dat <- evd::rbvevd(n = 1000, dep = 0.5)
+#' dat <- rmev(n = 1000, model = "log", d = 2, param = 0.5)
 #' chibar(dat, 'profile', qu = 0.5)
 #' s <- seq(0.05,1, length = 30)
 #' chibar_est <- t(sapply(s, function(keep){chibar(dat, 'delta', qu = keep)}))

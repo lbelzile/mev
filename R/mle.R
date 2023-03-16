@@ -14,7 +14,7 @@
 #' @return named vector with maximum likelihood values for arguments \code{args}
 #' @export
 #' @examples
-#' xdat <- evd::rgpd(n = 30, shape = 0.2)
+#' xdat <- mev::rgp(n = 30, shape = 0.2)
 #' gpd.mle(xdat = xdat, N = 100, p = 0.01, q = 0.5, m = 100)
 gpd.mle <- function(xdat,
                     args = c("scale",
@@ -59,7 +59,7 @@ gpd.mle <- function(xdat,
 #' @param q level of quantile for maxima of \code{N} exceedances. Required only for \code{args} \code{Nquant}.
 #' @return named vector with maximum likelihood estimated parameter values for arguments \code{args}
 #' @examples
-#' dat <- evd::rgev(n = 100, shape = 0.2)
+#' dat <- mev::rgev(n = 100, shape = 0.2)
 #' gev.mle(xdat = dat, N = 100, p = 0.01, q = 0.5)
 #'
 gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"), N, p, q) {
@@ -80,7 +80,7 @@ gev.mle <- function(xdat, args = c("loc", "scale", "shape", "quant", "Nmean", "N
   xi <- fitted$estimate[3]
   # Does not handle the case xi=0 because the optimizer does not return this value!
   a <- sapply(args, switch, loc = mu, scale = sigma, shape = xi,
-              quant = evd::qgev(p = 1 -p, loc = mu, scale = sigma, shape = xi),
+              quant = mev::qgev(p = 1 -p, loc = mu, scale = sigma, shape = xi),
               Nquant = ifelse(xi != 0,
                               mu - sigma/xi * (1 - (N/log(1/q))^xi),
                               mu + sigma * (log(N) - log(log(1/q)))),
@@ -445,7 +445,7 @@ fit.pp <- function(xdat,
 #' \item \code{xdat} vector of data
 #' }
 #' @examples
-#' xdat <- evd::rgev(n = 100)
+#' xdat <- mev::rgev(n = 100)
 #' fit.gev(xdat, show = TRUE)
 #' # Example with fixed parameter
 #' fit.gev(xdat, show = TRUE, fpar = list(shape = 0))
@@ -824,7 +824,6 @@ invisible(fitted)
 # @param main title for the Q-Q plot #' @param xlab x-axis label
 # @param ylab y-axis label
 # @param ... additional argument passed to \code{matplot}.
-#' @importFrom evd qgpd
 #' @export
 plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", add = TRUE, ...) {
   if (!is.vector(x$exceedances)) {
@@ -853,12 +852,12 @@ plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
   dat <- sort(x$exceedances)
   n <- length(dat)
   pp_confint_lim <- t(sapply(1:n, function(i) {qbeta(c(0.025, 0.975), i, n - i + 1) }))
-  qq_confint_lim <- apply(pp_confint_lim, 2, function(y){ evd::qgpd(y, loc = 0, scale = x[["param"]][1], shape = x[["param"]][2])})
+  qq_confint_lim <- apply(pp_confint_lim, 2, function(y){ mev::qgp(y, loc = 0, scale = x[["param"]][1], shape = x[["param"]][2])})
   pobs <- (1:n)/(n + 1)
-  quant <- evd::qgpd(pobs, loc = 0, scale = x[["param"]][1], shape = x[["param"]][2])
+  quant <- mev::qgp(pobs, loc = 0, scale = x[["param"]][1], shape = x[["param"]][2])
   if(show[1]){
     matplot(pobs, cbind(pp_confint_lim,
-                        evd::pgpd(dat, loc = 0, scale = x[["param"]][1], shape = x[["param"]][2])
+                        mev::pgp(dat, loc = 0, scale = x[["param"]][1], shape = x[["param"]][2])
                         ), main = main[1], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = c(0,1), xlim = c(0,1),
             lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ..., add = FALSE)
@@ -881,7 +880,6 @@ plot.mev_gpd <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
 # @param main title for the Q-Q plot #' @param xlab x-axis label
 # @param ylab y-axis label
 # @param ... additional argument passed to \code{matplot}.
-#' @importFrom evd qgpd
 #' @export
 plot.mev_gpdbayes <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", ylab = "Sample quantiles", add = TRUE, ...) {
   if (!is.vector(x$exceedances)) {
@@ -910,12 +908,12 @@ plot.mev_gpdbayes <- function(x, which = 1:2, main, xlab = "Theoretical quantile
   dat <- sort(x$exceedances)
   n <- length(dat)
   pp_confint_lim <- t(sapply(1:n, function(i) {qbeta(c(0.025, 0.975), i, n - i + 1) }))
-  qq_confint_lim <- apply(pp_confint_lim, 2, function(y){ evd::qgpd(y, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])})
+  qq_confint_lim <- apply(pp_confint_lim, 2, function(y){ mev::qgp(y, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])})
   pobs <- (1:n)/(n + 1)
-  quant <- evd::qgpd(pobs, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
+  quant <- mev::qgp(pobs, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
   if(show[1]){
     matplot(pobs, cbind(pp_confint_lim,
-                        evd::pgpd(dat, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
+                        mev::pgp(dat, loc = 0, scale = x[["estimate"]][1], shape = x[["estimate"]][2])
     ), main = main[1], xlab = xlab, ylab = ylab, type = "llp",
     pch = 20, col = c("grey", "grey", 1), ylim = c(0,1), xlim = c(0,1),
     lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ..., add = FALSE)
@@ -967,12 +965,12 @@ plot.mev_gev <- function(x, which = 1:2, main, xlab = "Theoretical quantiles", y
   n <- length(dat)
   pp_confint_lim <- t(sapply(1:n, function(i) {qbeta(c(0.025, 0.975), i, n - i + 1) }))
   qq_confint_lim <- apply(pp_confint_lim, 2, function(y){
-    evd::qgev(y, loc = pars[1], scale = pars[2], shape = pars[3])})
+    mev::qgev(y, loc = pars[1], scale = pars[2], shape = pars[3])})
   pobs <- (1:n)/(n + 1)
-  quant <- evd::qgev(pobs, loc = pars[1], scale = pars[2], shape = pars[3])
+  quant <- mev::qgev(pobs, loc = pars[1], scale = pars[2], shape = pars[3])
   if(show[1]){
     matplot(pobs, cbind(pp_confint_lim,
-                        evd::pgev(dat, loc = pars[1], scale = pars[2], shape = pars[3])
+                        mev::pgev(dat, loc = pars[1], scale = pars[2], shape = pars[3])
                         ), main = main[1], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = c(0,1), xlim = c(0,1),
             lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)
@@ -1081,12 +1079,12 @@ plot.mev_pp <- function(x, which = 1:2, main = "Quantile-quantile plot", xlab = 
   n <- length(dat)
   pp_confint_lim <- t(sapply(1:n, function(i) {qbeta(c(0.025, 0.975), i, n - i + 1) }))
   qq_confint_lim <- apply(pp_confint_lim, 2, function(y){
-    evd::qgpd(y, loc = x$threshold, scale = scalet, shape = x$param['shape'])})
+    mev::qgp(y, loc = x$threshold, scale = scalet, shape = x$param['shape'])})
   pobs <- (1:n)/(n + 1)
-  quant <- evd::qgpd(pobs, loc = x$threshold, scale = scalet, shape = x$param['shape'])
+  quant <- mev::qgp(pobs, loc = x$threshold, scale = scalet, shape = x$param['shape'])
   if(show[1]){
     matplot(pobs, cbind(pp_confint_lim,
-                        evd::pgpd(dat, loc = x$threshold, scale = scalet, shape = x$param['shape'])),
+                        mev::pgp(dat, loc = x$threshold, scale = scalet, shape = x$param['shape'])),
             main = main[1], xlab = xlab, ylab = ylab, type = "llp",
             pch = 20, col = c("grey", "grey", 1), ylim = c(0,1), xlim = c(0,1),
             lty = c(2, 2, 1), bty = "l", pty = "s", first={abline(0, 1, col="grey")}, ...)

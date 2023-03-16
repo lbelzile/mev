@@ -30,7 +30,7 @@ rmev(
 \item{param}{parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
 Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model. See \bold{Details}.}
 
-\item{asy}{list of asymmetry parameters, as in \code{\link[evd]{rmvevd}}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.}
+\item{asy}{list of asymmetry parameters, as in function \code{rmvevd} from pcakage \code{evd}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.}
 
 \item{sigma}{covariance matrix for Brown-Resnick and extremal Student-t distributions. Symmetric matrix of squared  coefficients \eqn{\lambda^2} for the Husler-Reiss model, with zero diagonal elements.}
 
@@ -108,7 +108,7 @@ vario2cov <- function(coord, semivario,...){
   semivario(sqrt(sum((coord[i,]-coord[j,])^2)), ...)))
 }
 rmev(n=100, sigma=vario2cov(grid.coord, semivario = semivario, scale = 0.5, alpha = 1), model='br')
-# asymmetric logistic model - see evd::rmvevd
+# asymmetric logistic model - see function 'rmvevd' from package 'evd '
 asy <- list(0, 0, 0, 0, c(0,0), c(0,0), c(0,0), c(0,0), c(0,0), c(0,0),
   c(.2,.1,.2), c(.1,.1,.2), c(.3,.4,.1), c(.2,.2,.2), c(.4,.6,.2,.5))
 rmev(n=1, d=4, param=0.3, asy=asy, model="alog")

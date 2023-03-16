@@ -34,7 +34,6 @@
 #' @export
 #' @importFrom grDevices rgb
 #' @importFrom graphics hist layout
-#' @importFrom evd dgpd pgpd qgpd
 #' @seealso \code{\link{egp.fit}}, \code{\link{egp}}, \code{\link{extgp}}
 #' @references Naveau, P., R. Huser, P. Ribereau, and A. Hannart (2016), Modeling jointly low, moderate, and heavy rainfall intensities without a threshold selection, \emph{Water Resour. Res.}, 52, 2753-2769, \code{doi:10.1002/2015WR018552}.
 #' @examples
@@ -655,7 +654,7 @@ NULL
 #' @seealso \code{\link{extgp}}, \code{\link{extgp.G}}
 #' @keywords internal
 pextgp <- function(q, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1) {
-    return(pextgp.G(pgpd(q, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type))
+    return(pextgp.G(mev::pgp(q, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type))
 }
 
 #' @rdname extgp-functions
@@ -663,10 +662,10 @@ pextgp <- function(q, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, ty
 #' @keywords internal
 dextgp <- function(x, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, log = FALSE) {
     if (log == FALSE) {
-        return(dextgp.G(pgpd(x, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type) * dgpd(x, scale = sigma,
+        return(dextgp.G(mev::pgp(x, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type) * mev::dgp(x, scale = sigma,
             shape = xi))
     } else {
-        return(dextgp.G(pgpd(x, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type, log = TRUE) + dgpd(x,
+        return(dextgp.G(mev::pgp(x, scale = sigma, shape = xi), prob = prob, kappa = kappa, delta = delta, type = type, log = TRUE) + mev::dgp(x,
             scale = sigma, shape = xi, log = TRUE))
     }
 }
@@ -677,9 +676,9 @@ dextgp <- function(x, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, ty
 qextgp <- function(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, step = 0) {
   stopifnot(length(step) == 1L, step >= 0, is.finite(step))
   if(isTRUE(all.equal(step, 0, check.attributes = FALSE))){
-    return(qgpd(qextgp.G(p, prob = prob, kappa = kappa, delta = delta, type = type), scale = sigma, shape = xi))
+    return(mev::qgp(qextgp.G(p, prob = prob, kappa = kappa, delta = delta, type = type), scale = sigma, shape = xi))
   } else{
-    qcont <- qgpd(qextgp.G(p, prob = prob, kappa = kappa, delta = delta, type = type), scale = sigma, shape = xi)
+    qcont <- mev::qgp(qextgp.G(p, prob = prob, kappa = kappa, delta = delta, type = type), scale = sigma, shape = xi)
     return(step*floor((qcont-step)/step))
   }
 }
@@ -689,12 +688,12 @@ qextgp <- function(p, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, ty
 #' @keywords internal
 rextgp <- function(n, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, unifsamp = NULL, censoring = c(0, Inf)) {
     if (censoring[1] == 0 & censoring[2] == Inf) {
-        return(qgpd(rextgp.G(n, prob = prob, kappa = kappa, delta = delta, type = type, unifsamp, censoring = c(0, 1)), scale = sigma,
+        return(mev::qgp(rextgp.G(n, prob = prob, kappa = kappa, delta = delta, type = type, unifsamp, censoring = c(0, 1)), scale = sigma,
             shape = xi))
     } else {
-        H.L <- pgpd(censoring[1], loc = 0, scale = sigma, shape = xi)
-        H.U <- pgpd(censoring[2], loc = 0, scale = sigma, shape = xi)
-        return(qgpd(rextgp.G(n, prob = prob, kappa = kappa, delta = delta, type = type, unifsamp, censoring = c(H.L, H.U)), scale = sigma,
+        H.L <- mev::pgp(censoring[1], loc = 0, scale = sigma, shape = xi)
+        H.U <- mev::pgp(censoring[2], loc = 0, scale = sigma, shape = xi)
+        return(mev::qgp(rextgp.G(n, prob = prob, kappa = kappa, delta = delta, type = type, unifsamp, censoring = c(H.L, H.U)), scale = sigma,
             shape = xi))
     }
 }
@@ -704,8 +703,8 @@ rextgp <- function(n, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, ty
 
 extgp.pwm <- function(orders, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, censoring = c(0, Inf), empiric = FALSE,
     unifsamp = NULL, NbSamples = 10^4, N = 200) {
-    H.L <- ifelse(censoring[1] > 0, pgpd(censoring[1], loc = 0, scale = sigma, shape = xi), 0)
-    H.U <- ifelse(censoring[2] < Inf, pgpd(censoring[2], loc = 0, scale = sigma, shape = xi), 1)
+    H.L <- ifelse(censoring[1] > 0, mev::pgp(censoring[1], loc = 0, scale = sigma, shape = xi), 0)
+    H.U <- ifelse(censoring[2] < Inf, mev::pgp(censoring[2], loc = 0, scale = sigma, shape = xi), 1)
 
     F.L <- ifelse(censoring[1] > 0, pextgp(censoring[1], prob = prob, kappa = kappa, delta = delta, sigma = sigma, xi = xi, type = type),
         0)
@@ -773,7 +772,7 @@ extgp.pwm <- function(orders, prob = NA, kappa = NA, delta = NA, sigma = NA, xi 
         } else {
             V <- rextgp.G(length(unifsamp), prob, kappa, delta, type, unifsamp, direct = TRUE, censoring = c(H.L, H.U))
         }
-        X <- qgpd(V, scale = sigma, shape = xi)
+        X <- mev::qgp(V, scale = sigma, shape = xi)
         res <- c()
         for (i in 1:length(orders)) {
             res[i] <- mean(X * (1 - (F.L + (F.U - F.L) * unifsamp))^orders[i], na.rm = TRUE)

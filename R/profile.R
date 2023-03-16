@@ -469,7 +469,7 @@ plot.eprof <- function(x, ...) {
 #' @examples
 #' \dontrun{
 #' set.seed(123)
-#' dat <- evd::rgev(n = 100, loc = 0, scale = 2, shape = 0.3)
+#' dat <- rgev(n = 100, loc = 0, scale = 2, shape = 0.3)
 #' gev.pll(psi = seq(0,0.5, length = 50), param = 'shape', dat = dat)
 #' gev.pll(psi = seq(-1.5, 1.5, length = 50), param = 'loc', dat = dat)
 #' gev.pll(psi = seq(10, 40, by = 0.1), param = 'quant', dat = dat, p = 0.01)
@@ -574,7 +574,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         constr.mle.scale <- function(sigmat, dat = dat) {
             x0 = c(median(dat/sigmat), 0.05)
             if (is.nan(gev.ll(c(x0[1], sigmat, x0[2]), dat = dat))) {
-                constr_fit <- try(evd::fgev(x = dat, std.err = FALSE, scale = sigmat, shape = x0[2]))
+                constr_fit <- try(mev::fit.gev(xdat = dat, fpar = list(scale = sigmat, shape = x0[2])))
                 if (!inherits(constr_fit, what = "try-error")) {
                   if (constr_fit$convergence == "successful") {
                     x0 <- as.vector(c(constr_fit$estimate["loc"], 0.05))
@@ -616,7 +616,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             }
         }
         # constr.mle.shape <- function(xit, dat = dat){
-        # start.scale <- max(1e-2,mad(dat, constant = 1)/median(abs(evd::rgev(10000, shape=xit)-evd::qgev(0.5, shape=xit))))
+        # start.scale <- max(1e-2,mad(dat, constant = 1)/median(abs(mev::rgev(10000, shape=xit)-mev::qgev(0.5, shape=xit))))
         # start.loc <- median(dat) - start.scale*ifelse(xit == 0, log(log(2)), (log(2)^(-xit)-1)/xit)
         # if(any(c(start.scale + xit*(xmax-start.loc) <= 0, start.scale + xit*(xmin-start.loc) <= 0)))
         # {
@@ -636,7 +636,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         #   hin = function(par){c(ifelse(xit <= 0, exp(par[2]) + xit*(xmax-par[1]), exp(par[2]) + xit*(xmin-par[1])))} ) }
         #    if(!inherits(opt, what = "try-error")){
         # if(all(c(opt$convergence > 0, abs(gev.score(c(opt$par, xit), dat = dat)[1:2]) < 5e-4))){
-        # return(c(opt$par, opt$value)) } else { #evd::fgev(start = list(loc = opt$par[1], scale =
+        # return(c(opt$par, opt$value)) } else { #mev::fgev(start = list(loc = opt$par[1], scale =
         # opt$par[2]), shape = xit, # x = dat, method = 'BFGS', control=list(reltol=1e-10, abstol =
         # 1e-9)) opt2 <- suppressWarnings(nloptr::slsqp(x0 = opt$par, fn = function(par){ val <-
         # gev.ll.optim(c(par[1:2], xit), dat = dat); ifelse(is.infinite(val) || is.na(val), 1e10,
@@ -651,8 +651,8 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                 {
                   xit <- 0
                 }  #because rgev does not handle this case!
-            start.scale <- mad(dat, constant = 1)/median(abs(evd::rgev(2000, shape = xit) -
-                evd::qgev(0.5, shape = xit)))
+            start.scale <- mad(dat, constant = 1)/median(abs(mev::rgev(2000, shape = xit) -
+                mev::qgev(0.5, shape = xit)))
             start.loc <- median(dat) - start.scale * ifelse(xit == 0, log(log(2)), (log(2)^(-xit) -
                 1)/xit)
             if (start.scale + xit * (xmax - start.loc) <= 0) {
@@ -812,142 +812,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         }
 
         # Return levels, quantiles or value-at-risk
-    } else if (param == "quant") { # THIS IS NOT EXECUTED ANYMORE...
-        maxll <- gevr.ll(mle, dat = dat, p = p)
-        std.error <- sqrt(solve(gevr.infomat(par = mle, dat = dat, method = "exp", p = p))[1])
-        constr.mle.quant <- function(quant) {
-            fitted <- try(evd::fgev(x = dat, prob = p, quantile = quant, method = "Neld", std.err = FALSE))
-            if (!inherits(fitted, what = "try-error")) {
-                fitted <- optim(par = list(scale = log(fitted$estimate[1]), shape = fitted$estimate[2]),
-                  dat = dat, p = p, fn = function(lambda, p, dat) {
-                    gevr.ll.optim(c(quant, lambda), dat = dat, p = p)
-                  }, method = "BFGS", control = list(maxit = 500))
-                return(c(exp(fitted$par[1]), fitted$par[2], -fitted$value))
-            } else {
-                return(rep(NA, 3))
-            }
-        }
-
-        # Missing psi vector
-        if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
-            psirangelow <- seq(-3, -1.5, length = 6) * std.error + mle[1]
-            lowvals <- sapply(psirangelow, constr.mle.quant)[3, ] - maxll
-            psirangehigh <- seq(1.5, 4, length = 10) * std.error + mle[1]
-            highvals <- sapply(psirangehigh, constr.mle.quant)[3, ] - maxll
-            lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
-            hi <- approx(x = highvals, y = psirangehigh, xout = -4)$y
-            lo <- ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[2], lo)
-            hi <- ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[2], hi)
-            psi <- seq(lo, hi, length = 55)
-        }
-
-
-
-        evals <- t(sapply(psi, constr.mle.quant))
-        pars <- cbind(psi, evals[, 1:2, drop = FALSE])
-        # Profile log likelihood values for psi
-        profll <- evals[, 3]  # apply(pars, 1, function(par){gevr.ll(par = par, dat = dat, p = p)})
-        r <- sign(mle[param] - psi) * sqrt(2 * (maxll - profll))
-        if ("tem" %in% mod) {
-            phi.mle <- gevr.phi(par = mle, dat = dat, V = V, p = p)
-            q2num <- apply(pars, 1, function(par) {
-                det(rbind(c(c(phi.mle) - gevr.phi(par = par, dat = dat, V = V, p = p)), gevr.dphi(par = par,
-                  dat = dat, V = V, p = p)[-1, ]))
-            })
-            if (isTRUE(any(sign(q2num) * sign(r) < 0, na.rm = TRUE))) {
-                warning("Correction factor and likelihood root are of opposite sign - check output")
-            }
-            logq <- apply(pars, 1, function(par) {
-                -0.5 * log(det(gevr.infomat(par = par, dat = dat, method = "obs", p = p)[-1,
-                  -1]))
-            }) + log(abs(q2num))
-            qmlecontrib <- -log(det(gevr.dphi(par = mle, dat = dat, V = V, p = p))) + 0.5 *
-                log(det(gevr.infomat(par = mle, dat = dat, method = "obs", p = p)))
-            logq <- logq + qmlecontrib
-            qcor <- sign(q2num) * exp(logq)
-            rstar <- ifelse(r == 0, 0, r + (logq - log(abs(r)))/r)
-
-            tem.max.opt <- function(psi, dat = dat) {
-                lam <- constr.mle.quant(psi)
-                para <- c(psi, lam[1:2])
-                pll <- lam[3]
-                rs <- 2 * (maxll - pll)
-                logq <- -0.5 * log(det(gevr.infomat(par = para, dat = dat, method = "obs",
-                  p = p)[-1, -1])) + qmlecontrib + log(abs(det(rbind(c(c(phi.mle) - gevr.phi(par = para,
-                  dat = dat, V = V, p = p)), gevr.dphi(par = para, dat = dat, V = V, p = p)[-1,
-                  ]))))
-                abs(rs + logq - log(sqrt(abs(rs))))
-            }
-            tem.max <- optim(par = mle[1], fn = tem.max.opt, method = "Brent", lower = max(1e-05,
-                mle[1] - std.error), dat = dat, upper = mle[1] + std.error, control = list(abstol = 1e-10))$par
-        }
-        if ("modif" %in% mod) {
-            # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
-            tem.objfunc.quant <- function(par) {
-                0.5 * log(det(gevr.infomat(par = par, dat = dat, method = "obs", p = p)[-1,
-                  -1])) - log(abs(det(gevr.dphi(par = par, dat = dat, p = p, V = V[, -1])[-1, ])))
-            }
-            optim.tem.fn.quant <- function(psi) {
-                theta.psi.opt <- constr.mle.quant(psi)
-                param <- c(psi, theta.psi.opt[1:2])
-                ll <- theta.psi.opt[3]  # gevr.ll(param, dat = dat, m = m)
-                ll + tem.objfunc.quant(param)
-            }
-            # TEM profile log likelihood values for psi
-            proflltem <- profll + suppressWarnings(apply(pars, 1, tem.objfunc.quant))
-            # Maximum objective function for TEM
-            tem.mle.opt <- optim(par = mle[1], fn = optim.tem.fn.quant, method = "Brent", lower = max(1e-05,
-                mle[1] - std.error), upper = mle[1] + std.error, control = list(fnscale = -1))
-
-            # Severini empirical covariance function adjustment to profile likelihood Score function -
-            # observation-wise for xi
-            gevr.score.f <- function(par, dat, p) {
-                sigma <- par[2]
-                xi <- par[3]
-                z <- par[1]
-                log1mp <- log(1 - p)
-                cbind(((((dat - z) * xi/sigma + 1/(-log1mp)^xi)^(-1/xi - 2) * xi * (1/xi +
-                  1) * exp(-1/((dat - z) * xi/sigma + 1/(-log1mp)^xi)^(1/xi))/sigma^2 -
-                  ((dat - z) * xi/sigma + 1/(-log1mp)^xi)^(-2/xi - 2) * exp(-1/((dat -
-                    z) * xi/sigma + 1/(-log1mp)^xi)^(1/xi))/sigma^2) * sigma * ((dat -
-                  z) * xi/sigma + 1/(-log1mp)^xi)^(1/xi + 1) * exp(1/(((dat - z) * xi/sigma +
-                  1/(-log1mp)^xi)^(1/xi)))), (-(dat * (-log1mp)^xi - z * (-log(-p +
-                  1))^xi - (dat * (-log1mp)^xi - z * (-log1mp)^xi - sigma) * ((dat *
-                  xi * (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi))/
-                    ((sigma * dat * xi * (-log1mp)^xi - sigma * xi * z *
-                  (-log1mp)^xi + sigma^2) * ((dat * xi * (-log1mp)^xi - xi * z *
-                  (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi))), (-(xi *
-                  z * (-log1mp)^xi - (dat * (-log1mp)^xi - sigma * log(-log1mp)) * xi +
-                    ((dat * (-log1mp)^xi - sigma * log(-log1mp)) * xi^2 +
-                  (dat * (-log1mp)^xi - sigma * log(-log1mp)) * xi - (xi^2 * (-log1mp)^xi +
-                  xi * (-log1mp)^xi) * z) * ((dat * xi * (-log1mp)^xi -
-                  xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi) +
-                  (dat * xi * (-log1mp)^xi - xi * z * (-log1mp)^xi - (dat * xi *
-                    (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma) * ((dat * xi *
-                    (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi) +
-                     sigma) * log((dat * xi * (-log1mp)^xi - xi * z *
-                    (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi)))/((dat * xi^3 *
-                  (-log1mp)^xi - xi^3 * z * (-log1mp)^xi + sigma * xi^2) * ((dat *
-                  xi * (-log1mp)^xi - xi * z * (-log1mp)^xi + sigma)/(sigma * (-log1mp)^xi))^(1/xi))))
-
-            }
-            # Score at MLE (sums to zero)
-            score.quant.mle <- gevr.score.f(mle, dat, p = p)
-            empcov.objfunc.quant <- function(par) {
-                0.5 * log(det(gevr.infomat(par = par, dat = dat, method = "obs", p = p)[-1,
-                  -1])) - log(abs(sum(score.quant.mle * gevr.score.f(par, dat, p = p))))
-            }
-            profllempcov <- profll + suppressWarnings(apply(pars, 1, empcov.objfunc.quant))
-            optim.empcov.fn.quant <- function(psi) {
-                theta.psi.opt <- constr.mle.quant(psi)
-                param <- c(psi, theta.psi.opt[1:2])
-                ll <- theta.psi.opt[3]  #gevr.ll(param, dat = dat, p = p)
-                ll + empcov.objfunc.quant(param)
-            }
-            empcov.mle.opt <- optim(par = mle[1], fn = optim.empcov.fn.quant, method = "Brent",
-                lower = max(1e-05, mle[1] - std.error), upper = mle[1] + std.error, control = list(fnscale = -1))
-        }
-    } else if (param %in% c("Nquant", "Nmean")) {
+    }  else if (param %in% c("Nquant", "Nmean")) {
         qty <- switch(param, Nquant = "quantile", Nmean = "mean")
         maxll <- gevN.ll(mle, dat = dat, N = N, q = q, qty = qty)
         std.error <- sqrt(solve(gevN.infomat(par = mle, dat = dat, method = "exp", N = N, q = q,
@@ -1245,7 +1110,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' @export
 #' @examples
 #' \dontrun{
-#' dat <- evd::rgpd(n = 100, scale = 2, shape = 0.3)
+#' dat <- rgp(n = 100, scale = 2, shape = 0.3)
 #' gpd.pll(psi = seq(-0.5, 1, by=0.01), param = 'shape', dat = dat)
 #' gpd.pll(psi = seq(0.1, 5, by=0.1), param = 'scale', dat = dat)
 #' gpd.pll(psi = seq(20, 35, by=0.1), param = 'quant', dat = dat, p = 0.01)
@@ -2283,11 +2148,11 @@ tem.corr <- function(fr, print.warning = FALSE) {
 #' @examples
 #' \dontrun{
 #' set.seed(1234)
-#' dat <- evd::rgev(n = 40, loc = 0, scale = 2, shape = -0.1)
+#' dat <- rgev(n = 40, loc = 0, scale = 2, shape = -0.1)
 #' gev.tem('shape', dat = dat, plot = TRUE)
 #' gev.tem('quant', dat = dat, p = 0.01, plot = TRUE)
 #' gev.tem('scale', psi = seq(1, 4, by = 0.1), dat = dat, plot = TRUE)
-#' dat <- evd::rgev(n = 40, loc = 0, scale = 2, shape = 0.2)
+#' dat <- rgev(n = 40, loc = 0, scale = 2, shape = 0.2)
 #' gev.tem('loc', dat = dat, plot = TRUE)
 #' gev.tem('Nmean', dat = dat, p = 0.01, N=100, plot = TRUE)
 #' gev.tem('Nquant', dat = dat, q = 0.5, N=100, plot = TRUE)
@@ -2353,7 +2218,7 @@ gev.tem <- function(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant
 #' @export
 #' @examples
 #' set.seed(123)
-#' dat <- evd::rgpd(n = 40, scale = 1, shape = -0.1)
+#' dat <- rgp(n = 40, scale = 1, shape = -0.1)
 #' #with plots
 #' m1 <- gpd.tem(param = 'shape', n.psi = 50, dat = dat, plot = TRUE)
 #' \dontrun{

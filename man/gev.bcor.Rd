@@ -38,9 +38,9 @@ will return a vector of \code{NA} as the solution does not exist then.
 }
 \examples{
 set.seed(1)
-dat <- evd::rgev(n=40, loc = 1, scale=1, shape=-0.2)
-par <- evd::fgev(dat)$estimate
-gev.bcor(par,dat, 'subtract')
-gev.bcor(par,dat, 'firth') #observed information
-gev.bcor(par,dat, 'firth','exp')
+dat <- mev::rgev(n=40, loc = 1, scale=1, shape=-0.2)
+par <- mev::fit.gev(dat)$estimate
+gev.bcor(par, dat, 'subtract')
+gev.bcor(par, dat, 'firth') #observed information
+gev.bcor(par, dat, 'firth','exp')
 }
