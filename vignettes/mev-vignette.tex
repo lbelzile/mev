@@ -103,9 +103,9 @@ The syntax is
 \end{alltt}
 \begin{verbatim}
 ##        [,1]   [,2]   [,3]   [,4]   [,5]
-## [1,] 0.9658 0.9849 0.9972 0.9976 0.9869
-## [2,] 0.9446 0.9860 0.9584 0.9783 0.9765
-## [3,] 1.0147 1.0129 0.9807 0.9764 0.9890
+## [1,] 1.0156 0.9726 0.9413 0.9762 0.9844
+## [2,] 0.9794 0.9376 0.9100 0.9759 0.9712
+## [3,] 0.9073 0.9737 0.9529 0.9968 0.9567
 \end{verbatim}
 \begin{alltt}
 \hlcom{#Sample from the corresponding spectral density}
@@ -121,14 +121,14 @@ The syntax is
 \hlkwd{round}\hlstd{(}\hlkwd{colMeans}\hlstd{(w),}\hlnum{2}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-## [1] 0.20 0.20 0.19 0.20 0.21
+## [1] 0.20 0.21 0.20 0.20 0.20
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
 
 \section{Description of the models implemented}
 
-The different models implemented are described in \cite{Dombry:2016}, but some other models can be found and are described here.
+The different models implemented are described in \cite{Dombry:2016}, but some other models can be found and are described here. Throughout, we consider $d$-variate models and let $\mathbb{B}_d$ be the collection of all nonempty subsets of $\{1, \ldots, d\}$.
 \begin{enumerate}
 
 \item \textbf{logistic distribution} (\code{log})
@@ -145,53 +145,50 @@ w_j\right)^{-(\alpha+1)}\left(\sum_{j=1}^d
 \end{align*}
 
 \item \textbf{asymmetric logistic distribution} (\code{alog})
-This model was proposed by  \cite{Tawn:1990}. It shares the same parametrization as the \code{evd} package, merely replacing the algorithm for
-the generation of logistic
-variates. Let $\mathbb{B}_d$ be the collection of all nonempty subsets of $\{1, \ldots, d\}$. The distribution function of the $d$-variate asymmetric logistic distribution is
+This model was proposed by  \cite{Tawn:1990}. It shares the same parametrization as the \code{evd} package, merely replacing the algorithm for the generation of logistic variates. The distribution function of the $d$-variate asymmetric logistic distribution is
 \begin{align*}
    \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}_d}\left(\sum_{i \in b} \pfrac{\theta_{i,
-b}}{x_i}^{\alpha_b}\right)^{\frac{1}{\alpha_b}},\right]
+b}}{x_i}^{\alpha_b}\right)^{\frac{1}{\alpha_b}}\right],
 \end{align*}
-while the spectral density is
-\begin{align*}
-   h_{\bs{W}}(\bs{w})=\frac{1}{d}\frac{\prod_{j=1}^{d-1} (j\alpha_b-1)}{\prod_{i\in b} w_i} \left(\prod_{i \in
-b}\frac{\theta_{i,b}}{w_i}\right)^{\alpha_b} \left(\sum_{i \in b} \pfrac{\theta_{i, b}}{w_i}^{\alpha_b}\right)^{1/\alpha_b-d}
-\end{align*}
+%while the spectral density is
+%\begin{align*}
+%   h_{\bs{W}}(\bs{w})=\frac{1}{d}\frac{\prod_{j=1}^{d-1} (j\alpha_b-1)}{\prod_{i\in b} w_i} \left(\prod_{i %\in
+%b}\frac{\theta_{i,b}}{w_i}\right)^{\alpha_b} \left(\sum_{i \in b} \pfrac{\theta_{i, b}}{w_i}^{\alpha_b}\right)^{1/\alpha_b-d}
+%\end{align*}
 
 The parameters $\theta_{i, b}$ must be provided in a list and represent the asymmetry parameter.
 The sampling algorithm, from \cite{Stephenson:2003} gives some insight on the construction mechanism as a max-mixture of logistic distributions. Consider sampling $\bs{Z}_b$ from a logistic distribution of dimension $|b|$ (or Fréchet variates if $|b|=1)$ with parameter
 $\alpha_b$ (possibly recycled). Each marginal value corresponds to the maximum of the weighted corresponding entry. That
-is, $X_{i}=\max_{b \in \mathbb{B}}\theta_{i, b}Z_{i,b}$ for all $i=1, \ldots, d$. The max-mixture is valid provided that $\sum_{b
+is, $X_{i}=\max_{b \in \mathbb{B}_d}\theta_{i, b}Z_{i,b}$ for all $i=1, \ldots, d$. The max-mixture is valid provided that $\sum_{b
 \in \mathbb{B}_d} \theta_{i,b}=1$ for $i=1, \ldots, d.$ As such, empirical estimates of the spectral measure will almost surely
 place mass on the inside of the simplex rather than on subfaces.
 
 \item \textbf{negative logistic distribution} (\code{neglog})
 The distribution function of the min-stable distribution due to \cite{Galambos:1975}  is
 \begin{align*}
-   \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}} (-1)^{|b|}\left(\sum_{i \in b}
-{x_i}^{-\alpha}\right)^{\frac{1}{\alpha}}\right]
+   \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}_d} (-1)^{|b|}\left(\sum_{i \in b}
+{x_i}^{\alpha}\right)^{-\frac{1}{\alpha}}\right]
 \end{align*}
-for $\alpha \leq 0$ and corresponds to the model in \cite{Dombry:2016}.
-The density is (\citealp{Kotz:2000})
+for $\alpha \geq 0$ \citep{Dombry:2016}. The associated spectral density is
 \begin{align*}
-   h_{\bs{W}}(\bs{w}) = \frac{1}{d} \sum_{\substack{b \in B \\c \subset b}} (-1)^{|b|}
-\left(\prod_{j=1}^{d-1}(1-j\alpha)\right)\left(\prod_{i \in c}w_j\right)^{-(\alpha+1)}\left(\sum_{i \in c}
-w_i^{-\alpha}\right)^{1/\alpha-d}
+   h_{\bs{W}}(\bs{w}) = \frac{1}{d}
+\frac{\Gamma(1/\alpha+1)}{\Gamma(1/\alpha + d-1)} \alpha^d\left(\prod_{i=1}^d w_j\right)^{\alpha-1}\left(\sum_{i=1}^d
+w_i^{\alpha}\right)^{-1/\alpha-d}
 \end{align*}
 
 \item \textbf{asymmetric negative logistic distribution} (\code{aneglog})
-The asymmetric negative logistic model is alluded to in \cite{Joe:1990} as a generalization of the Galambos model. It is constructed in the same way as the asymmetric logistic distribution; see Theorem~1 in \cite{Stephenson:2003}. Let $\alpha_b \leq 0$ for all $b \in \mathbb{B}_d$ and $\theta_{i, b} \geq 0$ with $\sum_{b \in \mathbb{B}_d} \theta_{i, b} =1$; the distribution function is then
+The asymmetric negative logistic model is alluded to in \cite{Joe:1990} as a generalization of the Galambos model. It is constructed in the same way as the asymmetric logistic distribution; see Theorem~1 in \cite{Stephenson:2003}. Let $\alpha_b \leq 0$ for all $b \in \mathbb{B}_d$ and $\theta_{i, b} \geq 0$ with $\sum_{b \in \mathbb{B}_d} \theta_{i, b} =1$ for $i=1, \ldots, d$; the distribution function is
 \begin{align*}
-      \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}}\sum_{c \in b} (-1)^{|c|}
-\left(\sum_{i \in c}
+      \P{\bs{X} \leq \bs{x}} = \exp \left[ -\sum_{b \in \mathbb{B}_d}(-1)^{|b|}
+\left(\sum_{i \in b}
 \pfrac{\theta_{i, b}}{x_i}^{\alpha_b}\right)^{\frac{1}{\alpha_b}}\right].
 \end{align*}
-The density is (\citealp{Kotz:2000})
-\begin{align*}
-   h_{\bs{W}}(\bs{w}) = \frac{1}{d} \sum_{\substack{b \in B \\c \subset b}} (-1)^{|b|}
-\left(\prod_{j=1}^{d-1}(1-j\alpha)\right)\left(\prod_{i \in c}w_j\right)^{-(\alpha+1)}\left( \prod_{j \in b} \theta_{j, b}\right)^{\alpha_b}\left(\sum_{i \in c}
-\pfrac{\theta_{i, b}}{w_i}^{\alpha_b}\right)^{1/\alpha_b-d}
-\end{align*}
+%The density is
+%\begin{align*}
+%   h_{\bs{W}}(\bs{w}) = \frac{1}{d} \sum_{\substack{b \in \mathbb{B}_d \\c \subset b}} (-1)^{|b|}
+%\left(\prod_{j=1}^{d-1}(1-j\alpha)\right)\left(\prod_{i \in c}w_j\right)^{-(\alpha+1)}\left( \prod_{j \in %b} \theta_{j, b}\right)^{\alpha_b}\left(\sum_{i \in c}
+%\pfrac{\theta_{i, b}}{w_i}^{\alpha_b}\right)^{1/\alpha_b-d}
+%\end{align*}
 In particular, it does not correspond to the ``negative logistic distribution'' given in e.g. \S 4.2 of \cite{Coles:1991}  or \S 3.5.3 of \cite{Kotz:2000}. The latter is not a valid
 distribution function in dimension $d \geq 3$ as the constraints therein on the parameters $\theta_{i, b}$ are necessary, but not sufficient.
 
@@ -207,12 +204,12 @@ where $C_j=\Gamma(d-\alpha_j)/\Gamma(1-\alpha_j)$ for $j=1, \ldots, d$ and $\bs{
 \end{align*}
 for $0<\alpha_j <1, j=1, \ldots, d$.
 The
-spectral density is given by
+spectral density of the multilogistic distribution is thus
 \begin{align*}
    h_{\bs{W}}(\bs{w}) = \frac{1}{d} \left(\sum_{j=1}^d \alpha_ju_j\right)^{-1} \left(\prod_{j=1}^d \alpha_ju_d
 \right)\left(\sum_{j=1}^d \frac{\Gamma(d-\alpha_j)}{\Gamma(1-\alpha_j)}u_j^{-\alpha_j}\right)\prod_{j=1}^d w_j^{-1}
 \end{align*}
-for $\alpha_j \in (0,1)$
+for $\alpha_j \in (0,1)$ $(j=1, \ldots, d)$.
 \item \textbf{Coles and Tawn Dirichlet distribution} (\code{ct})
 The Dirichlet model of \cite{Coles:1991}
 \begin{align*}
@@ -228,7 +225,7 @@ The angular density of the scaled extremal Dirichlet model with parameters $\rho
 \bigl\langle\{\bs{c}(\bs{\alpha},\rho)\}^{1/\rho},\bs{w}^{1/\rho}\bigr\rangle^{-\rho-\bar{\alpha}}\prod_{i=1}^{d}
 \{c(\alpha_i,\rho)\}^{\alpha_i/\rho}w_i^{\alpha_i/\rho-1}.
 \end{align*}
-where $\bs{c}(\bs{\alpha},\rho)$ is the $d$-vector with entries  $\Gamma(\alpha_i+\rho)/\Gamma(\alpha_i)$ for $i=1, \ldots, d.$
+where $\bs{c}(\bs{\alpha},\rho)$ is the $d$-vector with entries  $\Gamma(\alpha_i+\rho)/\Gamma(\alpha_i)$ for $i=1, \ldots, d$ and $\langle \cdot, \cdot \rangle$ denotes the inner product between two vectors.
 
 \item \textbf{H\"usler--Reiss} (\code{hr}), due to \cite{Husler:1989}. It is a special case of the Brown--Resnick process.
 While \cite{Engelke:2015} state that H\"usler--Reiss variates can be sampled following the same scheme, the spatial analog is
