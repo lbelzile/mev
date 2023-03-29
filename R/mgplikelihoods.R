@@ -131,7 +131,7 @@ gpdtopar <- function(dat, loc = 0, scale, shape, lambdau = 1) {
 #' @param likt string indicating the type of likelihood, with an additional contribution for the non-exceeding components: one of  \code{"mgp"}, \code{"binom"} and \code{"pois"}.
 #' @param ... additional arguments (see Details)
 #' @param par list of parameters: \code{alpha} for the logistic model, \code{Lambda} for the Brown--Resnick model or else \code{Sigma} and \code{df} for the extremal Student.
-#' @param model string indicating the model family, one of \code{"log"}, \code{"br"} or \code{"xstud"}
+#' @param model string indicating the model family, one of \code{"log"}, \code{"neglog"}, \code{"br"} or \code{"xstud"}
 #' @note The location and scale parameters are not identifiable unless one of them is fixed.
 #' @details
 #' Optional arguments can be passed to the function via \code{...}
@@ -144,8 +144,16 @@ gpdtopar <- function(dat, loc = 0, scale, shape, lambdau = 1) {
 #' }
 #' @return the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
 #' @export
-likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud", "log"),
-                   likt = c("mgp", "pois", "binom"), lambdau = 1, ...) {
+likmgp <- function(dat,
+                   thresh,
+                   loc,
+                   scale,
+                   shape,
+                   par,
+                   model = c("log", "neglog", "br", "xstud"),
+                   likt = c("mgp", "pois", "binom"),
+                   lambdau = 1,
+                   ...) {
   # Rename arguments
   stopifnot(length(thresh) == 1L,
             is.numeric(thresh))
@@ -275,6 +283,26 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
     }
     intens <- ldVfunlog(x = tdat, alpha = alpha, lV = lVx)
     exponentMeasure <- exp(lVu)
+  } else if(model == "neglog"){
+    lVfunneglog <- function(x, alpha){
+      stopifnot(is.vector(x))
+      xa <- x^alpha
+      p <- length(x)
+      Vx <- 0
+      for(i in seq_len(p)){
+          Vx <- Vx + ifelse(i%%2 == 0, 1, -1)*sum(combn(xa, m = i, FUN = sum)^(-1/alpha))
+      }
+      return(log(Vx))
+    }
+    lVu <- lVfunlog(x = tu, alpha = alpha)
+    exponentMeasure <- exp(lVu)
+    ldVfun_neglog <- function(x, alpha) {
+      x <- as.matrix(x^alpha)
+      p <- ncol(x)
+      prod(dim(x))*log(alpha) + nrow(x)*(lgamma(1/alpha + 1) - lgamma(1/alpha + p - 1)) +
+        (1 - 1/alpha)*log(sum(x)) - (1/alpha + p)*sum(log(rowSums(x)))
+    }
+    intens <- ldVfun_neglog(x = tdat, alpha = alpha)
   }
   res <- intens + jac + switch(likt,
     mgp = -N * log(exponentMeasure),
@@ -309,8 +337,18 @@ likmgp <- function(dat, thresh, loc, scale, shape, par, model = c("br", "xstud",
 #' }
 #' @return the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
 #' @export
-clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model = c("br", "xstud", "log"),
-                    likt = c("mgp", "pois", "binom"), lambdau = 1, ...) {
+#' @keywords internal
+clikmgp <- function(dat,
+                    thresh,
+                    mthresh = thresh,
+                    loc,
+                    scale,
+                    shape,
+                    par,
+                    model = c("log", "neglog", "br", "xstud"),
+                    likt = c("mgp", "pois", "binom"),
+                    lambdau = 1,
+                    ...) {
   stopifnot(length(thresh) == 1L,
             is.numeric(thresh))
 
@@ -454,7 +492,7 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
   # for(j in 1:D){
   #   tdat[,j] <- log(1/(1-(rank(as.vector(rain[,stid[j]]))/(ellips$ntot+1))))[wexc]
   # }
-  if (model != "log") {
+  if (model %in% c("br","xstud")) {
     likelihood_xstud <- function(i) {
       if (i < N + 1) {
         k <- numAbovePerRow[i]
@@ -540,7 +578,7 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
     }
     exponentMeasure <- sum(unlist(pro)[(1 + N):(D + N)] / tu)
     intens <- sum(unlist(pro)[1:N])
-  } else { # Logistic (Gumbel) multivariate model
+  } else if(model == "log") { # Logistic (Gumbel) multivariate model
     #tdat <- tdat[,numAbovePerRow>0]
     lVfunlog <- function(x, alpha) {
       if (is.null(dim(x))) {
@@ -566,6 +604,55 @@ clikmgp <- function(dat, thresh, mthresh = thresh, loc, scale, shape, par, model
     }
     intens <- ldVfunlog(x = cdat, censored = censored, alpha = alpha, numAbovePerRow = numAbovePerRow, lV = lVx)
     exponentMeasure <- exp(lVu)
+  } else if(model == "neglog"){
+    cdat <- t(apply(tdat, 1, function(x) {
+      pmax(yth, x)^alpha
+    }))
+    # Parametrization that follows is in mev vignette with alpha > 0
+    lVfunneglog <- function(x, alpha){
+      xa <- x^alpha
+      if (is.null(dim(x))) { # vector
+        p <- length(x)
+        Vx <- 0
+        for(i in seq_len(p)){
+          Vx <- Vx + ifelse(i%%2 == 0, 1, -1)*sum(combn(xa, m = i, FUN = sum)^(-1/alpha))
+        }
+      } else { # matrix
+        p <- ncol(xa)
+        Vx <- rep(0, nrow(xa))
+        for(i in seq_len(p)){
+          Vx <- Vx + ifelse(i%%2 == 0, 1, -1)*
+            rowSums(apply(
+              combn(seq_len(p), i), 2, function(ind){
+                rowSums(xa[,ind, drop = FALSE])^(1/alpha)}))
+        }
+      }
+      return(log(Vx))
+    }
+    lVu <- lVfunlog(x = tu, alpha = alpha)
+    exponentMeasure <- exp(lVu)
+    #' @param x vector of observations to the power alpha
+    #' @param censored matrix of logical indicator, TRUE for censored, FALSE otherwise
+    #' @param alpha positive shape parameter
+    #' @param numAbovePerRow vector of the row sums of \code{censored}.
+    ldVfunneglog <- function(x, censored, alpha, numAbovePerRow) {
+      x <- as.matrix(x)
+      p <- ncol(x)
+      res <- sum(numAbovePerRow)*log(alpha) + nrow(x)*lgamma(1/alpha + 1) - sum(lgamma(1/alpha + numAbovePerRow - 1)) +
+        (1 - 1/alpha)*log(sum(x[!censored]))
+      for(i in seq_len(nrow(x))){
+        # sum of uncensored
+        res <- res + log(
+          sum(x[i,-censored[i,]])^(-1/alpha - numAbovePerRow[i]) + # empty set
+            sum(sapply(seq_len(p),
+                 function(j){
+                   ifelse((j - numAbovePerRow[i])%%2 == 0, 1, -1)*sum(
+                     (combn(x[i,censored[i,]], j,
+                         FUN = sum) + sum(x[i,-censored[i,]]))^(-1/alpha - numAbovePerRow[i]))})))
+      }
+      return(res)
+    }
+    intens <- ldVfunneglog(x = cdat, censored = censored, alpha = alpha, numAbovePerRow = numAbovePerRow)
   }
   res <- jac + intens + switch(likt,
     mgp = -N * log(exponentMeasure),

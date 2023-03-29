@@ -11,7 +11,7 @@ likmgp(
   scale,
   shape,
   par,
-  model = c("br", "xstud", "log"),
+  model = c("log", "neglog", "br", "xstud"),
   likt = c("mgp", "pois", "binom"),
   lambdau = 1,
   ...
@@ -30,7 +30,7 @@ likmgp(
 
 \item{par}{list of parameters: \code{alpha} for the logistic model, \code{Lambda} for the Brown--Resnick model or else \code{Sigma} and \code{df} for the extremal Student.}
 
-\item{model}{string indicating the model family, one of \code{"log"}, \code{"br"} or \code{"xstud"}}
+\item{model}{string indicating the model family, one of \code{"log"}, \code{"neglog"}, \code{"br"} or \code{"xstud"}}
 
 \item{likt}{string indicating the type of likelihood, with an additional contribution for the non-exceeding components: one of  \code{"mgp"}, \code{"binom"} and \code{"pois"}.}
 

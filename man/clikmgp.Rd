@@ -12,7 +12,7 @@ clikmgp(
   scale,
   shape,
   par,
-  model = c("br", "xstud", "log"),
+  model = c("log", "neglog", "br", "xstud"),
   likt = c("mgp", "pois", "binom"),
   lambdau = 1,
   ...
@@ -33,13 +33,21 @@ clikmgp(
 
 \item{par}{list of parameters: \code{alpha} for the logistic model, \code{Lambda} for the Brown--Resnick model or else \code{Sigma} and \code{df} for the extremal Student.}
 
-\item{model}{string indicating the model family, one of \code{"log"}, \code{"br"} or \code{"xstud"}}
+\item{model}{string indicating the model family, one of \code{"log"}, \code{"neglog"}, \code{"br"} or \code{"xstud"}}
 
 \item{likt}{string indicating the type of likelihood, with an additional contribution for the non-exceeding components: one of  \code{"mgp"}, \code{"binom"} and \code{"pois"}.}
 
 \item{lambdau}{vector of marginal rate of marginal threshold exceedance.}
 
 \item{...}{additional arguments (see Details)}
+
+\item{x}{vector of observations to the power alpha}
+
+\item{censored}{matrix of logical indicator, TRUE for censored, FALSE otherwise}
+
+\item{alpha}{positive shape parameter}
+
+\item{numAbovePerRow}{vector of the row sums of \code{censored}.}
 }
 \value{
 the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
@@ -65,3 +73,4 @@ Optional arguments can be passed to the function via \code{...}
 \note{
 The location and scale parameters are not identifiable unless one of them is fixed.
 }
+\keyword{internal}
