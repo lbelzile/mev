@@ -724,6 +724,7 @@ smith.penult <- function(family, method = c("bm", "pot"), u, qu, m, returnList =
 #' @param mdaGumbel logical indicating whether the function \eqn{H_{\rho}}{H(x;\rho)} should be replaced by \eqn{x^3/6}; see \strong{Details}.
 #' @param ... additional parameters, currently ignored. These are used for backward compatibility due to a change in the names of the arguments.
 #' @references Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
+#' @keywords internal
 #' @examples
 #' #Normal maxima example from Smith (1987)
 #' m <- 100 #block of size 100

@@ -2,7 +2,7 @@
 % Please edit documentation in R/mgplikelihoods.R
 \name{clikmgp}
 \alias{clikmgp}
-\title{Censored likelihood for multivariate generalized Pareto distributions}
+\title{Censored likelihood for multivariate peaks over threshold models}
 \usage{
 clikmgp(
   dat,
@@ -53,7 +53,9 @@ clikmgp(
 the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
 }
 \description{
-Censored likelihood for the logistic distribution and the Brown--Resnick and extremal Student processes.
+Censored likelihoods for various parametric limiting models over region determined by
+\deqn{\{y \in F: \max_{j=1}^D \sigma_j \frac{y^\xi_j-1}{\xi_j}+\mu_j  > u\};}
+where \eqn{\mu} is \code{loc}, \eqn{\sigma} is \code{scale} and \eqn{\xi} is \code{shape}.
 }
 \details{
 Optional arguments can be passed to the function via \code{...}

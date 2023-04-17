@@ -1,9 +1,20 @@
-# mev v. current
+# mev v. 1.15
 ==============
+
+## New:
+
+* `gev` and `gp` distribution functions (d/p/q/r) introduced to remove dependency on `evd` package.
+* Ramos and Ledford score test of independence
 
 ## Fixes:
 
 * `taildep` function now correctly check choice of estimators against list of methods
+* Fix argument size in `likmgp` and `clikmgp` for the logistic model
+* Correctly return a covariance matrix with NAs when the matrix is singular or xi=-1
+
+## Changes:
+
+* `taildep` arguments leads to faster calculations with `betacop` option.
 
 # mev v.1.14
 ==============
@@ -11,12 +22,12 @@
 ## New:
 
 * bivariate coefficient of extremal asymmetry
-* four new families of max-stable models (pairwise beta, pairwise exponential, weighted Dirichlet and weighted exponential) for rmev, following Ballani and Schlather (2011)
+* four new families of max-stable models (pairwise beta, pairwise exponential, weighted Dirichlet and weighted exponential) for `rmev`, following Ballani and Schlather (2011)
 * maximum likelihood estimation routines (`fit.gpd`, `fit.gev`, etc.) now accept fixed parameters
 * mean residual life plots with weighted least square fit
 * coefficient of variation tests for threshold selection
 * Varty et al. metric based threshold selection diagnostic
-* anova methods for `mev_gpd` and `mev_gev` objects
+* `anova` method for `mev_gpd` and `mev_gev` objects
 * `rmev` and `rmevspec` now accept a distance matrix in place of coordinates for spatial models.
 * new datasets
 * website with vignettes
@@ -29,17 +40,17 @@
 
 ## Fixes:
 
-* ext.coef correctly handles arrays with missing values (reported by M. Jousset)
-* Optimization method in fit.gev now uses the PWM solution of Hosking (1985) as starting value
-* gev.pll now returns confidence intervals for param = "quant" (reported by D. Dupuis)
+* `ext.coef` correctly handles arrays with missing values (reported by M. Jousset)
+* Optimization method in `fit.gev` now uses the PWM solution of Hosking (1985) as starting value
+* `gev.pll` now returns confidence intervals for param = "quant" (reported by D. Dupuis)
 * Fixes to NHPP order statistics density (returns -Inf outside of domain, also correctly evaluate for boundary case when xi=-1)
-* Optimization routines fit.pp, fit.gev and fit.rlarg now return correct MLE when solution lies on boundary (xi=-1) and are more robust to failure (gradients for nlminb return large values rather than NAs which caused the algorithm to stop).
+* Optimization routines `fit.pp`, `fit.gev` and `fit.rlarg` now return correct MLE when solution lies on boundary (xi=-1) and are more robust to failure (gradients for nlminb return large values rather than NAs which caused the algorithm to stop).
 * Grimshaw's algorithm sometimes returned incorrect value because of too low tolerance for eta near zero. Set back to default settings.
-* fit.gpd(..., method = "obre") now returns additional failure messages if the algorithm drifts towards infeasible values.
-* rparp now correctly handles xi=0
+* `fit.gpd(..., method = "obre")` now returns additional failure messages if the algorithm drifts towards infeasible values.
+* `rparp` now correctly handles xi=0
 * Extended GP model now has 'step' for discretization, and a valid distribution function that returns real arguments whenever the input is finite (#9)
-* W.diag and egp.fitrange include arguments for changing 'par' (#10)
-* smith.penult now computes reciprocal hazard and it's derivative on the log scale (when possible) to avoid numerical overflow.
+* `W.diag` and `egp.fitrange` include arguments for changing 'par' (#10)
+* `smith.penult` now computes reciprocal hazard and it's derivative on the log scale (when possible) to avoid numerical overflow.
 
 # mev v.1.13 (Release date: 2019-12-17)
 ==============

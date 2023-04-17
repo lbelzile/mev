@@ -281,7 +281,7 @@ qgp <- function(p,
                  shape = 0,
                  lower.tail = TRUE) {
   if (min(p, na.rm = TRUE) < 0 || max(p, na.rm = TRUE) > 1)
-    stop("\"p' must contain probabilities in (0,1)")
+    stop("\"p\" must contain probabilities in (0,1)")
   stopifnot(
     "\"loc\" must be a vector of length 1." = length(loc) == 1L,
     "\"loc\" must be finite" = isTRUE(is.finite(loc)),

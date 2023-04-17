@@ -13,6 +13,7 @@
 #' \item{\code{pval}}{asymptotic p-value}
 #' \item{\code{test}}{\code{test} argument}
 #' }
+#' @export
 #' @examples
 #' samp <- rmev(n = 1000, d = 2,
 #'     param = 0.99, model = "log")

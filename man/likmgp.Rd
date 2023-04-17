@@ -2,7 +2,7 @@
 % Please edit documentation in R/mgplikelihoods.R
 \name{likmgp}
 \alias{likmgp}
-\title{Likelihood for multivariate generalized Pareto distribution}
+\title{Likelihood for multivariate peaks over threshold models}
 \usage{
 likmgp(
   dat,
@@ -42,7 +42,7 @@ likmgp(
 the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
 }
 \description{
-Likelihood for the Brown--Resnick, extremal Student or logistic vectors over region determined by
+Likelihood for the various parametric limiting models over region determined by
 \deqn{\{y \in F: \max_{j=1}^D \sigma_j \frac{y^\xi_j-1}{\xi_j}+\mu_j  > u\};}
 where \eqn{\mu} is \code{loc}, \eqn{\sigma} is \code{scale} and \eqn{\xi} is \code{shape}.
 }

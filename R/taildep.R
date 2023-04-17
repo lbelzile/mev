@@ -121,7 +121,7 @@ taildep <- function (data,
     if(min(u) < qlim2[1] || max(u) >  qlim2[2]){
       warning("upper quantile limit is too high or lower quantile limit is too low")
     }
-    u <- u[u < qlim2[2] & u > qlim2[1]]
+    #u <- u[u < qlim2[2] & u > qlim2[1]]
     nq <- length(u)
   }
 

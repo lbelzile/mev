@@ -54,6 +54,9 @@ xasym <- function (data,
                       # trunc = TRUE,
                       ties.method = "random",
                       plot = TRUE, ...) {
+  if(inherits(data, "data.frame")){
+  data <- as.matrix(data)
+  }
   if(!inherits(data, "matrix")){
     stop("\"data\" must be a matrix.")
   }
@@ -284,6 +287,10 @@ if(method == "empirical"){
      }
      if(is.null(ellips$ylim)){
        ellips$ylim <- c(-1,1)
+     }
+     if(is.null(ellips$xlim)){
+       ellips$ylim <- range(u)
+       ellips$ylim <- pmin(ellips$ylim, 1)
      }
      if(is.null(ellips$yaxs)){
        ellips$yaxs <- "i"

@@ -108,3 +108,4 @@ lines(x, approx$f(x),col=4)
 \references{
 Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
 }
+\keyword{internal}
