@@ -1,66 +1,66 @@
 # This function is added to ensure that the local solver can be fixed to something different
 # than COBYLA - see https://github.com/jyypma/nloptr/pull/38 and
 # https://github.com/stevengj/nlopt/issues/118
-.auglag <- function(x0, fn, gr = NULL, lower = NULL, upper = NULL, hin = NULL, hinjac = NULL,
-    heq = NULL, heqjac = NULL, localsolver = c("COBYLA"), localtol = 1e-06, ineq2local = FALSE,
-    nl.info = FALSE, control = list(), ...) {
-    if (ineq2local) {
-        stop("Inequalities to local solver: feature not yet implemented.")
-    }
-    localsolver <- toupper(localsolver)
-    if (localsolver %in% c("COBYLA", "BOBYQA")) {
-        # changed this line to add BOBYQA local solver
-        dfree <- TRUE
-        gsolver <- "NLOPT_LN_AUGLAG"
-        lsolver <- paste("NLOPT_LN_", localsolver, sep = "")
-    } else if (localsolver %in% c("LBFGS", "MMA", "SLSQP")) {
-        dfree <- FALSE
-        gsolver <- "NLOPT_LD_AUGLAG"
-        lsolver <- paste("NLOPT_LD_", localsolver, sep = "")
-    } else {
-        stop("Only local solvers allowed: BOBYQA, COBYLA, LBFGS, MMA, SLSQP.")
-    }
-    .fn <- match.fun(fn)
-    fn <- function(x) .fn(x, ...)
-    if (!dfree && is.null(gr)) {
-        gr <- function(x) nloptr::nl.grad(x, fn)
-    }
-    opts <- nloptr::nl.opts(control)
-    opts$algorithm <- gsolver
-    local_opts <- list(algorithm = lsolver, xtol_rel = localtol, eval_grad_f = if (!dfree) gr else NULL)
-    opts$local_opts <- local_opts
-    if (!is.null(hin)) {
-        .hin <- match.fun(hin)
-        hin <- function(x) (-1) * .hin(x)
-    }
-    if (!dfree) {
-        if (is.null(hinjac)) {
-            hinjac <- function(x) nloptr::nl.jacobian(x, hin)
-        } else {
-            .hinjac <- match.fun(hinjac)
-            hinjac <- function(x) (-1) * .hinjac(x)
-        }
-    }
-    if (!is.null(heq)) {
-        .heq <- match.fun(heq)
-        heq <- function(x) .heq(x)
-    }
-    if (!dfree) {
-        if (is.null(heqjac)) {
-            heqjac <- function(x) nloptr::nl.jacobian(x, heq)
-        } else {
-            .heqjac <- match.fun(heqjac)
-            heqjac <- function(x) .heqjac(x)
-        }
-    }
-    S0 <- nloptr::nloptr(x0, eval_f = fn, eval_grad_f = gr, lb = lower, ub = upper, eval_g_ineq = hin,
-        eval_jac_g_ineq = hinjac, eval_g_eq = heq, eval_jac_g_eq = heqjac, opts = opts)
-    if (nl.info)
-        print(S0)
-    S1 <- list(par = S0$solution, value = S0$objective, iter = S0$iterations, global_solver = gsolver,
-        local_solver = lsolver, convergence = S0$status, message = S0$message)
-    return(S1)
-}
+# .auglag <- function(x0, fn, gr = NULL, lower = NULL, upper = NULL, hin = NULL, hinjac = NULL,
+#     heq = NULL, heqjac = NULL, localsolver = c("COBYLA"), localtol = 1e-06, ineq2local = FALSE,
+#     nl.info = FALSE, control = list(), ...) {
+#     if (ineq2local) {
+#         stop("Inequalities to local solver: feature not yet implemented.")
+#     }
+#     localsolver <- toupper(localsolver)
+#     if (localsolver %in% c("COBYLA", "BOBYQA")) {
+#         # changed this line to add BOBYQA local solver
+#         dfree <- TRUE
+#         gsolver <- "NLOPT_LN_AUGLAG"
+#         lsolver <- paste("NLOPT_LN_", localsolver, sep = "")
+#     } else if (localsolver %in% c("LBFGS", "MMA", "SLSQP")) {
+#         dfree <- FALSE
+#         gsolver <- "NLOPT_LD_AUGLAG"
+#         lsolver <- paste("NLOPT_LD_", localsolver, sep = "")
+#     } else {
+#         stop("Only local solvers allowed: BOBYQA, COBYLA, LBFGS, MMA, SLSQP.")
+#     }
+#     .fn <- match.fun(fn)
+#     fn <- function(x) .fn(x, ...)
+#     if (!dfree && is.null(gr)) {
+#         gr <- function(x) nloptr::nl.grad(x, fn)
+#     }
+#     opts <- nloptr::nl.opts(control)
+#     opts$algorithm <- gsolver
+#     local_opts <- list(algorithm = lsolver, xtol_rel = localtol, eval_grad_f = if (!dfree) gr else NULL)
+#     opts$local_opts <- local_opts
+#     if (!is.null(hin)) {
+#         .hin <- match.fun(hin)
+#         hin <- function(x) (-1) * .hin(x)
+#     }
+#     if (!dfree) {
+#         if (is.null(hinjac)) {
+#             hinjac <- function(x) nloptr::nl.jacobian(x, hin)
+#         } else {
+#             .hinjac <- match.fun(hinjac)
+#             hinjac <- function(x) (-1) * .hinjac(x)
+#         }
+#     }
+#     if (!is.null(heq)) {
+#         .heq <- match.fun(heq)
+#         heq <- function(x) .heq(x)
+#     }
+#     if (!dfree) {
+#         if (is.null(heqjac)) {
+#             heqjac <- function(x) nloptr::nl.jacobian(x, heq)
+#         } else {
+#             .heqjac <- match.fun(heqjac)
+#             heqjac <- function(x) .heqjac(x)
+#         }
+#     }
+#     S0 <- nloptr::nloptr(x0, eval_f = fn, eval_grad_f = gr, lb = lower, ub = upper, eval_g_ineq = hin,
+#         eval_jac_g_ineq = hinjac, eval_g_eq = heq, eval_jac_g_eq = heqjac, opts = opts)
+#     if (nl.info)
+#         print(S0)
+#     S1 <- list(par = S0$solution, value = S0$objective, iter = S0$iterations, global_solver = gsolver,
+#         local_solver = lsolver, convergence = S0$status, message = S0$message)
+#     return(S1)
+# }
 
 
 
@@ -84,6 +84,9 @@
 #' @param print should a summary be printed. Default to \code{FALSE}.
 #' @return returns a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
 #' @export
+#' @importFrom Rsolnp solnp
+#' @importFrom alabama auglag
+#' @importFrom utils tail
 confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1-level)/2), print = FALSE, method = c("cobs","smooth.spline"), ...) {
   if(!isTRUE(all.equal(diff(prob),level, check.attributes = FALSE))){
    warning("Incompatible arguments: \"level\" does not match \"prob\".")
@@ -472,9 +475,9 @@ plot.eprof <- function(x, ...) {
 #' dat <- rgev(n = 100, loc = 0, scale = 2, shape = 0.3)
 #' gev.pll(psi = seq(0,0.5, length = 50), param = 'shape', dat = dat)
 #' gev.pll(psi = seq(-1.5, 1.5, length = 50), param = 'loc', dat = dat)
-#' gev.pll(psi = seq(10, 40, by = 0.1), param = 'quant', dat = dat, p = 0.01)
-#' gev.pll(psi = seq(12, 100, by=1), param = 'Nmean', N = 100, dat = dat)
-#' gev.pll(psi = seq(12, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
+#' gev.pll(psi = seq(10, 40, length = 50), param = 'quant', dat = dat, p = 0.01)
+#' gev.pll(psi = seq(12, 100, length = 50), param = 'Nmean', N = 100, dat = dat)
+#' gev.pll(psi = seq(12, 90, length = 50), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
 gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
                     mod = "profile", dat, N = NULL, p = NULL, q = NULL, correction = TRUE, plot = TRUE, ...) {
@@ -538,10 +541,13 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         }
     }
     if (!Vprovided) {
-        V <- switch(param, loc = gev.Vfun(par = mle, dat = dat), scale = gev.Vfun(par = mle,
-            dat = dat), shape = gev.Vfun(par = mle, dat = dat), quant = gevr.Vfun(par = mle,
-            dat = dat, p = p), Nmean = gevN.Vfun(par = mle, dat = dat, N = N, qty = "mean"),
-            Nquant = gevN.Vfun(par = mle, dat = dat, q = q, N = N, qty = "quantile"))
+        V <- switch(param,
+                    loc = gev.Vfun(par = mle, dat = dat),
+                    scale = gev.Vfun(par = mle, dat = dat),
+                    shape = gev.Vfun(par = mle, dat = dat),
+                    quant = gevr.Vfun(par = mle, dat = dat, p = p),
+                    Nmean = gevN.Vfun(par = mle, dat = dat, N = N, qty = "mean"),
+                    Nquant = gevN.Vfun(par = mle, dat = dat, q = q, N = N, qty = "quantile"))
     }
 
 
@@ -585,22 +591,41 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                   stop("Could not find starting values for optimization routine")
                 }
             }
-            opt <- suppressMessages(nloptr::sbplx(x0 = x0, fn = function(par) {
-                -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
-            }))
-            opt2 <- suppressMessages(nloptr::slsqp(x0 = opt$par, fn = function(par) {
+            # opt <- suppressMessages(nloptr::sbplx(x0 = x0, fn = function(par) {
+            #     -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
+            # }))
+            # opt2 <- suppressMessages(nloptr::slsqp(x0 = opt$par, fn = function(par) {
+            #     -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
+            # }, gr = function(par) {
+            #     -gev.score(c(par[1], sigmat, par[2]), dat = dat)[-2]
+            # }))
+            opt <- try(suppressWarnings(suppressMessages(alabama::auglag(par = x0, fn = function(par) {
                 -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
             }, gr = function(par) {
                 -gev.score(c(par[1], sigmat, par[2]), dat = dat)[-2]
-            }))
-            if (opt2$convergence > 0) {
-                return(c(opt2$par, opt2$value))
-            } else {
-                return(rep(NA, 3))
+            },
+            hin = function(par) {
+              ifelse(par[2] <= 0, sigmat + par[2] * (xmax - par[1]), sigmat + par[2] * (xmin -
+                                                                                       par[1]))
+            }, control.outer = list(trace = FALSE, method = "nlminb")))))
+            if (!inherits(opt, what = "try-error")) {
+              if (opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
+                return(c(opt$par, opt$value))
+              }
             }
+            opt2 <- try(suppressWarnings(suppressMessages(Rsolnp::solnp(pars = x0, fun = function(par) {
+              -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
+            },  control = list(trace = 0)))))
+            if (!inherits(opt2, what = "try-error")) {
+              if (opt2$convergence == 0 && !isTRUE(all.equal(tail(opt2$values,1), 1e+10))) {
+                return(c(opt2$par, tail(opt2$values,1)))
+              }
+            }
+            return(rep(NA, 3))
         }
         constr.mle.loc <- function(mut, dat = dat) {
-            opt <- suppressMessages(suppressWarnings(nloptr::auglag(x0 = c(mad(dat, constant = 1), 0.1), fn = function(par) {
+            opt <- try(suppressMessages(suppressWarnings(
+              alabama::auglag(par = c(mad(dat, constant = 1), 0.1), fn = function(par) {
                 val <- -gev.ll(c(mut, par[1:2]), dat = dat)
                 ifelse(is.infinite(val), 1e+10, val)
             }, gr = function(par) {
@@ -608,12 +633,23 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             }, hin = function(par) {
                 ifelse(par[2] <= 0, par[1] + par[2] * (xmax - mut), par[1] + par[2] * (xmin -
                   mut))
-            }, localsolver = "SLSQP")))
-            if (opt$convergence > 0) {
+            }, control.outer = list(method = "nlminb", trace = FALSE)))))
+            if (!inherits(opt, what = "try-error")) {
+              if (opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
                 return(c(opt$par, opt$value))
-            } else {
-                return(rep(NA, 3))
+              }
             }
+            opt2 <- try(suppressWarnings(suppressMessages(
+              Rsolnp::solnp(pars = c(mad(dat, constant = 1), 0.1),
+                            fun = function(par) {
+              -gev.ll(c(mut, par), dat = dat)
+            },  control = list(trace = 0)))))
+            if (!inherits(opt2, what = "try-error")) {
+              if (opt2$convergence == 0 && !isTRUE(all.equal(tail(opt2$values,1), 1e+10))) {
+                return(c(opt2$par, tail(opt2$values,1)))
+              }
+            }
+            return(rep(NA, 3))
         }
         # constr.mle.shape <- function(xit, dat = dat){
         # start.scale <- max(1e-2,mad(dat, constant = 1)/median(abs(mev::rgev(10000, shape=xit)-mev::qgev(0.5, shape=xit))))
@@ -647,8 +683,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
         # abs(gev.score(c(opt2$par, xit), dat = dat)[1:2]) < 1e-4))){ return(c(opt2$par,
         # opt2$value)) } } } return(rep(NA, 3)) }
         constr.mle.shape <- function(xit, dat = dat) {
-            if (abs(xit) < 1e-08)
-                {
+            if (abs(xit) < 1e-08) {
                   xit <- 0
                 }  #because rgev does not handle this case!
             start.scale <- mad(dat, constant = 1)/median(abs(mev::rgev(2000, shape = xit) -
@@ -663,28 +698,36 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
                 }
             }
             opt <- try(suppressMessages(suppressWarnings(
-              nloptr::auglag(x0 = c(start.loc, start.scale), fn = function(par) {
+              alabama::auglag(par = c(start.loc, start.scale),
+                              fn = function(par) {
                 val <- -gev.ll(c(par[1:2], xit), dat = dat)
                 ifelse(is.infinite(val) || is.na(val), 1e+10, val)
-            }, hin = function(par) {
+            }, gr = function(par) {
+              -gev.score(c(par[1:2], xit), dat = dat)[-ind]
+            },
+            hin = function(par) {
                 ifelse(xit <= 0, par[2] + xit * (xmax - par[1]), par[2] + xit * (xmin - par[1]))
-            }, localsolver = "SLSQP"))))
+            }, control.outer = list(method = "nlminb", trace = FALSE)))))
             if (!inherits(opt, what = "try-error")) {
-                if (opt$convergence > 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
-                  opt2 <- suppressMessages(suppressWarnings(
-                    nloptr::slsqp(x0 = opt$par, fn = function(par) {
-                    val <- -gev.ll(c(par[1:2], xit), dat = dat)
-                    ifelse(is.infinite(val) || is.na(val), 1e+10, val)
-                  }, gr = function(par) {
-                    -gev.score(c(par[1:2], xit), dat = dat)[-ind]
-                  }, hin = function(par) {
-                    ifelse(xit <= 0, par[2] + xit * (xmax - par[1]), par[2] + xit * (xmin -
-                      par[1]))
-                  })))
-                  return(c(opt2$par, opt2$value))
+                if (opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
+                  return(c(opt$par, opt$value))
                 }
             }
-            return(rep(NA, 3))
+             opt2 <- try(suppressMessages(suppressWarnings(
+                   Rsolnp::solnp(pars = c(start.loc, start.scale),
+                                 fun = function(par) {
+                    val <- -gev.ll(c(par[1:2], xit), dat = dat)
+                    ifelse(is.infinite(val) || is.na(val), 1e+10, val)
+                  }, ineqfun = function(par) {
+                    ifelse(xit <= 0, par[2] + xit * (xmax - par[1]), par[2] + xit * (xmin -
+                      par[1]))
+                  }, ineqLB = 0, ineqUB = Inf, control = list(trace = 0)))))
+             if (!inherits(opt2, what = "try-error")) {
+                if (isTRUE(opt2$convergence == 0) && !isTRUE(all.equal(tail(opt2$values,1), 1e+10))) {
+                    return(c(opt2$par, tail(opt2$values,1)))
+                }
+            }
+             return(rep(NA, 3))
         }
         # Missing psi vector
         if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
@@ -825,15 +868,15 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             # COBYLA unfortunately hangs from time to time.  so it cannot be used in optimization
             # routine without risking hanging despite the algorithm begin more robust and faster for
             # this problem...
-            opt <- try(suppressWarnings(.auglag(x0 = st_vals, fn = function(par) {
+            opt <- try(suppressMessages(suppressWarnings(alabama::auglag(par = st_vals, fn = function(par) {
                 val <- -gevN.ll(par = c(par[1], zt, par[2]), dat = dat, q = q, qty = qty, N = N)
                 ifelse(isTRUE(any(is.infinite(val), is.na(val), val <= -maxll)), 1e+10, val)
             }, hin = function(par) {
                 sigma <- switch(qty, quantile = (zt - par[1]) * par[2]/(N^par[2] * (log(1/q))^(-par[2]) -
                   1), mean = (zt - par[1]) * par[2]/(N^par[2] * gamma(1 - par[2]) - 1))
                 c(sigma, sigma + par[2] * (xmax - par[1]), sigma + par[2] * (xmin - par[1]))
-            }, localsolver = "BOBYQA")))
-            # #With `alabama` package opt <- try(suppressWarnings( alabama::auglag(par = c(median(dat),
+            }, control.outer = list(method = "nlminb", trace = FALSE)))))
+            #With `alabama` package opt <- try(suppressWarnings( alabama::auglag(par = c(median(dat),
             # 0.1), fn = function(par){ val <- -gevN.ll(par = c(par[1], zt, par[2]), dat = dat, q = q,
             # qty = qty, N = N); ifelse(is.infinite(val) || is.na(val), 1e10, val)}, gr =
             # function(par){-gevN.score(par = c(par[1], zt, par[2]), dat = dat, q = q, qty = qty, N =
@@ -843,29 +886,30 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
             # sigma + par[2]*(xmin-par[1]))}, control.outer = list (trace = FALSE) )))
             if (!inherits(opt, what = "try-error")) {
                 # if(opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e10))){
-                if (opt$convergence > 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
-                  opt2 <- suppressMessages(suppressWarnings(
-                    nloptr::slsqp(x0 = opt$par, fn = function(par) {
+                if (isTRUE(opt$convergence == 0) && !isTRUE(all.equal(opt$value, 1e+10))) {
+                  return(c(opt$par, opt$value))
+                } else{
+                  st_vals <- opt$par
+                }
+            }
+             opt2 <- try(suppressMessages(suppressWarnings(
+                    Rsolnp::solnp(par = st_vals, fun = function(par) {
                     val <- -gevN.ll(par = c(par[1], zt, par[2]), dat = dat, q = q, qty = qty,
                       N = N)
                     ifelse(is.infinite(val) || is.na(val), 1e+10, val)
-                  }, gr = function(par) {
-                    -gevN.score(par = c(par[1], zt, par[2]), dat = dat, q = q, qty = qty, N = N)[-2]
-                  }, hin = function(par) {
+                  }, ineqfun = function(par) {
                     sigma <- switch(qty, quantile = (zt - par[1]) * par[2]/(N^par[2] * (log(1/q))^(-par[2]) -
                       1), mean = (zt - par[1]) * par[2]/(N^par[2] * gamma(1 - par[2]) - 1))
                     c(sigma, sigma + par[2] * (xmax - par[1]), sigma + par[2] * (xmin - par[1]))
-                  })))
+                  }, ineqLB = rep(0, 3), ineqUB = rep(Inf, 3),
+                  control = list(trace = 0)))))
                   if (!inherits(opt2, what = "try-error")) {
-                    if (opt2$convergence > 0 && !isTRUE(all.equal(opt2$value, 1e+10))) {
-                      return(c(opt2$par, opt2$value))
+                    if (isTRUE(opt2$convergence == 0) && !isTRUE(all.equal(tail(opt2$values,1), 1e+10))) {
+                      return(c(opt2$par, tail(opt2$values,1)))
                     }
                   }
-                  return(c(opt$par, opt$value))
-                }
-            }
-            return(rep(NA, 3))
-        }
+                  return(rep(NA,3))
+         }
 
         # Missing psi vector
         if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
@@ -1441,7 +1485,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         std.error <- sqrt(solve(gpdr.infomat(par = mle, dat = dat, method = "exp", m = m))[1,
             1])
         constr.mle.quant <- function(quant) {
-            suppressMessages(nloptr::sbplx(x0 = 0.01, function(lambda, psi, m) {
+            suppressMessages(Rsolnp::solnp(par = 0.01, function(lambda, psi, m) {
                 -gpdr.ll(par = c(psi, lambda), dat = dat, m = m)
             }, psi = quant, m = m, lower = -1, upper = 5)$par)
         }
@@ -1880,7 +1924,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
 
 #' Plot of tangent exponential model profile likelihood
 #'
-#' This function is adapted from the \code{plot.fr} function from the \code{hoa} package bundle. 
+#' This function is adapted from the \code{plot.fr} function from the \code{hoa} package bundle.
 #' It differs from the latter mostly in the placement of legends.
 #'
 #' @param x an object of class \code{fr} returned by \code{\link{gpd.tem}} or \code{\link{gev.tem}}.

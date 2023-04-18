@@ -15,6 +15,7 @@
 ## Changes:
 
 * `taildep` arguments leads to faster calculations with `betacop` option.
+* Replace `nloptr` dependency by `Rsolnp`
 
 # mev 1.14 (Release date 2022-04-25)
 

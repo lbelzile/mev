@@ -15,7 +15,7 @@
 graphs depending on argument \code{which}
 }
 \description{
-This function is adapted from the \code{plot.fr} function from the \code{hoa} package bundle. 
+This function is adapted from the \code{plot.fr} function from the \code{hoa} package bundle.
 It differs from the latter mostly in the placement of legends.
 }
 \details{
