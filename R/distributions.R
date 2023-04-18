@@ -27,11 +27,12 @@
 #' @references Jenkinson, A. F. (1955) The frequency distribution of the
 #'   annual maximum (or minimum) of meteorological elements.
 #'   \emph{Quart. J. R. Met. Soc.}, \strong{81}, 158-171.
-#'   Chapter 3: \url{https://doi.org/10.1002/qj.49708134804}
+#'   Chapter 3: \doi{10.1002/qj.49708134804}
 #' @references Coles, S. G. (2001) \emph{An Introduction to Statistical
 #'   Modeling of Extreme Values}, Springer-Verlag, London.
-#'   \url{https://doi.org/10.1007/978-1-4471-3675-0_3}
+#'   \doi{10.1007/978-1-4471-3675-0_3}
 #' @name gevdist
+#' @importFrom utils bibentry
 NULL
 ## NULL
 
@@ -199,7 +200,7 @@ pgev <- function(q, loc = 0, scale = 1, shape = 0, lower.tail = TRUE,
 #' @param log.p,log logical; if \code{FALSE} (default), values are returned on the probability scale.
 #' @references Coles, S. G. (2001) \emph{An Introduction to Statistical
 #'   Modeling of Extreme Values}, Springer-Verlag, London.
-#'   \url{https://doi.org/10.1007/978-1-4471-3675-0_3}
+#'   \doi{10.1007/978-1-4471-3675-0_3}
 #' @name gpdist
 
 #' @rdname gpdist

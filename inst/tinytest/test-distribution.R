@@ -1,5 +1,6 @@
 # Tests for distribution functions
 
+set.seed(2023)
 shape <- runif(n = 1, min = -1, max = 1)
 scale <- rexp(n = 1)
 loc <- runif(n = 1, min = -10, max = 10)
@@ -25,7 +26,7 @@ if(shape < 0){
   expect_equal(mev::qgev(1, loc = loc, scale = scale, shape = shape),
                loc - scale/shape)
 } else if(shape > 0){
-  expect_equal(mev::qgev(01, loc = loc, scale = scale, shape = shape),
+  expect_equal(mev::qgev(0, loc = loc, scale = scale, shape = shape),
                loc - scale/shape)
 }
 
@@ -58,10 +59,9 @@ expect_equal(mev::dgev(c(-Inf, loc - scale/shape - sign(shape) * 1e-4, Inf),
   if(shape < 0){
     expect_equal(mev::qgp(1, loc = loc, scale = scale, shape = shape),
                  loc - scale/shape)
-  } else if(shape > 0){
-    expect_equal(mev::qgp(01, loc = loc, scale = scale, shape = shape),
-                 loc - scale/shape)
   }
+    expect_equal(mev::qgp(0, loc = loc, scale = scale, shape = shape),
+                 loc)
 
   # Check that function fails when arguments are incorrect
 

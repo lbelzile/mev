@@ -11,7 +11,7 @@ likmgp(
   scale,
   shape,
   par,
-  model = c("log", "neglog", "br", "xstud"),
+  model = c("log", "br", "xstud"),
   likt = c("mgp", "pois", "binom"),
   lambdau = 1,
   ...

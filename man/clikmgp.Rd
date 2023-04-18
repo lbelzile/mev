@@ -12,7 +12,7 @@ clikmgp(
   scale,
   shape,
   par,
-  model = c("log", "neglog", "br", "xstud"),
+  model = c("log", "br", "xstud"),
   likt = c("mgp", "pois", "binom"),
   lambdau = 1,
   ...
@@ -40,14 +40,6 @@ clikmgp(
 \item{lambdau}{vector of marginal rate of marginal threshold exceedance.}
 
 \item{...}{additional arguments (see Details)}
-
-\item{x}{vector of observations to the power alpha}
-
-\item{censored}{matrix of logical indicator, TRUE for censored, FALSE otherwise}
-
-\item{alpha}{positive shape parameter}
-
-\item{numAbovePerRow}{vector of the row sums of \code{censored}.}
 }
 \value{
 the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure

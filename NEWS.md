@@ -1,5 +1,5 @@
-# mev v. 1.15
-==============
+# mev 1.15
+
 
 ## New:
 
@@ -16,8 +16,8 @@
 
 * `taildep` arguments leads to faster calculations with `betacop` option.
 
-# mev v.1.14
-==============
+# mev 1.14 (Release date 2022-04-25)
+
 
 ## New:
 
@@ -42,7 +42,7 @@
 
 * `ext.coef` correctly handles arrays with missing values (reported by M. Jousset)
 * Optimization method in `fit.gev` now uses the PWM solution of Hosking (1985) as starting value
-* `gev.pll` now returns confidence intervals for param = "quant" (reported by D. Dupuis)
+* `gepll` now returns confidence intervals for param = "quant" (reported by D. Dupuis)
 * Fixes to NHPP order statistics density (returns -Inf outside of domain, also correctly evaluate for boundary case when xi=-1)
 * Optimization routines `fit.pp`, `fit.gev` and `fit.rlarg` now return correct MLE when solution lies on boundary (xi=-1) and are more robust to failure (gradients for nlminb return large values rather than NAs which caused the algorithm to stop).
 * Grimshaw's algorithm sometimes returned incorrect value because of too low tolerance for eta near zero. Set back to default settings.
@@ -52,8 +52,8 @@
 * `W.diag` and `egp.fitrange` include arguments for changing 'par' (#10)
 * `smith.penult` now computes reciprocal hazard and it's derivative on the log scale (when possible) to avoid numerical overflow.
 
-# mev v.1.13 (Release date: 2019-12-17)
-==============
+# mev 1.13 (Release date: 2019-12-17)
+
 
 ## Fixes:
 
@@ -66,8 +66,8 @@
 
 * New S3 methods for objects returned by "fit" routines, for use in "lax" package
 
-# mev v.1.12 (Release date: 2019-06-24)
-==============
+# mev 1.12 (Release date: 2019-06-24)
+
 
 ## New:
 
@@ -102,24 +102,24 @@
 * 'smith.penult' function has new arguments (backward compatible). The quantiles 'u' are now returned for Smith penultimate approximations with 'method = "pot"'
 
 
-# mev v.1.11 (Release date: 2018-02-23)
-==============
+# mev 1.11 (Release date: 2018-02-23)
+
 
 ## New:
 
 * Function 'rparp' for simulation from R-Pareto Processes via rejection sampling
-* Function 'gev.pll' and 'gpd.pll' for penalized profile likelihood and tangent exponential model approximations
+* Function 'gepll' and 'gpd.pll' for penalized profile likelihood and tangent exponential model approximations
 * New functions 'chibar', 'angextrapo' and 'lambdadep' for bivariate and multivariate model estimation, based on work of Tawn et al.
 * Dirichlet mixture smoothing for empirical angular distribution of de Carvalho et al. (2013)
-* Functions 'gev.mle' and 'gpd.mle' for maximum likelihood estimates of transformed parameters
-* Functions 'gev.abias' and 'gpd.abias' for asymptotic bias of block maxima for fixed sample sizes or fixed thresholds
+* Functions 'gemle' and 'gpd.mle' for maximum likelihood estimates of transformed parameters
+* Functions 'geabias' and 'gpd.abias' for asymptotic bias of block maxima for fixed sample sizes or fixed thresholds
 
 ## Changes:
 
 * Functions 'rmev', 'rmevspec', etc. now only accept variogram functions 'vario' that have distance as argument
 * Simulation from 'rmev' and 'rmevspec' faster to refactoring of code
 * Function 'smith.penult' now has a 'family' as argument for specifying distributions via a string
-* Function 'gev.tem' and 'gpd.tem' are now a wrapper for 'gev.pll' and 'gpd.pll', respectively. Routine should be more robust
+* Function 'getem' and 'gpd.tem' are now a wrapper for 'gepll' and 'gpd.pll', respectively. Routine should be more robust
 * TEM corrections now handle more options
 * Clarifications in the vignette about the asymmetric negative logistic model (thanks to A. Stephenson)
 
@@ -129,30 +129,26 @@
 * Model "br" now simulates from stationary version only if argument 'sigma' is provided, and otherwise samples intrinsically Gaussian processes
 * Display of p-value matrix for 'infomat.test'
 
-# mev v.1.10 (Release date: 2017-02-01)
-==============
+# mev 1.10 (Release date: 2017-02-01)
+
 
 ## New:
 
-* Added 'negdir' model to rmev
+* Added 'negdir' model to `rmev`
+* Changes to `angmeas` to include different weighting if the region of interest is 'max' or 'min'
+
+## Fixes:
+
+* Fixed bug affecting `angmeas` in the bivariate case that would cause the method to crash
 
 ## Changes:
 
 * Fixed argument matching in function 'egp2'
 
-# mev v.1.9
-==============
 
-## New:
 
-* Changes to angmeas to include different weighting if the region of interest is 'max' or 'min'
+# mev 1.8.2 (Release date: 2016-08-24)
 
-## Fixes:
-
-* Fixed bug affecting angmeas in the bivariate case that would cause the method to crash
-
-# mev v.1.8.2 (Release date: 2016-08-24)
-==============
 
 ## New:
 
@@ -169,7 +165,7 @@
 
 
 # mev v1.7 (Release date: 2016-06-07)
-==============
+
 
 ## New:
 
@@ -182,33 +178,30 @@
 
 
 # mev v1.6.1 (Release date: 2016-03-15)
-==============
+
 
 ## Fixes: 
 
 * fixed an error in the normal sampler (affecting version 1.5 and 1.6). All simulations of Brown-Resnick or extremal-Student were affected by the mistake
 
 # mev v1.6 (Release date: 2016-03-08)
-==============
+
 
 ## New:
 
-*Empirical and Euclidean likelihood estimation of spectral measure
+* Empirical and Euclidean likelihood estimation of spectral measure
 
 ## Changes:
 
-*`gp.fit` ample changes to the function, in particular a fix for the printing method, handling of errors and inclusion of the Zhang (2010) method and MCMC algorithm for the latter. This function is still preliminary and may updated in the nearby future to include further possibilities.
+* `gp.fit` ample changes to the function, in particular a fix for the printing method, handling of errors and inclusion of the Zhang (2010) method and MCMC algorithm for the latter. This function is still preliminary and may updated in the nearby future to include further possibilities.
 
 # mev v1.5 (Release date: 2016-02-16)
-==============
+
 
 ## New:
 
 * Wadsworth (2015) Technometrics's proposal for threshold selection based on NHPP superposition
 * Northrop & Coleman diagnostic (2014) Extremes for shape equality and p-value path
-
-# mev v1.4 (not on CRAN)
-==============
 
 ## Fixes:
 
@@ -219,7 +212,7 @@
 * check for marginal mean constraint for the Dirichlet mixture now has tolerance
 
 # mev v1.3 (Release date: 2015-10-05)
-==============
+
 
 ## Changes:
 
@@ -230,7 +223,7 @@
 
 
 # mev v1.2 (Release date: 2015-08-23)
-==============
+
 
 ## Changes:
 
@@ -238,7 +231,7 @@
 * Extremal Dirichlet model implemented with "sm" only.
 
 # mev v1.1 (Release date: 2015-08-19)
-==============
+
 
 ## Changes:
 
@@ -246,4 +239,4 @@
 * Fixed a typo in rPextstud setting arguments of newly created arma vector to zero
 
 mev v1.0 (Release date: 2014-08-16)
-==============
+

@@ -129,9 +129,57 @@
 #------------------------------------------------------------------------------#
 
 # Stolen from ismev; gradient function added.
+#' Maximum likelihood method for the generalized Pareto Model
+#'
+#' Maximum-likelihood estimation for the generalized Pareto model, including generalized linear modelling of each parameter. This function was adapted by Paul Northrop to include the gradient in the \code{gpd.fit} routine from \code{ismev}.
+#'
+#' @param xdat numeric vector of data to be fitted.
+#' @param threshold a scalar or a numeric   vector of the same length as \code{xdat}.
+#' @param npy number of observations per year/block.
+#' @param ydat  matrix of covariates for generalized linear modelling of the parameters (or \code{NULL} (the default) for stationary fitting). The number of rows should be the same as the length of \code{xdat}.
+#' @param sigl numeric vector of integers, giving the columns of \code{ydat} that contain covariates for generalized linear modelling of the scale parameter (or \code{NULL} (the default) if the corresponding parameter is stationary).
+#' @param shl numeric vector of integers, giving the columns of \code{ydat} that contain covariates for generalized linear modelling of the shape parameter (or \code{NULL} (the default) if the corresponding parameter is stationary).
+#' @param siglink inverse link functions for generalized linear modelling of the scale parameter
+#' @param shlink inverse link functions for generalized linear modelling of the shape parameter
+#' @param siginit numeric giving initial value(s) for parameter estimates. If \code{NULL} the default is \code{sqrt(6 * var(xdat))/pi}
+#' @param shinit numeric giving initial value(s) for the shape parameter estimate; if \code{NULL}, this is 0.1.  If using parameter covariates, then these values are used for the constant term, and zeros for all other terms.
+#' @param show logical; if \code{TRUE} (default), print details of the fit.
+#' @param method optimization method (see \code{\link{optim}} for details).
+#' @param maxit  maximum number of iterations.
+#' @param ...other control parameters for the optimization. These are passed to components of the \code{control} argument of \code{optim}.
+#'
+#' @details  For non-stationary fitting it is recommended that the covariates within the generalized linear models are (at least approximately) centered and scaled (i.e. the columns of \code{ydat} should be approximately centered and scaled).
+#'
+#' The form of the GP model used follows Coles (2001) Eq (4.7).  In particular, the shape parameter is defined so that positive values imply a heavy tail and negative values imply a bounded upper value.
+#' @return a list with components
+#' \describe{
+#' \item{nexc}{scalar giving the number of threshold exceedances.}
+#' \item{nllh}{scalar giving the negative log-likelihood value.}
+#' \item{mle}{numeric vector giving the MLE's for the scale and shape parameters, resp.}
+#'  \item{rate}{scalar giving the estimated probability of exceeding the threshold.}
+#'  \item{se}{numeric vector giving the standard error estimates for the scale and shape parameter estimates, resp.}
+#' \item{trans}{logical indicator for a non-stationary fit.}
+#' \item{model}{list with components \code{sigl} and \code{shl}.}
+#' \item{link}{character vector giving inverse link functions.}
+#' \item{threshold}{threshold, or vector of thresholds.}
+#' \item{nexc}{number of data points above the threshold.}
+#' \item{data}{data that lie above the threshold. For non-stationary models, the data are standardized.}
+#' \item{conv}{convergence code, taken from the list returned by \code{\link{optim}}. A zero indicates successful convergence.}
+#' \item{nllh}{negative log likelihood evaluated at the maximum likelihood estimates.}
+#' \item{vals}{matrix with three columns containing the maximum likelihood estimates of the scale and shape parameters, and the threshold, at each data point.}
+#' \item{mle}{vector containing the maximum likelihood estimates.}
+#' \item{rate}{proportion of data points that lie above the threshold.}
+#' \item{cov}{covariance matrix.}
+#' \item{se}{numeric vector containing the standard errors.}
+#' \item{n}{number of data points (i.e., the length of \code{xdat}).}
+#' \item{npy}{number of observations per year/block.}
+#' \item{xdata}{data that has been fitted.}
+#' }
+#' @references Coles, S., 2001.  An Introduction to Statistical Modeling of Extreme Values.  Springer-Verlag, London.
 #' @export
+#' @keywords internal
 .gpd_2D_fit <- function(xdat, threshold, npy = 365, ydat = NULL, sigl = NULL, shl = NULL, siglink = identity, shlink = identity, siginit = NULL,
-                        shinit = NULL, show = TRUE, method = "Nelder-Mead", maxit = 10000, do.fscale = FALSE, do.pscale = FALSE, ...) {
+                        shinit = NULL, show = TRUE, method = "Nelder-Mead", maxit = 10000, ...) {
   z <- list()
   npsc <- length(sigl) + 1
   npsh <- length(shl) + 1

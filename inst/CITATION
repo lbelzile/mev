@@ -1,17 +1,6 @@
-citHeader("To cite mev in publications use:")
-
-year <- sub("-.*", "", meta$Date)
-note <- sprintf("R package version %s", meta$Version)
-citEntry(
-  entry    = "manual",
-  title    = "{mev}: Modelling Extreme Values",
-  author   = "Leo Belzile and others",
-  year     = year,
-  url      = "https://CRAN.R-project.org/package=mev",
-  note     = note,
-  textVersion =
-         paste("L. Belzile et al.",
-               "\texttt{mev}: Multivariate Extreme Value Distributions.",
-               "R Package",
-               "URL: https://CRAN.R-project.org/package=mev")
-)
+bibentry("Manual",
+         author = person("Leo R Belzile"),
+         year = 2023,
+         title = "{mev}: Modelling of
+  Extreme Values",
+        url = "https://lbelzile.github.io/mev/")
