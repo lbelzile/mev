@@ -3,7 +3,7 @@
 the data to pseudo-observations, than marginally to unit Frechet or unit Pareto.
 Empirical or Euclidean weights are computed and returned alongside with the angular and
 radial sample for values above threshold(s) th, specified in terms of quantiles
-of the radial component R or marginal quantiles. Only complete tuples are kept."><title>Rank-based transformation to angular measure — angmeas • mev</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Rank-based transformation to angular measure — angmeas"><meta property="og:description" content="The method uses the pseudo-polar transformation for suitable norms, transforming
+of the radial component R or marginal quantiles. Only complete tuples are kept."><title>Rank-based transformation to angular measure — angmeas • mev</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Rank-based transformation to angular measure — angmeas"><meta property="og:description" content="The method uses the pseudo-polar transformation for suitable norms, transforming
 the data to pseudo-observations, than marginally to unit Frechet or unit Pareto.
 Empirical or Euclidean weights are computed and returned alongside with the angular and
 radial sample for values above threshold(s) th, specified in terms of quantiles
@@ -18,7 +18,7 @@ of the radial component R or marginal quantiles. Only complete tuples are kept."
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,43 +72,62 @@ of the radial component <code>R</code> or marginal quantiles. Only complete tupl
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">angmeas</span><span class="op">(</span>
-  <span class="va">x</span>,
-  <span class="va">th</span>,
-  Rnorm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"l1"</span>, <span class="st">"l2"</span>, <span class="st">"linf"</span><span class="op">)</span>,
-  Anorm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"l1"</span>, <span class="st">"l2"</span>, <span class="st">"linf"</span>, <span class="st">"arctan"</span><span class="op">)</span>,
-  marg <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frechet"</span>, <span class="st">"Pareto"</span><span class="op">)</span>,
-  wgt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Empirical"</span>, <span class="st">"Euclidean"</span><span class="op">)</span>,
-  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sum"</span>, <span class="st">"min"</span>, <span class="st">"max"</span><span class="op">)</span>,
-  is.angle <span class="op">=</span> <span class="cn">FALSE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">angmeas</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  <span class="va">th</span>,</span>
+<span>  Rnorm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"l1"</span>, <span class="st">"l2"</span>, <span class="st">"linf"</span><span class="op">)</span>,</span>
+<span>  Anorm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"l1"</span>, <span class="st">"l2"</span>, <span class="st">"linf"</span>, <span class="st">"arctan"</span><span class="op">)</span>,</span>
+<span>  marg <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frechet"</span>, <span class="st">"Pareto"</span><span class="op">)</span>,</span>
+<span>  wgt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Empirical"</span>, <span class="st">"Euclidean"</span><span class="op">)</span>,</span>
+<span>  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sum"</span>, <span class="st">"min"</span>, <span class="st">"max"</span><span class="op">)</span>,</span>
+<span>  is.angle <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>x</dt>
 <dd><p>an <code>n</code> by <code>d</code> sample matrix</p></dd>
+
+
 <dt>th</dt>
 <dd><p>threshold of length 1 for <code>'sum'</code>, or <code>d</code> marginal thresholds otherwise.</p></dd>
+
+
 <dt>Rnorm</dt>
 <dd><p>character string indicating the norm for the radial component.</p></dd>
+
+
 <dt>Anorm</dt>
 <dd><p>character string indicating the norm for the angular component. <code>arctan</code> is only implemented for \(d=2\)</p></dd>
+
+
 <dt>marg</dt>
 <dd><p>character string indicating choice of marginal transformation, either to Frechet or Pareto scale</p></dd>
+
+
 <dt>wgt</dt>
 <dd><p>character string indicating weighting function for the equation. Can be based on Euclidean or empirical likelihood for the mean</p></dd>
+
+
 <dt>region</dt>
 <dd><p>character string specifying which observations to consider (and weight). <code>'sum'</code> corresponds to a radial threshold
 \(\sum x_i &gt; \)<code>th</code>, <code>'min'</code> to \(\min x_i &gt;\)<code>th</code> and <code>'max'</code> to \(\max x_i &gt;\)<code>th</code>.</p></dd>
+
+
 <dt>is.angle</dt>
 <dd><p>logical indicating whether observations are already angle with respect to <code>region</code>. Default to <code>FALSE</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a list with arguments <code>ang</code> for the \(d-1\) pseudo-angular sample, <code>rad</code> with the radial component
-and possibly <code>wts</code> if <code>Rnorm='l1'</code> and the empirical likelihood algorithm converged. The Euclidean algorithm always returns weights even if some of these are negative.
-a list with components</p><ul><li><p><code>ang</code> matrix of pseudo-angular observations</p></li>
+    
+
+<p>a list with arguments <code>ang</code> for the \(d-1\) pseudo-angular sample, <code>rad</code> with the radial component
+and possibly <code>wts</code> if <code>Rnorm='l1'</code> and the empirical likelihood algorithm converged. The Euclidean algorithm always returns weights even if some of these are negative.</p>
+
+
+<p>a list with components</p><ul><li><p><code>ang</code> matrix of pseudo-angular observations</p></li>
 <li><p><code>rad</code> vector of radial contributions</p></li>
 <li><p><code>wts</code> empirical or Euclidean likelihood weights for angular observations</p></li>
 </ul></div>
@@ -131,9 +150,9 @@ a list with components</p><ul><li><p><code>ang</code> matrix of pseudo-angular o
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="rmev.html">rmev</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">25</span>, d<span class="op">=</span><span class="fl">3</span>, param<span class="op">=</span><span class="fl">0.5</span>, model<span class="op">=</span><span class="st">'log'</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">wts</span> <span class="op">&lt;-</span> <span class="fu">angmeas</span><span class="op">(</span>x<span class="op">=</span><span class="va">x</span>, th<span class="op">=</span><span class="fl">0</span>, Rnorm<span class="op">=</span><span class="st">'l1'</span>, Anorm<span class="op">=</span><span class="st">'l1'</span>, marg<span class="op">=</span><span class="st">'Frechet'</span>, wgt<span class="op">=</span><span class="st">'Empirical'</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">wts2</span> <span class="op">&lt;-</span> <span class="fu">angmeas</span><span class="op">(</span>x<span class="op">=</span><span class="va">x</span>, Rnorm<span class="op">=</span><span class="st">'l2'</span>, Anorm<span class="op">=</span><span class="st">'l2'</span>, marg<span class="op">=</span><span class="st">'Pareto'</span>, th<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="rmev.html">rmev</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">25</span>, d<span class="op">=</span><span class="fl">3</span>, param<span class="op">=</span><span class="fl">0.5</span>, model<span class="op">=</span><span class="st">'log'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">wts</span> <span class="op">&lt;-</span> <span class="fu">angmeas</span><span class="op">(</span>x<span class="op">=</span><span class="va">x</span>, th<span class="op">=</span><span class="fl">0</span>, Rnorm<span class="op">=</span><span class="st">'l1'</span>, Anorm<span class="op">=</span><span class="st">'l1'</span>, marg<span class="op">=</span><span class="st">'Frechet'</span>, wgt<span class="op">=</span><span class="st">'Empirical'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">wts2</span> <span class="op">&lt;-</span> <span class="fu">angmeas</span><span class="op">(</span>x<span class="op">=</span><span class="va">x</span>, Rnorm<span class="op">=</span><span class="st">'l2'</span>, Anorm<span class="op">=</span><span class="st">'l2'</span>, marg<span class="op">=</span><span class="st">'Pareto'</span>, th<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -141,13 +160,11 @@ a list with components</p><ul><li><p><code>ang</code> matrix of pseudo-angular o
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Leo Belzile, Jennifer L. Wadsworth, Paul J. Northrop,
-Scott D. Grimshaw, Raphael Huser.</p>
+  <p></p><p>Developed by Leo Belzile, Jennifer L. Wadsworth, Paul J. Northrop, Scott D. Grimshaw, Raphael Huser.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
     </footer></div>

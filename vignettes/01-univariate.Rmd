@@ -9,7 +9,7 @@ vignette: >
   %\VignetteIndexEntry{Likelihood based inference for univariate extremes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: mev_vignette.bib
+bibliography: mevvignette.bib
 ---
 
 ```{r setup, eval = TRUE, echo = FALSE}

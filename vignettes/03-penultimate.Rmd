@@ -9,7 +9,7 @@ vignette: >
   %\VignetteIndexEntry{Penultimate approximations}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: mev_vignette.bib
+bibliography: mevvignette.bib
 ---
 
 ## Theory 

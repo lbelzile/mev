@@ -88,6 +88,9 @@
     <loc>/reference/dot-gev.postpred.html</loc>
   </url>
   <url>
+    <loc>/reference/dot-gpd_2D_fit.html</loc>
+  </url>
+  <url>
     <loc>/reference/dot-is.CNSD.html</loc>
   </url>
   <url>
@@ -307,6 +310,9 @@
     <loc>/reference/gevN.temstat.html</loc>
   </url>
   <url>
+    <loc>/reference/gevdist.html</loc>
+  </url>
+  <url>
     <loc>/reference/gevr.html</loc>
   </url>
   <url>
@@ -398,6 +404,9 @@
   </url>
   <url>
     <loc>/reference/gpde.temstat.html</loc>
+  </url>
+  <url>
+    <loc>/reference/gpdist.html</loc>
   </url>
   <url>
     <loc>/reference/gpdr.html</loc>
@@ -515,6 +524,9 @@
   </url>
   <url>
     <loc>/reference/schlather.vario.html</loc>
+  </url>
+  <url>
+    <loc>/reference/scoreindep.html</loc>
   </url>
   <url>
     <loc>/reference/smith.penult.fn.html</loc>

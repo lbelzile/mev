@@ -3,7 +3,7 @@
 The fitted parameter values are displayed with pointwise normal 95% confidence intervals.
 The function returns an invisible list with parameter estimates and standard errors, and p-values for the Wald test that \(\kappa=1\).
  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
-tstab.egp can also be used to fit the model to multiple thresholds."><title>Parameter stability plot and maximum likelihood routine for extended GP models — fit.egp • mev</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Parameter stability plot and maximum likelihood routine for extended GP models — fit.egp"><meta property="og:description" content="The function tstab.egp provides classical threshold stability plot for (\(\kappa\), \(\sigma\), \(\xi\)).
+tstab.egp can also be used to fit the model to multiple thresholds."><title>Parameter stability plot and maximum likelihood routine for extended GP models — fit.egp • mev</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Parameter stability plot and maximum likelihood routine for extended GP models — fit.egp"><meta property="og:description" content="The function tstab.egp provides classical threshold stability plot for (\(\kappa\), \(\sigma\), \(\xi\)).
 The fitted parameter values are displayed with pointwise normal 95% confidence intervals.
 The function returns an invisible list with parameter estimates and standard errors, and p-values for the Wald test that \(\kappa=1\).
  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
@@ -18,7 +18,7 @@ tstab.egp can also be used to fit the model to multiple thresholds."><!-- mathja
     
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,50 +72,75 @@ The function returns an invisible list with parameter estimates and standard err
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">fit.egp</span><span class="op">(</span><span class="va">xdat</span>, <span class="va">thresh</span>, model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"egp1"</span>, <span class="st">"egp2"</span>, <span class="st">"egp3"</span><span class="op">)</span>, <span class="va">init</span>, show <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
-
-<span class="fu">tstab.egp</span><span class="op">(</span>
-  <span class="va">xdat</span>,
-  <span class="va">thresh</span>,
-  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"egp1"</span>, <span class="st">"egp2"</span>, <span class="st">"egp3"</span><span class="op">)</span>,
-  plots <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,
-  <span class="va">umin</span>,
-  <span class="va">umax</span>,
-  <span class="va">nint</span>,
-  changepar <span class="op">=</span> <span class="cn">TRUE</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit.egp</span><span class="op">(</span><span class="va">xdat</span>, <span class="va">thresh</span>, model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"egp1"</span>, <span class="st">"egp2"</span>, <span class="st">"egp3"</span><span class="op">)</span>, <span class="va">init</span>, show <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">tstab.egp</span><span class="op">(</span></span>
+<span>  <span class="va">xdat</span>,</span>
+<span>  <span class="va">thresh</span>,</span>
+<span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"egp1"</span>, <span class="st">"egp2"</span>, <span class="st">"egp3"</span><span class="op">)</span>,</span>
+<span>  plots <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>  <span class="va">umin</span>,</span>
+<span>  <span class="va">umax</span>,</span>
+<span>  <span class="va">nint</span>,</span>
+<span>  changepar <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>xdat</dt>
 <dd><p>vector of observations, greater than the threshold</p></dd>
+
+
 <dt>thresh</dt>
 <dd><p>threshold value</p></dd>
+
+
 <dt>model</dt>
 <dd><p>a string indicating which extended family to fit</p></dd>
+
+
 <dt>init</dt>
 <dd><p>vector of initial values, with \(\log(\kappa)\) and \(\log(\sigma)\); can be omitted.</p></dd>
+
+
 <dt>show</dt>
 <dd><p>logical; if <code>TRUE</code>, print the results of the optimization</p></dd>
+
+
 <dt>plots</dt>
 <dd><p>vector of integers specifying which parameter stability to plot (if any); passing <code>NA</code> results in no plots</p></dd>
+
+
 <dt>umin</dt>
 <dd><p>optional minimum value considered for threshold (if <code>thresh</code> is not provided)</p></dd>
+
+
 <dt>umax</dt>
 <dd><p>optional maximum value considered for threshold (if <code>thresh</code> is not provided)</p></dd>
+
+
 <dt>nint</dt>
 <dd><p>optional integer number specifying the number of thresholds to test.</p></dd>
+
+
 <dt>changepar</dt>
 <dd><p>logical; if <code>TRUE</code>, the graphical parameters (via a call to <code>par</code>) are modified.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>additional arguments for the plot function, currently ignored</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>fit.egp</code> outputs the list returned by <a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim</a>, which contains the parameter values, the hessian and in addition the standard errors
-<code>tstab.egp</code> returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (<code>par</code>) and standard errors (<code>se</code>).</p>
+    
+
+<p><code>fit.egp</code> outputs the list returned by <a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim</a>, which contains the parameter values, the hessian and in addition the standard errors</p>
+
+
+<p><code>tstab.egp</code> returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (<code>par</code>) and standard errors (<code>se</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -133,18 +158,18 @@ using maximum likelihood estimation.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">xdat</span> <span class="op">&lt;-</span> <span class="fu">evd</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/evd/man/gpd.html" class="external-link">rgpd</a></span><span class="op">(</span></span>
-<span class="r-in">  n <span class="op">=</span> <span class="fl">100</span>,</span>
-<span class="r-in">  loc <span class="op">=</span> <span class="fl">0</span>,</span>
-<span class="r-in">  scale <span class="op">=</span> <span class="fl">1</span>,</span>
-<span class="r-in">  shape <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">fitted</span> <span class="op">&lt;-</span> <span class="fu">fit.egp</span><span class="op">(</span></span>
-<span class="r-in">  xdat <span class="op">=</span> <span class="va">xdat</span>,</span>
-<span class="r-in">  thresh <span class="op">=</span> <span class="fl">1</span>,</span>
-<span class="r-in">  model <span class="op">=</span> <span class="st">"egp2"</span>,</span>
-<span class="r-in">  show <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">xdat</span> <span class="op">&lt;-</span> <span class="fu">mev</span><span class="fu">::</span><span class="fu"><a href="gpdist.html">rgp</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  n <span class="op">=</span> <span class="fl">100</span>,</span></span>
+<span class="r-in"><span>  loc <span class="op">=</span> <span class="fl">0</span>,</span></span>
+<span class="r-in"><span>  scale <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>  shape <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fitted</span> <span class="op">&lt;-</span> <span class="fu">fit.egp</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  xdat <span class="op">=</span> <span class="va">xdat</span>,</span></span>
+<span class="r-in"><span>  thresh <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>  model <span class="op">=</span> <span class="st">"egp2"</span>,</span></span>
+<span class="r-in"><span>  show <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model: egp2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Deviance: 173.7802 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Deviance: 184.2976 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Threshold: 1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number Above: 43 </span>
@@ -152,23 +177,23 @@ using maximum likelihood estimation.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Estimates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  kappa   scale   shape  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.8367  1.6016  0.8835  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1.5163  0.6342  0.8104  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Standard Errors</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  kappa   scale   shape  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.2500  1.1132  0.3368  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.7040  0.6550  0.2143  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Optimization Information</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Convergence: successful </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Function Evaluations: 67 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Gradient Evaluations: 13 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Function Evaluations: 88 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Gradient Evaluations: 18 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="va">thresh</span> <span class="op">&lt;-</span> <span class="fu">evd</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/evd/man/gpd.html" class="external-link">qgpd</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.5</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu">tstab.egp</span><span class="op">(</span></span>
-<span class="r-in">   xdat <span class="op">=</span> <span class="va">xdat</span>,</span>
-<span class="r-in">   thresh <span class="op">=</span> <span class="va">thresh</span>,</span>
-<span class="r-in">   model <span class="op">=</span> <span class="st">"egp2"</span>,</span>
-<span class="r-in">   plots <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="va">thresh</span> <span class="op">&lt;-</span> <span class="fu">mev</span><span class="fu">::</span><span class="fu"><a href="gpdist.html">qgp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.5</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">tstab.egp</span><span class="op">(</span></span></span>
+<span class="r-in"><span>   xdat <span class="op">=</span> <span class="va">xdat</span>,</span></span>
+<span class="r-in"><span>   thresh <span class="op">=</span> <span class="va">thresh</span>,</span></span>
+<span class="r-in"><span>   model <span class="op">=</span> <span class="st">"egp2"</span>,</span></span>
+<span class="r-in"><span>   plots <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in plot.window(...):</span> need finite 'ylim' values</span>
 <span class="r-plt img"><img src="fit.egp-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
@@ -178,13 +203,11 @@ using maximum likelihood estimation.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Leo Belzile, Jennifer L. Wadsworth, Paul J. Northrop,
-Scott D. Grimshaw, Raphael Huser.</p>
+  <p></p><p>Developed by Leo Belzile, Jennifer L. Wadsworth, Paul J. Northrop, Scott D. Grimshaw, Raphael Huser.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
     </footer></div>

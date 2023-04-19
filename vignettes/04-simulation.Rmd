@@ -9,7 +9,7 @@ vignette: >
   %\VignetteIndexEntry{Simulation of multivariate extreme value distributions and processes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: mev_vignette.bib
+bibliography: mevvignette.bib
 ---
 
 This vignette discusses unconditional simulation of extreme value processes, showcasing the functions provided by `mev` for this. A very quick spatial analysis is also performed using weighted least squares.
