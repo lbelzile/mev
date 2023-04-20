@@ -148,7 +148,7 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
             }
             if (is.null(object$r)) {
                 # no r object, but must have pll + maxpll
-                object$r <- sign(object$psi.max - object$psi) * sqrt(2 * (object$maxpll - object$pll))
+                object$r <- suppressWarnings(sign(object$psi.max - object$psi) * sqrt(2 * (object$maxpll - object$pll)))
             } else{
              object$r[is.infinite(object$r)] <- NA
             }
@@ -208,14 +208,14 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
                 break
             }
             if (method == "cobs" && requireNamespace("cobs", quietly = TRUE)) {
-                fit.mtem <- cobs::cobs(x = sign(object$tem.mle - object$psi) * sqrt(-2 * (object$tem.pll -
-                  object$tem.maxpll)), y = object$psi, constraint = "decrease", lambda = 0,
+                fit.mtem <- cobs::cobs(x = sign(object$tem.mle - object$psi) * suppressWarnings(sqrt(-2 * (object$tem.pll -
+                  object$tem.maxpll))), y = object$psi, constraint = "decrease", lambda = 0,
                   ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
                   print.warn = FALSE)
                 ptem <- predict(fit.mtem, c(0, qulev))[, 2]
             } else {
                 fit.mtem <- stats::smooth.spline(x = na.omit(cbind(sign(object$tem.mle - object$psi) *
-                  sqrt(-2 * (object$tem.pll - object$tem.maxpll)), object$psi)), cv = FALSE)
+                  suppressWarnings(sqrt(-2 * (object$tem.pll - object$tem.maxpll))), object$psi)), cv = FALSE)
                 ptem <- predict(fit.mtem, c(0, qulev))$y
             }
             ptem[1] <- object$tem.mle
@@ -226,14 +226,14 @@ confint.eprof <- function(object, parm, level = 0.95, prob = c((1-level)/2, 1-(1
                 break
             }
             if (method == "cobs" && requireNamespace("cobs", quietly = TRUE)) {
-                fit.mempcov <- cobs::cobs(x = sign(object$empcov.mle - object$psi) * sqrt(-2 *
-                  (object$empcov.pll - object$empcov.maxpll)), y = object$psi, constraint = "decrease",
+                fit.mempcov <- cobs::cobs(x = sign(object$empcov.mle - object$psi) * suppressWarnings(sqrt(-2 *
+                  (object$empcov.pll - object$empcov.maxpll))), y = object$psi, constraint = "decrease",
                   lambda = 0, ic = "SIC", knots.add = TRUE, repeat.delete.add = TRUE, print.mesg = FALSE,
                   print.warn = FALSE)
                 pempcov <- predict(fit.mempcov, c(0.5, qulev))[, 2]
             } else {
                 fit.mempcov <- stats::smooth.spline(x = na.omit(cbind(sign(object$empcov.mle -
-                  object$psi) * sqrt(-2 * (object$empcov.pll - object$empcov.maxpll)), object$psi)),
+                  object$psi) * suppressWarnings(sqrt(-2 * (object$empcov.pll - object$empcov.maxpll))), object$psi)),
                   cv = FALSE)
                 pempcov <- predict(fit.mempcov, c(0.5, qulev))$y
             }

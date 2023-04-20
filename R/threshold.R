@@ -121,22 +121,25 @@ tstab.gpd <- function(xdat,
 
      confintmat[i,3:4] <- confint(profxi, level = level, print = FALSE)[2:3]
      }
+     if(gpdu$estimate['shape'] > -1){
      k <- 30L
-     prof_vals <- rep(0, k)
-     xi_sigma_vals <- rep(0, k)
+     prof_vals <- rep(NA_real_, k)
+     xi_sigma_vals <- rep(NA_real_, k)
      if(!is.na(stderr.transfo)){
-     grid_psi <- parmat[i,1] + seq( - 3 * stderr.transfo, 3.5 * stderr.transfo, length = k)
-   } else{
-     grid_psi <- seq( - 3 *parmat[i,1]/sqrt(gpdu$nat), 3.5 * parmat[i,1]/sqrt(gpdu$nat), length = k)
-   }
-     xmaxui <- xmax - thresh[i]
+      grid_psi <- parmat[i,1] + seq( - 3 * stderr.transfo, 3.5 * stderr.transfo, length = k)
+     } else{
+      grid_psi <- seq(- 3 *parmat[i,1]/sqrt(gpdu$nat), 3.5 * parmat[i,1]/sqrt(gpdu$nat), length = k)
+     }
      #Profile for scale := sigma_u - xi (u - u_0)
       for(j in seq_len(k)){
-        opt_prof <- optimize(f = pllsigmainv, upper = 1.5,
-                             lower = max(-grid_psi[j]/(thresh[i]-thresh[1]), -grid_psi[j]/(xmaxui+thresh[i]-thresh[1]))+1e-10,
-                             sigmat = grid_psi[j], dat = gpdu$exceedances, thresh = thresh[i]-thresh[1])
+        opt_prof <- try(optimize(f = pllsigmainv, upper = 1.5,
+                             lower = pmin(0, pmax(-1, -grid_psi[j]/(xmax-thresh[1]))+1e-10),
+                             sigmat = grid_psi[j], dat = gpdu$exceedances, thresh = thresh[i]-thresh[1]),
+                        silent = TRUE)
+        if(!inherits(opt_prof, "try-error")){
         xi_sigma_vals[j] <- opt_prof$minimum
         prof_vals[j] <- opt_prof$objective
+        }
       }
      prof <- structure(list(psi = grid_psi, psi.max = parmat[i,1], pll = -prof_vals,
                             maxpll = -gpdu$nllh, std.err = stderr.transfo), class = "eprof")
@@ -144,7 +147,8 @@ tstab.gpd <- function(xdat,
      if(!inherits(conf, "try-error")){
      confintmat[i, 1:2] <- conf
      }
-   } else if(method == "post"){
+   }
+     } else if(method == "post"){
       postsim <- #suppressWarnings(
         revdbayes::rpost_rcpp(n = 1000, thresh = 0,
                               model = "gp",

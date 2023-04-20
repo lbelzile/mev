@@ -1,3 +1,11 @@
+# mev 1.16
+
+
+## Fixes:
+
+* `gp.tstab` optimization bounds for profile confidence interval fixed.
+
+
 # mev 1.15
 
 
