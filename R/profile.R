@@ -1487,7 +1487,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         constr.mle.quant <- function(quant) {
             suppressMessages(Rsolnp::solnp(par = 0.01, function(lambda, psi, m) {
                 -gpdr.ll(par = c(psi, lambda), dat = dat, m = m)
-            }, psi = quant, m = m)$par)
+            }, psi = quant, m = m,  control = list(trace = 0))$par)
         }
 
 
