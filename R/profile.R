@@ -447,7 +447,7 @@ plot.eprof <- function(x, ...) {
 #'
 #' In addition, if \code{mod} includes \code{tem}
 #' \itemize{
-#' \item{\code{normal}:}{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
+#' \item{\code{normal}:}{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
 #' \item{\code{r}:}{values of likelihood root corresponding to \eqn{\psi}}
 #' \item{\code{q}:}{vector of likelihood modifications}
 #' \item{\code{rstar}:}{modified likelihood root vector}
@@ -1487,7 +1487,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         constr.mle.quant <- function(quant) {
             suppressMessages(Rsolnp::solnp(par = 0.01, function(lambda, psi, m) {
                 -gpdr.ll(par = c(psi, lambda), dat = dat, m = m)
-            }, psi = quant, m = m, lower = -1, upper = 5)$par)
+            }, psi = quant, m = m)$par)
         }
 
 
