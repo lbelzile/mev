@@ -35,7 +35,7 @@ rparp <- function(n, shape = 1, riskf = c("sum", "site", "max", "min", "l2"),
   # Body of rmevspec
   models <- c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather", "ct", "sdir", "dirmix", "negdir",
               "dir")
-  model <- match.arg(model, models)[1]
+  model <- match.arg(model, models, several.ok = TRUE)[1]
   if (model == "schlather") {
     if (!missing(param))
       warning("Parameter value (degrees of freedom) set to one for Schlather model")

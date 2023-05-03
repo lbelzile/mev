@@ -1,6 +1,6 @@
 # `mev`: Modelling Extreme values
 
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/mev)](https://cran.r-project.org/package=mev)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version-last-release/mev)](https://cran.r-project.org/package=mev)
 [![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-blue.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html)
 [![Downloads](http://cranlogs.r-pkg.org/badges/mev?color=brightgreen)](http://www.r-pkg.org/pkg/mev)
 

@@ -356,8 +356,24 @@ plot.eprof <- function(x, ...) {
     } else{
       xlim <- args$xlim
     }
-    plot(NULL, type = "n", bty = "l", xlim = xlim, ylim = ylim, xlab = ifelse(!tikz,
-        expression(psi), "$\\psi$"), ylab = "Profile log likelihood")
+    if(is.null(args$xlab)){
+      xlab <- ifelse(!tikz,
+                     expression(psi),
+                     "$\\psi$")
+    } else{
+      xlab <- args$xlab
+    }
+    if(is.null(args$ylab)){
+      ylab <- "profile log likelihood"
+    } else{
+      ylab <- args$ylab
+    }
+    plot(NULL, type = "n",
+         bty = "l",
+         xlim = xlim,
+         ylim = ylim,
+         xlab = xlab,
+         ylab = ylab)
     abline(h = -qchisq(level, 1)/2, col = "gray")
     # Legend
     lcols <- NULL
@@ -1485,9 +1501,9 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
         std.error <- sqrt(solve(gpdr.infomat(par = mle, dat = dat, method = "exp", m = m))[1,
             1])
         constr.mle.quant <- function(quant) {
-            suppressMessages(Rsolnp::solnp(par = 0.01, function(lambda, psi, m) {
+            suppressWarnings(suppressMessages(Rsolnp::solnp(par = 0.01, function(lambda, psi, m) {
                 -gpdr.ll(par = c(psi, lambda), dat = dat, m = m)
-            }, psi = quant, m = m,  control = list(trace = 0))$par)
+            }, psi = quant, m = m,  control = list(trace = 0))$par))
         }
 
 
@@ -1913,6 +1929,7 @@ gpd.pll <- function(psi, param = c("scale", "shape", "quant", "VaR", "ES", "Nmea
     }
     ans$family <- "gpd"
     ans$threshold <- threshold
+    ans$param <- param
     if(plot){
      plot(ans)
     }
@@ -1960,7 +1977,6 @@ plot.fr <- function(x, ...) {
     } else if (sum(c(1, 2, 3, 4) %in% whichPlot) == 2) {
         par(mfrow = c(1, 2))
     }
-
     fr <- x
     xl <- ifelse(is.null(fr$param), expression(psi), fr$param)
 
