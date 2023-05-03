@@ -778,7 +778,7 @@ expme <- function(z, par, model = c("log", "hr", "br", "xstud"),
         alpha * log(rowSums(x^(-1 / alpha)))
       }
     }
-    return(lVfunlog(z, alpha))
+    return(exp(lVfunlog(z, alpha)))
   } else if (model == "hr") {
     m <- par$m
     Sigma <- par$Sigma
