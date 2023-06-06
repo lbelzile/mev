@@ -357,14 +357,24 @@ clikmgp <- function(dat,
                     scale,
                     shape,
                     par,
-                    model = c("log", "br", "xstud"),
+                    model = c("log", "neglog", "br", "xstud"),
                     likt = c("mgp", "pois", "binom"),
                     lambdau = 1,
                     ...) {
   stopifnot(length(thresh) == 1L,
-            is.numeric(thresh))
+            is.numeric(thresh),
+            is.finite(thresh),
+            is.finite(mthresh),
+            is.finite(scale),
+            is.finite(loc),
+            is.finite(shape),
+            is.finite(lambdau))
 
   # Rename arguments
+  if(is.data.frame(dat)){
+    dat <- as.matrix(dat)
+  }
+  stopifnot(all(mthresh < thresh))
   tdat <- dat
   N <- nrow(dat)
   D <- ncol(dat)
@@ -493,7 +503,7 @@ clikmgp <- function(dat,
       if (model != "br") {
         tdat[, j] <- exp(tdat[, j])
       }
-      # Map mthresholds
+      # Map marginal thresholds for censoring to unit Pareto
       yth[j] <- exp((mthresh[j] - B[j]) / A[j]) / lambdau[j]
       tu[j] <- exp((thresh - B[j]) / A[j]) / lambdau[j]
     }
@@ -613,87 +623,98 @@ clikmgp <- function(dat,
     exponentMeasure <- exp(lVu)
   } else if(model == "neglog"){
     cdat <- t(apply(tdat, 1, function(x) {
-      exp(alpha*log(pmax(yth, x)))
+      pmax(yth, x)
     }))
-    # Parametrization that follows is in mev vignette with alpha > 0
-    lVfunneglog <- function(x, alpha){
+    cdat <- exp(alpha*log(cdat))
+    # Standardize otherwise numerical overflow
+    # TODO unstandardize inputs for comparison
+    #  with other models
+
+    # Parametrization that follows is in the
+    # 'mev' vignette with alpha > 0
+    Vfunneglog <- function(x, alpha){
       xa <- exp(alpha*log(x))
       if (is.null(dim(x))) { # vector
         p <- length(x)
         Vx <- 0
         for(i in seq_len(p)){
-          Vx <- Vx + ifelse(i%%2 == 0, -1, 1)*sum(combn(xa, m = i, FUN = sum)^(-1/alpha))
+          Vx <- Vx + ifelse(i%%2 == 0, -1, 1)*
+            sum(combn(xa, m = i, FUN = sum)^(-1/alpha))
         }
       } else { # matrix
         p <- ncol(xa)
         Vx <- rep(0, nrow(xa))
         for(i in seq_len(p)){
-          Vx <- Vx + ifelse(i%%2 == 0, -1, 1)*
+          Vx <- Vx + ifelse(i%%2 == 0, -1, 1) *
             rowSums(apply(
               combn(seq_len(p), i), 2, function(ind){
                 rowSums(xa[,ind, drop = FALSE])^(1/alpha)}))
         }
       }
-      return(log(Vx))
+      return(Vx)
     }
-    lVu <- lVfunneglog(x = tu, alpha = alpha)
-    exponentMeasure <- exp(lVu)
-    # x vector of observations to the power alpha
+    exponentMeasure <- Vfunneglog(x = tu, alpha = alpha)
+    # x vector of observations to the power alpha, x^alpha
     # censored matrix of logical indicator, TRUE for censored, FALSE otherwise
     # alpha positive shape parameter
     # numAbovePerRow vector of the row sums of \code{censored}.
     ldVfunneglog <- function(x, censored, alpha, numAbovePerRow) {
       lssum <- function(x, pow = 1){
         bi <- log(abs(x))
-        # This is from Lemma 5.1(2) of Hofert, Maechler and McNeil
+        # This is from Lemma 5.1(2) of
+        # Hofert, Maechler and McNeil
         # First, we break all terms individually (no summing)
         # then, we use min instead of max (because pow will be negative, so min^pow is the max)
         # then, we use pow
-        if(pow < 0){
-          pow*min(bi) + log(sum(sign(xt)*exp(pow*(bi - min(bi)))))
-        } else{
+         if(pow < 0){
+           pow*min(bi) + log(sum(sign(xt)*exp(pow*(bi - min(bi)))))
+         } else{
           pow*max(bi) + log(sum(sign(x)*exp(pow*(bi - max(bi)))))
-        }
+         }
       }
       x <- as.matrix(x)
       p <- ncol(x)
-      res <- sum(numAbovePerRow)*log(alpha) + nrow(x)*lgamma(1/alpha + 1) - sum(lgamma(1/alpha + numAbovePerRow - 1)) +
-        (1 - 1/alpha)*log(sum(x[!censored]))
-      # sapply(1:nrow(x), function(i){
-      if(numAbovePerRow[i] == p){return(0)}
-      sumAbove <- sum(x[i,-censored[i,]])
-      xt <- c(sumAbove,
-              unlist(sapply(seq_len(p - numAbovePerRow[i]),
-                            function(j){
-                              rep(x = ifelse((j - numAbovePerRow[i])%%2 == 0, 1, -1),
-                                  length.out = choose(n = p - numAbovePerRow[i], j))*(
-                                    combn(x[i,censored[i,]], j, FUN = sum) + sumAbove)
-                            })))
+      res <- sum(numAbovePerRow)*log(alpha) - nrow(x)*lgamma(1/alpha) + sum(lgamma(1/alpha + numAbovePerRow)) +
+        (1 - 1/alpha)*sum(log(x[!censored]))
+      # Compute individual contributions
        for(i in seq_len(nrow(x))){
-        # sum of uncensored
-        if(numAbovePerRow[i] < p){
-          sumAbove <- sum(x[i,-censored[i,]])
-          xt <- c(sumAbove,
-                  unlist(sapply(seq_len(p - numAbovePerRow[i]),
-                         function(j){
-                           rep(x = ifelse((j - numAbovePerRow[i])%%2 == 0, 1, -1),
-                               length.out = choose(n = p - numAbovePerRow[i], j))*(
-                             combn(x[i,censored[i,]], j, FUN = sum) + sumAbove)
-                           })))
-          res <- res + lssum(xt, (-1/alpha - numAbovePerRow[i]))
+         sumAbove <- sum(x[i,!censored[i,]])
+        # if there are censored components
+        if(numAbovePerRow[i] == p){
+          res <- res + (-1/alpha - p)*log(sumAbove)
+        } else if(numAbovePerRow[i] < p){
+      #     xt <- c(
+      #       ifelse(numAbovePerRow[i]%%2 == 0, -1, 1) * sumAbove,
+      #     unlist(sapply(
+      #               seq_len(p - numAbovePerRow[i]),
+      #                    function(j){
+      #                      rep(x = ifelse((j - numAbovePerRow[i])%%2 == 0, -1, 1),
+      #                          length.out = choose(n = p - numAbovePerRow[i], j))*
+      # (combn(x[i,censored[i,]], j, FUN = sum) + sumAbove)
+      #                      })))
+          xt <- c(sumAbove*
+            ifelse(numAbovePerRow[i]%%2 == 0, -1, 1),
+            unlist(sapply(
+              seq_len(p - numAbovePerRow[i]),
+              function(j){
+                ifelse((j - numAbovePerRow[i])%%2 == 0, -1, 1)*
+                  (combn(x[i,censored[i,]], j, FUN = sum) + sumAbove)
+              #     (-1/alpha - numAbovePerRow[i])*log1p(exp(log(combn(x[i,censored[i,]], j, FUN = sum)) - log(sumAbove))))
+               })))
+     res <- res + lssum(xt, (-1/alpha - numAbovePerRow[i]))
+          # print(lssum(xt, (-1/alpha - numAbovePerRow[i])))
         }
-        # res <- res + ifelse(numAbovePerRow[i] == p, 0, log(pmax(0, #TODO fix potential numerical overflow
-        #   sum(x[i,-censored[i,]]) + # empty set
-        #     sum(sapply(seq_len(p - numAbovePerRow[i]),
-        #          function(j){
-        #            ifelse((j - numAbovePerRow[i])%%2 == 0, 1, -1)*sum(
-        #              (combn(x[i,censored[i,]], j,
-        #                  FUN = sum) + sum(x[i,-censored[i,]])))})))))
       }
       return(res)
     }
 
-    intens <- ldVfunneglog(x = cdat, censored = censored, alpha = alpha, numAbovePerRow = numAbovePerRow)
+    intens <- ldVfunneglog(x = cdat,
+                           censored = censored,
+                           alpha = alpha,
+                           numAbovePerRow = numAbovePerRow)
+    # Undo Jacobian of transformation
+    # browser()
+    intens <- -length(cdat) + intens
   }
   res <- jac + intens + switch(likt,
     mgp = -N * log(exponentMeasure),
@@ -733,9 +754,9 @@ clikmgp <- function(dat,
 #' Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], "+") - Vmat[-1, -1]
 #' expme(z = rep(1, ncol(Lambda)), par = list(Lambda = Lambda), model = "br", method = "mvPot")
 #' }
-expme <- function(z, par, model = c("log", "hr", "br", "xstud"),
+expme <- function(z, par, model = c("log", "neglog", "hr", "br", "xstud"),
                   method = c("TruncatedNormal", "mvtnorm", "mvPot")) {
-  model <- match.arg(model[1], choices = c("log", "hr", "br", "xstud"))
+  model <- match.arg(model[1], choices = c("log", "neglog", "hr", "br", "xstud"))
   if (model != "log") {
     method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
     if (method == "mvtnorm") {
@@ -764,8 +785,15 @@ expme <- function(z, par, model = c("log", "hr", "br", "xstud"),
     }
   }
   if (model == "log") {
+  if(is.numeric(par)){
+    alpha <- par
+  } else if(is.list(par)){
     alpha <- par$alpha
-    if (any(c(is.null(alpha), alpha < 0, length(alpha) > 1))) {
+    if (is.null(alpha)) {
+      stop("Missing arguments for the logistic model")
+    }
+  }
+    if (any(c(alpha < 0, length(alpha) > 1))) {
       stop("Invalid or missing arguments for the logistic model")
     }
     if (alpha > 1) {
@@ -779,7 +807,42 @@ expme <- function(z, par, model = c("log", "hr", "br", "xstud"),
       }
     }
     return(exp(lVfunlog(z, alpha)))
-  } else if (model == "hr") {
+  } else if (model == "neglog") {
+    if(is.numeric(par)){
+    alpha <- par
+  } else if(is.list(par)){
+    alpha <- par$alpha
+    if (is.null(alpha)) {
+      stop("Missing arguments for the logistic model")
+    }
+  }
+    alpha <- alpha[1]
+    if (alpha < 0) {
+      alpha <- -alpha
+    }
+    Vfunneglog <- function(x, alpha){
+      xa <- exp(alpha*log(x))
+      if (is.null(dim(x))) { # vector
+        p <- length(x)
+        Vx <- 0
+        for(i in seq_len(p)){
+          Vx <- Vx + ifelse(i%%2 == 0, -1, 1)*
+            sum(combn(xa, m = i, FUN = sum)^(-1/alpha))
+        }
+      } else { # matrix
+        p <- ncol(xa)
+        Vx <- rep(0, nrow(xa))
+        for(i in seq_len(p)){
+          Vx <- Vx + ifelse(i%%2 == 0, -1, 1) *
+            rowSums(apply(
+              combn(seq_len(p), i), 2, function(ind){
+                rowSums(xa[,ind, drop = FALSE])^(1/alpha)}))
+        }
+      }
+      return(Vx)
+    }
+    return(Vfunneglog(z, alpha))
+    } else if (model == "hr") {
     m <- par$m
     Sigma <- par$Sigma
     if (any(c(is.null(m), is.null(Sigma), ncol(Sigma) != nrow(Sigma)))) {

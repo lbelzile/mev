@@ -576,7 +576,7 @@ NumericVector rPdir(int d, int index, NumericVector alpha, bool irv = false){
 //' @return an \code{n} by \code{d} sample from the spectral distribution
 //[[Rcpp::export(.rlogspec)]]
 NumericMatrix rlogspec (int n, int d, NumericVector theta){
-  double shape = theta[0];
+  double beta = theta[0];
   // double scale = 1/tgamma(1.0-1.0/theta[0]);
   //Define containers
   NumericMatrix samp(n,d);
@@ -584,8 +584,8 @@ NumericMatrix rlogspec (int n, int d, NumericVector theta){
   int j;
   for(int r=0; r<n; r++){
     j = sampleone(d);
-    F0[0] = exp(-log(rgamma(1,1.0-1.0/theta[0],1.0)[0])/theta[0]);
-    samp(r,_) = exp(-log(Rcpp::rexp(d,1.0))/shape)/F0[0];
+    F0[0] = exp(-log(rgamma(1,1.0-1.0/beta,1.0)[0])/beta);
+    samp(r,_) = exp(-log(Rcpp::rexp(d,1.0))/beta)/F0[0];
     samp(r,j) = 1.0;
     samp(r,_) = samp(r,_)/sum(samp(r,_));
   }

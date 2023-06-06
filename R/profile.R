@@ -455,7 +455,7 @@ plot.eprof <- function(x, ...) {
 #' \item{\code{psi.max}:} maximum profile likelihood estimate
 #' \item{\code{param}:} string indicating the parameter to profile over
 #' \item{\code{std.error}:} standard error of \code{psi.max}
-#' \item{\code{psi}:} vector of parameter \eqn{psi} given in \code{psi}
+#' \item{\code{psi}:} vector of parameter \eqn{\psi} given in \code{psi}
 #' \item{\code{pll}:} values of the profile log likelihood at \code{psi}
 #' \item{\code{maxpll}:} value of maximum profile log likelihood
 #' }
@@ -1143,7 +1143,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' \item{\code{psi.max}:} maximum profile likelihood estimate
 #' \item{\code{param}:} string indicating the parameter to profile over
 #' \item{\code{std.error}:} standard error of \code{psi.max}
-#' \item{\code{psi}:} vector of parameter \eqn{psi} given in \code{psi}
+#' \item{\code{psi}:} vector of parameter \eqn{\psi} given in \code{psi}
 #' \item{\code{pll}:} values of the profile log likelihood at \code{psi}
 #' \item{\code{maxpll}:} value of maximum profile log likelihood
 #' \item{\code{family}:} a string indicating "gpd"
@@ -1151,7 +1151,7 @@ gev.pll <- function(psi, param = c("loc", "scale", "shape", "quant", "Nmean", "N
 #' }
 #' In addition, if \code{mod} includes \code{tem}
 #' \itemize{
-#' \item{\code{normal}:}{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
+#' \item{\code{normal}:}{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
 #' \item{\code{r}:}{values of likelihood root corresponding to \eqn{\psi}}
 #' \item{\code{q}:}{vector of likelihood modifications}
 #' \item{\code{rstar}:}{modified likelihood root vector}
@@ -2193,10 +2193,10 @@ tem.corr <- function(fr, print.warning = FALSE) {
 #' @author Leo Belzile
 #' @return an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 #' \itemize{
-#' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
+#' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
 #' \item{\code{par.hat}: }{maximum likelihood estimates}
 #' \item{\code{par.hat.se}: }{standard errors of maximum likelihood estimates}
-#' \item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{psi}, \eqn{\hat{\lambda}})}
+#' \item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{\psi}, \eqn{\hat{\lambda}})}
 #' \item{\code{r}: }{values of likelihood root corresponding to \eqn{\psi}}
 #' \item{\code{psi}: }{vector of interest parameter}
 #' \item{\code{q}: }{vector of likelihood modifications}
@@ -2264,10 +2264,10 @@ gev.tem <- function(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant
 #' @author Leo Belzile
 #' @return an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 #' \itemize{
-#' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{psi}}
+#' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
 #' \item{\code{par.hat}: }{maximum likelihood estimates}
 #' \item{\code{par.hat.se}: }{standard errors of maximum likelihood estimates}
-#' \item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{psi}, \eqn{\hat{\lambda}})}
+#' \item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{\psi}, \eqn{\hat{\lambda}})}
 #' \item{\code{r}: }{values of likelihood root corresponding to \eqn{\psi}}
 #' \item{\code{psi}: }{vector of interest parameter}
 #' \item{\code{q}: }{vector of likelihood modifications}

@@ -12,7 +12,7 @@ clikmgp(
   scale,
   shape,
   par,
-  model = c("log", "br", "xstud"),
+  model = c("log", "neglog", "br", "xstud"),
   likt = c("mgp", "pois", "binom"),
   lambdau = 1,
   ...

@@ -7,7 +7,7 @@
 expme(
   z,
   par,
-  model = c("log", "hr", "br", "xstud"),
+  model = c("log", "neglog", "hr", "br", "xstud"),
   method = c("TruncatedNormal", "mvtnorm", "mvPot")
 )
 }
