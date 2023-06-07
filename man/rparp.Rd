@@ -7,7 +7,7 @@
 rparp(
   n,
   shape = 1,
-  riskf = c("sum", "site", "max", "min", "l2"),
+  risk = c("sum", "site", "max", "min", "l2"),
   siteindex = NULL,
   d,
   param,
@@ -25,7 +25,7 @@ rparp(
 
 \item{shape}{shape tail index of Pareto variable}
 
-\item{riskf}{string indicating risk functional.}
+\item{risk}{string indicating risk functional.}
 
 \item{siteindex}{integer between 1 and d specifying the index of the site or variable}
 
@@ -59,11 +59,11 @@ For \code{riskf=max} and \code{riskf=min}, the procedure uses rejection sampling
 sampled from \code{sum} and may be slow if \code{d} is large.
 }
 \examples{
-rparp(n=10, riskf='site', siteindex=2, d=3, param=2.5, model='log')
-rparp(n=10, riskf='min', d=3, param=2.5, model='neglog')
-rparp(n=10, riskf='max', d=4, param=c(0.2,0.1,0.9,0.5), model='bilog')
-rparp(n=10, riskf='sum', d=3, param=c(0.8,1.2,0.6, -0.5), model='sdir')
+rparp(n=10, risk = 'site', siteindex=2, d=3, param=2.5, model='log')
+rparp(n=10, risk = 'min', d=3, param=2.5, model='neglog')
+rparp(n=10, risk = 'max', d=4, param=c(0.2,0.1,0.9,0.5), model='bilog')
+rparp(n=10, risk = 'sum', d=3, param=c(0.8,1.2,0.6, -0.5), model='sdir')
 vario <- function(x, scale=0.5, alpha=0.8){ scale*x^alpha }
 grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
-rparp(n=10, riskf='max', vario=vario, coord=grid.coord, model='br')
+rparp(n=10, risk = 'max', vario=vario, coord=grid.coord, model='br')
 }

@@ -1,11 +1,11 @@
-#' Simulation from Pareto processes (max) using composition sampling
+#' Simulation from Pareto processes using composition sampling
 #'
 #' The algorithm performs forward sampling by simulating first from a
 #' mixture, then sample angles conditional on them being less than one.
 #' The resulting sample from the angular distribution is then multiplied by
 #' Pareto variates with tail index \code{shape}.
 #'
-#' Only extreme value models based on elliptical processes are handled. The \code{Lambda} matrix
+#' For the moment, only exchangeable models and models based n elliptical processes are handled. The parametrization of the Brown--Resnick is in terms of the matrix \code{Lambda}, which
 #' is formed by evaluating the semivariogram \eqn{\gamma} at sites \eqn{s_i, s_j}, meaning that
 #'  \eqn{\Lambda_{i,j} = \gamma(s_i, s_j)/2}.
 #'
@@ -35,7 +35,30 @@
 #' Sigma <- stats::rWishart(n = 1, df = 20, Sigma = diag(10))[,,1]
 #' rparpcs(n = 10, Sigma = cov2cor(Sigma), df = 3, model = 'xstud')
 #' }
-rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "xstud"), riskf = c("max", "min"), shape = 1) {
+rparpcs <- function(n,
+                    model = c("log", "neglog", "br", "xstud"),
+                    risk = c("max", "min"),
+                    param = NULL,
+                    d,
+                    Lambda = NULL,
+                    Sigma = NULL,
+                    df = NULL,
+                    shape = 1,
+                    ...) {
+  args <- list(...)
+  if(!is.null(args$riskf)){
+    riskf <- args$riskf
+  } else{
+    riskf <- risk
+  }
+
+  riskf <- match.arg(arg = riskf,
+                     choices = c("min", "max"),
+                     several.ok = TRUE)[1]
+  model <- match.arg(model)
+
+  stopifnot(shape > 0)
+  if(model %in% c("br", "xstud")){
   if (!requireNamespace("TruncatedNormal", quietly = TRUE)) {
     stop(
       "Package \"TruncatedNormal\" must be installed to use this function.",
@@ -48,9 +71,90 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
       call. = FALSE
     )
   }
-    model <- match.arg(model)
-    riskf <- match.arg(riskf)
-    stopifnot(shape > 0)
+  }
+
+    if(model %in% c("log", "neglog")){
+      if(missing(d)){
+        stop("Invalid dimension for the model.")
+      }
+      if (is.null(param) || param < 0 || d < 1) {
+        stop("Invalid parameter value")
+      }
+      if (length(param) != 1) {
+        warning("Only first entry of param vector considered")
+        param <- param[1]
+      }
+      if (model == "log") {
+        if (param < 1) {
+          param <- 1/param
+        }
+      }
+      weights <- rep(1/d, d)
+      out <- matrix(1, nrow = d, ncol = n)
+      # Exchangeable model, balanced mixture
+      if(model == "log"){
+        scale <- 1/gamma(1-1/param)
+        F0 <- scale*rgamma(n,
+                     shape = 1-1/param)^(-1/param)
+
+        if(riskf == "min"){
+          Flow <- rep(
+            x = mev::pgev(
+              q = F0,
+              loc = scale,
+              scale = scale/param,
+              shape = 1/param),
+          each = d-1)
+        Fj <- mev::qgev(
+          p = Flow + (1-Flow) * runif(n * (d-1)),
+              loc = scale,
+              scale = scale/param,
+              shape = 1/param)
+        } else if(riskf == "max"){
+          Fj <- mev::qgev(
+            p = runif(n * (d-1)) *
+              rep(mev::pgev(F0,
+                        loc = scale,
+                        scale = scale/param,
+                        shape = 1/param), d-1),
+            loc = scale,
+            scale = scale/param,
+            shape = 1/param)
+        }
+        } else if(model == "neglog"){
+          scale <- 1/gamma(1+1/param)
+          F0 <- scale*rgamma(n,
+                             shape = 1+1/param)^(-1/param)
+
+          if(riskf == "min"){
+            Flow <- rep(
+              x = pweibull(
+                q = F0,
+                scale = scale,
+                shape = param),
+              each = d-1)
+            Fj <- qweibull(
+              p = Flow + (1-Flow) * runif(n * (d-1)),
+              scale = scale,
+              shape = param)
+          } else if(riskf == "max"){
+            Fj <- qweibull(
+              p = runif(n * (d-1)) *
+                rep(pweibull(
+                  q = F0,
+                  scale = scale,
+                  shape = param), d-1),
+              scale = scale,
+              shape = param)
+          }
+        }
+        # pos <- (sample.int(n = d, size = n, replace = TRUE)-1) * n +  1:n
+        pos <- sample.int(n = d, size = n, replace = TRUE) +
+          d*(0:(n-1))
+        out[-pos] <- Fj/rep(F0, each = d - 1)
+        samp <- t(out) * runif(n)^(-shape)
+  } else if(model %in% c("br", "xstud")){
+
     if (model == "xstud") {
         if (is.null(df)) {
             stop("Invalid degree of freedom argument")
@@ -121,6 +225,7 @@ rparpcs <- function(n, Lambda = NULL, Sigma = NULL, df = NULL, model = c("br", "
         accu <- accu + tabu[i]
     }
     samp <- runif(n)^(-shape) * t(ang[, sample.int(n, n, replace = FALSE)])
+}
     attr(samp, "mixt.weights") <- weights
     return(samp)
 }

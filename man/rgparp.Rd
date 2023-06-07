@@ -8,7 +8,7 @@ rgparp(
   n,
   shape = 1,
   thresh = 1,
-  riskf = c("mean", "sum", "site", "max", "min", "l2"),
+  risk = c("mean", "sum", "site", "max", "min", "l2"),
   siteindex = NULL,
   d,
   loc,
@@ -30,7 +30,7 @@ rgparp(
 
 \item{thresh}{univariate threshold for the exceedances of risk functional}
 
-\item{riskf}{string indicating the risk functional.}
+\item{risk}{string indicating the risk functional.}
 
 \item{siteindex}{integer between 1 and d specifying the index of the site or variable}
 
@@ -66,14 +66,14 @@ or \code{(-Inf, loc - scale / shape)} for negative shape parameters, conditional
 The standard Pareto process corresponds to \code{scale = loc = rep(1, d)}.
 }
 \examples{
-rgparp(n = 10, riskf = 'site', siteindex = 2, d = 3, param = 2.5,
+rgparp(n = 10, risk = 'site', siteindex = 2, d = 3, param = 2.5,
    model = 'log', scale = c(1, 2, 3), loc = c(2, 3, 4))
-rgparp(n = 10, riskf = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5),
+rgparp(n = 10, risk = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5),
    scale = 1:4, loc = 1:4, model = 'bilog')
-rgparp(n = 10, riskf = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5),
+rgparp(n = 10, risk = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5),
    scale = 1:3, loc = 1:3, model = 'sdir')
 vario <- function(x, scale = 0.5, alpha = 0.8){ scale*x^alpha }
 grid.coord <- as.matrix(expand.grid(runif(4), runif(4)))
-rgparp(n = 10, riskf = 'max', vario = vario, coord = grid.coord,
+rgparp(n = 10, risk = 'max', vario = vario, coord = grid.coord,
    model = 'br', scale = runif(16), loc = rnorm(16))
 }
