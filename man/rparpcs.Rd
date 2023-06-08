@@ -38,12 +38,15 @@ an \code{n} by \code{d} matrix of samples, where \code{d = ncol(Sigma)}, with \c
 }
 \description{
 The algorithm performs forward sampling by simulating first from a
-mixture, then sample angles conditional on them being less than one.
+mixture, then sample angles conditional on them being less than (max) or greater than (min) one.
 The resulting sample from the angular distribution is then multiplied by
 Pareto variates with tail index \code{shape}.
 }
 \details{
-For the moment, only exchangeable models and models based n elliptical processes are handled. The parametrization of the Brown--Resnick is in terms of the matrix \code{Lambda}, which
+For the moment, only exchangeable models and models based n elliptical processes are handled.
+
+
+The parametrization of the Brown--Resnick is in terms of the matrix \code{Lambda}, which
 is formed by evaluating the semivariogram \eqn{\gamma} at sites \eqn{s_i, s_j}, meaning that
  \eqn{\Lambda_{i,j} = \gamma(s_i, s_j)/2}.
 
