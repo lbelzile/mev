@@ -4,7 +4,7 @@
 \alias{.mvasym.check}
 \title{Internal function}
 \usage{
-.mvasym.check(asy, dep, d, model = c("alog", "aneglog"))
+.mvasym.check(asy, dep, d, model = c("alog", "aneglog", "maxlin"))
 }
 \arguments{
 \item{asy}{a list of \eqn{2^d-1} asymmetry components, as in Stephenson bvevd functions}

@@ -12,7 +12,7 @@ rmev(
   sigma,
   model = c("log", "alog", "neglog", "aneglog", "bilog", "negbilog", "hr", "br", "xstud",
     "smith", "schlather", "ct", "sdir", "dirmix", "pairbeta", "pairexp", "wdirbs",
-    "wexpbs"),
+    "wexpbs", "maxlin"),
   alg = c("ef", "sm"),
   weights = NULL,
   vario = NULL,
@@ -30,12 +30,12 @@ rmev(
 \item{param}{parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
 Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model. See \bold{Details}.}
 
-\item{asy}{list of asymmetry parameters, as in function \code{rmvevd} from pcakage \code{evd}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.}
+\item{asy}{list of asymmetry parameters, as in function \code{rmvevd} from package \code{evd}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.}
 
 \item{sigma}{covariance matrix for Brown-Resnick and extremal Student-t distributions. Symmetric matrix of squared  coefficients \eqn{\lambda^2} for the Husler-Reiss model, with zero diagonal elements.}
 
 \item{model}{for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
-the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
+the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes. Max linear models are also supported}
 
 \item{alg}{algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.}
 

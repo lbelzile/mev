@@ -37,7 +37,7 @@ Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal stud
 \item{sigma}{covariance matrix for Brown-Resnick and extremal Student-t distributions. Symmetric matrix of squared  coefficients \eqn{\lambda^2} for the Husler-Reiss model, with zero diagonal elements.}
 
 \item{model}{for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
-the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.}
+the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes. Max linear models are also supported}
 
 \item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
 

@@ -8,13 +8,13 @@
 #' @param param parameter vector for the logistic, bilogistic, negative bilogistic and extremal Dirichlet (Coles and Tawn) model.
 #' Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal student model. See \bold{Details}.
 #' @param sigma covariance matrix for Brown-Resnick and extremal Student-t distributions. Symmetric matrix of squared  coefficients \eqn{\lambda^2} for the Husler-Reiss model, with zero diagonal elements.
-#' @param asy list of asymmetry parameters, as in function \code{rmvevd} from pcakage \code{evd}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.
+#' @param asy list of asymmetry parameters, as in function \code{rmvevd} from package \code{evd}, of \eqn{2^d-1} vectors of size corresponding to the power set of \code{d}, with sum to one constraints.
 #' @param alg algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.
 #' @param model for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
-#' the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes.
+#' the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes. Max linear models are also supported
 #' @param vario semivariogram function whose first argument must be distance. Used only if provided in conjunction with \code{coord} and if \code{sigma} is missing
 #' @param coord \code{d} by \code{k} matrix of coordinates, used as input in the variogram \code{vario} or as parameter for the Smith model. If \code{grid} is \code{TRUE}, unique entries should be supplied.
-#' @param weights vector of length \code{m} for the \code{m} mixture components. Must sum to one
+#' @param weights vector of length \code{m} for the \code{m} mixture components that sum to one. For the \code{"maxlin"} model, weights should be a matrix with \code{d} columns that represent the weight of the components and whose column sum to one (if provided, this argument overrides \code{asy}).
 #' @param grid Logical. \code{TRUE} if the coordinates are two-dimensional grid points (spatial models).
 #' @param dist symmetric matrix of pairwise distances. Default to \code{NULL}.
 #' @param ... additional arguments for the \code{vario} function
@@ -82,9 +82,38 @@
 #'alpha.mat <- cbind(c(2,1,1),c(1,2,1),c(1,1,2))
 #'rmev(n=100, param=alpha.mat, weights=rep(1/3,3), model='dirmix')
 #'rmev(n=10, param=c(0.1,1,2,3), d=3, model='pairbeta')
-rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "aneglog", "bilog", "negbilog", "hr", "br", "xstud",
-    "smith", "schlather", "ct", "sdir", "dirmix","pairbeta","pairexp","wdirbs","wexpbs"), alg = c("ef", "sm"),
-    weights = NULL, vario = NULL, coord = NULL, grid = FALSE, dist = NULL, ...) {
+rmev <- function(
+    n,
+    d,
+    param,
+    asy,
+    sigma,
+    model = c("log",
+              "alog",
+              "neglog",
+              "aneglog",
+              "bilog",
+              "negbilog",
+              "hr",
+              "br",
+              "xstud",
+              "smith",
+              "schlather",
+              "ct",
+              "sdir",
+              "dirmix",
+              "pairbeta",
+              "pairexp",
+              "wdirbs",
+              "wexpbs",
+              "maxlin"),
+    alg = c("ef", "sm"),
+    weights = NULL,
+    vario = NULL,
+    coord = NULL,
+    grid = FALSE,
+    dist = NULL,
+    ...) {
 
   # Create gridded values if specification is for random field discretization
   ellips <- list(...)
@@ -95,14 +124,41 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
   if(missing(param)){ param <- NULL }
   if(missing(asy)){ asy <- NULL }
   if(missing(sigma)){ sigma <- NULL }
-  out <- .rmev_checks(n = n, d = d, param = param, asy = asy, sigma = sigma,
-               model =  model, alg = alg, weights = weights,
-               vario = vario, coord = coord, grid = grid, dist = dist, ...)
-    mod <- switch(out$model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4,
-                  xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9, isbr = 9,
-                  pairbeta = 10, pairexp = 11, wdirbs = 12, wexpbs = 13)
-    if (out$model %in% c("alog", "aneglog")) {
-    mod <- switch(out$model, alog = 1, aneglog = 2)
+  out <- .rmev_checks(
+    n = n,
+    d = d,
+    param = param,
+    asy = asy,
+    sigma = sigma,
+    model =  model,
+    alg = alg,
+    weights = weights,
+    vario = vario,
+    coord = coord,
+    grid = grid,
+    dist = dist,
+    ...)
+    mod <- switch(out$model,
+                  log = 1,
+                  neglog = 2,
+                  dirmix = 3,
+                  bilog = 4,
+                  negbilog = 4,
+                  xstud = 5,
+                  br = 6,
+                  sdir = 7,
+                  smith = 8,
+                  hr = 9,
+                  isbr = 9,
+                  pairbeta = 10,
+                  pairexp = 11,
+                  wdirbs = 12,
+                  wexpbs = 13)
+    if (out$model %in% c("alog", "aneglog","maxlin")) {
+    mod <- switch(out$model,
+                  alog = 1,
+                  aneglog = 2,
+                  maxlin = 14)
     .rmevasy(n = n, d = out$d, para = out$param,
              asym = out$asym, ncompo = out$ncompo,
              Sigma = out$sigma, model = mod)
@@ -179,13 +235,15 @@ rmev <- function(n, d, param, asy, sigma, model = c("log", "alog", "neglog", "an
 #' rmevspec(n=100, param=alpha.mat, weights=rep(1/3,3), model='dirmix')
 #' @export
 rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "negbilog", "hr", "br", "xstud", "smith", "schlather",
-    "ct", "sdir", "dirmix","pairbeta","pairexp","wdirbs","wexpbs"),
+    "ct", "sdir", "dirmix","pairbeta","pairexp","wdirbs","wexpbs","maxlin"),
     weights = NULL, vario = NULL, coord = NULL, grid = FALSE, dist = NULL, ...) {
   # Dummy algorithm argument for internal checks
   alg <- "sm"
-  if(model %in% c("alog","aneglog")){
+  if(model %in% c("alog","aneglog", "maxlik")){
     stop("Invalid model: cannot simulate from angular distribution of asymmetric models.")
   }
+  #TODO add angular measure of the max linear model
+
   asy <- NULL
   if(missing(d)){ d <- NULL }
   if(missing(param)){ param <- NULL }
@@ -225,7 +283,10 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
 #' @return a matrix of asymmetry components, enumerating all possible \eqn{2^d-1} subsets of
 #' the power set
 #' @keywords internal
-.mvasym.check <- function(asy, dep, d, model = c("alog", "aneglog")) {
+.mvasym.check <- function(asy, dep, d, model = c("alog", "aneglog","maxlin")) {
+  if(is.null(d)){
+    stop("Argument \"d\" must be provided.")
+  }
     # Function subset is an internal function from the evd package
     subsets <- function(d) {
         x <- 1:d
@@ -237,7 +298,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     if (model == "alog") {
         if (mode(dep) != "numeric" || any(dep <= 0) || any(dep > 1))
             stop("invalid argument for \"dep\"")
-    } else {
+    } else if(model == "aneglog"){
         if (mode(dep) != "numeric" || any(dep <= 0))
             stop("invalid argument for \"dep\"")
     }
@@ -291,12 +352,12 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
               "bilog", "negbilog", "hr", "br",
               "isbr", "xstud", "smith", "schlather",
               "ct", "sdir", "dirmix", "negdir", "dir",
-              "pairbeta","pairexp","wdirbs","wexpbs")
+              "pairbeta","pairexp","wdirbs","wexpbs","maxlin")
   alg <- match.arg(alg)
   asym <- NULL
   ncompo <- NULL
   model <- match.arg(model, models)[1]
-  if (!model %in% c("alog", "aneglog")) {
+  if (!model %in% c("alog", "aneglog","maxlin")) {
     if (!is.null(asy)) {
       warning("Asymmetry parameter ignored")
     } else {
@@ -485,8 +546,9 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     if (model %in% c("smith", "br", "isbr")) {
       param <- 0
     }
-  } else if (model %in% c("alog", "aneglog")) {
+  } else if (model %in% c("alog", "aneglog","maxlin")) {
     # Sigma will be index of logistic sub-mixtures param is vector of dependence parameters
+    if(model %in% c("alog","aneglog")){
     if (any(param < 0))
       stop("Parameter vector must be positive")
     param <- rep(param, length.out = 2^d - 1 - d)  #if vector too short, recycle dep arguments
@@ -499,8 +561,30 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     } else {
       sigma <- .mvasym.check(asy, param, d = d, model = "aneglog")  #check parameters constraints
     }
+    } else{
+      # Prefered argument for maxlin is weights
+      if(!is.null(weights) & !is.null(d)){
+        weights <- as.matrix(weights)
+        if(ncol(weights) != d){
+          stop("Invalid \"weights\" argument: must be a matrix with \"d\" columns.")
+        }
+        weights <- apply(weights, 2, function(x){x/sum(x)})
+        if(!isTRUE(all(is.finite(weights)))){
+          stop("Invalid arguments in \"weights\": either columns do not normalize to one or non-finite values.")
+        }
+      sigma <- weights
+     } else{
+      sigma <- .mvasym.check(asy, param,
+                             d = d,
+                             model = "maxlin")
+     }
+      # Shed matrix to remove zero lines
+      sigma <- sigma[rowSums(sigma) > 0, ]
+      param <- 1
+     }
     # Transform list to matrix, with correct correspondance
     asym <- sigma > 0
+    if(model != "maxlin"){
     # Shed output to remove zero weight combinations
     if (d == 2) {
       param <- c(sigma[1, 1] != 0, sigma[2, 2] != 0, param)  # not a matrix for d=2
@@ -508,12 +592,13 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
       zero_line <- which(rowSums(sigma[-(1:d), ]) == 0) + d  #Possibly empty,
       param <- c(!1:d %in% zero_line, param)  #set dummies for point masses on edges
       if (length(zero_line) > 0) {
-        sigma <- sigma[-zero_line, ]
-        asym <- asym[-zero_line, ]
+        sigma <- sigma[-zero_line, , drop = FALSE]
+        asym <- asym[-zero_line, , drop = FALSE]
         param <- param[-zero_line]
       }
     }
     stopifnot(isTRUE(all.equal(nrow(sigma), nrow(asym), length(param))), isTRUE(all.equal(colSums(sigma), rep(1, ncol(sigma)))))
+}
     ncompo <- rowSums(asym)
   } else if (model == "dirmix") {
     if (any(is.null(param), length(weights) != ncol(param) && ncol(param) != 1, any(param < 0))) {

@@ -1523,35 +1523,49 @@ NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericM
 // [[Rcpp::export(.rmevasy)]]
 NumericMatrix rmevasy(int n, int d, NumericVector para, LogicalMatrix asym,
                        IntegerVector ncompo, NumericMatrix Sigma, int model) {
-  if(!(model == 1 || model == 2)){
+  if(!(model == 1 || model == 2 || model == 14)){
     Rcpp::stop("Asymmetric model not implemented");
     }
   NumericMatrix samp(n,d);
   NumericVector param = Rcpp::clone<Rcpp::NumericVector>(para);
   IntegerVector siz = IntegerVector::create(d, Sigma.nrow());
-  //IntegerVector index = seq_len(d)-1; // can subset using index[asym(r,_)]
   NumericMatrix nullmat(0,0);
   arma::mat void_mat(0,0);
   int j=0;
-  //Generate point masses on the edges, if any
-  for(int i=0; i < d; i++){
-    if(param[i] != 0){
-     samp(_, j) = Sigma(j, j)/Rcpp::rexp(n,1.0);
-      j++;
+  if(model == 14){
+    NumericVector factors(n);
+    // Max-linear: only generate a single Frechet
+    for(int r = 0; r < Sigma.nrow(); r++){
+      factors = Rcpp::rexp(n, 1.0);
+      j=0;
+      for(int i=0; i < d; i++){
+        if(asym(r,i) == true){
+          samp(_, i) = pmax(samp(_, i), Sigma(r,i)/factors);
+          j++;
+        }
+      }
     }
+    return samp;
+  } else{
+    //Generate point masses on the edges, if any
+    for(int i=0; i < d; i++){
+      if(param[i] != 0){
+        samp(_, j) = Sigma(j, j)/Rcpp::rexp(n,1.0);
+        j++;
+      }
+    }
+    for(int r = min(siz); r < Sigma.nrow(); r++){
+      NumericMatrix intersamp = rmevA2(n, ncompo(r), NumericVector::create(param[r]), model, nullmat, void_mat);
+      j=0;
+      for(int i=0; i < d; i++){
+        if(asym(r,i) == true){
+          samp(_, i) = pmax(samp(_, i), Sigma(r,i)*intersamp(_, j));
+          j++;
+        }
+      }
+    }
+    return samp;
   }
-
-for(int r = min(siz); r < Sigma.nrow(); r++){
-  NumericMatrix intersamp = rmevA2(n, ncompo(r), NumericVector::create(param[r]), model, nullmat, void_mat);
-  j=0;
-  for(int i=0; i < d; i++){
-    if(asym(r,i) == true){
-    samp(_, i) = pmax(samp(_, i), Sigma(r,i)*intersamp(_, j));
-    j++;
-  }
-}
-}
-return samp;
 }
 
 //' Samples from exceedances at site (scaled extremal function definition)
