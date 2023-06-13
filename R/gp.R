@@ -914,6 +914,9 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     temp$mle <- temp$par
     temp$param <- c(temp$par, fixed_param)[wfo]
     temp$nllh <- temp$value
+    if(isTRUE(all.equal(temp$mle[2], -1, check.attributes = FALSE))){
+      temp$nllh <- -n*log(max(dat))
+    }
     temp$conv <- temp$convergence
     # Initialize standard errors and covariance matrix
     temp$vcov <- matrix(NA)
@@ -1019,6 +1022,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
   if(temp$mle[2] < -1){
     #Transform the solution (unbounded) to boundary - with maximum observation for scale and -1 for shape.
     temp$mle <- c(max(xdatu) + 1e-10, -1)
+    tmp$nllh <- -gpd.ll(par = temp$mle, dat = xdatu)
   }
 
   # Collecting observations from temp and formatting the output

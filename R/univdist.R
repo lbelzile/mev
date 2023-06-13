@@ -97,7 +97,7 @@ NULL
 #'
 #' Function returning the density of an \code{n} sample from the GP distribution.
 #' \code{gpd.ll.optim} returns the negative log likelihood parametrized in terms of \code{log(scale)} and shape
-#' in order to perform unconstrained optimization
+#' in order to perform unconstrained optimization. The function is coded in such a way that the log likelihood is infinite when \eqn{\xi < -1}.
 #' @seealso \code{\link{gpd}}
 #' @inheritParams gpd
 #' @export
@@ -110,11 +110,11 @@ gpd.ll <- function(par, dat, tol = 1e-05) {
     xi = par[2]
     n <- length(dat)
     if (abs(xi) > tol) {
-      if(xi > -1){
+      if(xi >= -1){
         #Most scenarios
         as.vector(-n * log(sigma) - (1 + 1/xi) * sum(log(pmax(1 + xi/sigma * dat, 0))))
       } else if(isTRUE(all.equal(xi, -1, check.attributes = FALSE))){
-        -n*log(max(dat))
+        -n*log(sigma)
       } else{
        -Inf
       }
