@@ -39,7 +39,7 @@ Parameter matrix for the Dirichlet mixture. Degree of freedoms for extremal stud
 \item{model}{for multivariate extreme value distributions, users can choose between 1-parameter logistic and negative logistic, asymmetric logistic and negative logistic, bilogistic, Husler-Reiss, extremal Dirichlet model (Coles and Tawn) or the Dirichlet mixture. Spatial models include
 the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes. Max linear models are also supported}
 
-\item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
+\item{weights}{vector of length \code{m} for the \code{m} mixture components that sum to one. For the \code{"maxlin"} model, weights should be a matrix with \code{d} columns that represent the weight of the components and whose column sum to one (if provided, this argument overrides \code{asy}).}
 
 \item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjunction with \code{coord} and if \code{sigma} is missing}
 

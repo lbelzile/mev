@@ -39,7 +39,7 @@ the Brown-Resnick, Smith, Schlather and extremal Student max-stable processes. M
 
 \item{alg}{algorithm, either simulation via extremal function (\code{'ef'}) or via the spectral measure (\code{'sm'}). Default to \code{ef}.}
 
-\item{weights}{vector of length \code{m} for the \code{m} mixture components. Must sum to one}
+\item{weights}{vector of length \code{m} for the \code{m} mixture components that sum to one. For the \code{"maxlin"} model, weights should be a matrix with \code{d} columns that represent the weight of the components and whose column sum to one (if provided, this argument overrides \code{asy}).}
 
 \item{vario}{semivariogram function whose first argument must be distance. Used only if provided in conjunction with \code{coord} and if \code{sigma} is missing}
 
