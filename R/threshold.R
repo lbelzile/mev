@@ -45,6 +45,9 @@ tstab.gpd <- function(xdat,
                       ...
 ){
   args <- list(...)
+  if(isTRUE(all(which %in% 1:2))){
+    which <- c("scale","shape")[which]
+  }
   which <- match.arg(which, choices = c("scale", "shape"), several.ok = TRUE)
   if(missing(xdat) && !is.null(args$dat)){
     dat <- args$dat
