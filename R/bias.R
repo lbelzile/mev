@@ -639,6 +639,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 #' }
 gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N) {
     # Create copy of parameters
+    par <- as.numeric(par)
     mu <- par[1]
     sigma <- par[2]
     xi <- par[3]
@@ -654,9 +655,9 @@ gev.Nyr <- function(par, nobs, N, type = c("retlev", "median", "mean"), p = 1/N)
     # Euler-Masc. constant :
     emcst <- -psigamma(1)
     # Return levels, N-year median and mean for GEV
-    estimate <- switch(type, retlev = ifelse(xi == 0, mu - sigma * log(yp), mu - sigma/xi * (1 - yp^(-xi))), median = ifelse(xi ==
+    estimate <- as.numeric(switch(type, retlev = ifelse(xi == 0, mu - sigma * log(yp), mu - sigma/xi * (1 - yp^(-xi))), median = ifelse(xi ==
         0, mu + sigma * (log(N) - log(log(2))), mu - sigma/xi * (1 - (N/log(2))^xi)), mean = ifelse(xi == 0, mu + sigma * (log(N) +
-        emcst), mu - sigma/xi * (1 - N^xi * gamma(1 - xi))))
+        emcst), mu - sigma/xi * (1 - N^xi * gamma(1 - xi)))))
     if (type == "retlev") {
         if (p > 0) {
             if (xi == 0) {

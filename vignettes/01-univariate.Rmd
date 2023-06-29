@@ -426,6 +426,6 @@ The package includes some default diagnostic plots (probability-probability plot
 ## Exercice
 
 1. Simulate 200 observations from the $r$-largest likelihood using `rrlarg` with shape parameter $\xi=-0.2$ and $r=5$.
-2. Test the hypothesis $\mathscr{H}_0: \xi = \xi_0$ using a score test and derive a 90% confidence interval for $\xi$. You can obtain the maximum likelihood estimator by calling `fit.rlarg` and the score and information matrix are implemented under `rlarg.score` and `rlarg.infomat`. Recall that the score statistic $w_{\mathsf{score}} \equiv U(\hat{\boldsymbol{\theta}}_{\xi_0})^\top i^{-1}(\hat{\boldsymbol{\theta}}_{\xi_0})U( \hat{\boldsymbol{\theta}}_{\xi_0}) \sim \chi^2_1.$ 
+2. Test the hypothesis $\mathscr{H}_0: \xi = \xi_0$ using a score test and derive a 90% confidence interval for $\xi$. You can obtain the maximum likelihood estimator by calling `fit.rlarg` and the score and information matrix are implemented under `rlarg.score` and `rlarg.infomat`. Recall that the score statistic $w_{\mathsf{score}} \equiv \ell_{\boldsymbol{\theta}}(\hat{\boldsymbol{\theta}}_{\xi_0})^\top i^{-1}(\hat{\boldsymbol{\theta}}_{\xi_0})\ell_{\boldsymbol{\theta}}( \hat{\boldsymbol{\theta}}_{\xi_0}) \sim \chi^2_1.$ 
 
 ## References
