@@ -41,9 +41,11 @@ tstab.gpd <- function(xdat,
                       method = c("wald", "profile", "post"),
                       level = 0.95,
                       plot = TRUE,
+                      which = c("scale", "shape"),
                       ...
 ){
   args <- list(...)
+  which <- match.arg(which, choices = c("scale", "shape"), several.ok = TRUE)
   if(missing(xdat) && !is.null(args$dat)){
     dat <- args$dat
     args$dat <- NULL
@@ -102,6 +104,7 @@ tstab.gpd <- function(xdat,
     confintmat[i,1] <- parmat[i,1] - stderr.transfo * qnorm(1-alpha/2)
     confintmat[i,2] <- parmat[i,1] + stderr.transfo * qnorm(1-alpha/2)
    } else if(method == "profile"){
+     if("shape" %in% which){
      if(gpdu$estimate['shape'] == -1){
        # Specify grid of psi values (only one-sided)
        profxi <- gpd.pll(psi = seq(-1, 0, by = 0.01),
@@ -121,7 +124,9 @@ tstab.gpd <- function(xdat,
 
      confintmat[i,3:4] <- confint(profxi, level = level, print = FALSE)[2:3]
      }
+     }
      if(gpdu$estimate['shape'] > -1){
+       if("scale" %in% which){
      k <- 30L
      prof_vals <- rep(NA_real_, k)
      xi_sigma_vals <- rep(NA_real_, k)
@@ -147,7 +152,8 @@ tstab.gpd <- function(xdat,
      if(!inherits(conf, "try-error")){
      confintmat[i, 1:2] <- conf
      }
-   }
+       }
+     }
      } else if(method == "post"){
       postsim <- #suppressWarnings(
         revdbayes::rpost_rcpp(n = 1000, thresh = 0,
@@ -171,7 +177,7 @@ tstab.gpd <- function(xdat,
   ret <- structure(list(threshold = thresh, mle = parmat, lower = lower,
                                     upper = upper, method = method, level = level), class = "mev_tstab.gpd")
   if(plot){
-    plot(ret, ...)
+    plot(ret, which = (1:2)[c("scale","shape") %in% which], ...)
   }
   return(invisible(ret))
 }
