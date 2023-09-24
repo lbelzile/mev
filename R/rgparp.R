@@ -225,8 +225,21 @@ rparp <- function(n,
     coord <- cbind(0)
   }
   # Model
-  mod <- switch(model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4, xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9,
-                isbr = 9)
+  mod <-
+    switch(
+      model,
+      log = 1,
+      neglog = 2,
+      dirmix = 3,
+      bilog = 4,
+      negbilog = 4,
+      xstud = 5,
+      br = 6,
+      sdir = 7,
+      smith = 8,
+      hr = 9,
+      isbr = 9
+    )
   if (riskf == "sum") {
     # Generate from spectral measure
     return(mev::rgp(n = n, loc = 1, scale = 1, shape = shape) *
@@ -253,8 +266,8 @@ rparp <- function(n,
         .rmevspec_cpp(n = nsim, d = d, para = param, model = mod,
                       Sigma = sigma, loc = coord)/ustar
       accept <- switch(riskf,
-                       max = apply(candidate, 1, function(x) { max(x) > 1 }),
-                       min = apply(candidate, 1, function(x) { min(x) > 1 }),
+                       max = apply(candidate, 1, max) > 1,
+                       min = apply(candidate, 1, min) > 1,
                        l2 = apply(candidate, 1, function(x) { sum(x^2) > 1 }))
       sum_accept <- sum(accept)
       ntotacc <- ntotacc + sum_accept
@@ -265,7 +278,7 @@ rparp <- function(n,
           ind <- ind + sum_accept
           nsim <- min(1e+06, ceiling(1.25 * (nsim/sum_accept) * (n - ind)))
         } else {
-          samp[(ind + 1L):n, ] <- as.matrix(candidate[accept, ])[1:(n - ind), ]
+          samp[(ind + 1L):n, ] <- as.matrix(candidate[accept,,drop = FALSE])[1:(n - ind), ]
           ind <- n
         }
       } else {
@@ -520,8 +533,21 @@ rgparp <- function(n,
     coord <- cbind(0)
   }
   # Model
-  mod <- switch(model, log = 1, neglog = 2, dirmix = 3, bilog = 4, negbilog = 4, xstud = 5, br = 6, sdir = 7, smith = 8, hr = 9,
-                isbr = 9)
+  mod <-
+    switch(
+      model,
+      log = 1,
+      neglog = 2,
+      dirmix = 3,
+      bilog = 4,
+      negbilog = 4,
+      xstud = 5,
+      br = 6,
+      sdir = 7,
+      smith = 8,
+      hr = 9,
+      isbr = 9
+    )
   # Additional checks and arguments for accept-reject algorithm for generalized R-Pareto process
   # Scale vector
   if(missing(scale)){
@@ -645,7 +671,7 @@ rgparp <- function(n,
           ind <- ind + sum_accept
           nsim <- min(1e+06, ceiling(1.25 * (nsim/sum_accept) * (n - ind)))
         } else {
-          samp[(ind + 1L):n, ] <- candidate[accept, ,drop = FALSE][1:(n - ind), , drop = FALSE]
+          samp[(ind + 1L):n, ] <- candidate[accept,, drop = FALSE][1:(n - ind),]
           ind <- n
         }
       } else {

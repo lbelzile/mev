@@ -4,9 +4,9 @@
 ## Fixes:
 
 * `gp.tstab` optimization bounds for profile confidence interval fixed.
+* `rparp` failed when a single draw was accepted (due to matrix being cast to vectors)
 
-
-# mev 1.15
+# mev 1.15  (Release date 2023-04-23)
 
 
 ## New:
