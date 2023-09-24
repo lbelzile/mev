@@ -540,5 +540,5 @@ mvrnorm <- function(n, mu, Sigma) {
 
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
-    .Call('_mev_RcppExport_registerCCallable', PACKAGE = 'mev')
+    .Call(`_mev_RcppExport_registerCCallable`)
 })

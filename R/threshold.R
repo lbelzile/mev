@@ -14,6 +14,7 @@
 #' Must be one of \code{"wald"}, \code{"profile"} or \code{"post"}.
 #' @param level confidence level of the intervals. Default to 0.95.
 #' @param plot logical; should parameter stability plots be displayed? Default to \code{TRUE}.
+#' @param changepar logical; if \code{TRUE}, changes the graphical parameters.
 #' @param ... additional arguments passed to \code{plot}.
 #' @return a list with components
 #' \itemize{
@@ -42,6 +43,7 @@ tstab.gpd <- function(xdat,
                       level = 0.95,
                       plot = TRUE,
                       which = c("scale", "shape"),
+                      changepar = TRUE,
                       ...
 ){
   args <- list(...)
@@ -187,13 +189,20 @@ tstab.gpd <- function(xdat,
 
 #'@export
 plot.mev_tstab.gpd <- function(x, which = 1:2, ...){
-  oldpar <- par(no.readonly = TRUE)
-  if(length(which) == 2){
-    par(mfrow = c(2,1), mar = c(4,4.5,3,1))
-  }
-  on.exit(par(oldpar))
   ellipsis <- list(...)
   names_ell <- names(ellipsis)
+  if(changepar %in% names_ell){
+    stopifnot(is.logical(changepar))
+    changepar <- ellipsis$changepar
+    ellipsis$changepar <- NULL
+  }
+  if(!changepar){
+    oldpar <- par(no.readonly = TRUE)
+    if(length(which) == 2){
+      par(mfrow = c(1,2), mar = c(4,4.5,3,1))
+    }
+    on.exit(par(oldpar))
+  }
   if("main" %in% names_ell){
     main <- ellipsis$main
     ellipsis$main <- NULL

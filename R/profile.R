@@ -62,12 +62,13 @@
 #     return(S1)
 # }
 
+print.eprof <- function(x, ...){
+  confint.eprof(x, print = TRUE)
+}
 
-
-
-
-
-
+summary.eprof <- function(x, ...){
+  confint.eprof(x, print = TRUE)
+}
 
 #' Confidence intervals for profile likelihood objects
 #'
