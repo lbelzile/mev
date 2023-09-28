@@ -5,8 +5,7 @@
 \alias{frwind}
 \title{French wind data}
 \format{
-a data frame with 17209 observations and 5 variables; the first column contains the date of the measurement and the others the measurements.
-The \code{metadata} attribute includes latitude and longitude (in degrees, minutes, seconds), altitude (in m), station name and station id.
+
 }
 \source{
 European Climate Assessment and Dataset project \url{https://www.ecad.eu/}

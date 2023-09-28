@@ -10,7 +10,7 @@
 #' @docType data
 #' @format A data frame with 17209 observations and 8 variables:
 #' \describe{
-#' \item{\code{date}}{date of measurement
+#' \item{\code{date}}{date of measurement}
 #' \item\code{S1}}{wind speed (in km/h) at Cap Cépet}
 #' \item\code{S2}}{wind speed (in km/h) at Lyon Saint-Exupéry}
 #' \item\code{S3}}{wind speed (in km/h) at Marseille Marignane}

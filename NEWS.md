@@ -1,6 +1,10 @@
 # mev 1.16
 
 
+## New:
+
+* Pickand's U-statistic estimator of the shape
+
 ## Fixes:
 
 * `gp.tstab` optimization bounds for profile confidence interval fixed.

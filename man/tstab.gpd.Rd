@@ -10,6 +10,8 @@ tstab.gpd(
   method = c("wald", "profile", "post"),
   level = 0.95,
   plot = TRUE,
+  which = c("scale", "shape"),
+  changepar = TRUE,
   ...
 )
 }
@@ -24,6 +26,8 @@ Must be one of \code{"wald"}, \code{"profile"} or \code{"post"}.}
 \item{level}{confidence level of the intervals. Default to 0.95.}
 
 \item{plot}{logical; should parameter stability plots be displayed? Default to \code{TRUE}.}
+
+\item{changepar}{logical; if \code{TRUE}, changes the graphical parameters.}
 
 \item{...}{additional arguments passed to \code{plot}.}
 }
