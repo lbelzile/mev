@@ -216,7 +216,9 @@ likmgp <- function(dat,
     stopifnot(c(length(ind) > 0, ncol(Sigma) - length(ind) > 0))
     Sigma[-ind, -ind, drop = FALSE] - Sigma[-ind, ind, drop = FALSE] %*% solve(Sigma[ind, ind, drop = FALSE]) %*% Sigma[ind, -ind, drop = FALSE]
   }
-
+  # Copy from ellipsis
+  mmin <- ellips$mmin
+  mmax <- ellips$mmax
   if (is.null(mmax)) {
     mmax <- apply(tdat, 2, max, na.rm = TRUE)
   }
@@ -255,9 +257,7 @@ likmgp <- function(dat,
   }
   }
 
-  # Copy from ellipsis
-  mmin <- ellips$mmin
-  mmax <- ellips$mmax
+
   genvec1 <- ellips$genvec1
   B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
   antithetic <- ifelse(is.null(ellips$antithetic), FALSE, ellips$antithetic)

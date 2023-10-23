@@ -9,6 +9,7 @@
 
 * `gp.tstab` optimization bounds for profile confidence interval fixed.
 * `rparp` failed when a single draw was accepted (due to matrix being cast to vectors)
+* `fit.extgp` now handles model 0 (generalized Pareto), fixing #17
 
 # mev 1.15  (Release date 2023-04-23)
 

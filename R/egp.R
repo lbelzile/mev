@@ -24,7 +24,7 @@
 #' @param data data vector.
 #' @param model integer ranging from 0 to 4 indicating the model to select (see \code{\link{extgp}}).
 #' @param method string; either \code{'mle'} for maximum likelihood, or \code{'pwm'} for probability weighted moments, or both.
-#' @param init vector of initial values, comprising of \eqn{p}, \eqn{\kappa}, \eqn{\delta},\eqn{\sigma},\eqn{\xi} (in that order) for the optimization. All parameters may not appear depending on \code{model}.
+#' @param init vector of initial values, comprising of \eqn{p}, \eqn{\kappa}, \eqn{\delta}, \eqn{\sigma}, \eqn{\xi} (in that order) for the optimization. All parameters may not appear depending on \code{model}.
 #' @param censoring numeric vector of length 2 containing the lower and upper bound for censoring; \code{censoring=c(0,Inf)} is equivalent to no censoring.
 #' @param rounded numeric giving the instrumental precision (and rounding of the data), with default of 0.
 #' @param confint logical; should confidence interval be returned (percentile bootstrap).
@@ -66,7 +66,8 @@ fit.extgp <- function(data,
       }
     }
     # Sanity checks
-    initsize <- switch(model, 3, 3, 4, 5)
+    model <- as.integer(model)[1]
+    initsize <- switch(model+1L, 2, 3, 3, 4, 5)
     if (length(init) != initsize) {
         stop("Invalid starting values in \"init\"; incorrect length.")
     }
@@ -80,7 +81,28 @@ fit.extgp <- function(data,
     qextgps <- c()
 
     if (any(method == "pwm")) {
-        if (model == 1) {
+     if (model == 0) {
+            fit.pwm <- extgp.fit.pwm(x = data, type = 0, sigma0 = init[1], xi0 = init[2], censoring = censoring)
+            if (confint) {
+                fit.pwm.boot <- boot::boot(data = data, statistic = extgp.fit.pwm.boot, R = R, type = 0,
+                 sigma0 = init[1],  ncpus = ncpus, xi0 = init[2], censoring = censoring, parallel = "multicore")
+                CI.pwm.sigma <- boot::boot.ci(boot.out = fit.pwm.boot, index = 1, type = "perc")$perc[4:5]
+                CI.pwm.xi <- boot::boot.ci(boot.out = fit.pwm.boot, index = 2, type = "perc")$perc[4:5]
+                CIs.pwm <- cbind(CI.pwm.sigma, CI.pwm.xi)
+            }
+            dextgp.pwm <- dextgp(x = x, type = 0, sigma = fit.pwm[1], xi = fit.pwm[2])
+            dextgps <- c(dextgps, dextgp.pwm)
+            if (plots) {
+                qextgp.pwm <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 0, sigma = fit.pwm[1], xi = fit.pwm[2])
+                qextgps <- c(qextgps, qextgp.pwm)
+                if (confint) {
+                  q.pwm.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(1),
+                                       sigma = as.list(fit.pwm.boot$t[, 1]), xi = as.list(fit.pwm.boot$t[, 2]))
+                  q.pwm.L <- apply(q.pwm.boot, 1, quantile, 0.025, na.rm = TRUE)
+                  q.pwm.U <- apply(q.pwm.boot, 1, quantile, 0.975, na.rm = TRUE)
+                }
+            }
+        } else if (model == 1) {
             fit.pwm <- extgp.fit.pwm(x = data, type = 1, kappa0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring)
             if (confint) {
                 fit.pwm.boot <- boot::boot(data = data, statistic = extgp.fit.pwm.boot, R = R, type = 1, kappa0 = init[1], sigma0 = init[2],
@@ -182,7 +204,30 @@ fit.extgp <- function(data,
     }
 
     if (any(method == "mle")) {
-        if (model == 1) {
+        if (model == 0) {
+            fit.mle <- extgp.fit.ml(x = data, type = 0, sigma0 = init[1], xi0 = init[2],
+            censoring = censoring, rounded = rounded)
+            if (confint) {
+                fit.mle.boot <- boot::boot(data = data, statistic = extgp.fit.ml.boot, R = R, type = 0,
+                sigma0 = init[1], xi0 = init[2], censoring = censoring,
+                 rounded = rounded, parallel = "multicore", ncpus = ncpus)
+                CI.mle.sigma <- boot::boot.ci(boot.out = fit.mle.boot, index = 1, type = "perc")$perc[4:5]
+                CI.mle.xi <- boot::boot.ci(boot.out = fit.mle.boot, index = 2, type = "perc")$perc[4:5]
+                CIs.mle <- cbind(CI.mle.sigma, CI.mle.xi)
+            }
+            dextgp.mle <- dextgp(x = x, type = 1, sigma = fit.mle[1], xi = fit.mle[2])
+            dextgps <- c(dextgps, dextgp.mle)
+            if (plots) {
+                qextgp.mle <- qextgp(p = c(1:length(data))/(length(data) + 1), type = 0, sigma = fit.mle[1], xi = fit.mle[2])
+                qextgps <- c(qextgps, qextgp.mle)
+                if (confint) {
+                  q.mle.boot <- mapply(FUN = qextgp, p = list(c(1:length(data))/(length(data) + 1)), type = list(1),
+                   sigma = as.list(fit.mle.boot$t[, 1]), xi = as.list(fit.mle.boot$t[, 2]))
+                  q.mle.L <- apply(q.mle.boot, 1, quantile, 0.025, na.rm = TRUE)
+                  q.mle.U <- apply(q.mle.boot, 1, quantile, 0.975, na.rm = TRUE)
+                }
+            }
+        } else if (model == 1) {
             fit.mle <- extgp.fit.ml(x = data, type = 1, kappa0 = init[1], sigma0 = init[2], xi0 = init[3], censoring = censoring, rounded = rounded)
             if (confint) {
                 fit.mle.boot <- boot::boot(data = data, statistic = extgp.fit.ml.boot, R = R, type = 1, kappa0 = init[1], sigma0 = init[2],
@@ -319,7 +364,7 @@ fit.extgp <- function(data,
         mat <- matrix(c(1:(1 + plots)), nrow = 1, ncol = 1 + plots, byrow = TRUE)
         layout(mat)
         par(mar = c(4, 4, 1, 1))
-        hist(data, breaks = c(0:30) * max(data + 10^-1)/30, freq = FALSE, xlim = range(x),
+        hist(data, breaks = c(0:30) * max(data + 1e-1)/30, freq = FALSE, xlim = range(x),
              xlab = "Rainfall amounts [mm]", ylab = "Density",
             main = "", col = "lightgrey")
         dens <- density(data, from = 0)
@@ -414,7 +459,7 @@ NULL
 #' @keywords internal
 pextgp.G <- function(u, type = 1, prob, kappa, delta) {
     type <- as.integer(type[1])
-    if (!type %in% 1:5) {
+    if (!type %in% 0:4) {
         stop("Invalid \"type\" argument")
     }
     if (type %in% c(1, 3, 4)) {
@@ -469,7 +514,7 @@ pextgp.G <- function(u, type = 1, prob, kappa, delta) {
 #' @export
 #' @keywords internal
 dextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE) {
-    if (!type %in% 1:5) {
+    if (!type %in% 0:4) {
         stop("Invalid \"type\" argument")
     }
     type <- type[1]
@@ -515,7 +560,7 @@ dextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA, log = FALSE
 #' @export
 #' @keywords internal
 qextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA) {
-    if (!type %in% 1:5) {
+    if (!type %in% 0:4) {
         stop("Invalid \"type\" argument")
     }
     type <- type[1]
@@ -551,7 +596,7 @@ qextgp.G <- function(u, type = 1, prob = NA, kappa = NA, delta = NA) {
 #' @export
 #' @keywords internal
 rextgp.G <- function(n, prob = NA, kappa = NA, delta = NA, type = 1, unifsamp = NULL, direct = FALSE, censoring = c(0, 1)) {
-    if (!type %in% 1:5) {
+    if (!type %in% 0:4) {
         stop("Invalid \"type\" argument")
     }
     type <- type[1]
@@ -702,7 +747,7 @@ rextgp <- function(n, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, ty
 ######################### ### Inference via PWM ### ###
 
 extgp.pwm <- function(orders, prob = NA, kappa = NA, delta = NA, sigma = NA, xi = NA, type = 1, censoring = c(0, Inf), empiric = FALSE,
-    unifsamp = NULL, NbSamples = 10^4, N = 200) {
+    unifsamp = NULL, NbSamples = 1e4, N = 200) {
     H.L <- ifelse(censoring[1] > 0, mev::pgp(censoring[1], loc = 0, scale = sigma, shape = xi), 0)
     H.U <- ifelse(censoring[2] < Inf, mev::pgp(censoring[2], loc = 0, scale = sigma, shape = xi), 1)
 
@@ -782,7 +827,7 @@ extgp.pwm <- function(orders, prob = NA, kappa = NA, delta = NA, sigma = NA, xi 
 }
 
 extgp.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf), empiric = FALSE,
-    unifsamp = NULL, NbSamples = 10^4) {
+    unifsamp = NULL, NbSamples = 1e4) {
     Fn = ecdf(x)
     inds <- x > censoring[1] & x < censoring[2]
     mu0hat = mean(x[inds])
@@ -804,7 +849,7 @@ extgp.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sig
                 return(matrix(pwm.theor - pwm.empir, ncol = 2))
             }
             theta0 <- c(sigma0, xi0)
-            res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(1e-04, 10^(-6)), upper = c(Inf, 0.99), vcov = "iid")
+            res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(1e-04, 1e-6), upper = c(Inf, 0.99), vcov = "iid")
             thetahat <- res$coefficients
         }
         names(thetahat) <- c("sigma", "xi")
@@ -817,7 +862,7 @@ extgp.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sig
             return(matrix(pwm.theor - pwm.empir, ncol = 3))
         }
         theta0 <- c(kappa0, sigma0, xi0)
-        res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(1e-04, 1e-04, 10^(-6)), upper = c(Inf, Inf, 0.99), vcov = "iid")
+        res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(1e-04, 1e-04, 1e-6), upper = c(Inf, Inf, 0.99), vcov = "iid")
         thetahat <- res$coefficients
         names(thetahat) <- c("kappa", "sigma", "xi")
         return(thetahat)
@@ -829,7 +874,7 @@ extgp.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sig
             return(matrix(pwm.theor - pwm.empir, ncol = 3))
         }
         theta0 <- c(delta0, sigma0, xi0)
-        res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(1e-04, 1e-04, 10^(-6)), upper = c(100, Inf, 0.99), vcov = "iid")
+        res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(1e-04, 1e-04, 1e-6), upper = c(100, Inf, 0.99), vcov = "iid")
         thetahat <- res$coefficients
         names(thetahat) <- c("delta", "sigma", "xi")
         return(thetahat)
@@ -841,7 +886,8 @@ extgp.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sig
             return(matrix(pwm.theor - pwm.empir, ncol = 4))
         }
         theta0 <- c(kappa0, delta0, sigma0, xi0)
-        res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(1e-04, 1e-04, 1e-04, 10^(-6)), upper = c(Inf, 100, Inf, 0.99),
+        res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(1e-04, 1e-04, 1e-04, 1e-6),
+                        upper = c(Inf, 100, Inf, 0.99),
             vcov = "iid")
         thetahat <- res$coefficients
         names(thetahat) <- c("kappa", "delta", "sigma", "xi")
@@ -873,7 +919,7 @@ extgp.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sig
         theta0 <- c(prob0, kappa0, Ddelta0, sigma0, xi0)
         names(theta0) <- c("prob", "kappa", "Ddelta", "sigma", "xi")
         # print(theta0)
-        res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(0, 1e-04, 0, 1e-04, 10^(-6)), upper = c(1, Inf, Inf, Inf, 0.99),
+        res <- gmm::gmm(fct, x, theta0, optfct = "nlminb", lower = c(0, 1e-04, 0, 1e-04, 1e-6), upper = c(1, Inf, Inf, Inf, 0.99),
             vcov = "iid")
         thetahat <- res$coefficients
         thetahat[3] <- thetahat[2] + thetahat[3]
@@ -884,7 +930,7 @@ extgp.fit.pwm <- function(x, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sig
 
 
 extgp.fit.pwm.boot <- function(data, i, type = 1, prob0 = NA, kappa0 = NA, delta0 = NA, sigma0 = NA, xi0 = NA, censoring = c(0, Inf),
-    empiric = FALSE, unifsamp = NULL, NbSamples = 10^4) {
+    empiric = FALSE, unifsamp = NULL, NbSamples = 1e4) {
     return(extgp.fit.pwm(data[i], type = type, prob0 = prob0, kappa0 = kappa0, delta0 = delta0, sigma0 = sigma0, xi0 = xi0, censoring = censoring,
         empiric = empiric, unifsamp = unifsamp, NbSamples = NbSamples))
 }
@@ -897,7 +943,7 @@ extgp.nll <- function(theta, x, censoring, rounded, type) {
     x.cens2 <- x[x > censoring[2]]
     x.not.cens <- x[x >= censoring[1] & x <= censoring[2]]
     if (type == 0) {
-        if (theta[1] <= 0 | theta[2] <= 10^(-6) | theta[2] > 0.99) {
+        if (theta[1] <= 0 | theta[2] <= 1e-6 | theta[2] > 0.99) {
             return(Inf)
         } else {
             censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], sigma = theta[1], xi = theta[2], type = 0), 0)
@@ -911,7 +957,7 @@ extgp.nll <- function(theta, x, censoring, rounded, type) {
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
         }
     } else if (type == 1) {
-        if (theta[1] <= 0 | theta[2] <= 0 | theta[3] <= 10^(-6) | theta[3] > 0.99) {
+        if (theta[1] <= 0 | theta[2] <= 0 | theta[3] <= 1e-6 | theta[3] > 0.99) {
             return(Inf)
         } else {
             censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], kappa = theta[1], sigma = theta[2], xi = theta[3], type = 1),
@@ -927,7 +973,7 @@ extgp.nll <- function(theta, x, censoring, rounded, type) {
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
         }
     } else if (type == 2) {
-        if (theta[1] <= 0 | theta[1] > 100 | theta[2] <= 0 | theta[3] <= 10^(-6) | theta[3] > 0.99) {
+        if (theta[1] <= 0 | theta[1] > 100 | theta[2] <= 0 | theta[3] <= 1e-6 | theta[3] > 0.99) {
             return(Inf)
         } else {
             censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], delta = theta[1], sigma = theta[2], xi = theta[3], type = 2),
@@ -943,7 +989,7 @@ extgp.nll <- function(theta, x, censoring, rounded, type) {
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
         }
     } else if (type == 3) {
-        if (theta[1] <= 0 | theta[2] <= 0 | theta[2] > 100 | theta[3] <= 0 | theta[4] <= 10^(-6) | theta[4] > 0.99) {
+        if (theta[1] <= 0 | theta[2] <= 0 | theta[2] > 100 | theta[3] <= 0 | theta[4] <= 1e-6 | theta[4] > 0.99) {
             return(Inf)
         } else {
             censor1 <- ifelse(censoring[1] > 0, pextgp(censoring[1], kappa = theta[1], delta = theta[2], sigma = theta[3], xi = theta[4],
@@ -960,7 +1006,7 @@ extgp.nll <- function(theta, x, censoring, rounded, type) {
             return(-(contrib.cens1 + contrib.not.cens + contrib.cens2))
         }
     } else if (type == 4) {
-        if (theta[1] < 0 | theta[1] > 1 | theta[2] <= 0 | theta[3] <= 0 | theta[4] <= 0 | theta[5] <= 10^(-6) | theta[5] > 0.99 |
+        if (theta[1] < 0 | theta[1] > 1 | theta[2] <= 0 | theta[3] <= 0 | theta[4] <= 0 | theta[5] <= 1e-6 | theta[5] > 0.99 |
             theta[3] < theta[2]) {
             return(Inf)
         } else {

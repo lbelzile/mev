@@ -24,7 +24,7 @@ egp2.fit(
 
 \item{method}{string; either \code{'mle'} for maximum likelihood, or \code{'pwm'} for probability weighted moments, or both.}
 
-\item{init}{vector of initial values, comprising of \eqn{p}, \eqn{\kappa}, \eqn{\delta},\eqn{\sigma},\eqn{\xi} (in that order) for the optimization. All parameters may not appear depending on \code{model}.}
+\item{init}{vector of initial values, comprising of \eqn{p}, \eqn{\kappa}, \eqn{\delta}, \eqn{\sigma}, \eqn{\xi} (in that order) for the optimization. All parameters may not appear depending on \code{model}.}
 
 \item{censoring}{numeric vector of length 2 containing the lower and upper bound for censoring; \code{censoring=c(0,Inf)} is equivalent to no censoring.}
 
