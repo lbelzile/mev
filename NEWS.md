@@ -4,6 +4,7 @@
 ## New:
 
 * Pickand's U-statistic estimator of the shape
+* New datasets: Newlyn wave height, pandemics, nutrients
 
 ## Fixes:
 

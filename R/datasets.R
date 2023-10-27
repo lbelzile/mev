@@ -191,3 +191,22 @@ NULL
 #' @name nutrients
 #' @note These data are subject to a data user agreement, available at \url{https://www.cdc.gov/nchs/data_access/restrictions.htm}
 "nutrients"
+
+
+#' Deaths from pandemics
+#'
+#' The data base contains estimated records from pandemics. 
+#' @format A data frame with 72 rows and 8 variables:
+#' \describe{
+#'   \item{\code{event}}{name of the event}
+#'   \item{\code{startyear}}{start year of the event}
+#'   \item{\code{endyear}}{end year of the event}
+#'   \item{\code{lower}}{lower bound on estimated deaths (in thousands)}
+#'   \item{\code{average}}{average estimated deaths (in thousands)}
+#'   \item{\code{upper}}{upper bound on estimated deaths (in thousands)}
+#'   \item{\code{saverage}}{scaled average of estimated deaths (in thousands)}
+#'   \item{\code{population}}{estimated population at risk (in thousands)} 
+#'}
+#' @name pandemics
+#' @source Cirillo, P. and N.N. Taleb (2020). \emph{Tail risk of contagious diseases}. Nat. Phys. \bold{16}, 606–613 (2020). \url{https://doi.org/10.1038/s41567-020-0921-x}
+"pandemics"
