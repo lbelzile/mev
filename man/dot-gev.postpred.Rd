@@ -14,8 +14,9 @@
 \item{Nyr}{number of years to extrapolate}
 
 \item{type}{string indicating whether to return the posterior \code{density} or the \code{quantile}.}
-
-\item{vector}{of values for the posterior predictive density or quantile at x}
+}
+\value{
+a vector of values for the posterior predictive density or quantile at \code{x}, depending on the value of \code{type}
 }
 \description{
 This function calculates the posterior predictive density at points x

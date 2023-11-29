@@ -22,8 +22,8 @@
 a list with the same components as \code{\link{fit.gpd}},
 in addition to
 \itemize{
-\item{\code{estimate}:}{optimal bias-robust estimates of the \code{scale} and \code{shape} parameters.}
-\item{\code{weights}:}{vector of OBRE weights.}
+\item \code{estimate}: optimal bias-robust estimates of the \code{scale} and \code{shape} parameters.
+\item \code{weights}: vector of OBRE weights.
 }
 }
 \description{

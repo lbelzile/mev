@@ -865,7 +865,7 @@ namespace mev {
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix _rmevA1(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+    inline NumericMatrix _rmevA1(int n, int d, NumericVector par, int model, NumericMatrix Sigma, arma::mat loc) {
         typedef SEXP(*Ptr__rmevA1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr__rmevA1 p__rmevA1 = NULL;
         if (p__rmevA1 == NULL) {
@@ -875,7 +875,7 @@ namespace mev {
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rmevA1(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
+            rcpp_result_gen = p__rmevA1(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(par)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -886,7 +886,7 @@ namespace mev {
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix _rmevA2(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+    inline NumericMatrix _rmevA2(int n, int d, NumericVector par, int model, NumericMatrix Sigma, arma::mat loc) {
         typedef SEXP(*Ptr__rmevA2)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr__rmevA2 p__rmevA2 = NULL;
         if (p__rmevA2 == NULL) {
@@ -896,7 +896,7 @@ namespace mev {
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rmevA2(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
+            rcpp_result_gen = p__rmevA2(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(par)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -907,7 +907,7 @@ namespace mev {
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix _rmevspec_cpp(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+    inline NumericMatrix _rmevspec_cpp(int n, int d, NumericVector par, int model, NumericMatrix Sigma, arma::mat loc) {
         typedef SEXP(*Ptr__rmevspec_cpp)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr__rmevspec_cpp p__rmevspec_cpp = NULL;
         if (p__rmevspec_cpp == NULL) {
@@ -917,7 +917,7 @@ namespace mev {
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rmevspec_cpp(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
+            rcpp_result_gen = p__rmevspec_cpp(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(par)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -928,7 +928,7 @@ namespace mev {
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix _rmevasy(int n, int d, NumericVector para, LogicalMatrix asym, IntegerVector ncompo, NumericMatrix Sigma, int model) {
+    inline NumericMatrix _rmevasy(int n, int d, NumericVector par, LogicalMatrix asym, IntegerVector ncompo, NumericMatrix Sigma, int model) {
         typedef SEXP(*Ptr__rmevasy)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr__rmevasy p__rmevasy = NULL;
         if (p__rmevasy == NULL) {
@@ -938,7 +938,7 @@ namespace mev {
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rmevasy(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(asym)), Shield<SEXP>(Rcpp::wrap(ncompo)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(model)));
+            rcpp_result_gen = p__rmevasy(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(par)), Shield<SEXP>(Rcpp::wrap(asym)), Shield<SEXP>(Rcpp::wrap(ncompo)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(model)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -949,7 +949,7 @@ namespace mev {
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix _rPsite(int n, int j, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc) {
+    inline NumericMatrix _rPsite(int n, int j, int d, NumericVector par, int model, NumericMatrix Sigma, arma::mat loc) {
         typedef SEXP(*Ptr__rPsite)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr__rPsite p__rPsite = NULL;
         if (p__rPsite == NULL) {
@@ -959,7 +959,7 @@ namespace mev {
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__rPsite(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(j)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(para)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
+            rcpp_result_gen = p__rPsite(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(j)), Shield<SEXP>(Rcpp::wrap(d)), Shield<SEXP>(Rcpp::wrap(par)), Shield<SEXP>(Rcpp::wrap(model)), Shield<SEXP>(Rcpp::wrap(Sigma)), Shield<SEXP>(Rcpp::wrap(loc)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

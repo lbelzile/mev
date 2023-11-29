@@ -25,11 +25,11 @@
 #' @param ci level of symmetric confidence interval. Default to 0.95
 #' @return an invisible list with components
 #' \itemize{
-#' \item{\code{thresh}}{scalar threshold minimizing criterion}
-#' \item{\code{cthresh}}{vector of candidate thresholds}
-#' \item{\code{metric}}{value of the metric criterion evaluated at each threshold}
-#' \item{\code{type}}{argument \code{type}}
-#' \item{\code{dist}}{argument \code{dist}}
+#' \item \code{thresh}: scalar threshold minimizing criterion
+#' \item \code{cthresh}: vector of candidate thresholds
+#' \item \code{metric}: value of the metric criterion evaluated at each threshold
+#' \item \code{type}: argument \code{type}
+#' \item \code{dist}: argument \code{dist}
 #' }
 #' @export
 #' @references Varty, Z. and J.A. Tawn and P.M. Atkinson and S. Bierman (2021+), Inference for extreme earthquake magnitudes accounting for a time-varying measurement process

@@ -4,12 +4,14 @@
 \alias{.rmevspec_cpp}
 \title{Random sampling from spectral distribution on l1 sphere}
 \usage{
-.rmevspec_cpp(n, d, para, model, Sigma, loc)
+.rmevspec_cpp(n, d, par, model, Sigma, loc)
 }
 \arguments{
 \item{n}{sample size}
 
 \item{d}{dimension of the multivariate distribution}
+
+\item{par}{a vector of parameters}
 
 \item{model}{integer, currently ranging from 1 to 9, corresponding respectively to
 (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
@@ -19,8 +21,6 @@
 of squared coefficients \eqn{\lambda^2} for Husler-Reiss. Default for compatibility}
 
 \item{loc}{matrix of locations for the Smith model}
-
-\item{param}{a vector of parameters}
 }
 \value{
 a \code{n} by \code{d} matrix containing the sample

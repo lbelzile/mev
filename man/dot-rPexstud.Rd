@@ -8,13 +8,13 @@
 .rPexstud(index, cholesky, sigma, al)
 }
 \arguments{
-\item{index}{index of the location. An integer in {0, ..., \eqn{d-1}}}
+\item{index}{index of the location. An integer in 0, ..., \eqn{d-1}}
 
 \item{cholesky}{Cholesky root of transformed correlation matrix}
 
-\item{al}{the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1}
+\item{sigma}{a positive semi-definite correlation matrix}
 
-\item{Sigma}{a positive semi-definite correlation matrix}
+\item{al}{the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1}
 }
 \value{
 a \code{d}-vector from \eqn{P_x}

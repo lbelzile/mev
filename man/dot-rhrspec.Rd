@@ -8,8 +8,6 @@
 }
 \arguments{
 \item{Lambda}{an symmetric square matrix of coefficients \eqn{\lambda^2}}
-
-\item{index}{index of the location. An integer in {0, ..., \eqn{d-1}}}
 }
 \value{
 an \code{n} by \code{d} sample from the spectral distribution

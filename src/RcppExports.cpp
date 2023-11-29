@@ -1473,25 +1473,25 @@ RcppExport SEXP _mev_rwexpbsspec(SEXP nSEXP, SEXP dSEXP, SEXP alphaSEXP, SEXP be
     return rcpp_result_gen;
 }
 // rmevA1
-NumericMatrix rmevA1(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc);
-static SEXP _mev_rmevA1_try(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+NumericMatrix rmevA1(int n, int d, NumericVector par, int model, NumericMatrix Sigma, arma::mat loc);
+static SEXP _mev_rmevA1_try(SEXP nSEXP, SEXP dSEXP, SEXP parSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type par(parSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type loc(locSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmevA1(n, d, para, model, Sigma, loc));
+    rcpp_result_gen = Rcpp::wrap(rmevA1(n, d, par, model, Sigma, loc));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _mev_rmevA1(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+RcppExport SEXP _mev_rmevA1(SEXP nSEXP, SEXP dSEXP, SEXP parSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_mev_rmevA1_try(nSEXP, dSEXP, paraSEXP, modelSEXP, SigmaSEXP, locSEXP));
+        rcpp_result_gen = PROTECT(_mev_rmevA1_try(nSEXP, dSEXP, parSEXP, modelSEXP, SigmaSEXP, locSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -1512,25 +1512,25 @@ RcppExport SEXP _mev_rmevA1(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEX
     return rcpp_result_gen;
 }
 // rmevA2
-NumericMatrix rmevA2(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc);
-static SEXP _mev_rmevA2_try(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+NumericMatrix rmevA2(int n, int d, NumericVector par, int model, NumericMatrix Sigma, arma::mat loc);
+static SEXP _mev_rmevA2_try(SEXP nSEXP, SEXP dSEXP, SEXP parSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type par(parSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type loc(locSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmevA2(n, d, para, model, Sigma, loc));
+    rcpp_result_gen = Rcpp::wrap(rmevA2(n, d, par, model, Sigma, loc));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _mev_rmevA2(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+RcppExport SEXP _mev_rmevA2(SEXP nSEXP, SEXP dSEXP, SEXP parSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_mev_rmevA2_try(nSEXP, dSEXP, paraSEXP, modelSEXP, SigmaSEXP, locSEXP));
+        rcpp_result_gen = PROTECT(_mev_rmevA2_try(nSEXP, dSEXP, parSEXP, modelSEXP, SigmaSEXP, locSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -1551,25 +1551,25 @@ RcppExport SEXP _mev_rmevA2(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEX
     return rcpp_result_gen;
 }
 // rmevspec_cpp
-NumericMatrix rmevspec_cpp(int n, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc);
-static SEXP _mev_rmevspec_cpp_try(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+NumericMatrix rmevspec_cpp(int n, int d, NumericVector par, int model, NumericMatrix Sigma, arma::mat loc);
+static SEXP _mev_rmevspec_cpp_try(SEXP nSEXP, SEXP dSEXP, SEXP parSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type par(parSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type loc(locSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmevspec_cpp(n, d, para, model, Sigma, loc));
+    rcpp_result_gen = Rcpp::wrap(rmevspec_cpp(n, d, par, model, Sigma, loc));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _mev_rmevspec_cpp(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+RcppExport SEXP _mev_rmevspec_cpp(SEXP nSEXP, SEXP dSEXP, SEXP parSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_mev_rmevspec_cpp_try(nSEXP, dSEXP, paraSEXP, modelSEXP, SigmaSEXP, locSEXP));
+        rcpp_result_gen = PROTECT(_mev_rmevspec_cpp_try(nSEXP, dSEXP, parSEXP, modelSEXP, SigmaSEXP, locSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -1590,26 +1590,26 @@ RcppExport SEXP _mev_rmevspec_cpp(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP mo
     return rcpp_result_gen;
 }
 // rmevasy
-NumericMatrix rmevasy(int n, int d, NumericVector para, LogicalMatrix asym, IntegerVector ncompo, NumericMatrix Sigma, int model);
-static SEXP _mev_rmevasy_try(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP asymSEXP, SEXP ncompoSEXP, SEXP SigmaSEXP, SEXP modelSEXP) {
+NumericMatrix rmevasy(int n, int d, NumericVector par, LogicalMatrix asym, IntegerVector ncompo, NumericMatrix Sigma, int model);
+static SEXP _mev_rmevasy_try(SEXP nSEXP, SEXP dSEXP, SEXP parSEXP, SEXP asymSEXP, SEXP ncompoSEXP, SEXP SigmaSEXP, SEXP modelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type par(parSEXP);
     Rcpp::traits::input_parameter< LogicalMatrix >::type asym(asymSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type ncompo(ncompoSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmevasy(n, d, para, asym, ncompo, Sigma, model));
+    rcpp_result_gen = Rcpp::wrap(rmevasy(n, d, par, asym, ncompo, Sigma, model));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _mev_rmevasy(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP asymSEXP, SEXP ncompoSEXP, SEXP SigmaSEXP, SEXP modelSEXP) {
+RcppExport SEXP _mev_rmevasy(SEXP nSEXP, SEXP dSEXP, SEXP parSEXP, SEXP asymSEXP, SEXP ncompoSEXP, SEXP SigmaSEXP, SEXP modelSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_mev_rmevasy_try(nSEXP, dSEXP, paraSEXP, asymSEXP, ncompoSEXP, SigmaSEXP, modelSEXP));
+        rcpp_result_gen = PROTECT(_mev_rmevasy_try(nSEXP, dSEXP, parSEXP, asymSEXP, ncompoSEXP, SigmaSEXP, modelSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -1630,26 +1630,26 @@ RcppExport SEXP _mev_rmevasy(SEXP nSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP asymSEX
     return rcpp_result_gen;
 }
 // rPsite
-NumericMatrix rPsite(int n, int j, int d, NumericVector para, int model, NumericMatrix Sigma, arma::mat loc);
-static SEXP _mev_rPsite_try(SEXP nSEXP, SEXP jSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+NumericMatrix rPsite(int n, int j, int d, NumericVector par, int model, NumericMatrix Sigma, arma::mat loc);
+static SEXP _mev_rPsite_try(SEXP nSEXP, SEXP jSEXP, SEXP dSEXP, SEXP parSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type j(jSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type para(paraSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type par(parSEXP);
     Rcpp::traits::input_parameter< int >::type model(modelSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Sigma(SigmaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type loc(locSEXP);
-    rcpp_result_gen = Rcpp::wrap(rPsite(n, j, d, para, model, Sigma, loc));
+    rcpp_result_gen = Rcpp::wrap(rPsite(n, j, d, par, model, Sigma, loc));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _mev_rPsite(SEXP nSEXP, SEXP jSEXP, SEXP dSEXP, SEXP paraSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
+RcppExport SEXP _mev_rPsite(SEXP nSEXP, SEXP jSEXP, SEXP dSEXP, SEXP parSEXP, SEXP modelSEXP, SEXP SigmaSEXP, SEXP locSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_mev_rPsite_try(nSEXP, jSEXP, dSEXP, paraSEXP, modelSEXP, SigmaSEXP, locSEXP));
+        rcpp_result_gen = PROTECT(_mev_rPsite_try(nSEXP, jSEXP, dSEXP, parSEXP, modelSEXP, SigmaSEXP, locSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {

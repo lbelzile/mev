@@ -34,13 +34,13 @@ gevr.dphi(par, dat, p, V)}
 \section{Functions}{
 
 \itemize{
-\item{\code{gevr.ll}:} {log likelihood}
-\item{\code{gevr.ll.optim}:} {negative log likelihood parametrized in terms of return levels, \code{log(scale)} and shape in order to perform unconstrained optimization}
-\item{\code{gevr.score}:} {score vector}
-\item{\code{gevr.infomat}:} {observed information matrix}
-\item{\code{gevr.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-\item{\code{gevr.phi}:} {canonical parameter in the local exponential family approximation}
-\item{\code{gevr.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+\item \code{gevr.ll}: log likelihood
+\item \code{gevr.ll.optim}: negative log likelihood parametrized in terms of return levels, \code{log(scale)} and shape in order to perform unconstrained optimization
+\item \code{gevr.score}: score vector
+\item \code{gevr.infomat}: observed information matrix
+\item \code{gevr.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+\item \code{gevr.phi}: canonical parameter in the local exponential family approximation
+\item \code{gevr.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 }
 }
 

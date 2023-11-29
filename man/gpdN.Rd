@@ -39,12 +39,12 @@ gpdN.dphi(par, dat, N, V)}
 
 
 \itemize{
-\item{\code{gpdN.ll}:} {log likelihood}
-\item{\code{gpdN.score}:} {score vector}
-\item{\code{gpdN.infomat}:} {observed information matrix for GP parametrized in terms of mean of the maximum of \code{N} exceedances and shape}
-\item{\code{gpdN.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-\item{\code{gpdN.phi}:} {canonical parameter in the local exponential family approximation}
-\item{\code{gpdN.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+\item \code{gpdN.ll}: log likelihood
+\item \code{gpdN.score}: score vector
+\item \code{gpdN.infomat}: observed information matrix for GP parametrized in terms of mean of the maximum of \code{N} exceedances and shape
+\item \code{gpdN.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+\item \code{gpdN.phi}: canonical parameter in the local exponential family approximation
+\item \code{gpdN.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 }
 }
 

@@ -7,11 +7,11 @@
 .rexstudspec(n, sigma, al)
 }
 \arguments{
+\item{sigma}{a positive semi-definite covariance matrix with unit variance}
+
 \item{al}{the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1}
 
-\item{index}{index of the location. An integer in {0, ..., \eqn{d-1}}}
-
-\item{Sigma}{a positive semi-definite covariance matrix with unit variance}
+\item{index}{index of the location. An integer in 0, ..., \eqn{d-1}}
 }
 \value{
 an \code{n} by \code{d} sample from the spectral distribution

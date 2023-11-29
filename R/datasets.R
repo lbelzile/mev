@@ -11,13 +11,13 @@
 #' @format A data frame with 17209 observations and 8 variables:
 #' \describe{
 #' \item{\code{date}}{date of measurement}
-#' \item\code{S1}}{wind speed (in km/h) at Cap Cépet}
-#' \item\code{S2}}{wind speed (in km/h) at Lyon Saint-Exupéry}
-#' \item\code{S3}}{wind speed (in km/h) at Marseille Marignane}
-#' \item\code{S4}}{wind speed (in km/h) at Montélimar}
-#' \item\code{H2}}{humidity (in percentage) at Lyon Saint-Exupéry}
-#' \item\code{T2}}{mean temperature (in degree Celcius) at Lyon Saint-Exupéry}
-#'
+#' \item{\code{S1}}{wind speed (in km/h) at Cap Cépet}
+#' \item{\code{S2}}{wind speed (in km/h) at Lyon Saint-Exupéry}
+#' \item{\code{S3}}{wind speed (in km/h) at Marseille Marignane}
+#' \item{\code{S4}}{wind speed (in km/h) at Montélimar}
+#' \item{\code{H2}}{humidity (in percentage) at Lyon Saint-Exupéry}
+#' \item{\code{T2}}{mean temperature (in degree Celcius) at Lyon Saint-Exupéry}
+#' }
 #' The \code{metadata} attribute includes latitude and longitude (in degrees, minutes, seconds), altitude (in m), station name and station id.
 #' @examples
 #' data(frwind, package = "mev")
@@ -195,7 +195,7 @@ NULL
 
 #' Deaths from pandemics
 #'
-#' The data base contains estimated records from pandemics. 
+#' The data base contains estimated records of the number of deaths from pandemics. 
 #' @format A data frame with 72 rows and 8 variables:
 #' \describe{
 #'   \item{\code{event}}{name of the event}
@@ -206,7 +206,7 @@ NULL
 #'   \item{\code{upper}}{upper bound on estimated deaths (in thousands)}
 #'   \item{\code{saverage}}{scaled average of estimated deaths (in thousands)}
 #'   \item{\code{population}}{estimated population at risk (in thousands)} 
-#'}
+#' }
 #' @name pandemics
 #' @source Cirillo, P. and N.N. Taleb (2020). \emph{Tail risk of contagious diseases}. Nat. Phys. \bold{16}, 606–613 (2020). \url{https://doi.org/10.1038/s41567-020-0921-x}
 "pandemics"

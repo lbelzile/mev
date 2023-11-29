@@ -4,20 +4,20 @@
 \alias{.rmevasy}
 \title{Random samples from asymmetric logistic distribution}
 \usage{
-.rmevasy(n, d, para, asym, ncompo, Sigma, model)
+.rmevasy(n, d, par, asym, ncompo, Sigma, model)
 }
 \arguments{
 \item{n}{sample size}
 
 \item{d}{dimension of the multivariate distribution}
 
+\item{par}{a vector of parameters}
+
 \item{asym}{matrix of bool indicating which component belong to the corresponding row logistic model}
 
 \item{ncompo}{number of components for the (negative) logistic in row}
 
 \item{Sigma}{matrix of asymmetry parameters}
-
-\item{param}{a vector of parameters}
 }
 \value{
 a \code{n} by \code{d} matrix containing the sample

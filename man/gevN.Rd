@@ -33,12 +33,12 @@ gevN.dphi(par, dat, N, q = 0.5, qty = c('mean', 'quantile'), V)}
 \section{Functions}{
 
 \itemize{
-\item{\code{gevN.ll}:} {log likelihood}
-\item{\code{gevN.score}:} {score vector}
-\item{\code{gevN.infomat}:} {expected and observed information matrix}
-\item{\code{gevN.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-\item{\code{gevN.phi}:} {canonical parameter in the local exponential family approximation}
-\item{\code{gevN.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+\item \code{gevN.ll}: log likelihood
+\item \code{gevN.score}: score vector
+\item \code{gevN.infomat}: expected and observed information matrix
+\item \code{gevN.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+\item \code{gevN.phi}: canonical parameter in the local exponential family approximation
+\item \code{gevN.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 }
 }
 

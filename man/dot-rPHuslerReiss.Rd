@@ -8,7 +8,7 @@
 .rPHuslerReiss(index, cholesky, Sigma)
 }
 \arguments{
-\item{index}{index of the location. An integer in {0, ..., \eqn{d-1}}}
+\item{index}{index of the location. An integer in 0, ..., \eqn{d-1}}
 
 \item{cholesky}{the Cholesky root of \code{Sigma}}
 

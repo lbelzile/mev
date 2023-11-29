@@ -3,6 +3,19 @@
 #' Estimators proposed by Krupskii and Joe under second order expansion
 #' for the coefficient of tail dependence \eqn{\eta} and the
 #' joint tail orthant probability
+#' 
+#' @param data a matrix of observations
+#' @param q vector of quantile levels
+#' @param ptail tail probability smaller than \code{q}. Default to \code{NULL}
+#' @param mqu marginal quantile levels for semiparametric estimation; data above this are modelled using a generalized Pareto distribution. If missing, empirical estimation is used throughout
+#' @param ties.method method for ties
+#' @param type integer indicating the estimator type
+#' @return a list with elements
+#' \itemize{
+#' \item \code{p} probability
+#' \item \code{eta} estimated coefficient of tail dependence \eqn{\eta}
+#' \item \code{eta_sd} estimated standard error of \eqn{\eta}
+#' }
 #' @examples
 #' rho <- runif(1, -1, 1)
 #' d <- 2

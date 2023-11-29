@@ -1,8 +1,7 @@
 Package: mev
 Type: Package
 Title: Modelling of Extreme Values
-Version: 1.15.4
-Date: 2023-10-27
+Version: 1.15.5
 Authors@R: c(person(given="Leo", family="Belzile", role = c("aut", "cre"), email = "belzilel@gmail.com", comment = c(ORCID = "0000-0002-9135-014X")), person(given="Jennifer L.", family="Wadsworth", role=c("aut")), person(given="Paul J.", family="Northrop", role=c("aut")), person(given="Scott D.", family="Grimshaw", role=c("aut")), person(given="Jin", family="Zhang", role=c("ctb")), person(given="Michael A.", family="Stephens", role=c("ctb")), person(given="Art B.", family="Owen", role=c("ctb")), person(given="Raphael", family="Huser", role=c("aut")))
 Description: Various tools for the analysis of univariate, multivariate and functional extremes. Exact simulation from max-stable processes [Dombry, Engelke and Oesting (2016) <doi:10.1093/biomet/asw008>, R-Pareto processes for various parametric models, including Brown-Resnick (Wadsworth and Tawn, 2014, <doi:10.1093/biomet/ast042>) and Extremal Student (Thibaud and Opitz, 2015, <doi:10.1093/biomet/asv045>). Threshold selection methods, including Wadsworth (2016) <doi:10.1080/00401706.2014.998345>, and Northrop and Coleman (2014) <doi:10.1007/s10687-014-0183-z>. Multivariate extreme diagnostics. Estimation and likelihoods for univariate extremes, e.g., Coles (2001) <doi:10.1007/978-1-4471-3675-0>.
 License: GPL-3

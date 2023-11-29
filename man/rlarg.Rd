@@ -29,9 +29,9 @@ rlarg.infomat(par, dat, method = c('obs', 'exp'), nobs = nrow(dat), r = ncol(dat
 
 
 \itemize{
-\item{\code{rlarg.ll}:} {log likelihood}
-\item{\code{rlarg.score}:} {score vector}
-\item{\code{rlarg.infomat}:} {observed or expected information matrix}
+\item \code{rlarg.ll}: log likelihood
+\item \code{rlarg.score}: score vector
+\item \code{rlarg.infomat}: observed or expected information matrix
 }
 }
 

@@ -9,12 +9,12 @@
 \arguments{
 \item{asy}{a list of \eqn{2^d-1} asymmetry components, as in Stephenson bvevd functions}
 
+\item{dep}{vector of \eqn{2^d-d-1} values for the dependence parameter}
+
 \item{d}{dimension of the model}
 
 \item{model, }{either \code{alog} for the asymmetric logistic or \code{aneglog}
 for the asymmetric negative logistic}
-
-\item{vector}{of \eqn{2^d-d-1} values for the dependence parameter}
 }
 \value{
 a matrix of asymmetry components, enumerating all possible \eqn{2^d-1} subsets of

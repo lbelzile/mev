@@ -37,17 +37,17 @@ gpd.dphi(par, dat, V)}
 
 
 \itemize{
-\item{\code{gpd.ll}:} {log likelihood}
-\item{\code{gpd.ll.optim}:} {negative log likelihood parametrized in terms of \code{log(scale)} and shape
-in order to perform unconstrained optimization}
-\item{\code{gpd.score}:} {score vector}
-\item{\code{gpd.infomat}:} {observed or expected information matrix}
-\item{\code{gpd.bias}:} {Cox-Snell first order bias}
-\item{\code{gpd.Fscore}:} {Firth's modified score equation}
-\item{\code{gpd.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-\item{\code{gpd.phi}:} {canonical parameter in the local exponential family approximation}
-\item{\code{gpd.dphi}:} {derivative matrix of the canonical parameter in the local
-exponential family approximation}
+\item \code{gpd.ll}: log likelihood
+\item \code{gpd.ll.optim}: negative log likelihood parametrized in terms of \code{log(scale)} and shape
+in order to perform unconstrained optimization
+\item \code{gpd.score}: score vector
+\item \code{gpd.infomat}: observed or expected information matrix
+\item \code{gpd.bias}: Cox-Snell first order bias
+\item \code{gpd.Fscore}: Firth's modified score equation
+\item \code{gpd.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+\item \code{gpd.phi}: canonical parameter in the local exponential family approximation
+\item \code{gpd.dphi}: derivative matrix of the canonical parameter in the local
+exponential family approximation
 }
 }
 

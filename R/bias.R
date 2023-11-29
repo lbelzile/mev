@@ -609,7 +609,7 @@ gev.bcor <- function(par, dat, corr = c("subtract", "firth"), method = c("obs", 
 #' @param posterior \code{n} by \code{3} matrix of posterior samples
 #' @param Nyr number of years to extrapolate
 #' @param type string indicating whether to return the posterior \code{density} or the \code{quantile}.
-#' @param vector of values for the posterior predictive density or quantile at x
+#' @return a vector of values for the posterior predictive density or quantile at \code{x}, depending on the value of \code{type}
 #' @export
 #' @keywords internal
 .gev.postpred <- function(x, posterior, Nyr = 100, type = c("density", "quantile")) {

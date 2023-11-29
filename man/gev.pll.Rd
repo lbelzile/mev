@@ -41,33 +41,33 @@ gev.pll(
 \value{
 a list with components
 \itemize{
-\item{\code{mle}:} maximum likelihood estimate
-\item{\code{psi.max}:} maximum profile likelihood estimate
-\item{\code{param}:} string indicating the parameter to profile over
-\item{\code{std.error}:} standard error of \code{psi.max}
-\item{\code{psi}:} vector of parameter \eqn{\psi} given in \code{psi}
-\item{\code{pll}:} values of the profile log likelihood at \code{psi}
-\item{\code{maxpll}:} value of maximum profile log likelihood
+\item \code{mle}: maximum likelihood estimate
+\item \code{psi.max}: maximum profile likelihood estimate
+\item \code{param}: string indicating the parameter to profile over
+\item \code{std.error}: standard error of \code{psi.max}
+\item \code{psi}: vector of parameter \eqn{\psi} given in \code{psi}
+\item \code{pll}: values of the profile log likelihood at \code{psi}
+\item \code{maxpll}: value of maximum profile log likelihood
 }
 
 
 In addition, if \code{mod} includes \code{tem}
 \itemize{
-\item{\code{normal}:}{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
-\item{\code{r}:}{values of likelihood root corresponding to \eqn{\psi}}
-\item{\code{q}:}{vector of likelihood modifications}
-\item{\code{rstar}:}{modified likelihood root vector}
-\item{\code{rstar.old}:}{uncorrected modified likelihood root vector}
-\item{\code{tem.psimax}:}{maximum of the tangent exponential model likelihood}
+\item \code{normal}: maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}
+\item \code{r}: values of likelihood root corresponding to \eqn{\psi}
+\item \code{q}: vector of likelihood modifications
+\item \code{rstar}: modified likelihood root vector
+\item \code{rstar.old}: uncorrected modified likelihood root vector
+\item \code{tem.psimax}: maximum of the tangent exponential model likelihood
 }
 In addition, if \code{mod} includes \code{modif}
 \itemize{
-\item{\code{tem.mle}:} maximum of tangent exponential modified profile log likelihood
-\item{\code{tem.profll}:} values of the modified profile log likelihood at \code{psi}
-\item{\code{tem.maxpll}:} value of maximum modified profile log likelihood
-\item{\code{empcov.mle}:} maximum of Severini's empirical covariance modified profile log likelihood
-\item{\code{empcov.profll}:} values of the modified profile log likelihood at \code{psi}
-\item{\code{empcov.maxpll}:} value of maximum modified profile log likelihood
+\item \code{tem.mle}: maximum of tangent exponential modified profile log likelihood
+\item \code{tem.profll}: values of the modified profile log likelihood at \code{psi}
+\item \code{tem.maxpll}: value of maximum modified profile log likelihood
+\item \code{empcov.mle}: maximum of Severini's empirical covariance modified profile log likelihood
+\item \code{empcov.profll}: values of the modified profile log likelihood at \code{psi}
+\item \code{empcov.maxpll}: value of maximum modified profile log likelihood
 }
 }
 \description{

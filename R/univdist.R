@@ -25,17 +25,17 @@
 #' @section Functions:
 #'
 #' \itemize{
-#' \item{\code{gpd.ll}:} {log likelihood}
-#' \item{\code{gpd.ll.optim}:} {negative log likelihood parametrized in terms of \code{log(scale)} and shape
-#' in order to perform unconstrained optimization}
-#' \item{\code{gpd.score}:} {score vector}
-#' \item{\code{gpd.infomat}:} {observed or expected information matrix}
-#' \item{\code{gpd.bias}:} {Cox-Snell first order bias}
-#' \item{\code{gpd.Fscore}:} {Firth's modified score equation}
-#' \item{\code{gpd.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gpd.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gpd.dphi}:} {derivative matrix of the canonical parameter in the local
-#' exponential family approximation}
+#' \item \code{gpd.ll}: log likelihood
+#' \item \code{gpd.ll.optim}: negative log likelihood parametrized in terms of \code{log(scale)} and shape
+#' in order to perform unconstrained optimization
+#' \item \code{gpd.score}: score vector
+#' \item \code{gpd.infomat}: observed or expected information matrix
+#' \item \code{gpd.bias}: Cox-Snell first order bias
+#' \item \code{gpd.Fscore}: Firth's modified score equation
+#' \item \code{gpd.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+#' \item \code{gpd.phi}: canonical parameter in the local exponential family approximation
+#' \item \code{gpd.dphi}: derivative matrix of the canonical parameter in the local
+#' exponential family approximation
 #' }
 #' @references Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
@@ -74,17 +74,17 @@ NULL
 #'
 #' @section Functions:
 #' \itemize{
-#' \item{\code{gev.ll}:} {log likelihood}
-#' \item{\code{gev.ll.optim}:} {negative log likelihood parametrized in terms of location, \code{log(scale)} and shape
-#' in order to perform unconstrained optimization}
-#' \item{\code{gev.score}:} {score vector}
-#' \item{\code{gev.infomat}:} {observed or expected information matrix}
-#' \item{\code{gev.retlev}:} {return level, corresponding to the \eqn{(1-p)}th quantile}
-#' \item{\code{gev.bias}:} {Cox-Snell first order bias}
-#' \item{\code{gev.Fscore}:} {Firth's modified score equation}
-#' \item{\code{gev.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gev.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gev.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+#' \item \code{gev.ll}: log likelihood
+#' \item \code{gev.ll.optim}: negative log likelihood parametrized in terms of location, \code{log(scale)} and shape
+#' in order to perform unconstrained optimization
+#' \item \code{gev.score}: score vector
+#' \item \code{gev.infomat}: observed or expected information matrix
+#' \item \code{gev.retlev}: return level, corresponding to the \eqn{(1-p)}th quantile
+#' \item \code{gev.bias}: Cox-Snell first order bias
+#' \item \code{gev.Fscore}: Firth's modified score equation
+#' \item \code{gev.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+#' \item \code{gev.phi}: canonical parameter in the local exponential family approximation
+#' \item \code{gev.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 #' }
 #' @references Firth, D. (1993). Bias reduction of maximum likelihood estimates, \emph{Biometrika}, \strong{80}(1), 27--38.
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
@@ -499,14 +499,14 @@ gev.dphi <- function(par, dat, V) {
 #' @section Functions:
 #'
 #' \itemize{
-#' \item{\code{gpde.ll}:} {log likelihood}
-#' \item{\code{gpde.ll.optim}:} {negative log likelihood parametrized in terms of log expected
-#' shortfall and shape in order to perform unconstrained optimization}
-#' \item{\code{gpde.score}:} {score vector}
-#' \item{\code{gpde.infomat}:} {observed information matrix for GPD parametrized in terms of rate of expected shortfall and shape}
-#' \item{\code{gpde.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gpde.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gpde.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+#' \item \code{gpde.ll}: log likelihood
+#' \item \code{gpde.ll.optim}: negative log likelihood parametrized in terms of log expected
+#' shortfall and shape in order to perform unconstrained optimization
+#' \item \code{gpde.score}: score vector
+#' \item \code{gpde.infomat}: observed information matrix for GPD parametrized in terms of rate of expected shortfall and shape
+#' \item \code{gpde.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+#' \item \code{gpde.phi}: canonical parameter in the local exponential family approximation
+#' \item \code{gpde.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 #' }
 NULL
 
@@ -539,14 +539,14 @@ NULL
 #' @section Functions:
 #'
 #' \itemize{
-#' \item{\code{gpdr.ll}:} {log likelihood}
-#' \item{\code{gpdr.ll.optim}:} {negative log likelihood parametrized in terms of \code{log(scale)} and shape
-#' in order to perform unconstrained optimization}
-#' \item{\code{gpdr.score}:} {score vector}
-#' \item{\code{gpdr.infomat}:} {observed information matrix for GPD parametrized in terms of rate of \eqn{m}-year return level and shape}
-#' \item{\code{gpdr.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gpdr.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gpdr.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+#' \item \code{gpdr.ll}: log likelihood
+#' \item \code{gpdr.ll.optim}: negative log likelihood parametrized in terms of \code{log(scale)} and shape
+#' in order to perform unconstrained optimization
+#' \item \code{gpdr.score}: score vector
+#' \item \code{gpdr.infomat}: observed information matrix for GPD parametrized in terms of rate of \eqn{m}-year return level and shape
+#' \item \code{gpdr.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+#' \item \code{gpdr.phi}: canonical parameter in the local exponential family approximation
+#' \item \code{gpdr.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 #' }
 NULL
 
@@ -575,13 +575,13 @@ NULL
 #'
 #' @section Functions:
 #' \itemize{
-#' \item{\code{gevr.ll}:} {log likelihood}
-#' \item{\code{gevr.ll.optim}:} {negative log likelihood parametrized in terms of return levels, \code{log(scale)} and shape in order to perform unconstrained optimization}
-#' \item{\code{gevr.score}:} {score vector}
-#' \item{\code{gevr.infomat}:} {observed information matrix}
-#' \item{\code{gevr.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gevr.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gevr.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+#' \item \code{gevr.ll}: log likelihood
+#' \item \code{gevr.ll.optim}: negative log likelihood parametrized in terms of return levels, \code{log(scale)} and shape in order to perform unconstrained optimization
+#' \item \code{gevr.score}: score vector
+#' \item \code{gevr.infomat}: observed information matrix
+#' \item \code{gevr.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+#' \item \code{gevr.phi}: canonical parameter in the local exponential family approximation
+#' \item \code{gevr.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 #' }
 NULL
 
@@ -1296,12 +1296,12 @@ gevr.dphi <- function(par, dat, p, V) {
 #' @section Functions:
 #'
 #' \itemize{
-#' \item{\code{gpdN.ll}:} {log likelihood}
-#' \item{\code{gpdN.score}:} {score vector}
-#' \item{\code{gpdN.infomat}:} {observed information matrix for GP parametrized in terms of mean of the maximum of \code{N} exceedances and shape}
-#' \item{\code{gpdN.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gpdN.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gpdN.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+#' \item \code{gpdN.ll}: log likelihood
+#' \item \code{gpdN.score}: score vector
+#' \item \code{gpdN.infomat}: observed information matrix for GP parametrized in terms of mean of the maximum of \code{N} exceedances and shape
+#' \item \code{gpdN.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+#' \item \code{gpdN.phi}: canonical parameter in the local exponential family approximation
+#' \item \code{gpdN.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 #' }
 NULL
 
@@ -1514,12 +1514,12 @@ gpdN.dphi <- function(par, dat, N, V) {
 #'
 #' @section Functions:
 #' \itemize{
-#' \item{\code{gevN.ll}:} {log likelihood}
-#' \item{\code{gevN.score}:} {score vector}
-#' \item{\code{gevN.infomat}:} {expected and observed information matrix}
-#' \item{\code{gevN.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-#' \item{\code{gevN.phi}:} {canonical parameter in the local exponential family approximation}
-#' \item{\code{gevN.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+#' \item \code{gevN.ll}: log likelihood
+#' \item \code{gevN.score}: score vector
+#' \item \code{gevN.infomat}: expected and observed information matrix
+#' \item \code{gevN.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+#' \item \code{gevN.phi}: canonical parameter in the local exponential family approximation
+#' \item \code{gevN.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 #' }
 NULL
 
@@ -2183,9 +2183,9 @@ rrlarg <- function(n, r, loc = 0, scale = 1, shape = 0){
 #' @section Functions:
 #'
 #' \itemize{
-#' \item{\code{rlarg.ll}:} {log likelihood}
-#' \item{\code{rlarg.score}:} {score vector}
-#' \item{\code{rlarg.infomat}:} {observed or expected information matrix}
+#' \item \code{rlarg.ll}: log likelihood
+#' \item \code{rlarg.score}: score vector
+#' \item \code{rlarg.infomat}: observed or expected information matrix
 #' }
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 #' @references Smith, R.L. (1986).  Extreme value theory based on the r largest annual events, \emph{Journal of Hydrology}, \bold{86}(1-2), 27--43, \code{http://dx.doi.org/10.1016/0022-1694(86)90004-1}.
@@ -2424,9 +2424,9 @@ rlarg.infomat <- function(par, dat, method = c("obs", "exp"), nobs = nrow(dat), 
 #'
 #' @section Functions:
 #'\itemize{
-#' \item{\code{pp.ll}:} {log likelihood}
-#' \item{\code{pp.score}:} {score vector}
-#' \item{\code{pp.infomat}:} {observed or expected information matrix}
+#' \item \code{pp.ll}: log likelihood
+#' \item \code{pp.score}: score vector
+#' \item \code{pp.infomat}: observed or expected information matrix
 #' }
 #' @references Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}, Springer, 209 p.
 #' @references Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.

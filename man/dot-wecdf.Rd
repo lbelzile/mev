@@ -10,8 +10,6 @@
 \item{x}{observations}
 
 \item{w}{weights}
-
-\item{ord}{logical indicating whether x values are already ordered. Default to \code{FALSE}}
 }
 \value{
 a function of class \code{ecdf}

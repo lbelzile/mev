@@ -10,7 +10,7 @@
 \arguments{
 \item{d}{dimension of the 1-sample}
 
-\item{index}{index of the location. An integer in {0, ..., \eqn{d-1}}}
+\item{index}{index of the location. An integer in 0, ..., \eqn{d-1}}
 
 \item{alpha}{a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector}
 }

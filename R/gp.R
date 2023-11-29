@@ -146,7 +146,7 @@
 #' @param show logical; if \code{TRUE} (default), print details of the fit.
 #' @param method optimization method (see \code{\link{optim}} for details).
 #' @param maxit  maximum number of iterations.
-#' @param ...other control parameters for the optimization. These are passed to components of the \code{control} argument of \code{optim}.
+#' @param ... other control parameters for the optimization. These are passed to components of the \code{control} argument of \code{optim}.
 #'
 #' @details  For non-stationary fitting it is recommended that the covariates within the generalized linear models are (at least approximately) centered and scaled (i.e. the columns of \code{ydat} should be approximately centered and scaled).
 #'
@@ -1091,8 +1091,8 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
 #' @return a list with the same components as \code{\link{fit.gpd}},
 #' in addition to
 #' \itemize{
-#' \item{\code{estimate}:}{optimal bias-robust estimates of the \code{scale} and \code{shape} parameters.}
-#' \item{\code{weights}:}{vector of OBRE weights.}
+#' \item \code{estimate}: optimal bias-robust estimates of the \code{scale} and \code{shape} parameters.
+#' \item \code{weights}: vector of OBRE weights.
 #' }
 #' @keywords internal
 #' @importFrom utils head

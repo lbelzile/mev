@@ -48,7 +48,7 @@
 
 \item{maxit}{maximum number of iterations.}
 
-\item{...other}{control parameters for the optimization. These are passed to components of the \code{control} argument of \code{optim}.}
+\item{...}{other control parameters for the optimization. These are passed to components of the \code{control} argument of \code{optim}.}
 }
 \value{
 a list with components

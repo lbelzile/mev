@@ -7,9 +7,9 @@
 tem.corr(fr, print.warning = FALSE)
 }
 \arguments{
-\item{print.warning}{logical; should warning message be printed? Default to \code{FALSE}}
+\item{fr}{an object of class \code{fr}}
 
-\item{fran}{object of class \code{fr}}
+\item{print.warning}{logical; should warning message be printed? Default to \code{FALSE}}
 }
 \value{
 an object of class \code{fr}, containing as additional arguments \code{spline} and a modified \code{rstar} argument.

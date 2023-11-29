@@ -70,9 +70,9 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
 #' @param w vector of unique angles between 0 and 1 at which to evaluate scale empirically.
 #' @return a list with elements
 #' \itemize{
-#' \item{\code{w}: }{angles between zero and one}
-#' \item{\code{g}: }{scale function at a given value of \code{w}}
-#' \item{\code{eta}: }{Ledford and Tawn tail dependence coefficient}
+#' \item \code{w}: angles between zero and one
+#' \item \code{g}: scale function at a given value of \code{w}
+#' \item \code{eta}: Ledford and Tawn tail dependence coefficient
 #' }
 #' @export
 #' @references Ledford, A.W. and J. A. Tawn (1996), Statistics for near independence in multivariate extreme values. \emph{Biometrika}, \bold{83}(1), 169--187.

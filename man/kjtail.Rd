@@ -14,6 +14,27 @@ kjtail(
   ...
 )
 }
+\arguments{
+\item{data}{a matrix of observations}
+
+\item{q}{vector of quantile levels}
+
+\item{ptail}{tail probability smaller than \code{q}. Default to \code{NULL}}
+
+\item{mqu}{marginal quantile levels for semiparametric estimation; data above this are modelled using a generalized Pareto distribution. If missing, empirical estimation is used throughout}
+
+\item{type}{integer indicating the estimator type}
+
+\item{ties.method}{method for ties}
+}
+\value{
+a list with elements
+\itemize{
+\item \code{p} probability
+\item \code{eta} estimated coefficient of tail dependence \eqn{\eta}
+\item \code{eta_sd} estimated standard error of \eqn{\eta}
+}
+}
 \description{
 Estimators proposed by Krupskii and Joe under second order expansion
 for the coefficient of tail dependence \eqn{\eta} and the

@@ -16,9 +16,9 @@ angextrapo(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20))
 \value{
 a list with elements
 \itemize{
-\item{\code{w}: }{angles between zero and one}
-\item{\code{g}: }{scale function at a given value of \code{w}}
-\item{\code{eta}: }{Ledford and Tawn tail dependence coefficient}
+\item \code{w}: angles between zero and one
+\item \code{g}: scale function at a given value of \code{w}
+\item \code{eta}: Ledford and Tawn tail dependence coefficient
 }
 }
 \description{

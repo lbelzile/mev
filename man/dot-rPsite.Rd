@@ -4,12 +4,16 @@
 \alias{.rPsite}
 \title{Samples from exceedances at site (scaled extremal function definition)}
 \usage{
-.rPsite(n, j, d, para, model, Sigma, loc)
+.rPsite(n, j, d, par, model, Sigma, loc)
 }
 \arguments{
 \item{n}{sample size}
 
+\item{j}{index of the site or variable}
+
 \item{d}{dimension of the multivariate distribution}
+
+\item{par}{a vector of parameters}
 
 \item{model}{integer, currently ranging from 1 to 9, corresponding respectively to
 (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
@@ -18,10 +22,6 @@
 \item{Sigma}{covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility}
 
 \item{loc}{matrix of location for Smith model.}
-
-\item{index}{index of the site or variable}
-
-\item{param}{a vector of parameters}
 }
 \value{
 a \code{n} by \code{d} matrix containing the sample

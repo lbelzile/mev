@@ -16,7 +16,7 @@
 #' @param k number of thresholds to consider (if \code{u} unspecified).
 #' @param q1 lowest quantile for the threshold sequence.
 #' @param q2 upper quantile limit for the threshold sequence (\code{q2} itself is not used as a threshold,
-#'  but rather the uppermost threshold will be at the \eqn{(q_2-1/k)}{q2-1/k} quantile).
+#'  but rather the uppermost threshold will be at the \eqn{(q_2-1/k): q2-1/k} quantile).
 #' @param par parameters of the NHPP likelihood. If \code{missing}, the \code{\link[mev]{fit.pp}} routine will be run to obtain values
 #' @param M number of superpositions or 'blocks' / 'years' the process corresponds to (can affect the optimization)
 #' @param nbs number of simulations used to assess the null distribution of the LRT, and produce the p-value
@@ -39,18 +39,18 @@
 #' @author Jennifer L. Wadsworth
 #' @return plots of the requested diagnostics and an invisible list with components
 #' \itemize{
-#' \item{\code{MLE}}{maximum likelihood estimates from all thresholds}
-#' \item{\code{Cov}}{joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{\eta^{-1}}{1/\eta}}.
-#' \item{\code{WN}}{values of the white noise process}
-#' \item{\code{LRT}}{values of the likelihood ratio test statistic vs threshold}
-#' \item{\code{pval}}{\emph{P}-value of the likelihood ratio test}
-#' \item{\code{k}}{final number of thresholds used}
-#' \item{\code{thresh}}{threshold selected by the likelihood ratio procedure}
-#' \item{\code{qthresh}}{quantile level of threshold selected by the likelihood ratio procedure}
-#' \item{\code{cthresh}}{vector of candidate thresholds}
-#' \item{\code{qcthresh}}{quantile level of candidate thresholds}
-#' \item{\code{mle.u}}{maximum likelihood estimates for the selected threshold}
-#' \item{\code{model}}{model fitted}
+#' \item \code{MLE}: maximum likelihood estimates from all thresholds
+#' \item \code{Cov}: joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{1/\eta}.
+#' \item \code{WN}: values of the white noise process
+#' \item \code{LRT}: values of the likelihood ratio test statistic vs threshold
+#' \item \code{pval}: \emph{P}-value of the likelihood ratio test
+#' \item \code{k}: final number of thresholds used
+#' \item \code{thresh}: threshold selected by the likelihood ratio procedure
+#' \item \code{qthresh}: quantile level of threshold selected by the likelihood ratio procedure
+#' \item \code{cthresh}: vector of candidate thresholds
+#' \item \code{qcthresh}: quantile level of candidate thresholds
+#' \item \code{mle.u}: maximum likelihood estimates for the selected threshold
+#' \item \code{model}: model fitted
 #' }
 #'
 #' @examples

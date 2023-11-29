@@ -30,9 +30,9 @@ pp.infomat(par, dat, method = c('obs', 'exp'))}
 \section{Functions}{
 
 \itemize{
-\item{\code{pp.ll}:} {log likelihood}
-\item{\code{pp.score}:} {score vector}
-\item{\code{pp.infomat}:} {observed or expected information matrix}
+\item \code{pp.ll}: log likelihood
+\item \code{pp.score}: score vector
+\item \code{pp.infomat}: observed or expected information matrix
 }
 }
 

@@ -8,7 +8,7 @@
 .rPBrownResnick(index, Sigma_chol, Sigma)
 }
 \arguments{
-\item{index}{index of the location. An integer in {0, ..., \eqn{d-1}}}
+\item{index}{index of the location. An integer in 0, ..., \eqn{d-1}}
 
 \item{Sigma}{a positive definite covariance matrix}
 }

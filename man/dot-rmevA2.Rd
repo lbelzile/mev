@@ -4,12 +4,14 @@
 \alias{.rmevA2}
 \title{Multivariate extreme value distribution sampling algorithm via extremal functions}
 \usage{
-.rmevA2(n, d, para, model, Sigma, loc)
+.rmevA2(n, d, par, model, Sigma, loc)
 }
 \arguments{
 \item{n}{sample size}
 
 \item{d}{dimension of the multivariate distribution}
+
+\item{par}{a vector of parameters}
 
 \item{model}{integer, currently ranging from 1 to 9, corresponding respectively to
 (1) \code{log}, (2) \code{neglog}, (3) \code{dirmix}, (4) \code{bilog},
@@ -18,8 +20,6 @@
 \item{Sigma}{covariance matrix for Brown-Resnick, Smith and extremal student. Default for compatibility}
 
 \item{loc}{matrix of location for Smith model.}
-
-\item{param}{a vector of parameters}
 }
 \value{
 a \code{n} by \code{d} matrix containing the sample

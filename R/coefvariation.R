@@ -17,13 +17,13 @@
 #' @param lazy [logical] compute the bootstrap p-value until the test stops rejecting at level \code{level}? Default to \code{FALSE}
 #' @return a list with elements
 #' \itemize{
-#' \item{thresh}{value of threshold returned by the procedure, \code{NA} if the hypothesis is rejected at all thresholds}
-#' \item{cthresh}{sorted vector of candidate thresholds}
-#' \item{cindex}{index of selected threshold among \code{cthresh} or \code{NA} if none returned}
-#' \item{pval}{bootstrap p-values, with \code{NA} if \code{lazy} and the p-value exceeds level at lower thresholds}
-#' \item{shape}{shape parameter estimates}
-#' \item{nexc}{number of exceedances of each threshold \code{cthresh}}
-#' \item{method}{estimation method for the shape parameter}
+#' \item \code{thresh}: value of threshold returned by the procedure, \code{NA} if the hypothesis is rejected at all thresholds
+#' \item \code{cthresh}: sorted vector of candidate thresholds
+#' \item \code{cindex}: index of selected threshold among \code{cthresh} or \code{NA} if none returned
+#' \item \code{pval}: bootstrap p-values, with \code{NA} if \code{lazy} and the p-value exceeds level at lower thresholds
+#' \item \code{shape}: shape parameter estimates
+#' \item \code{nexc}: number of exceedances of each threshold \code{cthresh}
+#' \item \code{method}: estimation method for the shape parameter
 #' }
 #' @export
 #' @references del Castillo, J. and M. Padilla (2016). \emph{Modelling extreme values by the residual coefficient of variation}, SORT, 40(\bold{2}), pp. 303--320.

@@ -15,8 +15,6 @@ model}
 \item{alpha}{vector of Dirichlet parameters of dimension \code{d}, or \eqn{d+1} vector with the \code{d} Dirichlet parameters and an index of regular variation in \eqn{[0, 1]}}
 
 \item{irv}{should the usual model (\code{FALSE}) or the general scaled version (\code{TRUE}) be used}
-
-\item{rho}{index of regular variation}
 }
 \value{
 an \code{n} by \code{d} sample from the spectral distribution

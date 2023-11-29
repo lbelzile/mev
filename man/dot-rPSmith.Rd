@@ -8,7 +8,7 @@
 .rPSmith(index, Sigma_chol, loc)
 }
 \arguments{
-\item{index}{index of the location. An integer in {0, ..., \eqn{d-1}}}
+\item{index}{index of the location. An integer in 0, ..., \eqn{d-1}}
 
 \item{Sigma_chol}{the Cholesky root of the covariance matrix}
 

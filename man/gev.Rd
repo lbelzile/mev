@@ -37,17 +37,17 @@ gev.dphi(par, dat, V)}
 \section{Functions}{
 
 \itemize{
-\item{\code{gev.ll}:} {log likelihood}
-\item{\code{gev.ll.optim}:} {negative log likelihood parametrized in terms of location, \code{log(scale)} and shape
-in order to perform unconstrained optimization}
-\item{\code{gev.score}:} {score vector}
-\item{\code{gev.infomat}:} {observed or expected information matrix}
-\item{\code{gev.retlev}:} {return level, corresponding to the \eqn{(1-p)}th quantile}
-\item{\code{gev.bias}:} {Cox-Snell first order bias}
-\item{\code{gev.Fscore}:} {Firth's modified score equation}
-\item{\code{gev.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-\item{\code{gev.phi}:} {canonical parameter in the local exponential family approximation}
-\item{\code{gev.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+\item \code{gev.ll}: log likelihood
+\item \code{gev.ll.optim}: negative log likelihood parametrized in terms of location, \code{log(scale)} and shape
+in order to perform unconstrained optimization
+\item \code{gev.score}: score vector
+\item \code{gev.infomat}: observed or expected information matrix
+\item \code{gev.retlev}: return level, corresponding to the \eqn{(1-p)}th quantile
+\item \code{gev.bias}: Cox-Snell first order bias
+\item \code{gev.Fscore}: Firth's modified score equation
+\item \code{gev.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+\item \code{gev.phi}: canonical parameter in the local exponential family approximation
+\item \code{gev.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 }
 }
 

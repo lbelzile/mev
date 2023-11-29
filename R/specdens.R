@@ -184,7 +184,6 @@ angmeas <- function(x, th, Rnorm = c("l1", "l2", "linf"), Anorm = c("l1", "l2", 
 #' Compute an empirical distribution function with weights \code{w} at each of \code{x}
 #' @param x observations
 #' @param w weights
-#' @param ord logical indicating whether x values are already ordered. Default to \code{FALSE}
 #' @return a function of class \code{ecdf}
 #' @keywords internal
 .wecdf <- function(x, w) {

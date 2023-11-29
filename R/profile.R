@@ -601,33 +601,33 @@ plot.eprof <- function(x, ...) {
 #'
 #' @return a list with components
 #' \itemize{
-#' \item{\code{mle}:} maximum likelihood estimate
-#' \item{\code{psi.max}:} maximum profile likelihood estimate
-#' \item{\code{param}:} string indicating the parameter to profile over
-#' \item{\code{std.error}:} standard error of \code{psi.max}
-#' \item{\code{psi}:} vector of parameter \eqn{\psi} given in \code{psi}
-#' \item{\code{pll}:} values of the profile log likelihood at \code{psi}
-#' \item{\code{maxpll}:} value of maximum profile log likelihood
+#' \item \code{mle}: maximum likelihood estimate
+#' \item \code{psi.max}: maximum profile likelihood estimate
+#' \item \code{param}: string indicating the parameter to profile over
+#' \item \code{std.error}: standard error of \code{psi.max}
+#' \item \code{psi}: vector of parameter \eqn{\psi} given in \code{psi}
+#' \item \code{pll}: values of the profile log likelihood at \code{psi}
+#' \item \code{maxpll}: value of maximum profile log likelihood
 #' }
 #'
 #'
 #' In addition, if \code{mod} includes \code{tem}
 #' \itemize{
-#' \item{\code{normal}:}{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
-#' \item{\code{r}:}{values of likelihood root corresponding to \eqn{\psi}}
-#' \item{\code{q}:}{vector of likelihood modifications}
-#' \item{\code{rstar}:}{modified likelihood root vector}
-#' \item{\code{rstar.old}:}{uncorrected modified likelihood root vector}
-#' \item{\code{tem.psimax}:}{maximum of the tangent exponential model likelihood}
+#' \item \code{normal}: maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}
+#' \item \code{r}: values of likelihood root corresponding to \eqn{\psi}
+#' \item \code{q}: vector of likelihood modifications
+#' \item \code{rstar}: modified likelihood root vector
+#' \item \code{rstar.old}: uncorrected modified likelihood root vector
+#' \item \code{tem.psimax}: maximum of the tangent exponential model likelihood
 #' }
 #' In addition, if \code{mod} includes \code{modif}
 #' \itemize{
-#' \item{\code{tem.mle}:} maximum of tangent exponential modified profile log likelihood
-#' \item{\code{tem.profll}:} values of the modified profile log likelihood at \code{psi}
-#' \item{\code{tem.maxpll}:} value of maximum modified profile log likelihood
-#' \item{\code{empcov.mle}:} maximum of Severini's empirical covariance modified profile log likelihood
-#' \item{\code{empcov.profll}:} values of the modified profile log likelihood at \code{psi}
-#' \item{\code{empcov.maxpll}:} value of maximum modified profile log likelihood
+#' \item \code{tem.mle}: maximum of tangent exponential modified profile log likelihood
+#' \item \code{tem.profll}: values of the modified profile log likelihood at \code{psi}
+#' \item \code{tem.maxpll}: value of maximum modified profile log likelihood
+#' \item \code{empcov.mle}: maximum of Severini's empirical covariance modified profile log likelihood
+#' \item \code{empcov.profll}: values of the modified profile log likelihood at \code{psi}
+#' \item \code{empcov.maxpll}: value of maximum modified profile log likelihood
 #' }
 #'
 #' @references Fraser, D. A. S., Reid, N. and Wu, J. (1999), A simple general formula for tail probabilities for frequentist and Bayesian inference. \emph{Biometrika}, \bold{86}(2), 249--264.
@@ -1870,33 +1870,33 @@ gev.pll <-
 #'
 #' @return a list with components
 #' \itemize{
-#' \item{\code{mle}:} maximum likelihood estimate
-#' \item{\code{psi.max}:} maximum profile likelihood estimate
-#' \item{\code{param}:} string indicating the parameter to profile over
-#' \item{\code{std.error}:} standard error of \code{psi.max}
-#' \item{\code{psi}:} vector of parameter \eqn{\psi} given in \code{psi}
-#' \item{\code{pll}:} values of the profile log likelihood at \code{psi}
-#' \item{\code{maxpll}:} value of maximum profile log likelihood
-#' \item{\code{family}:} a string indicating "gpd"
-#' \item{\code{threshold}:} value of the threshold, by default zero
+#' \item \code{mle}: maximum likelihood estimate
+#' \item \code{psi.max}: maximum profile likelihood estimate
+#' \item \code{param}: string indicating the parameter to profile over
+#' \item \code{std.error}: standard error of \code{psi.max}
+#' \item \code{psi}: vector of parameter \eqn{\psi} given in \code{psi}
+#' \item \code{pll}: values of the profile log likelihood at \code{psi}
+#' \item \code{maxpll}: value of maximum profile log likelihood
+#' \item \code{family}: a string indicating "gpd"
+#' \item \code{threshold}: value of the threshold, by default zero
 #' }
 #' In addition, if \code{mod} includes \code{tem}
 #' \itemize{
-#' \item{\code{normal}:}{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
-#' \item{\code{r}:}{values of likelihood root corresponding to \eqn{\psi}}
-#' \item{\code{q}:}{vector of likelihood modifications}
-#' \item{\code{rstar}:}{modified likelihood root vector}
-#' \item{\code{rstar.old}:}{uncorrected modified likelihood root vector}
-#' \item{\code{tem.psimax}:}{maximum of the tangent exponential model likelihood}
+#' \item \code{normal}: maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}
+#' \item \code{r}: values of likelihood root corresponding to \eqn{\psi}
+#' \item \code{q}: vector of likelihood modifications
+#' \item \code{rstar}: modified likelihood root vector
+#' \item \code{rstar.old}: uncorrected modified likelihood root vector
+#' \item \code{tem.psimax}: maximum of the tangent exponential model likelihood
 #' }
 #' In addition, if \code{mod} includes \code{modif}
 #' \itemize{
-#' \item{\code{tem.mle}:} maximum of tangent exponential modified profile log likelihood
-#' \item{\code{tem.profll}:} values of the modified profile log likelihood at \code{psi}
-#' \item{\code{tem.maxpll}:} value of maximum modified profile log likelihood
-#' \item{\code{empcov.mle}:} maximum of Severini's empirical covariance modified profile log likelihood
-#' \item{\code{empcov.profll}:} values of the modified profile log likelihood at \code{psi}
-#' \item{\code{empcov.maxpll}:} value of maximum modified profile log likelihood
+#' \item \code{tem.mle}: maximum of tangent exponential modified profile log likelihood
+#' \item \code{tem.profll}: values of the modified profile log likelihood at \code{psi}
+#' \item \code{tem.maxpll}: value of maximum modified profile log likelihood
+#' \item \code{empcov.mle}: maximum of Severini's empirical covariance modified profile log likelihood
+#' \item \code{empcov.profll}: values of the modified profile log likelihood at \code{psi}
+#' \item \code{empcov.maxpll}: value of maximum modified profile log likelihood
 #' }
 #' @export
 #' @examples
@@ -3624,7 +3624,7 @@ spline.corr <- function(fr, method = c("cobs", "smooth.spline")) {
 #' approach is seemingly superior to that
 #' previously used in \link{spline.corr}.
 #'
-#' @param fran object of class \code{fr}
+#' @param fr an object of class \code{fr}
 #' @param print.warning logical; should warning message be printed? Default to \code{FALSE}
 ##' @return an object of class \code{fr}, containing as additional arguments \code{spline} and a modified \code{rstar} argument.
 #' @keywords internal
@@ -3688,16 +3688,16 @@ tem.corr <- function(fr, print.warning = FALSE) {
 #' @author Leo Belzile
 #' @return an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 #' \itemize{
-#' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
-#' \item{\code{par.hat}: }{maximum likelihood estimates}
-#' \item{\code{par.hat.se}: }{standard errors of maximum likelihood estimates}
-#' \item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{\psi}, \eqn{\hat{\lambda}})}
-#' \item{\code{r}: }{values of likelihood root corresponding to \eqn{\psi}}
-#' \item{\code{psi}: }{vector of interest parameter}
-#' \item{\code{q}: }{vector of likelihood modifications}
-#' \item{\code{rstar}: }{modified likelihood root vector}
-#' \item{\code{rstar.old}: }{uncorrected modified likelihood root vector}
-#' \item{\code{param}: }{parameter}
+#' \item \code{normal}: maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}
+#' \item \code{par.hat}: maximum likelihood estimates
+#' \item \code{par.hat.se}: standard errors of maximum likelihood estimates
+#' \item \code{th.rest}: estimated maximum profile likelihood at (\eqn{\psi}, \eqn{\hat{\lambda}})
+#' \item \code{r}: values of likelihood root corresponding to \eqn{\psi}
+#' \item \code{psi}: vector of interest parameter
+#' \item \code{q}: vector of likelihood modifications
+#' \item \code{rstar}: modified likelihood root vector
+#' \item \code{rstar.old}: uncorrected modified likelihood root vector
+#' \item \code{param}: parameter
 #' }
 #' @export
 #' @examples
@@ -3775,16 +3775,16 @@ gev.tem <-
 #' @author Leo Belzile
 #' @return an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 #' \itemize{
-#' \item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
-#' \item{\code{par.hat}: }{maximum likelihood estimates}
-#' \item{\code{par.hat.se}: }{standard errors of maximum likelihood estimates}
-#' \item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{\psi}, \eqn{\hat{\lambda}})}
-#' \item{\code{r}: }{values of likelihood root corresponding to \eqn{\psi}}
-#' \item{\code{psi}: }{vector of interest parameter}
-#' \item{\code{q}: }{vector of likelihood modifications}
-#' \item{\code{rstar}: }{modified likelihood root vector}
-#' \item{\code{rstar.old}: }{uncorrected modified likelihood root vector}
-#' \item{\code{param}: }{parameter}
+#' \item \code{normal}: maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}
+#' \item \code{par.hat}: maximum likelihood estimates
+#' \item \code{par.hat.se}: standard errors of maximum likelihood estimates
+#' \item \code{th.rest}: estimated maximum profile likelihood at (\eqn{\psi}, \eqn{\hat{\lambda}})
+#' \item \code{r}: values of likelihood root corresponding to \eqn{\psi}
+#' \item \code{psi}: vector of interest parameter
+#' \item \code{q}: vector of likelihood modifications
+#' \item \code{rstar}: modified likelihood root vector
+#' \item \code{rstar.old}: uncorrected modified likelihood root vector
+#' \item \code{param}: parameter
 #' }
 #' @export
 #' @examples

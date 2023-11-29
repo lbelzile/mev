@@ -44,14 +44,14 @@ gpde.dphi(par, dat, V, m)}
 
 
 \itemize{
-\item{\code{gpde.ll}:} {log likelihood}
-\item{\code{gpde.ll.optim}:} {negative log likelihood parametrized in terms of log expected
-shortfall and shape in order to perform unconstrained optimization}
-\item{\code{gpde.score}:} {score vector}
-\item{\code{gpde.infomat}:} {observed information matrix for GPD parametrized in terms of rate of expected shortfall and shape}
-\item{\code{gpde.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-\item{\code{gpde.phi}:} {canonical parameter in the local exponential family approximation}
-\item{\code{gpde.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+\item \code{gpde.ll}: log likelihood
+\item \code{gpde.ll.optim}: negative log likelihood parametrized in terms of log expected
+shortfall and shape in order to perform unconstrained optimization
+\item \code{gpde.score}: score vector
+\item \code{gpde.infomat}: observed information matrix for GPD parametrized in terms of rate of expected shortfall and shape
+\item \code{gpde.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+\item \code{gpde.phi}: canonical parameter in the local exponential family approximation
+\item \code{gpde.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 }
 }
 

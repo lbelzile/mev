@@ -491,12 +491,11 @@ tstab.egp <- function(xdat,
 #' @import stats
 #' @return either a vector, a matrix if either \code{length(m)>1} or \code{length(u)>1} or a list (if \code{returnList}) containing
 #' \itemize{
-#' \item{\code{loc}:} {location parameters (\code{method='bm'})}
-#' \item{\code{scale}:} {scale parameters}
-#' \item{\code{shape}:} {shape parameters}
-#' \item{\code{u:}} {thresholds (if \code{method='pot'})}
-#' \item{\code{u:}} {percentile corresponding to threshold (if \code{method='pot'})}
-#' \item{\code{m:}} {block sizes (if \code{method='bm'})}
+#' \item \code{loc}: location parameters (\code{method='bm'})
+#' \item \code{scale}: scale parameters
+#' \item \code{shape}: shape parameters
+#' \item \code{u}: thresholds (if \code{method='pot'}), percentile corresponding to threshold (if \code{method='pot'})
+#' \item \code{m}: block sizes (if \code{method='bm'})
 #' }
 #' @references Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
 #' @examples

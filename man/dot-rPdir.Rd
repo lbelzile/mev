@@ -11,7 +11,7 @@ Coles and Tawn.}
 \arguments{
 \item{d}{dimension of the 1-sample}
 
-\item{index}{index of the location. An integer in {0, ..., \eqn{d-1}}}
+\item{index}{index of the location. An integer in 0, ..., \eqn{d-1}}
 
 \item{alpha}{a \eqn{d} dimensional vector of positive parameter values for the Dirichlet vector, or
 \eqn{d+1} if the last entry is the index of regular variation of the model, a constant in \code{(0, 1]}}

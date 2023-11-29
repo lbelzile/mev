@@ -44,16 +44,16 @@ gpd.tem(
 \value{
 an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 \itemize{
-\item{\code{normal}: }{maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}}
-\item{\code{par.hat}: }{maximum likelihood estimates}
-\item{\code{par.hat.se}: }{standard errors of maximum likelihood estimates}
-\item{\code{th.rest}: }{estimated maximum profile likelihood at (\eqn{\psi}, \eqn{\hat{\lambda}})}
-\item{\code{r}: }{values of likelihood root corresponding to \eqn{\psi}}
-\item{\code{psi}: }{vector of interest parameter}
-\item{\code{q}: }{vector of likelihood modifications}
-\item{\code{rstar}: }{modified likelihood root vector}
-\item{\code{rstar.old}: }{uncorrected modified likelihood root vector}
-\item{\code{param}: }{parameter}
+\item \code{normal}: maximum likelihood estimate and standard error of the interest parameter \eqn{\psi}
+\item \code{par.hat}: maximum likelihood estimates
+\item \code{par.hat.se}: standard errors of maximum likelihood estimates
+\item \code{th.rest}: estimated maximum profile likelihood at (\eqn{\psi}, \eqn{\hat{\lambda}})
+\item \code{r}: values of likelihood root corresponding to \eqn{\psi}
+\item \code{psi}: vector of interest parameter
+\item \code{q}: vector of likelihood modifications
+\item \code{rstar}: modified likelihood root vector
+\item \code{rstar.old}: uncorrected modified likelihood root vector
+\item \code{param}: parameter
 }
 }
 \description{

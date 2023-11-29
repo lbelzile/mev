@@ -159,7 +159,7 @@ rmev <- function(
                   alog = 1,
                   aneglog = 2,
                   maxlin = 14)
-    .rmevasy(n = n, d = out$d, para = out$param,
+    .rmevasy(n = n, d = out$d, par = out$param,
              asym = out$asym, ncompo = out$ncompo,
              Sigma = out$sigma, model = mod)
     } else {
@@ -174,12 +174,12 @@ rmev <- function(
                 stop("The dimension of the input grid does not match (square) covariance matrix")
             }
             array(t(switch(out$alg,
-                           ef = .rmevA2(n = n, d = out$d, para = out$param, model = mod, Sigma = out$sigma, coordat),
-                           sm = .rmevA1(n = n, d = out$d, para = out$param, model = mod, Sigma = out$sigma, coordat))), dim = c(rep(npdim, ncol(coord)), n))
+                           ef = .rmevA2(n = n, d = out$d, par = out$param, model = mod, Sigma = out$sigma, coordat),
+                           sm = .rmevA1(n = n, d = out$d, par = out$param, model = mod, Sigma = out$sigma, coordat))), dim = c(rep(npdim, ncol(coord)), n))
         } else {
             switch(out$alg,
-                   ef = .rmevA2(n = n, d = out$d, para = out$param, model = mod, Sigma = out$sigma, coordat),
-                   sm = .rmevA1(n = n, d = out$d, para = out$param, model = mod, Sigma = out$sigma, coordat))
+                   ef = .rmevA2(n = n, d = out$d, par = out$param, model = mod, Sigma = out$sigma, coordat),
+                   sm = .rmevA1(n = n, d = out$d, par = out$param, model = mod, Sigma = out$sigma, coordat))
         }
     }
 }
@@ -259,7 +259,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     # Generate from spectral measure
     .rmevspec_cpp(n = n,
                   d = out$d,
-                  para = out$param,
+                  par = out$param,
                   model = mod,
                   Sigma = out$sigma,
                   loc = out$coord)
@@ -275,7 +275,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
 #' (C) Alec Stephenson
 #'
 #' @param asy a list of \eqn{2^d-1} asymmetry components, as in Stephenson bvevd functions
-#' @param vector of \eqn{2^d-d-1} values for the dependence parameter
+#' @param dep vector of \eqn{2^d-d-1} values for the dependence parameter
 #' @param d dimension of the model
 #' @param model, either \code{alog} for the asymmetric logistic or \code{aneglog}
 #' for the asymmetric negative logistic

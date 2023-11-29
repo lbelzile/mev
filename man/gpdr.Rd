@@ -42,14 +42,14 @@ gpdr.dphi(par, V, dat, m)}
 
 
 \itemize{
-\item{\code{gpdr.ll}:} {log likelihood}
-\item{\code{gpdr.ll.optim}:} {negative log likelihood parametrized in terms of \code{log(scale)} and shape
-in order to perform unconstrained optimization}
-\item{\code{gpdr.score}:} {score vector}
-\item{\code{gpdr.infomat}:} {observed information matrix for GPD parametrized in terms of rate of \eqn{m}-year return level and shape}
-\item{\code{gpdr.Vfun}:} {vector implementing conditioning on approximate ancillary statistics for the TEM}
-\item{\code{gpdr.phi}:} {canonical parameter in the local exponential family approximation}
-\item{\code{gpdr.dphi}:} {derivative matrix of the canonical parameter in the local exponential family approximation}
+\item \code{gpdr.ll}: log likelihood
+\item \code{gpdr.ll.optim}: negative log likelihood parametrized in terms of \code{log(scale)} and shape
+in order to perform unconstrained optimization
+\item \code{gpdr.score}: score vector
+\item \code{gpdr.infomat}: observed information matrix for GPD parametrized in terms of rate of \eqn{m}-year return level and shape
+\item \code{gpdr.Vfun}: vector implementing conditioning on approximate ancillary statistics for the TEM
+\item \code{gpdr.phi}: canonical parameter in the local exponential family approximation
+\item \code{gpdr.dphi}: derivative matrix of the canonical parameter in the local exponential family approximation
 }
 }
 

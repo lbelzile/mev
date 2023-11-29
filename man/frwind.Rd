@@ -5,7 +5,17 @@
 \alias{frwind}
 \title{French wind data}
 \format{
-
+A data frame with 17209 observations and 8 variables:
+\describe{
+\item{\code{date}}{date of measurement}
+\item{\code{S1}}{wind speed (in km/h) at Cap Cépet}
+\item{\code{S2}}{wind speed (in km/h) at Lyon Saint-Exupéry}
+\item{\code{S3}}{wind speed (in km/h) at Marseille Marignane}
+\item{\code{S4}}{wind speed (in km/h) at Montélimar}
+\item{\code{H2}}{humidity (in percentage) at Lyon Saint-Exupéry}
+\item{\code{T2}}{mean temperature (in degree Celcius) at Lyon Saint-Exupéry}
+}
+The \code{metadata} attribute includes latitude and longitude (in degrees, minutes, seconds), altitude (in m), station name and station id.
 }
 \source{
 European Climate Assessment and Dataset project \url{https://www.ecad.eu/}
