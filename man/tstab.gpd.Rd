@@ -27,6 +27,8 @@ Must be one of \code{"wald"}, \code{"profile"} or \code{"post"}.}
 
 \item{plot}{logical; should parameter stability plots be displayed? Default to \code{TRUE}.}
 
+\item{which}{character vector with elements \code{scale} or \code{shape}}
+
 \item{changepar}{logical; if \code{TRUE}, changes the graphical parameters.}
 
 \item{...}{additional arguments passed to \code{plot}.}

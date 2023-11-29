@@ -22,6 +22,12 @@ rparpcs(
 
 \item{model}{string indicating the model family.}
 
+\item{risk}{string indicating the risk functional. Only \code{max} and \code{min} are currently supported.}
+
+\item{param}{parameter value for the logistic or negative logistic model}
+
+\item{d}{dimension of the multivariate model, only needed for logistic or negative logistic models}
+
 \item{Lambda}{parameter matrix for the Brown--Resnick model. See \bold{Details}.}
 
 \item{Sigma}{correlation matrix if \code{model = 'xstud'}, otherwise
@@ -31,7 +37,7 @@ the covariance matrix formed from the stationary Brown-Resnick process.}
 
 \item{shape}{tail index of the Pareto variates (reciprocal shape parameter). Must be strictly positive.}
 
-\item{riskf}{string indicating the risk functional. Only \code{max} and \code{min} are currently supported.}
+\item{...}{additional parameters, currently ignored}
 }
 \value{
 an \code{n} by \code{d} matrix of samples, where \code{d = ncol(Sigma)}, with \code{attributes} \code{mixt.weights}.

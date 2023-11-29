@@ -20,8 +20,8 @@
 #' \item \code{lambda} tail dependence coefficient (sic)
 #' \item \code{tailprob} tail probability, if \code{ptail} is provided
 #' }
-#'
-#' @note The numerical optimization of the likelihood surface is difficult, as the function is ill-behaved. VIsual inspection of estimates is necessary to check for non-convergence.
+#' @export
+#' @note EXPERIMENTAL. The numerical optimization of the likelihood surface is difficult, as the function is ill-behaved. Visual inspection of estimates is necessary to check for non-convergence.
 #' @examples
 #' d <- 2
 #' rho <- 0.9
@@ -44,8 +44,8 @@ kjtail <- function(
     ptail = NULL,
     mqu,
     type = 1,
-    ties.method = eval(formals(rank)$ties.method),
-    ...){
+    ties.method = eval(formals(rank)$ties.method)
+    ){
   data <- na.omit(as.matrix(data))
   d <- ncol(data)
   n <- nrow(data)

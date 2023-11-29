@@ -10,8 +10,7 @@ kjtail(
   ptail = NULL,
   mqu,
   type = 1,
-  ties.method = eval(formals(rank)$ties.method),
-  ...
+  ties.method = eval(formals(rank)$ties.method)
 )
 }
 \arguments{
@@ -45,7 +44,7 @@ for the coefficient of tail dependence \eqn{\eta} and the
 joint tail orthant probability
 }
 \note{
-The numerical optimization of the likelihood surface is difficult, as the function is ill-behaved. VIsual inspection of estimates is necessary to check for non-convergence.
+EXPERIMENTAL. The numerical optimization of the likelihood surface is difficult, as the function is ill-behaved. Visual inspection of estimates is necessary to check for non-convergence.
 }
 \examples{
 d <- 2

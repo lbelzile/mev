@@ -20,7 +20,10 @@
 #' @param df degrees of freedom for extremal Student process.
 #' @param model string indicating the model family.
 #' @param shape tail index of the Pareto variates (reciprocal shape parameter). Must be strictly positive.
-#' @param riskf string indicating the risk functional. Only \code{max} and \code{min} are currently supported.
+#' @param param parameter value for the logistic or negative logistic model
+#' @param d dimension of the multivariate model, only needed for logistic or negative logistic models
+#' @param risk string indicating the risk functional. Only \code{max} and \code{min} are currently supported.
+#' @param ... additional parameters, currently ignored
 #' @details The argument \code{Sigma} is ignored for the Brown-Resnick model
 #' if \code{Lambda} is provided by the user.
 #' @export

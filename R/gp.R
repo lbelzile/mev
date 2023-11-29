@@ -915,7 +915,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     temp$param <- c(temp$par, fixed_param)[wfo]
     temp$nllh <- temp$value
     if(isTRUE(all.equal(temp$mle[2], -1, check.attributes = FALSE))){
-      temp$nllh <- -n*log(max(dat))
+      temp$nllh <- -length(xdatu)*log(max(xdatu))
     }
     temp$conv <- temp$convergence
     # Initialize standard errors and covariance matrix
@@ -984,8 +984,8 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                              estimate = post.mean,
                              param = post.mean,
                              threshold = threshold,
-                             nat = sum(xdat > threshold),
-                             pat = sum(xdat > threshold)/length(xdat),
+                             nat = length(xdatu),
+                             pat = length(xdatu)/length(xdat),
                              approx.mean = temp$mle,
                              post.mean = post.mean,
                              post.se = post.se,
@@ -1000,8 +1000,8 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                              estimate = temp$mle,
                              param = temp$mle,
                              threshold = threshold,
-                             nat = sum(xdat > threshold),
-                             pat = sum(xdat > threshold)/length(xdat),
+                             nat = length(xdatu),
+                             pat = length(xdatu)/length(xdat),
                              approx.mean = temp$mle,
                              exceedances = xdatu), class = c("mev_gpdbayes"))
 

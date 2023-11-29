@@ -243,7 +243,7 @@ rparp <- function(n,
   if (riskf == "sum") {
     # Generate from spectral measure
     return(mev::rgp(n = n, loc = 1, scale = 1, shape = shape) *
-             .rmevspec_cpp(n = n, d = d, para = param, model = mod, Sigma = sigma, loc = coord))
+             .rmevspec_cpp(n = n, d = d, par = param, model = mod, Sigma = sigma, loc = coord))
   } else if (riskf == "site") {
     # Check now that siteindex corresponds to a particular site
     # Dimension d could have been modified earlier for spatial models
@@ -252,7 +252,7 @@ rparp <- function(n,
       stop("Invalid site index")
     }
     return(mev::rgp(n = n, loc = 1, scale = 1, shape = shape) *
-             .rPsite(n = n, j = siteindex, d = d, para = param,
+             .rPsite(n = n, j = siteindex, d = d, par = param,
                      model = mod, Sigma = sigma, loc = coord))
   } else if (riskf %in% c("max", "min", "l2")) {
     ustar <- switch(riskf, max = 1, min = d, l2 = 1)
@@ -263,7 +263,7 @@ rparp <- function(n,
     samp <- matrix(0, nrow = n, ncol = d)
     while (ind < n) {
       candidate <- mev::rgp(n = nsim, loc = 1, scale = 1, shape = shape) *
-        .rmevspec_cpp(n = nsim, d = d, para = param, model = mod,
+        .rmevspec_cpp(n = nsim, d = d, par = param, model = mod,
                       Sigma = sigma, loc = coord)/ustar
       accept <- switch(riskf,
                        max = apply(candidate, 1, max) > 1,
@@ -647,7 +647,7 @@ rgparp <- function(n,
     samp <- matrix(0, nrow = n, ncol = d)
     while (ind < n) {
       candidate <- ustar / runif(nsim) *
-        .rmevspec_cpp(n = nsim, d = d, para = param, model = mod, Sigma = sigma, loc = coord)
+        .rmevspec_cpp(n = nsim, d = d, par = param, model = mod, Sigma = sigma, loc = coord)
         for(j in 1:d){
           if(!isTRUE(all.equal(shape[j], 0))){
           candidate[,j] <- (candidate[,j]^shape[j] - 1) / shape[j] * scale[j] + loc[j]
@@ -683,7 +683,7 @@ rgparp <- function(n,
     return(samp)
   } else {
      #Acceptance rate is 1
-     samp <- ustar / runif(n) * .rPsite(n = n, j = siteindex, d = d, para = param, model = mod, Sigma = sigma, loc = coord)
+     samp <- ustar / runif(n) * .rPsite(n = n, j = siteindex, d = d, par = param, model = mod, Sigma = sigma, loc = coord)
      for(j in 1:d){
      if(!isTRUE(all.equal(shape[j], 0))){
            samp[,j] <- (samp[,j]^shape[j] - 1) / shape[j] * scale[j] +  loc[j]

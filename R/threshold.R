@@ -14,6 +14,7 @@
 #' Must be one of \code{"wald"}, \code{"profile"} or \code{"post"}.
 #' @param level confidence level of the intervals. Default to 0.95.
 #' @param plot logical; should parameter stability plots be displayed? Default to \code{TRUE}.
+#' @param which character vector with elements \code{scale} or \code{shape}
 #' @param changepar logical; if \code{TRUE}, changes the graphical parameters.
 #' @param ... additional arguments passed to \code{plot}.
 #' @return a list with components
@@ -182,20 +183,19 @@ tstab.gpd <- function(xdat,
   ret <- structure(list(threshold = thresh, mle = parmat, lower = lower,
                                     upper = upper, method = method, level = level), class = "mev_tstab.gpd")
   if(plot){
-    plot(ret, which = (1:2)[c("scale","shape") %in% which], ...)
+    plot(ret, which = (1:2)[c("scale","shape") %in% which], changepar = changepar, ...)
   }
   return(invisible(ret))
 }
 
 #'@export
-plot.mev_tstab.gpd <- function(x, which = 1:2, ...){
+plot.mev_tstab.gpd <- function(x, which = 1:2, changepar = TRUE, ...){
   ellipsis <- list(...)
   names_ell <- names(ellipsis)
-  if(changepar %in% names_ell){
-    stopifnot(is.logical(changepar))
-    changepar <- ellipsis$changepar
+    if(!is.logical(changepar)){
+      changepar <- FALSE
+    }
     ellipsis$changepar <- NULL
-  }
   if(!changepar){
     oldpar <- par(no.readonly = TRUE)
     if(length(which) == 2){
@@ -218,7 +218,7 @@ plot.mev_tstab.gpd <- function(x, which = 1:2, ...){
     sub <- ellipsis$sub
     ellipsis$sub <- NULL
   }
-  if(isTRUE(all.equal(which, 2, check.attributes = FALSE))){
+  if(length(which) == 2L){
     main[2] <- main[1]
     sub[2] <- sub[1]
   }
@@ -254,7 +254,7 @@ plot.mev_tstab.gpd <- function(x, which = 1:2, ...){
     ylim <- c(min(x$lower[,1]), max(x$upper[,1]))
     pars <- list(x = x$threshold, y =  x$mle[,1], pch = pch, ylab = ylab[1], xlab = xlab,
                  ylim = ylim, bty = bty, main = main[1])
-    do.call(plot, c(pars, ellipsis))
+    do.call(plot, pars)
     mtext(side = 3, line = -0.2, adj = 0.5, text = sub[1])
     for(i in 1:length(x$threshold)){
       lines(c(x$threshold[i], x$threshold[i]), c(x$lower[i,1], x$upper[i,1]))
@@ -265,7 +265,7 @@ plot.mev_tstab.gpd <- function(x, which = 1:2, ...){
   #shape
   pars <- list(x = x$threshold, y = x$mle[,2], pch = pch, ylab = ylab[2], xlab = xlab,
   ylim = ylim, bty = bty, main = main[2])
-  do.call(plot,  c(pars,ellipsis))
+  do.call(plot,  pars)
   mtext(side = 3, line = -0.2, adj = 0.5, text = sub[2])
   for(i in 1:length(x$threshold)){
     lines(c(x$threshold[i], x$threshold[i]), c(x$lower[i,2], x$upper[i,2]))
