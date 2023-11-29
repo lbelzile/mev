@@ -114,7 +114,7 @@ rmev <- function(
     grid = FALSE,
     dist = NULL,
     ...) {
-
+ model <- match.arg(model)
   # Create gridded values if specification is for random field discretization
   ellips <- list(...)
   if(is.null(coord) && !is.null(ellips$loc)){
@@ -239,6 +239,7 @@ rmevspec <- function(n, d, param, sigma, model = c("log", "neglog", "bilog", "ne
     weights = NULL, vario = NULL, coord = NULL, grid = FALSE, dist = NULL, ...) {
   # Dummy algorithm argument for internal checks
   alg <- "sm"
+   model <- match.arg(model)
   if(model %in% c("alog","aneglog", "maxlik")){
     stop("Invalid model: cannot simulate from angular distribution of asymmetric models.")
   }

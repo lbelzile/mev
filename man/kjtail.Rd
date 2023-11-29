@@ -30,9 +30,13 @@ kjtail(
 \value{
 a list with elements
 \itemize{
-\item \code{p} probability
+\item \code{p} quantile level for estimation
 \item \code{eta} estimated coefficient of tail dependence \eqn{\eta}
 \item \code{eta_sd} estimated standard error of \eqn{\eta}
+\item \code{k1} parameter of the tail expansion
+\item \code{pat} proportion of observations above the threshold
+\item \code{lambda} tail dependence coefficient (sic)
+\item \code{tailprob} tail probability, if \code{ptail} is provided
 }
 }
 \description{
@@ -40,13 +44,18 @@ Estimators proposed by Krupskii and Joe under second order expansion
 for the coefficient of tail dependence \eqn{\eta} and the
 joint tail orthant probability
 }
+\note{
+The numerical optimization of the likelihood surface is difficult, as the function is ill-behaved. VIsual inspection of estimates is necessary to check for non-convergence.
+}
 \examples{
-rho <- runif(1, -1, 1)
 d <- 2
+rho <- 0.9
+Sigma <- matrix(rho, d, d) + diag(1 - rho, d)
+eta_true <- 1/sum(Sigma)
 data <- mev::mvrnorm(
-   n = 1e5,
+   n = 1e4,
    mu = rep(0, d),
-  Sigma = matrix(rho, d, d) + diag(1 - rho, d))
+  Sigma = Sigma)
 q <- seq(0.95, 0.995, by = 0.005)
 taildep <- kjtail(data = data, q = q)
 with(taildep,
