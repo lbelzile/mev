@@ -57,7 +57,8 @@ The latter two methods better reflect the asymmetry of the estimates than the Wa
 \examples{
 dat <- abs(rnorm(10000))
 u <- qnorm(seq(0.9,0.99, by= 0.01))
-tstab.gpd(xdat = dat, thresh = u)
+par(mfrow = c(1,2))
+tstab.gpd(xdat = dat, thresh = u, changepar = FALSE)
 \dontrun{
 tstab.gpd(xdat = dat, thresh = u, method = "profile")
 tstab.gpd(xdat = dat, thresh = u, method = "post")
