@@ -693,7 +693,6 @@ NumericMatrix rbilogspec(int n, NumericVector alpha){
 
 //' Generates from \eqn{Q_i}{Qi}, the spectral measure of the extremal Student model
 //'
-//' @param index index of the location. An integer in 0, ..., \eqn{d-1}
 //' @param sigma a positive semi-definite covariance matrix with unit variance
 //' @param al the alpha parameter in Proposition 7. Corresponds to degrees of freedom - 1
 //' @keywords internal
