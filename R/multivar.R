@@ -57,7 +57,7 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
 }
 
 
-#' Bivariate angular function for extrapolation based on rays
+#' Bivariate angular dependence function for extrapolation based on rays
 #'
 #' The scale parameter \eqn{g(w)} in the Ledford and Tawn approach is estimated empirically for
 #' \eqn{x} large as \deqn{\frac{\Pr(X_P>xw, Y_P>x(1-w))}{\Pr(X_P>x, Y_P>x)}}
@@ -100,7 +100,7 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 }
 
 ##################
-#' Estimation of the bivariate lambda function of Wadsworth and Tawn (2013)
+#' Estimation of the bivariate angular dependence function of Wadsworth and Tawn (2013)
 #'
 #' @param dat an \eqn{n} by \eqn{2} matrix of multivariate observations
 #' @param qu quantile level on uniform scale at which to threshold data. Default to 0.95

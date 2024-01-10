@@ -2,7 +2,7 @@
 % Please edit documentation in R/multivar.R
 \name{lambdadep}
 \alias{lambdadep}
-\title{Estimation of the bivariate lambda function of Wadsworth and Tawn (2013)}
+\title{Estimation of the bivariate angular dependence function of Wadsworth and Tawn (2013)}
 \usage{
 lambdadep(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot = TRUE)
 }
@@ -32,7 +32,7 @@ a plot of the lambda function if \code{plot=TRUE}, plus an invisible list with c
 }
 }
 \description{
-Estimation of the bivariate lambda function of Wadsworth and Tawn (2013)
+Estimation of the bivariate angular dependence function of Wadsworth and Tawn (2013)
 }
 \examples{
 set.seed(12)

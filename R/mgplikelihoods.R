@@ -249,15 +249,15 @@ likmgp <- function(dat,
     }
   }
   if(model %in% c("br", "xstud")){
+    if(ncol(dat) == 2L){
+      stop("Function does not support bivariate data sets.")
+    }
   if (!requireNamespace("mvPot", quietly = TRUE)) {
     stop(
       "Package \"mvPot\" must be installed to use this function.",
       call. = FALSE
     )
   }
-  }
-
-
   genvec1 <- ellips$genvec1
   B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
   antithetic <- ifelse(is.null(ellips$antithetic), FALSE, ellips$antithetic)
@@ -266,7 +266,7 @@ likmgp <- function(dat,
   }
   M1 <- ifelse(is.null(ellips$M1), 1L, ellips$M1)
   ncores <- ifelse(is.null(ellips$ncores), 1L, ellips$ncores)
-
+  }
   if (model == "br") {
     intens <- intensBR(tdat = tdat, Lambda = Lambda)
     exponentMeasure <- sum(.weightsBR(z = tu, Lambda = Lambda, prime = B1, method = "mvPot", genvec = genvec1, nrep = 1) / tu)
@@ -434,6 +434,10 @@ clikmgp <- function(dat,
   numAbovePerRow <- ellips$numAbovePerRow
   numAbovePerCol <- ellips$numAbovePerCol
   mmax <- ellips$mmax
+  if(model %in% c("br","xstud")){
+    if(ncol(dat) == 2L){
+      stop("Function does not support bivariate data sets.")
+    }
   genvec1 <- ellips$genvec1
   genvec2 <- ellips$genvec2
   B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
@@ -448,6 +452,7 @@ clikmgp <- function(dat,
   M1 <- ifelse(is.null(ellips$M1), 1L, ellips$M1)
   M2 <- ifelse(is.null(ellips$M2), 1L, ellips$M2)
   ncores <- ifelse(is.null(ellips$ncores), 1L, ellips$ncores)
+  }
   censored <- ellips$censored
   if (is.null(censored)) {
     censored <- matrix(FALSE, nrow = nrow(tdat), ncol = ncol(tdat))

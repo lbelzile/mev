@@ -8,12 +8,12 @@
 A data frame with 17209 observations and 8 variables:
 \describe{
 \item{\code{date}}{date of measurement}
-\item{\code{S1}}{wind speed (in km/h) at Cap Cépet}
-\item{\code{S2}}{wind speed (in km/h) at Lyon Saint-Exupéry}
+\item{\code{S1}}{wind speed (in km/h) at Cap Cepet}
+\item{\code{S2}}{wind speed (in km/h) at Lyon Saint-Exupery}
 \item{\code{S3}}{wind speed (in km/h) at Marseille Marignane}
-\item{\code{S4}}{wind speed (in km/h) at Montélimar}
-\item{\code{H2}}{humidity (in percentage) at Lyon Saint-Exupéry}
-\item{\code{T2}}{mean temperature (in degree Celcius) at Lyon Saint-Exupéry}
+\item{\code{S4}}{wind speed (in km/h) at Montelimar}
+\item{\code{H2}}{humidity (in percentage) at Lyon Saint-Exupery}
+\item{\code{T2}}{mean temperature (in degree Celcius) at Lyon Saint-Exupery}
 }
 The \code{metadata} attribute includes latitude and longitude (in degrees, minutes, seconds), altitude (in m), station name and station id.
 }
@@ -21,7 +21,7 @@ The \code{metadata} attribute includes latitude and longitude (in degrees, minut
 European Climate Assessment and Dataset project \url{https://www.ecad.eu/}
 }
 \description{
-Daily mean wind speed (in km/h) at four stations in the south of France, namely Cap Cépet (\code{S1}), Lyon St-Exupéry (\code{S2}), Marseille Marignane (\code{S3}) and Montélimar (\code{S4}).
+Daily mean wind speed (in km/h) at four stations in the south of France, namely Cap Cepet (\code{S1}), Lyon St-Exupery (\code{S2}), Marseille Marignane (\code{S3}) and Montelimar (\code{S4}).
 The data includes observations from January 1976 until April 2023; days containing missing values are omitted.
 }
 \examples{

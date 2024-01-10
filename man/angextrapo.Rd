@@ -2,7 +2,7 @@
 % Please edit documentation in R/multivar.R
 \name{angextrapo}
 \alias{angextrapo}
-\title{Bivariate angular function for extrapolation based on rays}
+\title{Bivariate angular dependence function for extrapolation based on rays}
 \usage{
 angextrapo(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20))
 }
