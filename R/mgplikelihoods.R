@@ -374,7 +374,7 @@ clikmgp <- function(dat,
   if(is.data.frame(dat)){
     dat <- as.matrix(dat)
   }
-  stopifnot(all(mthresh < thresh))
+  stopifnot(all(mthresh <= thresh))
   tdat <- dat
   N <- nrow(dat)
   D <- ncol(dat)
