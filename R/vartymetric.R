@@ -138,7 +138,7 @@ vmetric.diag <- function(
  result
 }
 
-
+#' @export
 print.mev_thdiag_varty <-
   function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("Threshold selection method: metric-based assessment\n")

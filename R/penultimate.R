@@ -227,6 +227,9 @@ fit.egp <- function(xdat,
         warning("Length of threshold vector greater than one. Selecting first component.")
       thresh <- thresh[1]
     }
+  if(sum(xdat > thresh[1]) < 4L){
+    stop("Not enough observations to fit an extended generalized Pareto model.")
+  }
     # If no initial values are provided, fit a GP distribution to obtain them
     changinit <- missing(init)
     if(!changinit){
@@ -235,7 +238,9 @@ fit.egp <- function(xdat,
      }
     }
     if (changinit) {
-        init <- c(kappa = 1.01, suppressWarnings(fit.gpd(xdat, threshold = thresh[1], show = FALSE)$est))
+        init <- c(kappa = 1.01,
+                  suppressWarnings(fit.gpd(xdat, threshold = thresh[1],
+                                           show = FALSE)$est))
         # Change starting values for boundary cases, otherwise the optimization stalls
         if(init[3] < -0.99){
           init[3] <- -0.97
@@ -381,28 +386,31 @@ tstab.egp <- function(xdat,
     } else if (length(thresh) <= 1) {
         stop("Invalid argument\"thresh\" provided;\n please use a vector of threshold candidates of length at least 2")
     }
-    pe <- se <- matrix(0, ncol = 4, nrow = length(thresh))
+    pe <- se <- matrix(NA, ncol = 4, nrow = length(thresh))
     conv <- rep(0, length(thresh))
-    fit <- suppressWarnings(fit.egp(xdat = xdat, thresh = thresh[1], model = model))
+    fit <- try(suppressWarnings(fit.egp(xdat = xdat, thresh = thresh[1], model = model)))
+    if(!inherits(fit, "try-error")){
     pe[1, -4] <- fit$param
     colnames(pe) <- colnames(se) <- c(names(fit$param), "modif scale")
     se[1, -4] <- fit$std.err
     conv[1] <- ifelse(is.character(fit$convergence), 0, fit$convergence)
     se[1, 4] <- sqrt(cbind(1, -thresh[1]) %*% solve(fit$hessian[-1, -1]) %*% rbind(1, -thresh[1]))[1]
+    }
     for (i in 2:length(thresh)) {
-        fit <- suppressWarnings(fit.egp(xdat = xdat, thresh = thresh[i], model = model, init = pe[i - 1, -4]))
+        fit <- try(suppressWarnings(fit.egp(xdat = xdat, thresh = thresh[i], model = model, init = pe[i - 1, -4])))
+        if(!inherits(fit, "try-error")){
         pe[i, -4] <- fit$param
         se[i, -4] <- fit$std.err
         conv[i] <- ifelse(is.character(fit$convergence), 0, fit$convergence)
         # Standard error for the modified scale via the delta-method
         se[i, 4] <- sqrt(cbind(1, -thresh[i]) %*% solve(fit$hessian[-1, -1]) %*% rbind(1, -thresh[i]))[1]
-    }
     # Modify point estimates for the scale
     pe[, 4] <- pe[, 2] - pe[, 3] * thresh
-
+        }
+    }
     # Graphics
     plots <- plots[is.finite(plots)]
-    if (length(plots) > 0) {
+    if (length(plots) > 0 & !isTRUE(all(is.na(pe)))) {
         plots <- sort(unique(plots))
         if (!isTRUE(all(plots %in% 1:3))) {
             stop("Invalid plot selection. Must be a vector of integers containing indices 1, 2 or 3.")

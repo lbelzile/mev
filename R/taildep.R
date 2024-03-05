@@ -252,6 +252,7 @@ taildep <- function (data,
     invisible(out)
 }
 
+#' @export
 plot.mev_taildep <- function(x, ...){
   if(length(x$u) < 3){
     return(invisible(NULL))

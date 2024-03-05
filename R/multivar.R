@@ -136,6 +136,7 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 #' }
 #' @export
 lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot = TRUE) {
+  method <- match.arg(method)
     ## Hill estimator for fixed kth order statistic
     hill_thresh <- function(dat, qu = 0.95, thresh = quantile(dat, qu)) {
         dat <- as.numeric(dat)

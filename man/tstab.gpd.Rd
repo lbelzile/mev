@@ -54,6 +54,9 @@ or else from 1000 independent draws from the posterior distribution under
 vague independent normal prior on the log-scale and shape.
 The latter two methods better reflect the asymmetry of the estimates than the Wald confidence intervals.
 }
+\note{
+The function is hard coded to prevent fitting a generalized Pareto distribution to samples of size less than 10. If the estimated shape parameters are all on the boundary of the parameter space (meaning \eqn{\hat{\xi}=-1}), then the plots return one-sided confidence intervals for both the modified scale and shape parameters: these typically suggest that the chosen thresholds are too high for estimation to be reliable.
+}
 \examples{
 dat <- abs(rnorm(10000))
 u <- qnorm(seq(0.9,0.99, by= 0.01))

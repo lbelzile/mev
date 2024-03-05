@@ -285,7 +285,7 @@ plot.mev_thdiag_northropcoleman <- function(x, size = 0.05, ...){
   return(invisible(NULL))
 }
 
-
+#' @export
 print.mev_thdiag_northropcoleman <-
   function(x, digits = max(3, getOption("digits") - 3), level = 0.05, ...) {
     cat("Threshold selection method: Northrop and Coleman penultimate model.\n")

@@ -103,6 +103,7 @@ NULL
 #' @export
 #' @keywords internal
 gpd.ll <- function(par, dat, tol = 1e-05) {
+  par <- as.numeric(par) # strip names
     sigma = par[1]
     if(sigma < 0){
       return(-Inf)
@@ -110,7 +111,7 @@ gpd.ll <- function(par, dat, tol = 1e-05) {
     xi = par[2]
     n <- length(dat)
     if (abs(xi) > tol) {
-      if(xi >= -1){
+      if(xi > -1){
         #Most scenarios
         as.vector(-n * log(sigma) - (1 + 1/xi) * sum(log(pmax(1 + xi/sigma * dat, 0))))
       } else if(isTRUE(all.equal(xi, -1, check.attributes = FALSE))){
@@ -132,7 +133,11 @@ gpd.ll.optim <- function(par, dat, tol = 1e-05) {
     sigma = exp(par[1])
     xi = par[2]
     if (abs(xi) > tol) {
+      if(!isTRUE(all.equal(xi, -1))){
         length(dat) * log(sigma) + (1 + 1/xi) * sum(log(pmax(1 + xi/sigma * dat, 0)))
+      } else{
+        -length(dat)*log(sigma)
+      }
     } else {
         length(dat) * log(sigma) + sum(dat)/sigma
     }

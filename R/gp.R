@@ -99,7 +99,6 @@
   }
   z$conv <- temp$convergence
   z$counts <- temp$counts
-  z$nllh <- temp$value
   z$vals <- cbind(sc, xi, u)
   z$rate <- length(xdatu)/n
   if (calc.se) {
@@ -264,7 +263,6 @@
   xi <- shlink(shmat %*% (x$par[seq(npsc + 1, length.out = npsh)]))
   z$conv <- x$convergence
   z$counts <- x$counts
-  z$nllh <- x$value
   z$vals <- cbind(sc, xi, u)
   if (z$trans) {
     z$data <- -log(as.vector((1 + (xi * (xdatu - u))/sc)^(-1/xi)))
@@ -331,7 +329,6 @@
   xi.hat <- mean(log(1 + res$estimate * ex.data))
   sigma.hat <- xi.hat/phi.hat
   z.fit$mle <- c(sigma.hat, xi.hat)
-  z.fit$nllh <- res$minimum
   z.fit$gradient <- res$gradient
   z.fit$code <- res$code
   z.fit$counts["function"] <- res$iterations
@@ -810,6 +807,9 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
   xi.tol = 1e-04
   xdat <- na.omit(xdat)
   xdatu <- xdat[xdat > threshold] - threshold
+  if(length(xdatu) < 3){
+    stop("Too few observations to fit a generalized Pareto model.")
+  }
   # Optimization of model, depending on routine
   method <- match.arg(method)
   if(!is.null(fpar)){
@@ -862,11 +862,9 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
       temp$mle <- c(temp$a, -temp$k)
     }
     temp$mle <- temp$par
-    temp$nllh <- -temp$value
     nll_limxi <- -length(mdat) * log(max(mdat))
     if(temp$value <  nll_limxi){
-      temp$mle <- c(max(mdat), -1+1e-7)
-      temp$nllh <- -nll_limxi
+      temp$mle <- c(max(mdat), -1)
     }
     temp$conv <- temp$convergence
   } else if (method == "fpar") {
@@ -913,10 +911,6 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
   }
     temp$mle <- temp$par
     temp$param <- c(temp$par, fixed_param)[wfo]
-    temp$nllh <- temp$value
-    if(isTRUE(all.equal(temp$mle[2], -1, check.attributes = FALSE))){
-      temp$nllh <- -length(xdatu)*log(max(xdatu))
-    }
     temp$conv <- temp$convergence
     # Initialize standard errors and covariance matrix
     temp$vcov <- matrix(NA)
@@ -936,7 +930,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                              vcov = temp$vcov,
                              threshold = threshold,
                              method = method,
-                             nllh = temp$nllh,
+                             nllh = -gpd.ll(temp$mle, dat = xdatu),
                              nat = sum(xdat > threshold),
                              pat = length(xdatu)/length(xdat),
                              convergence = ifelse(temp$conv == 0, "successful", temp$conv),
@@ -1016,13 +1010,11 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     temp$mle <- c(pjn$a, -pjn$k)  # mle for (sigma, xi)
     sc <- rep(temp$mle[1], length(xdatu))
     xi <- temp$mle[2]
-    temp$nllh <- sum(log(sc)) + sum(log(1 + xi * xdatu/sc) * (1/xi + 1))
     temp$conv <- pjn$conv
   }
   if(temp$mle[2] < -1){
     #Transform the solution (unbounded) to boundary - with maximum observation for scale and -1 for shape.
     temp$mle <- c(max(xdatu) + 1e-10, -1)
-    tmp$nllh <- -gpd.ll(par = temp$mle, dat = xdatu)
   }
 
   # Collecting observations from temp and formatting the output
@@ -1059,7 +1051,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                            vcov = invobsinfomat,
                            threshold = threshold,
                            method = method,
-                           nllh = temp$nllh,
+                           nllh = -gpd.ll(par = temp$mle, dat = xdatu),
                            nat = sum(xdat > threshold),
                            pat = length(xdatu)/length(xdat),
                            convergence = ifelse(temp$conv == 0, "successful", temp$conv),

@@ -62,10 +62,12 @@
 #     return(S1)
 # }
 
+#' @export
 print.eprof <- function(x, ...){
   confint.eprof(x, print = TRUE)
 }
 
+#' @export
 summary.eprof <- function(x, ...){
   confint.eprof(x, print = TRUE)
 }
@@ -2239,13 +2241,20 @@ gpd.pll <-
       }
       # Shape parameter
     } else if (param == "shape") {
-      maxll <- gpd.ll(mle, dat = dat)
+      maxll <- try(gpd.ll(mle, dat = dat))
+      if(inherits(maxll, "try-error")){
+        stop(paste("Could not find maximum likelihood estimation for the sample of size", length(dat)))
+      }
+      if(isTRUE(mle['shape'] > -0.5)){
       std.error <-
         sqrt(solve(gpd.infomat(
           par = mle,
           dat = dat,
           method = "exp"
         ))[2, 2])
+      } else{
+       std.error <- NA
+      }
       constr.mle.shape <- function(xit) {
         as.vector(suppressWarnings(
           optim(
@@ -2262,12 +2271,15 @@ gpd.pll <-
       }
       # Missing psi vector
       if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
+        if(isTRUE(is.finite(std.error))){
         psirangelow <-
           seq(ifelse(mle[2] < 0, -7, -5), -1.5, length = 10) * std.error +  mle[2]
         psirangelow <- psirangelow[psirangelow > -1]
+        if(length(psirangelow) > 0L){
         lowvals <- sapply(psirangelow, function(par) {
           gpd.ll(c(constr.mle.shape(par), par), dat = dat)
         }) - maxll
+        }
         psirangehigh <-
           seq(1.5, 10, length = 10) * std.error + mle[2]
         highvals <- sapply(psirangehigh, function(par) {
@@ -2283,6 +2295,9 @@ gpd.pll <-
           ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[2], hi)
         psi <- seq(lo, hi, length = 55)
         psi <- psi[psi > -1]
+        } else{
+          psi <- seq(-1, 0, length.out = 21)
+        }
       }
 
       pars <- cbind(sapply(psi, constr.mle.shape), psi)

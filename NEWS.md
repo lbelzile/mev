@@ -10,6 +10,10 @@
 * `gp.tstab` optimization bounds for profile confidence interval fixed.
 * `rparp` failed when a single draw was accepted (due to matrix being cast to vectors)
 * `fit.extgp` now handles model 0 (generalized Pareto), fixing #17
+* `gpd.ll` and `gpd.nll` correctly return a non-NA value when xi=-1 (#18, reported by Paddy O'Toole)
+* `tstab.gpd` now correctly works when input leads to boundary values, and profile likelihood intervals are now correctly truncated in the range of admissible values
+* `fit.gpd` now relies on `gpd.ll` to return the negative log likelihood value `nllh`
+* Threshold stability plots now compute limits of plot safely, handling missing values in parameter estimates. Intervals are truncated to admissible values
 
 # mev 1.15  (Release date 2023-04-23)
 
