@@ -930,7 +930,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
                              vcov = temp$vcov,
                              threshold = threshold,
                              method = method,
-                             nllh = -gpd.ll(temp$mle, dat = xdatu),
+                             nllh = -gpd.ll(temp$param, dat = xdatu),
                              nat = sum(xdat > threshold),
                              pat = length(xdatu)/length(xdat),
                              convergence = ifelse(temp$conv == 0, "successful", temp$conv),

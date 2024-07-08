@@ -68,8 +68,8 @@ print.eprof <- function(x, ...){
 }
 
 #' @export
-summary.eprof <- function(x, ...){
-  confint.eprof(x, print = TRUE)
+summary.eprof <- function(object, ...){
+  confint.eprof(object, print = TRUE)
 }
 
 #' Confidence intervals for profile likelihood objects

@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-.Rbuildignore
 .gitignore
 mev.Rproj
 src/*.o
