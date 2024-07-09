@@ -1,0 +1,239 @@
+---
+title: "Exact unconditional sampling from max-stable random vectors"
+author: "Léo Belzile, HEC Montréal"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: false
+vignette: >
+  %\VignetteIndexEntry{Exact unconditional sampling from max-stable random vectors}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: mevvignette.bib
+---
+
+The `mev` package was originally introduced to implement the exact unconditional sampling algorithms in @Dombry:2016. The two algorithms therein allow one to simulate simple max-stable random vectors. The implementation will work efficiently for moderate dimensions.
+
+# Functions and use
+
+There are two main functions, `rmev` and `rmevspec`. `rmev` samples from simple max-stable processes, meaning it will return an $n \times d$ matrix of samples, where each of the column has a sample from a unit Frechet distribution. In constrast, `rmevspec` returns sample on the unit simplex from the spectral (or angular) measure. One could use this to test estimation based on spectral densities, or to construct samples from Pareto processes.
+
+The syntax is
+```{r}
+#| eval: true
+#| echo: true
+library(mev)
+#Sample of size 1000 from a 5-dimensional logistic model
+x <- rmev(n=1000, d=5, param=0.5, model="log")
+#Marginal parameters are all standard Frechet, meaning GEV(1,1,1)
+apply(x, 2, function(col){ismev::gev.fit(col, show=FALSE)$mle})
+
+
+#Sample from the corresponding spectral density
+w <- rmevspec(n=1000, d=5, param=0.5, model="log")
+#All rows sum to 1 by construction
+head(rowSums(w))
+#The marginal mean is 1/d
+round(colMeans(w),2)
+```
+
+# Description of the models implemented
+
+The different models implemented are described in @Dombry:2016, but some other models can be found and are described here. Throughout, we consider $d$-variate models and let $\mathbb{B}_d$ be the collection of all nonempty subsets of $\{1, \ldots, d\}$.
+
+
+## Logistic
+The logistic model (`log`) of @Gumbel:1960 has distribution function
+\begin{align*}
+\Pr(\boldsymbol{X} \leq \boldsymbol{x})= \exp \left[ - \left(\sum_{i=1}^{n} {x_i}^{-\alpha}\right)^{\frac{1}{\alpha}}\right]
+\end{align*}
+for $\alpha>1$. The spectral measure density is
+\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w})=\frac{1}{d}\frac{\Gamma(d-\alpha)}{\Gamma(1-\alpha)}\alpha^{d-1}\left( \prod_{j=1}^d
+w_j\right)^{-(\alpha+1)}\left(\sum_{j=1}^d
+w_j^{-\alpha}\right)^{1/\alpha-d}, \qquad \boldsymbol{w} \in \mathbb{S}_d
+\end{align*}
+
+## Asymmetric logistic distribution
+
+The `alog` model was proposed by @Tawn:1990. It shares the same parametrization as the `evd` package, merely replacing the algorithm for the generation of logistic variates. The distribution function of the $d$-variate asymmetric logistic distribution is
+\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[ -\sum_{b \in \mathbb{B}_d}\left(\sum_{i \in b} \left(\frac{\theta_{i,
+b}}{x_i}\right)^{\alpha_b}\right)^{\frac{1}{\alpha_b}}\right],
+\end{align*}
+
+The parameters $\theta_{i, b}$ must be provided in a list and represent the asymmetry parameter.
+The sampling algorithm, from @Stephenson:2003 gives some insight on the construction mechanism as a max-mixture of logistic distributions. Consider sampling $\boldsymbol{Z}_b$ from a logistic distribution of dimension $|b|$ (or Fréchet variates if $|b|=1)$ with parameter
+$\alpha_b$ (possibly recycled). Each marginal value corresponds to the maximum of the weighted corresponding entry. That
+is, $X_{i}=\max_{b \in \mathbb{B}_d}\theta_{i, b}Z_{i,b}$ for all $i=1, \ldots, d$. The max-mixture is valid provided that $\sum_{b
+\in \mathbb{B}_d} \theta_{i,b}=1$ for $i=1, \ldots, d.$ As such, empirical estimates of the spectral measure will almost surely
+place mass on the inside of the simplex rather than on subfaces.
+
+## Negative logistic distribution
+
+The `neglog` distribution function  due to @Galambos:1975  is
+\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[ -\sum_{b \in \mathbb{B}_d} (-1)^{|b|}\left(\sum_{i \in b}
+{x_i}^{\alpha}\right)^{-\frac{1}{\alpha}}\right]
+\end{align*}
+for $\alpha \geq 0$ [@Dombry:2016]. The associated spectral density is
+\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w}) = \frac{1}{d}
+\frac{\Gamma(1/\alpha+1)}{\Gamma(1/\alpha + d-1)} \alpha^d\left(\prod_{i=1}^d w_j\right)^{\alpha-1}\left(\sum_{i=1}^d
+w_i^{\alpha}\right)^{-1/\alpha-d}
+\end{align*}
+
+
+## Asymmetric negative logistic distribution
+
+The asymmetric negative logistic (`aneglog`) model is alluded to in @Joe:1990 as a generalization of the Galambos model. It is constructed in the same way as the asymmetric logistic distribution; see Theorem~1 in @Stephenson:2003. Let $\alpha_b \leq 0$ for all $b \in \mathbb{B}_d$ and $\theta_{i, b} \geq 0$ with $\sum_{b \in \mathbb{B}_d} \theta_{i, b} =1$ for $i=1, \ldots, d$; the distribution function is
+\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[ -\sum_{b \in \mathbb{B}_d}(-1)^{|b|}
+\left\{\sum_{i \in b}
+\left(\frac{\theta_{i, b}}{x_i}\right)^{\alpha_b}\right\}^{\frac{1}{\alpha_b}}\right].
+\end{align*}
+In particular, it does not correspond to the ``negative logistic distribution'' given in e.g., Section 4.2 of @Coles:1991  or Section3.5.3 of @Kotz:2000. The latter is not a valid distribution function in dimension $d \geq 3$ as the constraints therein on the parameters $\theta_{i, b}$ are necessary, but not sufficient.
+
+@Joe:1990 mentions generalizations of the distribution as given above but the constraints were not enforced elsewhere in the literature. The proof that the distribution is valid follows from Theorem~1 of @Stephenson:2003 as it is a max-mixture.  Note that the parametrization of the asymmetric negative logistic distribution  does not match the bivariate implementation of `rbvevd`.
+
+## Multilogistic distribution
+
+This multivariate extension of the logistic, termed multilogistic (`bilog`) proposed by @Boldi:2009, places mass on the interior of the simplex. Let $\boldsymbol{W} \in \mathbb{S}_d$ be the solution of
+\begin{align*}
+\frac{W_j}{W_d}=\frac{C_jU_j^{-\alpha_j}}{C_dU_d^{-\alpha_d}}, \quad j=1, \ldots, d
+\end{align*}
+where $C_j=\Gamma(d-\alpha_j)/\Gamma(1-\alpha_j)$ for $j=1, \ldots, d$ and $\boldsymbol{U} \in \mathbb{S}_d$ follows a $d$-mixture of Dirichlet with the $j$th component being $\mathcal{D}(\boldsymbol{1}-\delta_{j}\alpha_j)$, so that the mixture has density function
+\begin{align*}
+h_{\boldsymbol{U}}(\boldsymbol{u})=\frac{1}{d} \sum_{j=1}^d \frac{\Gamma(d-\alpha_j)}{\Gamma(1-\alpha_j)} u_j^{-\alpha_j}
+\end{align*}
+for $0<\alpha_j <1, j=1, \ldots, d$.
+The spectral density of the multilogistic distribution is thus
+\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w}) = \frac{1}{d} \left(\sum_{j=1}^d \alpha_ju_j\right)^{-1} \left(\prod_{j=1}^d \alpha_ju_d
+\right)\left(\sum_{j=1}^d \frac{\Gamma(d-\alpha_j)}{\Gamma(1-\alpha_j)}u_j^{-\alpha_j}\right)\prod_{j=1}^d w_j^{-1}
+\end{align*}
+for $\alpha_j \in (0,1)$ $(j=1, \ldots, d)$.
+
+## Coles and Tawn Dirichlet distribution
+
+The Dirichlet (`ct`) model of @Coles:1991
+\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w}) = \frac{1}{d} \frac{\Gamma \left(1+\sum_{j=1}^d \alpha_j\right)}{\prod_{j=1}^d \alpha_jw_j}
+\left(\sum_{j=1}^d \alpha_jw_j\right)^{-(d+1)}\prod_{j=1}^d \alpha_j \prod_{j=1}^d \left(\frac{\alpha_jw_j}{\sum_{k=1}^d
+\alpha_kw_k}\right)^{\alpha_j-1}
+\end{align*}
+for $\alpha_j>0.$
+
+## Scaled extremal Dirichlet
+
+The angular density of the scaled extremal Dirichlet (`sdir`) model with parameters $\rho > -\min(\boldsymbol{\alpha})$ and $\boldsymbol{\alpha} \in \mathbb{R}^{d}_{+}$ is given, for all $\boldsymbol{w} \in \mathbb{S}_d$, by
+\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w})=\frac{\Gamma(\bar{\alpha}+\rho)}{d\rho^{d-1}\prod_{i=1}^d\Gamma(\alpha_i)}
+\bigl\langle\{\boldsymbol{c}(\boldsymbol{\alpha},\rho)\}^{1/\rho},\boldsymbol{w}^{1/\rho}\bigr\rangle^{-\rho-\bar{\alpha}}\prod_{i=1}^{d}
+\{c(\alpha_i,\rho)\}^{\alpha_i/\rho}w_i^{\alpha_i/\rho-1}.
+\end{align*}
+where $\boldsymbol{c}(\boldsymbol{\alpha},\rho)$ is the $d$-vector with entries  $\Gamma(\alpha_i+\rho)/\Gamma(\alpha_i)$ for $i=1, \ldots, d$ and $\langle \cdot, \cdot \rangle$ denotes the inner product between two vectors.
+
+## Huesler--Reiss
+
+The Huesler--Reiss model (`hr`), due to @Husler:1989, is a special case of the Brown--Resnick process.
+While @Engelke:2015 state that H\"usler--Reiss variates can be sampled following the same scheme, the spatial analog is
+conditioned on a particular site ($\boldsymbol{s}_0$), which complicates the comparisons with the other methods.
+
+Let $I_{-j}=\{1, \ldots, d\} \setminus \{j\}$ and $\lambda_{ij}^2 \geq 0$ be entries of a strictly conditionally
+negative definite matrix $\boldsymbol{\Lambda}$, for which $\lambda_{ij}^2=\lambda_{ji}^2$. Then, following @Nikoloulopoulos:2009
+(Remark~2.5) and @Huser:2013, we can write the distribution function as
+\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[ -\sum_{j=1}^d \frac{1}{x_j} \Phi_{d-1, \boldsymbol{\Sigma}_{-j}} \left( \lambda_{ij}-
+\frac{1}{2\lambda_{ij}}  \log\left(\frac{x_j}{x_i}\right), i \in I_{-j}\right)\right].
+\end{align*}
+where the partial correlation matrix $\boldsymbol{\Sigma}_{-j}$ has elements
+\begin{align*}
+\varrho_{i,k; j}= \frac{\lambda_{ij}^2+\lambda_{kj}^2-\lambda_{ik}^2}{2\lambda_{ij}\lambda_{kj}}
+\end{align*}
+and $\lambda_{ii}=0$ for all $i \in I_{-j}$ so that the diagonal entries $\varrho_{i,i; j}=1$. @Engelke:2015
+uses the covariance matrix with entries are $\varsigma=2(\lambda_{ij}^2+\lambda_{kj}^2-\lambda_{ik}^2)$, so the resulting
+expression is evaluated at $2\boldsymbol{\lambda}_{.j}^2-\log({x_j}/{\boldsymbol{x}_{-j}})$ instead. We recover the same expression by
+standardizing, since this amounts to division by the standard deviations $2\boldsymbol{\lambda}_{.j}$
+
+
+
+The \texttt{evd} package implementation has a bivariate implementation
+of the  H\"usler--Reiss distribution with dependence parameter $r$, with $r_{ik}=1/\lambda_{ik}$ or
+$2/r=\sqrt{2\gamma(\boldsymbol{h})}$ for $\boldsymbol{h}=\|\boldsymbol{s}_i-\boldsymbol{s}_i\|$ for the Brown--Resnick model. In this setting, it is particularly
+easy since the only requirement is
+non-negativity of the parameter. For inference in dimension $d>2$, one needs to impose the constraint  $\boldsymbol{\Lambda}=\{\lambda_{ij}^2\}_{i, j=1}^d \in
+\mathcal{D}$ (cf. @Engelke:2015, p.3), where
+\begin{multline*}
+\mathcal{D}=\Biggl\{\mathbf{A}\in [0, \infty)^{d\times d}: \boldsymbol{x}^\top\!\!\mathbf{A}\boldsymbol{x} <0, \ \forall \ \boldsymbol{x} \in \mathbb{R}^{d}
+\setminus\{\boldsymbol{0}\} \\ \qquad
+\text{ with } \sum_{i=1}^d x_i=0, a_{ij}=a_{ji}, a_{ii}=0 \ \forall \ i, j \in \{1,\ldots, d\}\Biggr\}
+\end{multline*}
+denotes the set of symmetric conditionally negative definite matrices with zero diagonal entries.
+An avenue to automatically satisfy these requirements is to optimize over a symmetric  positive definite  matrix parameter
+$\boldsymbol{\varSigma}=\mathbf{L}^\top\mathbf{L}$, where $\mathbf{L}$ is an upper triangular matrix whose diagonal element are on the
+log-scale to ensure uniqueness of the Cholesky factorization; see @Pinheiro:1996. By taking
+\begin{align*}
+\boldsymbol{\Lambda}(\boldsymbol{\varSigma})= \begin{pmatrix} 0 & \mathrm{diag} (\boldsymbol{\varSigma})^\top \\ \mathrm{diag}(\boldsymbol{\varSigma}) &
+\boldsymbol{1}\mathrm{diag}(\boldsymbol{\varSigma})^\top
++ \mathrm{diag}(\boldsymbol{\varSigma})\boldsymbol{1}^\top - 2 \boldsymbol{\varSigma}
+\end{pmatrix}
+\end{align*}
+one can perform unconstrained optimization for the non-zero elements of $\mathbf{L}$ which are in one-to-one correspondence
+with those of $\boldsymbol{\Lambda}$.
+
+It easily follows that generating $\boldsymbol{Z}$ from a $d-1$ dimensional log-Gaussian distribution with covariance $\mathsf{Co}(Z_i,
+Z_k)=2(\lambda_{ij}^2+\lambda_{kj}^2-\lambda_{ik}^2)$ for $i,
+k \in I_{-j}$ with mean vector $-2\lambda_{\bullet j}^2$  gives
+the finite dimensional analog of the Brown--Resnick process in the mixture representation of @Dombry:2016.
+
+The \texttt{rmev} function checks conditional negative definiteness of the matrix. The easiest way to do so
+negative definiteness of $\boldsymbol{\Lambda}$ with real entries is to form $\tilde{\boldsymbol{\Lambda}}=\mathbf{P}\boldsymbol{\Lambda}\mathbf{P}^\top$, where $\mathbf{P}$
+is an $d \times d$ matrix with ones on the diagonal, $-1$ on the $(i, i+1)$ entries for $i=1, \ldots d-1$ and zeros elsewhere.
+If the matrix $\boldsymbol{\Lambda} \in \mathcal{D}$, then the eigenvalues of the leading $(d-1) \times (d-1)$ submatrix of $\tilde{\boldsymbol{\Lambda}}$
+will all be negative.
+
+For a set of $d$ locations, one can supply the  variogram matrix as valid input to the method.
+
+## Brown--Resnick process
+
+The Brown--Resnick process (`br`) is the functional extension of the H\"usler--Reiss distribution, and is a max-stable process associated with the
+log-Gaussian distribution. It is often in the spatial setting conditioned on a location (typically the origin). Users can provide
+a variogram function that takes distance as argument and is vectorized. If `vario` is provided, the model will simulate from an intrinsically stationary Gaussian process. The user can alternatively provide a covariance matrix `sigma` obtained by conditioning on a site, in which case simulations are from a stationary Gaussian process. See @Engelke:2015 or @Dombry:2016 for
+more information.
+
+## Extremal Student
+
+The extremal Student (`extstud`) model of @Nikoloulopoulos:2009, eq. 2.8, with unit Fréchet margins is
+\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[-\sum_{j=1}^d \frac{1}{x_j} T_{d-1, \nu+1, \mathbf{R}_{-j}}\left(
+\sqrt{\frac{\nu+1}{1-\rho_{ij}^2}}
+\left[\left(\frac{x_i}{x_j}\right)^{1/\nu}\!\!\!-\rho_{ij}\right], i \in I_{-j}  \right)\right],
+\end{align*}
+where $T_{d-1}$ is the distribution function of the $d-1 $ dimensional Student-$t$ distribution and the partial correlation
+matrix $\mathbf{R}_{-j}$ has diagonal entry \[r_{i,i;j}=1, \qquad
+r_{i,k;j}=\frac{\rho_{ik}-\rho_{ij}\rho_{kj}}{\sqrt{1-\rho_{ij}^2}\sqrt{1-\rho_{kj}^2}}\] for $i\neq k, i, k \in I_{-j}$.
+
+The user must provide a valid correlation matrix (the function checks for diagonal elements), which can be obtained from a
+variogram.
+
+
+## Dirichlet mixture
+
+The Dirichlet mixture (`dirmix`) proposed by @Boldi:2007, see @Dombry:2016 for details on the
+mixture.
+The spectral density of the model is
+\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w}) = \sum_{k=1}^m \pi_k \frac{\Gamma(\alpha_{1k}+ \cdots + \alpha_{dk})}{\prod_{i=1}^d \Gamma(\alpha_{ik})} \left(1-\sum_{i=1}^{d-1} w_i\right)^{\alpha_{dk}-1}\prod_{i=1}^{d-1} w_{i}^{\alpha_{ik}-1} \end{align*}
+The argument `param` is thus a $d \times m$ matrix of coefficients, while the argument for the $m$-vector `weights` gives the relative contribution of each Dirichlet mixture component.
+
+## Smith model
+
+The Smith model (`smith`) is from the unpublished report of @Smith:1990. It corresponds to a moving maximum
+process on a domain $\mathbb{X}$. The de Haan representation of the process is
+\begin{align*}
+Z(x)=\max_{i \in \mathbb{N}} \zeta_i h(x-\eta_i), \qquad \eta_i \in \mathbb{X}
+\end{align*}
+where $\{\zeta_i, \eta_i\}_{i \in \mathbb{N}}$ is a Poisson point process on $\mathbb{R}_{+} \times \mathbb{X}$ with intensity measure $\zeta^{-2}\mathrm{d} \zeta \mathrm{d} \eta$ and $h$ is the density of the multivariate Gaussian distribution. Other $h$ could be used in principle, but are not implemented.
+
+# References {-}

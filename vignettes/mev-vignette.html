@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Léo Belzile, HEC Montréal" />
+
+<meta name="date" content="2024-07-08" />
+
+<title>Exact unconditional sampling from max-stable random vectors</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Exact unconditional sampling from
+max-stable random vectors</h1>
+<h4 class="author">Léo Belzile, HEC Montréal</h4>
+<h4 class="date">2024-07-08</h4>
+
+
+
+<p>The <code>mev</code> package was originally introduced to implement
+the exact unconditional sampling algorithms in <span class="citation">Dombry, Engelke, and Oesting (2016)</span>. The two
+algorithms therein allow one to simulate simple max-stable random
+vectors. The implementation will work efficiently for moderate
+dimensions.</p>
+<div id="functions-and-use" class="section level1">
+<h1>Functions and use</h1>
+<p>There are two main functions, <code>rmev</code> and
+<code>rmevspec</code>. <code>rmev</code> samples from simple max-stable
+processes, meaning it will return an <span class="math inline">\(n
+\times d\)</span> matrix of samples, where each of the column has a
+sample from a unit Frechet distribution. In constrast,
+<code>rmevspec</code> returns sample on the unit simplex from the
+spectral (or angular) measure. One could use this to test estimation
+based on spectral densities, or to construct samples from Pareto
+processes.</p>
+<p>The syntax is</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(mev)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#Sample of size 1000 from a 5-dimensional logistic model</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rmev</span>(<span class="at">n=</span><span class="dv">1000</span>, <span class="at">d=</span><span class="dv">5</span>, <span class="at">param=</span><span class="fl">0.5</span>, <span class="at">model=</span><span class="st">&quot;log&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#Marginal parameters are all standard Frechet, meaning GEV(1,1,1)</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">apply</span>(x, <span class="dv">2</span>, <span class="cf">function</span>(col){ismev<span class="sc">::</span><span class="fu">gev.fit</span>(col, <span class="at">show=</span><span class="cn">FALSE</span>)<span class="sc">$</span>mle})</span></code></pre></div>
+<pre><code>##           [,1]     [,2]     [,3]     [,4]     [,5]
+## [1,] 1.0521463 1.017444 1.012105 1.008567 1.040459
+## [2,] 1.0495947 1.036283 1.050616 1.011403 1.056270
+## [3,] 0.9749297 1.048115 1.016379 1.024842 1.000469</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co">#Sample from the corresponding spectral density</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">rmevspec</span>(<span class="at">n=</span><span class="dv">1000</span>, <span class="at">d=</span><span class="dv">5</span>, <span class="at">param=</span><span class="fl">0.5</span>, <span class="at">model=</span><span class="st">&quot;log&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#All rows sum to 1 by construction</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">rowSums</span>(w))</span></code></pre></div>
+<pre><code>## [1] 1 1 1 1 1 1</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co">#The marginal mean is 1/d</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">colMeans</span>(w),<span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 0.2 0.2 0.2 0.2 0.2</code></pre>
+</div>
+<div id="description-of-the-models-implemented" class="section level1">
+<h1>Description of the models implemented</h1>
+<p>The different models implemented are described in <span class="citation">Dombry, Engelke, and Oesting (2016)</span>, but some
+other models can be found and are described here. Throughout, we
+consider <span class="math inline">\(d\)</span>-variate models and let
+<span class="math inline">\(\mathbb{B}_d\)</span> be the collection of
+all nonempty subsets of <span class="math inline">\(\{1, \ldots,
+d\}\)</span>.</p>
+<div id="logistic" class="section level2">
+<h2>Logistic</h2>
+<p>The logistic model (<code>log</code>) of <span class="citation">Gumbel (1960)</span> has distribution function <span class="math display">\[\begin{align*}
+\Pr(\boldsymbol{X} \leq \boldsymbol{x})= \exp \left[ -
+\left(\sum_{i=1}^{n} {x_i}^{-\alpha}\right)^{\frac{1}{\alpha}}\right]
+\end{align*}\]</span> for <span class="math inline">\(\alpha&gt;1\)</span>. The spectral measure density
+is <span class="math display">\[\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w})=\frac{1}{d}\frac{\Gamma(d-\alpha)}{\Gamma(1-\alpha)}\alpha^{d-1}\left(
+\prod_{j=1}^d
+w_j\right)^{-(\alpha+1)}\left(\sum_{j=1}^d
+w_j^{-\alpha}\right)^{1/\alpha-d}, \qquad \boldsymbol{w} \in
+\mathbb{S}_d
+\end{align*}\]</span></p>
+</div>
+<div id="asymmetric-logistic-distribution" class="section level2">
+<h2>Asymmetric logistic distribution</h2>
+<p>The <code>alog</code> model was proposed by <span class="citation">Tawn (1990)</span>. It shares the same parametrization
+as the <code>evd</code> package, merely replacing the algorithm for the
+generation of logistic variates. The distribution function of the <span class="math inline">\(d\)</span>-variate asymmetric logistic
+distribution is <span class="math display">\[\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[ -\sum_{b \in
+\mathbb{B}_d}\left(\sum_{i \in b} \left(\frac{\theta_{i,
+b}}{x_i}\right)^{\alpha_b}\right)^{\frac{1}{\alpha_b}}\right],
+\end{align*}\]</span></p>
+<p>The parameters <span class="math inline">\(\theta_{i, b}\)</span>
+must be provided in a list and represent the asymmetry parameter. The
+sampling algorithm, from <span class="citation">Stephenson (2003)</span>
+gives some insight on the construction mechanism as a max-mixture of
+logistic distributions. Consider sampling <span class="math inline">\(\boldsymbol{Z}_b\)</span> from a logistic
+distribution of dimension <span class="math inline">\(|b|\)</span> (or
+Fréchet variates if <span class="math inline">\(|b|=1)\)</span> with
+parameter <span class="math inline">\(\alpha_b\)</span> (possibly
+recycled). Each marginal value corresponds to the maximum of the
+weighted corresponding entry. That is, <span class="math inline">\(X_{i}=\max_{b \in \mathbb{B}_d}\theta_{i,
+b}Z_{i,b}\)</span> for all <span class="math inline">\(i=1, \ldots,
+d\)</span>. The max-mixture is valid provided that <span class="math inline">\(\sum_{b
+\in \mathbb{B}_d} \theta_{i,b}=1\)</span> for <span class="math inline">\(i=1, \ldots, d.\)</span> As such, empirical
+estimates of the spectral measure will almost surely place mass on the
+inside of the simplex rather than on subfaces.</p>
+</div>
+<div id="negative-logistic-distribution" class="section level2">
+<h2>Negative logistic distribution</h2>
+<p>The <code>neglog</code> distribution function due to <span class="citation">Galambos (1975)</span> is <span class="math display">\[\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[ -\sum_{b \in
+\mathbb{B}_d} (-1)^{|b|}\left(\sum_{i \in b}
+{x_i}^{\alpha}\right)^{-\frac{1}{\alpha}}\right]
+\end{align*}\]</span> for <span class="math inline">\(\alpha \geq
+0\)</span> <span class="citation">(Dombry, Engelke, and Oesting
+2016)</span>. The associated spectral density is <span class="math display">\[\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w}) = \frac{1}{d}
+\frac{\Gamma(1/\alpha+1)}{\Gamma(1/\alpha + d-1)}
+\alpha^d\left(\prod_{i=1}^d w_j\right)^{\alpha-1}\left(\sum_{i=1}^d
+w_i^{\alpha}\right)^{-1/\alpha-d}
+\end{align*}\]</span></p>
+</div>
+<div id="asymmetric-negative-logistic-distribution" class="section level2">
+<h2>Asymmetric negative logistic distribution</h2>
+<p>The asymmetric negative logistic (<code>aneglog</code>) model is
+alluded to in <span class="citation">Joe (1990)</span> as a
+generalization of the Galambos model. It is constructed in the same way
+as the asymmetric logistic distribution; see Theorem~1 in <span class="citation">Stephenson (2003)</span>. Let <span class="math inline">\(\alpha_b \leq 0\)</span> for all <span class="math inline">\(b \in \mathbb{B}_d\)</span> and <span class="math inline">\(\theta_{i, b} \geq 0\)</span> with <span class="math inline">\(\sum_{b \in \mathbb{B}_d} \theta_{i, b}
+=1\)</span> for <span class="math inline">\(i=1, \ldots, d\)</span>; the
+distribution function is <span class="math display">\[\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[ -\sum_{b \in
+\mathbb{B}_d}(-1)^{|b|}
+\left\{\sum_{i \in b}
+\left(\frac{\theta_{i,
+b}}{x_i}\right)^{\alpha_b}\right\}^{\frac{1}{\alpha_b}}\right].
+\end{align*}\]</span> In particular, it does not correspond to the
+``negative logistic distribution’’ given in e.g., Section 4.2 of <span class="citation">Coles and Tawn (1991)</span> or Section3.5.3 of <span class="citation">Kotz and Nadarajah (2000)</span>. The latter is not a
+valid distribution function in dimension <span class="math inline">\(d
+\geq 3\)</span> as the constraints therein on the parameters <span class="math inline">\(\theta_{i, b}\)</span> are necessary, but not
+sufficient.</p>
+<p><span class="citation">Joe (1990)</span> mentions generalizations of
+the distribution as given above but the constraints were not enforced
+elsewhere in the literature. The proof that the distribution is valid
+follows from Theorem~1 of <span class="citation">Stephenson
+(2003)</span> as it is a max-mixture. Note that the parametrization of
+the asymmetric negative logistic distribution does not match the
+bivariate implementation of <code>rbvevd</code>.</p>
+</div>
+<div id="multilogistic-distribution" class="section level2">
+<h2>Multilogistic distribution</h2>
+<p>This multivariate extension of the logistic, termed multilogistic
+(<code>bilog</code>) proposed by <span class="citation">M.-O. Boldi
+(2009)</span>, places mass on the interior of the simplex. Let <span class="math inline">\(\boldsymbol{W} \in \mathbb{S}_d\)</span> be the
+solution of <span class="math display">\[\begin{align*}
+\frac{W_j}{W_d}=\frac{C_jU_j^{-\alpha_j}}{C_dU_d^{-\alpha_d}}, \quad
+j=1, \ldots, d
+\end{align*}\]</span> where <span class="math inline">\(C_j=\Gamma(d-\alpha_j)/\Gamma(1-\alpha_j)\)</span>
+for <span class="math inline">\(j=1, \ldots, d\)</span> and <span class="math inline">\(\boldsymbol{U} \in \mathbb{S}_d\)</span> follows a
+<span class="math inline">\(d\)</span>-mixture of Dirichlet with the
+<span class="math inline">\(j\)</span>th component being <span class="math inline">\(\mathcal{D}(\boldsymbol{1}-\delta_{j}\alpha_j)\)</span>,
+so that the mixture has density function <span class="math display">\[\begin{align*}
+h_{\boldsymbol{U}}(\boldsymbol{u})=\frac{1}{d} \sum_{j=1}^d
+\frac{\Gamma(d-\alpha_j)}{\Gamma(1-\alpha_j)} u_j^{-\alpha_j}
+\end{align*}\]</span> for <span class="math inline">\(0&lt;\alpha_j
+&lt;1, j=1, \ldots, d\)</span>. The spectral density of the
+multilogistic distribution is thus <span class="math display">\[\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w}) = \frac{1}{d} \left(\sum_{j=1}^d
+\alpha_ju_j\right)^{-1} \left(\prod_{j=1}^d \alpha_ju_d
+\right)\left(\sum_{j=1}^d
+\frac{\Gamma(d-\alpha_j)}{\Gamma(1-\alpha_j)}u_j^{-\alpha_j}\right)\prod_{j=1}^d
+w_j^{-1}
+\end{align*}\]</span> for <span class="math inline">\(\alpha_j \in
+(0,1)\)</span> <span class="math inline">\((j=1, \ldots,
+d)\)</span>.</p>
+</div>
+<div id="coles-and-tawn-dirichlet-distribution" class="section level2">
+<h2>Coles and Tawn Dirichlet distribution</h2>
+<p>The Dirichlet (<code>ct</code>) model of <span class="citation">Coles
+and Tawn (1991)</span> <span class="math display">\[\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w}) = \frac{1}{d} \frac{\Gamma
+\left(1+\sum_{j=1}^d \alpha_j\right)}{\prod_{j=1}^d \alpha_jw_j}
+\left(\sum_{j=1}^d \alpha_jw_j\right)^{-(d+1)}\prod_{j=1}^d \alpha_j
+\prod_{j=1}^d \left(\frac{\alpha_jw_j}{\sum_{k=1}^d
+\alpha_kw_k}\right)^{\alpha_j-1}
+\end{align*}\]</span> for <span class="math inline">\(\alpha_j&gt;0.\)</span></p>
+</div>
+<div id="scaled-extremal-dirichlet" class="section level2">
+<h2>Scaled extremal Dirichlet</h2>
+<p>The angular density of the scaled extremal Dirichlet
+(<code>sdir</code>) model with parameters <span class="math inline">\(\rho &gt; -\min(\boldsymbol{\alpha})\)</span> and
+<span class="math inline">\(\boldsymbol{\alpha} \in
+\mathbb{R}^{d}_{+}\)</span> is given, for all <span class="math inline">\(\boldsymbol{w} \in \mathbb{S}_d\)</span>, by <span class="math display">\[\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w})=\frac{\Gamma(\bar{\alpha}+\rho)}{d\rho^{d-1}\prod_{i=1}^d\Gamma(\alpha_i)}
+\bigl\langle\{\boldsymbol{c}(\boldsymbol{\alpha},\rho)\}^{1/\rho},\boldsymbol{w}^{1/\rho}\bigr\rangle^{-\rho-\bar{\alpha}}\prod_{i=1}^{d}
+\{c(\alpha_i,\rho)\}^{\alpha_i/\rho}w_i^{\alpha_i/\rho-1}.
+\end{align*}\]</span> where <span class="math inline">\(\boldsymbol{c}(\boldsymbol{\alpha},\rho)\)</span>
+is the <span class="math inline">\(d\)</span>-vector with entries <span class="math inline">\(\Gamma(\alpha_i+\rho)/\Gamma(\alpha_i)\)</span>
+for <span class="math inline">\(i=1, \ldots, d\)</span> and <span class="math inline">\(\langle \cdot, \cdot \rangle\)</span> denotes the
+inner product between two vectors.</p>
+</div>
+<div id="hueslerreiss" class="section level2">
+<h2>Huesler–Reiss</h2>
+<p>The Huesler–Reiss model (<code>hr</code>), due to <span class="citation">Hüsler and Reiss (1989)</span>, is a special case of
+the Brown–Resnick process. While <span class="citation">Engelke et al.
+(2015)</span> state that H&quot;usler–Reiss variates can be sampled following
+the same scheme, the spatial analog is conditioned on a particular site
+(<span class="math inline">\(\boldsymbol{s}_0\)</span>), which
+complicates the comparisons with the other methods.</p>
+<p>Let <span class="math inline">\(I_{-j}=\{1, \ldots, d\} \setminus
+\{j\}\)</span> and <span class="math inline">\(\lambda_{ij}^2 \geq
+0\)</span> be entries of a strictly conditionally negative definite
+matrix <span class="math inline">\(\boldsymbol{\Lambda}\)</span>, for
+which <span class="math inline">\(\lambda_{ij}^2=\lambda_{ji}^2\)</span>. Then,
+following <span class="citation">Nikoloulopoulos, Joe, and Li
+(2009)</span> (Remark~2.5) and <span class="citation">Huser and Davison
+(2013)</span>, we can write the distribution function as <span class="math display">\[\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[ -\sum_{j=1}^d
+\frac{1}{x_j} \Phi_{d-1, \boldsymbol{\Sigma}_{-j}} \left( \lambda_{ij}-
+\frac{1}{2\lambda_{ij}}  \log\left(\frac{x_j}{x_i}\right), i \in
+I_{-j}\right)\right].
+\end{align*}\]</span> where the partial correlation matrix <span class="math inline">\(\boldsymbol{\Sigma}_{-j}\)</span> has elements
+<span class="math display">\[\begin{align*}
+\varrho_{i,k; j}=
+\frac{\lambda_{ij}^2+\lambda_{kj}^2-\lambda_{ik}^2}{2\lambda_{ij}\lambda_{kj}}
+\end{align*}\]</span> and <span class="math inline">\(\lambda_{ii}=0\)</span> for all <span class="math inline">\(i \in I_{-j}\)</span> so that the diagonal entries
+<span class="math inline">\(\varrho_{i,i; j}=1\)</span>. <span class="citation">Engelke et al. (2015)</span> uses the covariance matrix
+with entries are <span class="math inline">\(\varsigma=2(\lambda_{ij}^2+\lambda_{kj}^2-\lambda_{ik}^2)\)</span>,
+so the resulting expression is evaluated at <span class="math inline">\(2\boldsymbol{\lambda}_{.j}^2-\log({x_j}/{\boldsymbol{x}_{-j}})\)</span>
+instead. We recover the same expression by standardizing, since this
+amounts to division by the standard deviations <span class="math inline">\(2\boldsymbol{\lambda}_{.j}\)</span></p>
+<p>The package implementation has a bivariate implementation of the
+H&quot;usler–Reiss distribution with dependence parameter <span class="math inline">\(r\)</span>, with <span class="math inline">\(r_{ik}=1/\lambda_{ik}\)</span> or <span class="math inline">\(2/r=\sqrt{2\gamma(\boldsymbol{h})}\)</span> for
+<span class="math inline">\(\boldsymbol{h}=\|\boldsymbol{s}_i-\boldsymbol{s}_i\|\)</span>
+for the Brown–Resnick model. In this setting, it is particularly easy
+since the only requirement is non-negativity of the parameter. For
+inference in dimension <span class="math inline">\(d&gt;2\)</span>, one
+needs to impose the constraint <span class="math inline">\(\boldsymbol{\Lambda}=\{\lambda_{ij}^2\}_{i, j=1}^d
+\in
+\mathcal{D}\)</span> (cf. <span class="citation">Engelke et al.
+(2015)</span>, p.3), where <span class="math display">\[\begin{multline*}
+\mathcal{D}=\Biggl\{\mathbf{A}\in [0, \infty)^{d\times d}:
+\boldsymbol{x}^\top\!\!\mathbf{A}\boldsymbol{x} &lt;0, \ \forall \
+\boldsymbol{x} \in \mathbb{R}^{d}
+\setminus\{\boldsymbol{0}\} \\ \qquad
+\text{ with } \sum_{i=1}^d x_i=0, a_{ij}=a_{ji}, a_{ii}=0 \ \forall \ i,
+j \in \{1,\ldots, d\}\Biggr\}
+\end{multline*}\]</span> denotes the set of symmetric conditionally
+negative definite matrices with zero diagonal entries. An avenue to
+automatically satisfy these requirements is to optimize over a symmetric
+positive definite matrix parameter <span class="math inline">\(\boldsymbol{\varSigma}=\mathbf{L}^\top\mathbf{L}\)</span>,
+where <span class="math inline">\(\mathbf{L}\)</span> is an upper
+triangular matrix whose diagonal element are on the log-scale to ensure
+uniqueness of the Cholesky factorization; see <span class="citation">Pinheiro and Bates (1996)</span>. By taking <span class="math display">\[\begin{align*}
+\boldsymbol{\Lambda}(\boldsymbol{\varSigma})= \begin{pmatrix} 0 &amp;
+\mathrm{diag} (\boldsymbol{\varSigma})^\top \\
+\mathrm{diag}(\boldsymbol{\varSigma}) &amp;
+\boldsymbol{1}\mathrm{diag}(\boldsymbol{\varSigma})^\top
++ \mathrm{diag}(\boldsymbol{\varSigma})\boldsymbol{1}^\top - 2
+\boldsymbol{\varSigma}
+\end{pmatrix}
+\end{align*}\]</span> one can perform unconstrained optimization for the
+non-zero elements of <span class="math inline">\(\mathbf{L}\)</span>
+which are in one-to-one correspondence with those of <span class="math inline">\(\boldsymbol{\Lambda}\)</span>.</p>
+<p>It easily follows that generating <span class="math inline">\(\boldsymbol{Z}\)</span> from a <span class="math inline">\(d-1\)</span> dimensional log-Gaussian distribution
+with covariance <span class="math inline">\(\mathsf{Co}(Z_i,
+Z_k)=2(\lambda_{ij}^2+\lambda_{kj}^2-\lambda_{ik}^2)\)</span> for <span class="math inline">\(i,
+k \in I_{-j}\)</span> with mean vector <span class="math inline">\(-2\lambda_{\bullet j}^2\)</span> gives the finite
+dimensional analog of the Brown–Resnick process in the mixture
+representation of <span class="citation">Dombry, Engelke, and Oesting
+(2016)</span>.</p>
+<p>The function checks conditional negative definiteness of the matrix.
+The easiest way to do so negative definiteness of <span class="math inline">\(\boldsymbol{\Lambda}\)</span> with real entries is
+to form <span class="math inline">\(\tilde{\boldsymbol{\Lambda}}=\mathbf{P}\boldsymbol{\Lambda}\mathbf{P}^\top\)</span>,
+where <span class="math inline">\(\mathbf{P}\)</span> is an <span class="math inline">\(d \times d\)</span> matrix with ones on the
+diagonal, <span class="math inline">\(-1\)</span> on the <span class="math inline">\((i, i+1)\)</span> entries for <span class="math inline">\(i=1, \ldots d-1\)</span> and zeros elsewhere. If
+the matrix <span class="math inline">\(\boldsymbol{\Lambda} \in
+\mathcal{D}\)</span>, then the eigenvalues of the leading <span class="math inline">\((d-1) \times (d-1)\)</span> submatrix of <span class="math inline">\(\tilde{\boldsymbol{\Lambda}}\)</span> will all be
+negative.</p>
+<p>For a set of <span class="math inline">\(d\)</span> locations, one
+can supply the variogram matrix as valid input to the method.</p>
+</div>
+<div id="brownresnick-process" class="section level2">
+<h2>Brown–Resnick process</h2>
+<p>The Brown–Resnick process (<code>br</code>) is the functional
+extension of the H&quot;usler–Reiss distribution, and is a max-stable process
+associated with the log-Gaussian distribution. It is often in the
+spatial setting conditioned on a location (typically the origin). Users
+can provide a variogram function that takes distance as argument and is
+vectorized. If <code>vario</code> is provided, the model will simulate
+from an intrinsically stationary Gaussian process. The user can
+alternatively provide a covariance matrix <code>sigma</code> obtained by
+conditioning on a site, in which case simulations are from a stationary
+Gaussian process. See <span class="citation">Engelke et al.
+(2015)</span> or <span class="citation">Dombry, Engelke, and Oesting
+(2016)</span> for more information.</p>
+</div>
+<div id="extremal-student" class="section level2">
+<h2>Extremal Student</h2>
+<p>The extremal Student (<code>extstud</code>) model of <span class="citation">Nikoloulopoulos, Joe, and Li (2009)</span>, eq. 2.8,
+with unit Fréchet margins is <span class="math display">\[\begin{align*}
+\Pr(\boldsymbol{X} \le \boldsymbol{x}) = \exp \left[-\sum_{j=1}^d
+\frac{1}{x_j} T_{d-1, \nu+1, \mathbf{R}_{-j}}\left(
+\sqrt{\frac{\nu+1}{1-\rho_{ij}^2}}
+\left[\left(\frac{x_i}{x_j}\right)^{1/\nu}\!\!\!-\rho_{ij}\right], i \in
+I_{-j}  \right)\right],
+\end{align*}\]</span> where <span class="math inline">\(T_{d-1}\)</span>
+is the distribution function of the $d-1 $ dimensional Student-<span class="math inline">\(t\)</span> distribution and the partial
+correlation matrix <span class="math inline">\(\mathbf{R}_{-j}\)</span>
+has diagonal entry <span class="math display">\[r_{i,i;j}=1, \qquad
+r_{i,k;j}=\frac{\rho_{ik}-\rho_{ij}\rho_{kj}}{\sqrt{1-\rho_{ij}^2}\sqrt{1-\rho_{kj}^2}}\]</span>
+for <span class="math inline">\(i\neq k, i, k \in I_{-j}\)</span>.</p>
+<p>The user must provide a valid correlation matrix (the function checks
+for diagonal elements), which can be obtained from a variogram.</p>
+</div>
+<div id="dirichlet-mixture" class="section level2">
+<h2>Dirichlet mixture</h2>
+<p>The Dirichlet mixture (<code>dirmix</code>) proposed by <span class="citation">M.-O. Boldi and Davison (2007)</span>, see <span class="citation">Dombry, Engelke, and Oesting (2016)</span> for details
+on the mixture. The spectral density of the model is <span class="math display">\[\begin{align*}
+h_{\boldsymbol{W}}(\boldsymbol{w}) = \sum_{k=1}^m \pi_k
+\frac{\Gamma(\alpha_{1k}+ \cdots + \alpha_{dk})}{\prod_{i=1}^d
+\Gamma(\alpha_{ik})} \left(1-\sum_{i=1}^{d-1}
+w_i\right)^{\alpha_{dk}-1}\prod_{i=1}^{d-1} w_{i}^{\alpha_{ik}-1}
+\end{align*}\]</span> The argument <code>param</code> is thus a <span class="math inline">\(d \times m\)</span> matrix of coefficients, while
+the argument for the <span class="math inline">\(m\)</span>-vector
+<code>weights</code> gives the relative contribution of each Dirichlet
+mixture component.</p>
+</div>
+<div id="smith-model" class="section level2">
+<h2>Smith model</h2>
+<p>The Smith model (<code>smith</code>) is from the unpublished report
+of <span class="citation">Smith (1990)</span>. It corresponds to a
+moving maximum process on a domain <span class="math inline">\(\mathbb{X}\)</span>. The de Haan representation of
+the process is <span class="math display">\[\begin{align*}
+Z(x)=\max_{i \in \mathbb{N}} \zeta_i h(x-\eta_i), \qquad \eta_i \in
+\mathbb{X}
+\end{align*}\]</span> where <span class="math inline">\(\{\zeta_i,
+\eta_i\}_{i \in \mathbb{N}}\)</span> is a Poisson point process on <span class="math inline">\(\mathbb{R}_{+} \times \mathbb{X}\)</span> with
+intensity measure <span class="math inline">\(\zeta^{-2}\mathrm{d} \zeta
+\mathrm{d} \eta\)</span> and <span class="math inline">\(h\)</span> is
+the density of the multivariate Gaussian distribution. Other <span class="math inline">\(h\)</span> could be used in principle, but are not
+implemented.</p>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-Boldi:2009" class="csl-entry">
+Boldi, Marc-Olivier. 2009. <span>“A Note on the Representation of
+Parametric Models for Multivariate Extremes.”</span> <em>Extremes</em>
+12 (3): 211–18. <a href="https://doi.org/10.1007/s10687-008-0076-0">https://doi.org/10.1007/s10687-008-0076-0</a>.
+</div>
+<div id="ref-Boldi:2007" class="csl-entry">
+Boldi, M.-O., and A. C. Davison. 2007. <span>“A Mixture Model for
+Multivariate Extremes.”</span> <em>Journal of the Royal Statistical
+Society: Series B (Statistical Methodology)</em> 69 (2): 217–29. <a href="https://doi.org/10.1111/j.1467-9868.2007.00585.x">https://doi.org/10.1111/j.1467-9868.2007.00585.x</a>.
+</div>
+<div id="ref-Coles:1991" class="csl-entry">
+Coles, Stuart G., and Jonathan A. Tawn. 1991. <span>“Modelling Extreme
+Multivariate Events.”</span> <em>Journal of the Royal Statistical
+Society. Series B (Methodological)</em> 53 (2): 377–92. <a href="http://www.jstor.org/stable/2345748">http://www.jstor.org/stable/2345748</a>.
+</div>
+<div id="ref-Dombry:2016" class="csl-entry">
+Dombry, Clément, Sebastian Engelke, and Marco Oesting. 2016.
+<span>“Exact Simulation of Max-Stable Processes.”</span>
+<em>Biometrika</em> 103 (2): 303–17. <a href="https://doi.org/10.1093/biomet/asw008">https://doi.org/10.1093/biomet/asw008</a>.
+</div>
+<div id="ref-Engelke:2015" class="csl-entry">
+Engelke, Sebastian, Alexander Malinowski, Zakhar Kabluchko, and Martin
+Schlather. 2015. <span>“Estimation of
+<span>H</span>üsler–<span>R</span>eiss Distributions and
+<span>B</span>rown–<span>R</span>esnick Processes.”</span> <em>Journal
+of the Royal Statistical Society: Series B (Statistical
+Methodology)</em> 77 (1): 239–65. <a href="https://doi.org/10.1111/rssb.12074">https://doi.org/10.1111/rssb.12074</a>.
+</div>
+<div id="ref-Galambos:1975" class="csl-entry">
+Galambos, János. 1975. <span>“Order Statistics of Samples from
+Multivariate Distributions.”</span> <em>J. Amer. Statist. Assoc.</em> 70
+(351, part 1): 674–80.
+</div>
+<div id="ref-Gumbel:1960" class="csl-entry">
+Gumbel, Émile J. 1960. <span>“Distributions Des Valeurs Extrêmes En
+Plusieurs Dimensions.”</span> <em>Publ. Inst. Statist. Univ. Paris</em>
+9: 171–73.
+</div>
+<div id="ref-Huser:2013" class="csl-entry">
+Huser, R., and A. C. Davison. 2013. <span>“Composite Likelihood
+Estimation for the <span>B</span>rown–<span>R</span>esnick
+Process.”</span> <em>Biometrika</em> 100 (2): 511–18. <a href="https://doi.org/10.1093/biomet/ass089">https://doi.org/10.1093/biomet/ass089</a>.
+</div>
+<div id="ref-Husler:1989" class="csl-entry">
+Hüsler, Jürg, and Rolf-Dieter Reiss. 1989. <span>“Maxima of Normal
+Random Vectors: Between Independence and Complete Dependence.”</span>
+<em>Statist. Probab. Lett.</em> 7 (4): 283–86. <a href="https://doi.org/10.1016/0167-7152(89)90106-5">https://doi.org/10.1016/0167-7152(89)90106-5</a>.
+</div>
+<div id="ref-Joe:1990" class="csl-entry">
+Joe, Harry. 1990. <span>“Families of Min-Stable Multivariate Exponential
+and Multivariate Extreme Value Distributions.”</span> <em>Statistics
+&amp; Probability Letters</em> 9 (1): 75–81. <a href="https://doi.org/10.1016/0167-7152(90)90098-R">https://doi.org/10.1016/0167-7152(90)90098-R</a>.
+</div>
+<div id="ref-Kotz:2000" class="csl-entry">
+Kotz, Samuel, and Saralees Nadarajah. 2000. <em>Extreme Value
+Distributions</em>. London: Imperial College Press. <a href="https://doi.org/10.1142/9781860944024">https://doi.org/10.1142/9781860944024</a>.
+</div>
+<div id="ref-Nikoloulopoulos:2009" class="csl-entry">
+Nikoloulopoulos, Aristidis K., Harry Joe, and Haijun Li. 2009.
+<span>“Extreme Value Properties of Multivariate <span class="math inline">\(t\)</span> Copulas.”</span> <em>Extremes</em> 12
+(2): 129–48.
+</div>
+<div id="ref-Pinheiro:1996" class="csl-entry">
+Pinheiro, José C., and Douglas M. Bates. 1996. <span>“Unconstrained
+Parametrizations for Variance-Covariance Matrices.”</span>
+<em>Statistics and Computing</em> 6 (3): 289–96. <a href="https://doi.org/10.1007/BF00140873">https://doi.org/10.1007/BF00140873</a>.
+</div>
+<div id="ref-Smith:1990" class="csl-entry">
+Smith, Richard L. 1990. <span>“Max-Stable Processes and Spatial
+Extremes.”</span> <a href="https://rls.sites.oasis.unc.edu/postscript/rs/spatex.pdf">https://rls.sites.oasis.unc.edu/postscript/rs/spatex.pdf</a>.
+</div>
+<div id="ref-Stephenson:2003" class="csl-entry">
+Stephenson, Alec. 2003. <span>“Simulating Multivariate Extreme Value
+Distributions of Logistic Type.”</span> <em>Extremes</em> 6 (1): 49–59.
+<a href="https://doi.org/10.1023/A:1026277229992">https://doi.org/10.1023/A:1026277229992</a>.
+</div>
+<div id="ref-Tawn:1990" class="csl-entry">
+Tawn, Jonathan A. 1990. <span>“Modelling Multivariate Extreme Value
+Distributions.”</span> <em>Biometrika</em> 77 (2): 245–53. <a href="https://doi.org/10.1093/biomet/77.2.245">https://doi.org/10.1093/biomet/77.2.245</a>.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
