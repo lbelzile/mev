@@ -43,6 +43,7 @@ The different models implemented are described in @Dombry:2016, but some other m
 
 
 ## Logistic
+
 The logistic model (`log`) of @Gumbel:1960 has distribution function
 \begin{align*}
 \Pr(\boldsymbol{X} \leq \boldsymbol{x})= \exp \left[ - \left(\sum_{i=1}^{n} {x_i}^{-\alpha}\right)^{\frac{1}{\alpha}}\right]
@@ -96,6 +97,7 @@ In particular, it does not correspond to the ``negative logistic distribution'' 
 
 @Joe:1990 mentions generalizations of the distribution as given above but the constraints were not enforced elsewhere in the literature. The proof that the distribution is valid follows from Theorem~1 of @Stephenson:2003 as it is a max-mixture.  Note that the parametrization of the asymmetric negative logistic distribution  does not match the bivariate implementation of `rbvevd`.
 
+
 ## Multilogistic distribution
 
 This multivariate extension of the logistic, termed multilogistic (`bilog`) proposed by @Boldi:2009, places mass on the interior of the simplex. Let $\boldsymbol{W} \in \mathbb{S}_d$ be the solution of
@@ -116,7 +118,8 @@ for $\alpha_j \in (0,1)$ $(j=1, \ldots, d)$.
 
 ## Coles and Tawn Dirichlet distribution
 
-The Dirichlet (`ct`) model of @Coles:1991
+
+The Dirichlet (`ct`) model of @Coles:1991 has spectral density
 \begin{align*}
 h_{\boldsymbol{W}}(\boldsymbol{w}) = \frac{1}{d} \frac{\Gamma \left(1+\sum_{j=1}^d \alpha_j\right)}{\prod_{j=1}^d \alpha_jw_j}
 \left(\sum_{j=1}^d \alpha_jw_j\right)^{-(d+1)}\prod_{j=1}^d \alpha_j \prod_{j=1}^d \left(\frac{\alpha_jw_j}{\sum_{k=1}^d
