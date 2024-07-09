@@ -25,5 +25,5 @@ samp <- rgp(n = 1000, shape = 0.2)
 PickandsXU(samp, m = 3)
 }
 \references{
-Oorschot, J, J. Segers and C. Zhou (2023+), Tail inference using extreme U-statistics
+Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  Electron. J. Statist. 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
 }

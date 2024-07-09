@@ -8,7 +8,7 @@
 #' The calculations are based on the recursions provided in Lemma 4.3 of Oorschot et al.
 #' @param xdat vector of observations of length \eqn{n}
 #' @param m number of largest order statistics \eqn{3 \leq m \leq n}. Choosing \eqn{m = n} amounts to using only the three largest observations in the sample.
-#' @references Oorschot, J, J. Segers and C. Zhou (2023+), Tail inference using extreme U-statistics
+#' @references Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  Electron. J. Statist. 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
 #' @export
 #' @examples
 #' samp <- rgp(n = 1000, shape = 0.2)

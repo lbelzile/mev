@@ -18,5 +18,5 @@ Abisko Scientific Research Station
 Daily non-zero rainfall measurements in Abisko (Sweden) from January 1913 until December 2014.
 }
 \references{
-A. Kiriliouk, H. Rootzén, J. Segers and J.L. Wadsworth (2019), \emph{Peaks over thresholds modeling With multivariate generalized Pareto distributions},  Technometrics, \bold{61}(1), 123--135, \code{DOI:10.1080/00401706.2018.1462738}
+A. Kiriliouk, H. Rootzen, J. Segers and J.L. Wadsworth (2019), \emph{Peaks over thresholds modeling with multivariate generalized Pareto distributions},  Technometrics, \bold{61}(1), 123--135, <doi:10.1080/00401706.2018.1462738>
 }
