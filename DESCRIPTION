@@ -25,6 +25,7 @@ Suggests:
     mvtnorm,
     gmm,
     revdbayes,
+    rmarkdown,
     ismev,
     tinytest,
     TruncatedNormal (>= 1.1)

@@ -35,8 +35,11 @@ vignettes/01-univariate_cache/*
 vignettes/01-univariate_files/*
 vignettes/04-simulation_cache/*
 vignettes/04-simulation_files/*
+mev-vignette-back.pdf
 cran-comments.md
 R/mgp.R
 R/taildep2.R
 ^revdep$
 ^CRAN-SUBMISSION$
+^doc$
+^Meta$
