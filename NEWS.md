@@ -1,3 +1,14 @@
+# mev 1.18  (Release date ???)
+
+## New:
+
+- Stein's weighted generalized Pareto estimator with `fit.wgpd`
+- Multiple shape estimators (Hill, Pickands, moment estimator, generalized quantile) via `fit.shape` and specific routines `shape.moment`, `shape.pickands`, `shape.pickandsxu`, `shape.genquant` and `shape.hill`.
+
+## Changes:
+
+- Function `PickandsXU` is deprecated and replaced with `shape.pickandsxu`, 
+
 # mev 1.17  (Release date 2024-07-09)
 
 ## Fixes:
