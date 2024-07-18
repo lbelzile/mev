@@ -156,20 +156,20 @@ shape.genquant <- function(xdat,
     }
   }
   if(type == "genmean"){
-    hill <- shape.hill(k = seq_len(kmax), xdat = xdat)
+    hill <- shape.hill(k = seq_len(kmax+1), xdat = xdat)
     ES <- log(xdat[hill$k]*hill$shape)
   } else if(type == "genmed"){
-    ES <- xdat[floor(p*seq_len(kmax))+1] - xdat[seq_len(kmax)+1]
+    ES <- log(xdat[floor(p*seq_len(kmax+1))+1] - xdat[seq_len(kmax+1)+1])
   } else if(type == "trimmean"){
-    ES <- sapply(seq_len(kmax), FUN = function(ks){
+    ES <- log(sapply(seq_len(kmax+1), FUN = function(ks){
       mean(xdat[(floor(p*ks)+1):ks])
-    }) - xdat[seq_len(kmax)+1]
+    }) - xdat[seq_len(kmax+1)+1])
   }
     shape <- length(k)
     for(j in seq_along(k)){
       ks <- k[j]
       if(weight_fun){
-       we <- weight_fun((1:ks)/(k+1))
+       we <- weight_fun((1:ks)/(ks+1))
       }
       shape[j] <- sum(we * (log(ks + 1) - log(1:ks))*(ES[1:ks] - ES[ks+1]))/ sum(we * (log(ks + 1) - log(1:ks))^2)
     }
