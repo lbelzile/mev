@@ -4,7 +4,7 @@
 \alias{fit.wgpd}
 \title{Maximum likelihood estimation for weighted generalized Pareto distribution}
 \usage{
-fit.wgpd(xdat, threshold = 0, weightfun = Stein_weights, ...)
+fit.wgpd(xdat, threshold = 0, weightfun = Stein_weights, start = NULL, ...)
 }
 \arguments{
 \item{xdat}{vector of observations}
@@ -12,14 +12,15 @@ fit.wgpd(xdat, threshold = 0, weightfun = Stein_weights, ...)
 \item{threshold}{numeric, value of the threshold}
 
 \item{weightfun}{function whose first argument is the length of the weight vector}
+
+\item{start}{optional vector of scale and shape parameters for the optimization routine, defaults to \code{NULL}}
 }
 \value{
 a list with components
 \itemize{
 \item \code{estimate} a vector containing the \code{scale} and \code{shape} parameters (optimized and fixed).
-\item \code{std.err} a vector containing the standard errors. For \code{method = "obre"}, these are Huber's robust standard errors.
-\item \code{vcov} the variance covariance matrix, obtained as the numerical inverse of the observed information matrix. For \code{method = "obre"},
-this is the sandwich Godambe matrix inverse.
+\item \code{std.err} a vector containing the standard errors.
+\item \code{vcov} the variance covariance matrix, obtained as the numerical inverse of the observed information matrix.
 \item \code{threshold} the threshold.
 \item \code{method} the method used to fit the parameter. See details.
 \item \code{nllh} the negative log-likelihood evaluated at the parameter \code{estimate}.
