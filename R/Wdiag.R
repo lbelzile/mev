@@ -932,7 +932,7 @@ plot.mev_thdiag_wadsworth <-
 #' @export
 print.mev_thdiag_wadsworth <-
   function(x, digits = max(3, getOption("digits") - 3), ...) {
-    cat("Threshold selection method: Wadsworth's white noise test\n based on sequential Poisson process superposition")
+    cat("Threshold selection method: Wadsworth's white noise test\n based on sequential Poisson process superposition.\n")
     cat(switch(x$model,
                "nhpp" = "inhomogeneous Poisson process (shape)",
                "invexp" = "coefficient of tail dependence \n(exponential, reciprocal rate)",

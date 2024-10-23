@@ -28,11 +28,14 @@ stein_gp_lik <- function(pars, xdat, weights = rep(1, length(xdat)), ...){
   if((scale < 0) | ((shape < 0) & (1+shape*xdat[1]/scale < 0)) | shape < -1){
     return(-1e10)
   }
-  lp <- log1p(shape*xdat/scale)
   if(!isTRUE(all.equal(shape, 0, tol = 1e-5))){
-  -sum(weights)*log(scale) -
+    lp <- log1p(shape*xdat/scale)
+   return(-sum(weights)*log(scale) -
     sum(weights * (seq_len(n)/shape + 1) * lp) +
-    sum(weights[-n] * seq_len(n-1) * lp[-1])/shape
+    sum(weights[-n] * seq_len(n-1) * lp[-1])/shape)
+  } else{
+    # Exponential sub-case
+    return(sum(weights*dexp(x = xdat, rate = 1/scale, log = TRUE)))
   }
 }
 
@@ -61,12 +64,12 @@ Stein_weights <- function(n, gamma = 1){
 #' @param xdat vector of observations
 #' @param threshold numeric, value of the threshold
 #' @param weightfun function whose first argument is the length of the weight vector
+#' @param start optional vector of scale and shape parameters for the optimization routine, defaults to \code{NULL}
 #' @return a list with components
 #' \itemize{
 #' \item \code{estimate} a vector containing the \code{scale} and \code{shape} parameters (optimized and fixed).
-#' \item \code{std.err} a vector containing the standard errors. For \code{method = "obre"}, these are Huber's robust standard errors.
-#' \item \code{vcov} the variance covariance matrix, obtained as the numerical inverse of the observed information matrix. For \code{method = "obre"},
-#' this is the sandwich Godambe matrix inverse.
+#' \item \code{std.err} a vector containing the standard errors.
+#' \item \code{vcov} the variance covariance matrix, obtained as the numerical inverse of the observed information matrix.
 #' \item \code{threshold} the threshold.
 #' \item \code{method} the method used to fit the parameter. See details.
 #' \item \code{nllh} the negative log-likelihood evaluated at the parameter \code{estimate}.
@@ -76,7 +79,7 @@ Stein_weights <- function(n, gamma = 1){
 #' \item \code{weights} vector of weights for exceedances.
 #' \item \code{exceedances} excess over the threshold, sorted in decreasing order.
 #' }
-fit.wgpd <- function(xdat, threshold = 0, weightfun = Stein_weights, ...){
+fit.wgpd <- function(xdat, threshold = 0, weightfun = Stein_weights, start = NULL, ...){
   xdat <- as.numeric(xdat[is.finite(xdat)])
   ntot <- length(xdat)
   # Extract exceedances
@@ -94,19 +97,22 @@ fit.wgpd <- function(xdat, threshold = 0, weightfun = Stein_weights, ...){
   exc <- xdat
   xdat <- exc/sc
  # Define inequality and support constraints for the parameters
-  hin <- function(par, maxdat = NULL, thresh = 0, ...) {
-    stopifnot(`Argument "maxdat" is missing, with no default value.` = !is.null(maxdat))
+  hin <- function(par, xdat, weights, thresh = 0, ...) {
     c(par[1], par[2], ifelse(par[2] < 0, thresh - par[1]/par[2] -
-                               maxdat, 1e-05))
+                               xdat[1], 1e-05))
   }
   ineqLB <- c(0, -1, 0)
   ineqUB <- c(Inf, 10, Inf)
   LB <- c(0, -1)
   UB <- c(Inf, 2)
-  start <- c(1, 0.1)
+  if(is.null(start)){
+    start <- c(1, 0.1)
+  } else{
+    stopfinot(length(start == 2L))
+  }
   opt <- Rsolnp::solnp(pars = start,
-                fun = function(pars, ...){
-                  -stein_gp_lik(pars = pars, ...)},
+                fun = function(pars, xdat, weights, thresh = 0, ...){
+                  -stein_gp_lik(pars = pars, xdat = xdat, weights = weights, ...)},
                 ineqfun = hin,
                 ineqLB = ineqLB,
                 ineqUB = ineqUB,

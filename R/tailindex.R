@@ -94,8 +94,9 @@ shape.hill <- function(xdat, k) {
   }
   n <- length(logdata)
   k <- as.integer(sort(k))
+  k <- k[k < n]
   kmin <- k[1]
-  kmax <- min(k[length(k)], n)
+  kmax <- min(k[length(k)], n-1)
   n <- min(kmax + 1, n)
   ks <- kmin:(n - 1)
   cumlogdat <- cumsum(logdata[1:n])
@@ -135,6 +136,7 @@ shape.genquant <- function(xdat,
                decreasing = TRUE)
   n <- length(xdat)
   k <- as.integer(sort(k))
+  k <- k[k < n]
   kmax <- k[length(k)]
   if(k[1] < 5){
     stop("Invalid argument: \"k\" must be larger than 5 to reliably estimate the shape parameter.")
@@ -156,14 +158,14 @@ shape.genquant <- function(xdat,
     }
   }
   if(type == "genmean"){
-    hill <- shape.hill(k = seq_len(kmax+1), xdat = xdat)
+    hill <- shape.hill(k = seq_len(kmax), xdat = xdat)
     ES <- log(xdat[hill$k]*hill$shape)
   } else if(type == "genmed"){
-    ES <- log(xdat[floor(p*seq_len(kmax+1))+1] - xdat[seq_len(kmax+1)+1])
+    ES <- log(xdat[floor(p*seq_len(kmax))+1] - xdat[seq_len(kmax)+1])
   } else if(type == "trimmean"){
-    ES <- log(sapply(seq_len(kmax+1), FUN = function(ks){
+    ES <- log(sapply(seq_len(kmax), FUN = function(ks){
       mean(xdat[(floor(p*ks)+1):ks])
-    }) - xdat[seq_len(kmax+1)+1])
+    }) - xdat[seq_len(kmax)+1])
   }
     shape <- length(k)
     for(j in seq_along(k)){
@@ -250,6 +252,39 @@ shape.moment <- function(xdat, k){
   }
 }
 
+#' de Vries shape estimator
+#'
+#' Given a sample of exceedances, compute the moment estimator of the positive shape parameter using the ratio of log ratio of exceedance and it's square.
+#'
+#' @references de Haan, L. and Peng, L. (1998). \emph{Comparison of tail index estimators}, Statistica Neerlandica 52, 60-70.
+#' @export
+#' @inheritParams shape.pickands
+#' @return a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{k} is a scalar.
+shape.vries <- function(xdat, k){
+  k <- sort(as.integer(k))
+  xdat <- sort(xdat[is.finite(xdat) & xdat > 0],
+               decreasing = TRUE)
+  logdata <- as.numeric(log(xdat))
+  n <- min(k[length(k)], length(logdata))
+  stopifnot(k[1] >= 5,
+            k[length(k)] < length(logdata))
+  cumlogdat <- cumsum(logdata[1:n])
+  M1 <- cumlogdat[k] / k - logdata[k + 1]
+  shape <- numeric(length = length(k))
+  for(i in seq_along(k)){
+    M2 <- mean((logdata[1:k[i]] - logdata[k[i]+1])^2)
+    shape[i] <- 0.5*M2/M1[k[i]]
+  }
+  if(length(k) > 1){
+    return(
+      data.frame(k, shape)
+    )
+  } else{
+    return(shape)
+  }
+}
+
+
 #' Shape parameter estimates
 #'
 #' Wrapper to estimate the tail index or shape parameter of an extreme value distribution. Each function has similar sets of arguments, a vector or scalar number of order statistics \code{k} and
@@ -261,7 +296,7 @@ shape.moment <- function(xdat, k){
 #' @return a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{k} is a scalar.
 fit.shape <- function(xdat,
                       k,
-                      method = c("hill","pickandsxu","osz","mom","dekkers","bvt","genquant","pickands"),
+                      method = c("hill","pickandsxu","osz","vries","mom","dekkers","bvt","genquant","pickands"),
                       ...){
   method <- match.arg(method)
   if(method == "hill"){
@@ -274,5 +309,168 @@ fit.shape <- function(xdat,
    return(shape.genquant(xdat = xdat, k = k, ...))
   } else if(method == "pickands"){
     return(shape.pickands(xdat = xdat, k = k))
+  } else if(method == "vries"){
+    return(shape.vries(xdat = xdat, k = k))
+  }
+}
+
+
+#' Estimator of the second order tail index parameter
+#'
+#'
+#' @param xdat vector of positive observations
+#' @param k number of highest order statistics to use for estimation
+#' @param method string for the estimator
+#' @param ... additional arguments passed to individual routinescurrently ignored.
+#' @example
+#' # Example with rho = -0.2
+#' n <- 1000
+#' xdat <- mev::rgp(n = n, shape = 0.2)
+#' kmin <- floor(n^0.995)
+#' kmax <- ceiling(n^0.999)
+#' rho_est <- fit.rho(
+#'    xdat = xdat,
+#'    k = n - kmin:kmax)
+#' rho_med <- mean(rho_est$rho)
+fit.rho <- function(xdat, k, method = c("fagh","dk","ghp"), ...){
+ method <- match.arg(method)
+ if(method == "fagh"){
+  rho.fagh(xdat = xdat, k = k, ...)
+ } else if(method == "dk"){
+   rho.dk(xdat = xdat, k = k, ...)
+ } else if(method == "ghp"){
+   rho.ghp(xdat = xdat, k = k, ...)
+ }
+}
+#' Second order tail index estimator of Drees and Kaufmann
+#'
+#' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Drees and Kaufmann (1998)
+#'
+#' @references Drees, H. and E. Kaufmann (1998). \emph{Selecting the optimal sample fraction in univariate extreme value estimation}, Stochastic Processes and their Applications, 75(\bold{2}), 149-172, <doi:10.1016/S0304-4149(98)00017-9>.
+#' @inheritParams fit.rho
+#' @param xdat vector of positive observations
+#' @param k number of highest order statistics to use for estimation
+#' @param tau tuning parameter \eqn{\tau \in (0,1)}
+rho.dk <- function(xdat, k, tau = 0.5){
+ stopifnot(length(tau) == 1L, tau > 0, tau < 1)
+  xdat <- as.numeric(xdat[is.finite(xdat) & xdat > 0])
+  logdata <- log(sort(xdat, decreasing = TRUE))
+  n <- length(logdata)
+  k <- as.integer(sort(k))
+  stopifnot(k[1] >= 5, k[length(k)] < n)
+  tau <- as.numeric(tau)[1]
+  rho <- numeric(length(k))
+  for(j in seq_along(k)){
+    ks <- k[j]
+    Hl2k <- mean(logdata[1:floor(tau^2*ks)]) - logdata[floor(tau^2*ks)+1]
+    Hlk <- mean(logdata[1:floor(tau*ks)]) - logdata[floor(tau*ks)+1]
+    Hk <- mean(logdata[1:ks]) - logdata[ks+1]
+    rho[j] <- min(0, -log(abs((Hl2k-Hlk)/(Hlk-Hk)))/log(tau))
+  }
+  if(length(k) == 1L){
+    return(as.numeric(rho))
+  } else{
+    data.frame(k = k, rho = as.numeric(rho))
+  }
+}
+
+#' Second order tail index estimator of Fraga Alves et al.
+#
+#' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Fraga Alves et al. (2003)
+#'
+#' @references Fraga Alves, M.I., Gomes, M. Ivette, and de Haan, Laurens (2003). \emph{A new class of semi-parametric estimators of the second order parameter.} Portugaliae Mathematica. Nova Serie 60(\bold{2}), 193-213. <http://eudml.org/doc/50867>.
+#' @param xdat vector of positive observations
+#' @param k number of highest order statistics to use for estimation
+#' @param method string; only the estimator of Fraga Alves et al. \code{fagh} is currently supported
+#' @param tau scalar real tuning parameter. Default values is 0, which is typically chosen whenever \eqn{\rho \ge -1}. The choice \eqn{\tau=1} otherwise.
+#' @example
+#' # Example with rho = -0.2
+#' n <- 1000
+#' xdat <- mev::rgp(n = n, shape = 0.2)
+#' kmin <- floor(n^0.995)
+#' kmax <- ceiling(n^0.999)
+#' rho_est <- fit.fagh(
+#'    xdat = xdat,
+#'    k = n - kmin:kmax)
+#' rho_med <- mean(rho_est$rho)
+rho.fagh <- function(xdat, k, tau = 0){
+  xdat <- as.numeric(xdat[is.finite(xdat) & xdat > 0])
+  logdata <- log(sort(xdat, decreasing = TRUE))
+  n <- length(logdata)
+  k <- as.integer(sort(k))
+  stopifnot(k[1] >= 5, k[length(k)] < n)
+  tau <- as.numeric(tau)[1]
+  rho <- numeric(length(k))
+  for(j in seq_along(k)){
+    ks <- k[j]
+  mk1 <- mean(logdata[1:ks] - logdata[ks+1])
+  mk2 <- mean((logdata[1:ks] - logdata[ks+1])^2)
+  mk3 <- mean((logdata[1:ks] - logdata[ks+1])^3)
+  if(!isTRUE(all.equal(tau, 0))){
+    w <- (mk1^tau - (0.5*mk2)^(0.5*tau)) / ((0.5*mk2)^(0.5*tau) - (mk3/6)^(tau/3))
+  } else{
+    w <-  (log(mk1) - log(0.5*mk2)/2) / (log(0.5*mk2)/2 - log(mk3/6)/3)
+  }
+  rho[j] <- min(0,(3*(w-1)/(w-3)))
+  }
+  if(length(k) == 1L){
+    return(as.numeric(rho))
+  } else{
+    data.frame(k = k, rho = as.numeric(rho))
+  }
+}
+
+#' Second order tail index estimator of Gomes et al.
+#'
+#' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Gomes et al. (2003)
+#'
+#' @references Gomes, M.I., Haan, L.d. & Peng, L. (2002). \emph{Semi-parametric Estimation of the Second Order Parameter in Statistics of Extremes}. Extremes 5, 387–414. <doi:10.1023/A:1025128326588>
+#'@param xdat vector of positive observations
+#'@param k number of highest order statistics to use for estimation
+#'@param alpha positive scalar tuning parameter
+#'@export
+rho.ghp <- function(xdat, k, alpha = 2){
+  xdat <- as.numeric(xdat[is.finite(xdat) & xdat > 0])
+  logdata <- log(sort(xdat, decreasing = TRUE))
+  n <- length(logdata)
+  k <- as.integer(sort(k))
+  # alpha must be positive and different from 0.5 and 1
+  stopifnot(alpha > 0, length(alpha) == 1L,
+            !isTRUE(all.equal(alpha, 0.5)),
+            !isTRUE(all.equal(alpha, 1))
+  )
+  stopifnot(k[1] >= 5, k[length(k)] < n)
+  rho <- numeric(length(k))
+  bounds <- sort(c((2*alpha-1)/alpha^2, 4*(2*alpha-1)/(alpha*(alpha+1)^2)))
+  sa_rho <- function(rho, sa, alpha){
+    sa - rho^2*(1-(1-rho)^(2*alpha) - 2*alpha*rho*(1-rho)^(2*alpha-1))/((1-(1-rho)^(alpha+1) - (alpha+1)*rho*(1-rho)^alpha)^2)
+  }
+  for(j in seq_along(k)){
+    ks <- k[j]
+    mk1 <- mean(logdata[1:ks] - logdata[ks+1])
+    mk2 <- mean((logdata[1:ks] - logdata[ks+1])^2)
+    mkap1 <- mean((logdata[1:ks] - logdata[ks+1])^(alpha+1))
+    mk2a <- mean((logdata[1:ks] - logdata[ks+1])^(2*alpha))
+    Qa <- function(alpha){
+      mean((logdata[1:ks] - logdata[ks+1])^alpha - gamma(alpha+1)*mk1^alpha)/(mk2 - 2*(mk1^2))
+    }
+   Sa <- exp(log(alpha) + 2* log(alpha+1) + 2*lgamma(alpha) - log(4) - lgamma(2*alpha))*Qa(2*alpha)/(Qa(alpha+1))^2
+
+
+   if(Sa > bounds[1] & Sa < bounds[2]){
+     if(!isTRUE(all.equal(alpha, 2))){
+       rootsolve <- try(uniroot(f = sa_rho, lower = -25, upper = -1e-8, sa = Sa, alpha = alpha), silent = TRUE)
+       if(!inherits(rootsolve, "try-error")){
+       rho[j] <- rootsolve$root
+       }
+     } else{
+      rho[j] <- -(2*(3*Sa-2)+sqrt(3*Sa-2))/(3-4*Sa)
+     }
+   }
+  }
+  if(length(k) == 1L){
+    return(as.numeric(rho))
+  } else{
+    data.frame(k = k, rho = as.numeric(rho))
   }
 }

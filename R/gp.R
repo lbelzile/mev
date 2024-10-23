@@ -880,7 +880,7 @@ gp.fit <- function(xdat, threshold, method = c("Grimshaw", "auglag", "nlm", "opt
     fixed_param <- as.vector(unlist(fpar))
     stopifnot(length(fixed_param) == 1L)
     if(wf[2] & isTRUE(all.equal(fixed_param, 0, check.attributes = FALSE))){# shape is fixed}
-      mean_xdat <- mean(xdat)
+      mean_xdat <- mean(mdat)
       temp <- list(par = mean_xdat,
                    value = -gpd.ll(c(mean_xdat, 0), mdat),
                    convergence = 0,
