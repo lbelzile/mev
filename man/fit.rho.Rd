@@ -18,3 +18,14 @@ fit.rho(xdat, k, method = c("fagh", "dk", "ghp"), ...)
 \description{
 Estimator of the second order tail index parameter
 }
+\examples{
+# Example with rho = -0.2
+n <- 1000
+xdat <- mev::rgp(n = n, shape = 0.2)
+kmin <- floor(n^0.995)
+kmax <- ceiling(n^0.999)
+rho_est <- fit.rho(
+   xdat = xdat,
+   k = n - kmin:kmax)
+rho_med <- mean(rho_est$rho)
+}

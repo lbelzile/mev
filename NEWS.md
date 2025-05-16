@@ -4,10 +4,12 @@
 
 - Stein's weighted generalized Pareto estimator with `fit.wgpd`
 - Multiple shape estimators (Hill, Pickands, moment estimator, generalized quantile) via `fit.shape` and specific routines `shape.moment`, `shape.pickands`, `shape.pickandsxu`, `shape.genquant` and `shape.hill`.
+- Function `dgeoaniso` for geometric anisotropy, using the parametrization of Rai and Brown (2025)
 
 ## Changes:
 
-- Function `PickandsXU` is deprecated and replaced with `shape.pickandsxu`, 
+- Function `PickandsXU` is deprecated and replaced with `shape.pickandsxu`
+- Function `fit.gpd` with method `obre` now returns ordered exceedances and weights.
 
 # mev 1.17  (Release date 2024-07-09)
 

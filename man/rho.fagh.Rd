@@ -20,6 +20,17 @@ rho.fagh(xdat, k, tau = 0)
 Second order tail index estimator of Fraga Alves et al.
 Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Fraga Alves et al. (2003)
 }
+\examples{
+# Example with rho = -0.2
+n <- 1000
+xdat <- mev::rgp(n = n, shape = 0.2)
+kmin <- floor(n^0.995)
+kmax <- ceiling(n^0.999)
+rho_est <- fit.fagh(
+   xdat = xdat,
+   k = n - kmin:kmax)
+rho_med <- mean(rho_est$rho)
+}
 \references{
 Fraga Alves, M.I., Gomes, M. Ivette, and de Haan, Laurens (2003). \emph{A new class of semi-parametric estimators of the second order parameter.} Portugaliae Mathematica. Nova Serie 60(\bold{2}), 193-213. <http://eudml.org/doc/50867>.
 }

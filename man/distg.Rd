@@ -20,6 +20,7 @@ a \code{d} by \code{d} square matrix of pairwise distance
 The function computes the distance between locations, with geometric anisotropy.
 The parametrization assumes there is a scale parameter, say \eqn{\sigma}, so that \code{scale}
 is the distortion for the second component only. The angle \code{rho} must lie in
-\eqn{[-\pi/2, \pi/2]}. The dilation and rotation matrix is 
+\eqn{[-\pi/2, \pi/2]}. The dilation and rotation matrix is
 \deqn{\left(\begin{matrix} \cos(\rho) & \sin(\rho) \\ - \sigma\sin(\rho) & \sigma\cos(\rho) \end{matrix} \right)}
 }
+\keyword{internal}

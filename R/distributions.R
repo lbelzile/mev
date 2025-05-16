@@ -38,139 +38,158 @@ NULL
 
 #' @rdname gevdist
 #' @export
-qgev <- function(p, loc = 0, scale = 1, shape = 0, lower.tail = TRUE, log.p = FALSE){
+qgev <- function(
+  p,
+  loc = 0,
+  scale = 1,
+  shape = 0,
+  lower.tail = TRUE,
+  log.p = FALSE
+) {
   n <- length(p)
   if (n == 0L) {
     return(numeric(0))
   }
-  stopifnot(length(loc) %in% c(1L, n),
-            length(scale) %in% c(1L, n),
-            length(shape) == 1L,
-            isTRUE(all(is.finite(scale))),
-            is.finite(shape),
-            isTRUE(all(is.finite(loc))),
-            isTRUE(min(scale, na.rm = TRUE) > 0),
-            is.logical(lower.tail),
-            length(lower.tail) == 1L,
-            is.logical(log.p),
-            length(log.p) == 1L)
+  stopifnot(
+    length(loc) %in% c(1L, n),
+    length(scale) %in% c(1L, n),
+    length(shape) == 1L,
+    isTRUE(all(is.finite(scale))),
+    is.finite(shape),
+    isTRUE(all(is.finite(loc))),
+    isTRUE(min(scale, na.rm = TRUE) > 0),
+    is.logical(lower.tail),
+    length(lower.tail) == 1L,
+    is.logical(log.p),
+    length(log.p) == 1L
+  )
   log.p <- as.logical(log.p)
-   if(isTRUE(log.p)){
-     stopifnot(max(p, na.rm = TRUE) <= 0)
-   } else{
-    stopifnot(min(p, na.rm = TRUE) >= 0,
-             max(p, na.rm = TRUE) <= 1)
-   }
-     if (!lower.tail){
-      if(log.p){
-       log.p <- FALSE
-       p <- exp(p)
-      }
-        p <- 1 - p
-     }
-    if(!log.p){
-     logp <- log(p)
-    } else{
-      logp <- p
+  if (isTRUE(log.p)) {
+    stopifnot(max(p, na.rm = TRUE) <= 0)
+  } else {
+    stopifnot(min(p, na.rm = TRUE) >= 0, max(p, na.rm = TRUE) <= 1)
+  }
+  if (!lower.tail) {
+    if (log.p) {
+      log.p <- FALSE
+      p <- exp(p)
     }
-    if (isTRUE(all.equal(shape, 0, check.attributes = FALSE, tolerance = 1e-10))){
-      return(loc - scale * log(-logp))
-    } else if (abs(shape) < 1e-6){
-      return(loc - scale * ifelse(
-        is.infinite(logp),
-        ifelse(shape > 0,
-               1/shape,
-               Inf),
-        ifelse(logp == 0,
-               ifelse(shape < 0,
-                1/shape,
-                -Inf),
-               log(-logp) * (1 - log(-logp) * shape/2)))
-      )
-    } else{
-    return(loc + scale * ((-logp)^(-shape) - 1)/shape)
-    }
+    p <- 1 - p
+  }
+  if (!log.p) {
+    logp <- log(p)
+  } else {
+    logp <- p
+  }
+  if (
+    isTRUE(all.equal(shape, 0, check.attributes = FALSE, tolerance = 1e-10))
+  ) {
+    return(loc - scale * log(-logp))
+  } else if (abs(shape) < 1e-6) {
+    return(
+      loc -
+        scale *
+          ifelse(
+            is.infinite(logp),
+            ifelse(shape > 0, 1 / shape, Inf),
+            ifelse(
+              logp == 0,
+              ifelse(shape < 0, 1 / shape, -Inf),
+              log(-logp) * (1 - log(-logp) * shape / 2)
+            )
+          )
+    )
+  } else {
+    return(loc + scale * ((-logp)^(-shape) - 1) / shape)
+  }
 }
 
 #' @rdname gevdist
 #' @export
-rgev <- function(n, loc = 0, scale = 1, shape = 0){
+rgev <- function(n, loc = 0, scale = 1, shape = 0) {
   n <- as.integer(n)
-  stopifnot(is.finite(n),
-	    n > 0)
-  qgev(p = -rexp(n),
-       loc = loc,
-       scale = scale,
-       shape = shape,
-       log.p = TRUE)
+  stopifnot(is.finite(n), n > 0)
+  qgev(p = -rexp(n), loc = loc, scale = scale, shape = shape, log.p = TRUE)
 }
 
 #' @rdname gevdist
 #' @export
-dgev <- function (x, loc = 0, scale = 1, shape = 0, log = FALSE) {
+dgev <- function(x, loc = 0, scale = 1, shape = 0, log = FALSE) {
   n <- length(x)
-    if (n == 0L) {
+  if (n == 0L) {
     return(numeric(0))
   }
-  stopifnot(length(loc) %in% c(1L, n),
-            length(scale) %in% c(1L, n),
-            length(shape) == 1L,
-            isTRUE(all(is.finite(loc))),
-            isTRUE(all(is.finite(scale))),
-            isTRUE(min(scale, na.rm = TRUE) > 0),
-            is.finite(shape),
-            is.logical(log),
-            length(log) == 1L
-            )
+  stopifnot(
+    length(loc) %in% c(1L, n),
+    length(scale) %in% c(1L, n),
+    length(shape) == 1L,
+    isTRUE(all(is.finite(loc))),
+    isTRUE(all(is.finite(scale))),
+    isTRUE(min(scale, na.rm = TRUE) > 0),
+    is.finite(shape),
+    is.logical(log),
+    length(log) == 1L
+  )
   x <- (x - loc) / scale
-  if(isTRUE(all.equal(shape, 0, check.attributes = FALSE, tolerance = 1e-10))){
-  # Gumbel subcase
-  d <- -log(scale) - x - exp(-x)
-  } else{
-  xx <- pmax(-1, shape * x)
-  # Negative numbers get mapped to zero, as well as points outside the support
-   d <- -log(scale) - (1 + xx)^(-1/shape) - (1/shape + 1) * log1p(xx)
-   d[(xx <= -1) | is.infinite(xx)] <- -Inf # density for NA/Inf is zero
-   }
-    if (!log){
-     return(exp(d))
-    } else{
-     return(d)
-    }
+  if (
+    isTRUE(all.equal(shape, 0, check.attributes = FALSE, tolerance = 1e-10))
+  ) {
+    # Gumbel subcase
+    d <- -log(scale) - x - exp(-x)
+  } else {
+    xx <- pmax(-1, shape * x)
+    # Negative numbers get mapped to zero, as well as points outside the support
+    d <- -log(scale) - (1 + xx)^(-1 / shape) - (1 / shape + 1) * log1p(xx)
+    d[(xx <= -1) | is.infinite(xx)] <- -Inf # density for NA/Inf is zero
   }
+  if (!log) {
+    return(exp(d))
+  } else {
+    return(d)
+  }
+}
 
 # ----------------------------- pgev ---------------------------------
 
 #' @rdname gevdist
 #' @export
 #' @author Leo Belzile, with code adapted from Paul Northrop
-pgev <- function(q, loc = 0, scale = 1, shape = 0, lower.tail = TRUE,
-                 log.p = FALSE) {
+pgev <- function(
+  q,
+  loc = 0,
+  scale = 1,
+  shape = 0,
+  lower.tail = TRUE,
+  log.p = FALSE
+) {
   n <- length(q)
-  stopifnot(length(loc) %in% c(1L, n),
-            length(scale) %in% c(1L, n),
-            length(shape) == 1L,
-            isTRUE(all(is.finite(loc))),
-            isTRUE(all(is.finite(scale))),
-            isTRUE(min(scale, na.rm = TRUE) > 0),
-            is.finite(shape),
-            is.logical(lower.tail),
-            length(lower.tail) == 1L,
-            is.logical(log.p),
-            length(log.p) == 1L
-            )
+  stopifnot(
+    length(loc) %in% c(1L, n),
+    length(scale) %in% c(1L, n),
+    length(shape) == 1L,
+    isTRUE(all(is.finite(loc))),
+    isTRUE(all(is.finite(scale))),
+    isTRUE(min(scale, na.rm = TRUE) > 0),
+    is.finite(shape),
+    is.logical(lower.tail),
+    length(lower.tail) == 1L,
+    is.logical(log.p),
+    length(log.p) == 1L
+  )
   if (n == 0L) {
     return(numeric(0))
   }
   q <- (q - loc) / scale
 
-  if(abs(shape) > 1e-6){
-    p <-  -pmax(1 + shape * q, 0)^(-1 / shape)
+  if (abs(shape) > 1e-6) {
+    p <- -pmax(1 + shape * q, 0)^(-1 / shape)
   } else {
-     p <- ifelse(is.infinite(q),
-              log((1 + sign(q)) / 2), # 0 or 1
-             -exp(-q + shape * q^2 / 2))
-   }
+    p <- ifelse(
+      is.infinite(q),
+      log((1 + sign(q)) / 2), # 0 or 1
+      -exp(-q + shape * q^2 / 2)
+    )
+  }
   if (lower.tail) {
     if (!log.p) {
       p <- exp(p)
@@ -205,25 +224,30 @@ pgev <- function(q, loc = 0, scale = 1, shape = 0, lower.tail = TRUE,
 
 #' @rdname gpdist
 #' @export
-pgp <- function(q,
-                 loc = 0,
-                 scale = 1,
-                 shape = 0,
-                 lower.tail = TRUE,
-                 log.p = FALSE) {
+pgp <- function(
+  q,
+  loc = 0,
+  scale = 1,
+  shape = 0,
+  lower.tail = TRUE,
+  log.p = FALSE
+) {
   stopifnot(
     "\"loc\" must be a vector of length 1." = length(loc) == 1L,
     "\"loc\" must be finite" = isTRUE(is.finite(loc)),
-    "\"scale\" must be a vector of the same length as  \"q\" or a scalar." = length(scale) %in% c(1L, length(q)),
+    "\"scale\" must be a vector of the same length as  \"q\" or a scalar." = length(
+      scale
+    ) %in%
+      c(1L, length(q)),
     "\"scale\" must be finite." = isTRUE(all(is.finite(scale))),
     "\"scale\" must be positive." = isTRUE(min(scale, na.rm = TRUE) > 0),
     "\"shape\" must be a vector of length 1" = length(shape) == 1L,
-    "\"shape\" must be finite." =   is.finite(shape),
+    "\"shape\" must be finite." = is.finite(shape),
     is.logical(lower.tail),
     length(lower.tail) == 1L,
     is.logical(log.p),
     length(log.p) == 1L
-    )
+  )
   q <- pmax(q - loc, 0) / scale
   if (shape == 0) {
     p <- 1 - exp(-q)
@@ -241,22 +265,23 @@ pgp <- function(q,
 
 #' @rdname gpdist
 #' @export
-dgp <- function(x,
-                  loc = 0,
-                  scale = 1,
-                  shape = 0,
-                  log = FALSE) {
+dgp <- function(x, loc = 0, scale = 1, shape = 0, log = FALSE) {
   stopifnot(
     "\"loc\" must be a vector of length 1." = length(loc) == 1L,
     "\"loc\" must be finite" = isTRUE(is.finite(loc)),
-    "\"scale\" must be a vector of the same length as  \"x\" or a scalar." = length(scale) %in% c(1L, length(x)),
+    "\"scale\" must be a vector of the same length as  \"x\" or a scalar." = length(
+      scale
+    ) %in%
+      c(1L, length(x)),
     "\"scale\" must be finite." = isTRUE(all(is.finite(scale))),
     "\"scale\" must be positive." = isTRUE(min(scale, na.rm = TRUE) > 0),
     "\"shape\" must be a vector of length 1" = length(shape) == 1L,
-    "\"shape\" must be finite." =   is.finite(shape)
+    "\"shape\" must be finite." = is.finite(shape)
   )
 
-  if (isTRUE(all.equal(shape, 0, check.attributes = FALSE, tolerance = 1e-10))) {
+  if (
+    isTRUE(all.equal(shape, 0, check.attributes = FALSE, tolerance = 1e-10))
+  ) {
     return(dexp(
       x = x - loc,
       rate = 1 / scale,
@@ -276,21 +301,20 @@ dgp <- function(x,
 
 #' @rdname gpdist
 #' @export
-qgp <- function(p,
-                 loc = 0,
-                 scale = 1,
-                 shape = 0,
-                 lower.tail = TRUE) {
+qgp <- function(p, loc = 0, scale = 1, shape = 0, lower.tail = TRUE) {
   if (min(p, na.rm = TRUE) < 0 || max(p, na.rm = TRUE) > 1)
     stop("\"p\" must contain probabilities in (0,1)")
   stopifnot(
     "\"loc\" must be a vector of length 1." = length(loc) == 1L,
     "\"loc\" must be finite" = isTRUE(is.finite(loc)),
-    "\"scale\" must be a vector of the same length as  \"p\" or a scalar." = length(scale) %in% c(1L, length(p)),
+    "\"scale\" must be a vector of the same length as  \"p\" or a scalar." = length(
+      scale
+    ) %in%
+      c(1L, length(p)),
     "\"scale\" must be finite." = isTRUE(all(is.finite(scale))),
     "\"scale\" must be positive." = isTRUE(min(scale, na.rm = TRUE) > 0),
     "\"shape\" must be a vector of length 1" = length(shape) == 1L,
-    "\"shape\" must be finite." =   is.finite(shape)
+    "\"shape\" must be finite." = is.finite(shape)
   )
 
   if (lower.tail) {
@@ -299,16 +323,13 @@ qgp <- function(p,
   if (shape == 0) {
     return(loc - scale * log(p))
   } else {
-    return(loc + scale * (p ^ (-shape) - 1) / shape)
+    return(loc + scale * (p^(-shape) - 1) / shape)
   }
 }
 
 #' @rdname gpdist
 #' @export
-rgp <- function(n,
-                 loc = 0,
-                 scale = 1,
-                 shape = 0) {
+rgp <- function(n, loc = 0, scale = 1, shape = 0) {
   n <- as.integer(n)
   stopifnot(n > 1, length(n) == 1L)
   stopifnot(
@@ -317,10 +338,7 @@ rgp <- function(n,
     "\"scale\" must be finite." = isTRUE(all(is.finite(scale))),
     "\"scale\" must be positive." = isTRUE(min(scale, na.rm = TRUE) > 0),
     "\"shape\" must be a vector of length 1" = length(shape) == 1L,
-    "\"shape\" must be finite." =   is.finite(shape)
+    "\"shape\" must be finite." = is.finite(shape)
   )
   qgp(p = runif(n), loc = loc, scale = scale, shape = shape)
 }
-
-
-

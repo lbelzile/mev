@@ -46,6 +46,27 @@ namespace mev {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
+    inline arma::mat dgeoaniso(arma::mat loc, NumericVector theta) {
+        typedef SEXP(*Ptr_dgeoaniso)(SEXP,SEXP);
+        static Ptr_dgeoaniso p_dgeoaniso = NULL;
+        if (p_dgeoaniso == NULL) {
+            validateSignature("arma::mat(*dgeoaniso)(arma::mat,NumericVector)");
+            p_dgeoaniso = (Ptr_dgeoaniso)R_GetCCallable("mev", "_mev_dgeoaniso");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_dgeoaniso(Shield<SEXP>(Rcpp::wrap(loc)), Shield<SEXP>(Rcpp::wrap(theta)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
     inline arma::vec _EuclideanWeights(arma::mat x, arma::rowvec mu) {
         typedef SEXP(*Ptr__EuclideanWeights)(SEXP,SEXP);
         static Ptr__EuclideanWeights p__EuclideanWeights = NULL;
