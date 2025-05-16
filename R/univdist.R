@@ -169,10 +169,10 @@ gpd.score <- function(par, dat) {
 #' @keywords internal
 gpd.infomat <- function(par, dat, method = c("obs", "exp"), nobs = length(dat)) {
     method <- match.arg(method)
-    dat <- as.vector(dat)
     sigma <- as.vector(par[1])
     xi <- as.vector(par[2])
     if (method == "obs") {
+      dat <- as.vector(dat)
         if (any((1 + xi * dat/sigma) < 0)) {
             stop("Data outside of range specified by parameter, yielding a zero likelihood")
         }
