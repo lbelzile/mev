@@ -161,6 +161,7 @@ egp.retlev <- function(
     "logist"
   ),
   p,
+  confint = FALSE,
   plot = TRUE
 ) {
   if (model %in% c("egp1", "egp2", "egp3") & length(model) == 1) {
@@ -245,9 +246,6 @@ egp.retlev <- function(
   if (plot) {
     plot(obj)
   }
-  # res <- retlev
-  # colnames(res) <- pq
-  # rownames(res) <- thresh
   return(invisible(obj))
 }
 
@@ -352,7 +350,7 @@ plot.mev_egp_retlev <- function(x, ...) {
 #'  model = "pt-power",
 #'  show = TRUE,
 #'  fpar = list(kappa = 1),
-#'  method = "BFGS"
+#'  method = "Nelder"
 #' )
 fit.egp <- function(
   xdat,
@@ -367,7 +365,7 @@ fit.egp <- function(
     "logist"
   ),
   start = NULL,
-  method = c("nlminb", "BFGS"),
+  method = c("Nelder", "nlminb", "BFGS"),
   fpar = NULL,
   show = FALSE,
   ...
@@ -492,40 +490,58 @@ fit.egp <- function(
   start_vals <- spar[!wf]
   fixed_vals <- spar[wf] #when empty, a num vector of length zero
   wfo <- order(c(which(!wf), which(wf)))
-  mle <- try(suppressWarnings(
-    alabama::auglag(
-      par = start_vals,
-      fpar = fixed_vals,
-      wfixed = wf,
-      wfo = wfo,
-      fn = function(par, fpar, wfixed, wfo) {
-        params <- c(par, fpar)[wfo]
-        nll <- -egp.ll(params, xdat = xdata, thresh = 0, model = model)
-        ifelse(is.finite(nll), nll, 1e10)
-      },
-      hin = function(par, fpar, wfixed, wfo) {
-        params <- c(par, fpar)[wfo]
-        # TODO check whether parameters are
-        # constrained to be positive
-        c(
-          params[1],
-          params[2],
-          params[3] + 1,
-          params[2] + params[3] * xmax
+  if (method != "Nelder") {
+    mle <- try(suppressWarnings(
+      alabama::auglag(
+        par = start_vals,
+        fpar = fixed_vals,
+        wfixed = wf,
+        wfo = wfo,
+        fn = function(par, fpar, wfixed, wfo) {
+          params <- c(par, fpar)[wfo]
+          nll <- -egp.ll(params, xdat = xdata, thresh = 0, model = model)
+          ifelse(is.finite(nll), nll, 1e10)
+        },
+        hin = function(par, fpar, wfixed, wfo) {
+          params <- c(par, fpar)[wfo]
+          # TODO check whether parameters are
+          # constrained to be positive
+          c(
+            params[1],
+            params[2],
+            params[3] + 1,
+            params[2] + params[3] * xmax
+          )
+        },
+        control.outer = list(method = method, trace = FALSE),
+        control.optim = switch(
+          method,
+          nlminb = list(
+            iter.max = 500L,
+            rel.tol = 1e-10,
+            step.min = 1e-10
+          ),
+          list(maxit = 1000L, reltol = 1e-10)
         )
-      },
-      control.outer = list(method = method, trace = FALSE),
-      control.optim = switch(
-        method,
-        nlminb = list(
-          iter.max = 500L,
-          rel.tol = 1e-10,
-          step.min = 1e-10
-        ),
-        list(maxit = 1000L, reltol = 1e-10)
       )
-    )
-  ))
+    ))
+  } else {
+    mle <- try(suppressWarnings(
+      optim(
+        par = start_vals,
+        fpar = fixed_vals,
+        method = "Nelder",
+        hessian = TRUE,
+        wfixed = wf,
+        wfo = wfo,
+        fn = function(par, fpar, wfixed, wfo) {
+          params <- c(par, fpar)[wfo]
+          nll <- -egp.ll(params, xdat = xdata, thresh = 0, model = model)
+          ifelse(is.finite(nll), nll, 1e10)
+        }
+      )
+    ))
+  }
   boundary <- FALSE
   if (model %in% c("gj-tnorm", "logist")) {
     if (isTRUE(mle$value >= gpfit$nllh) & sum(wf) == 0L) {
@@ -685,9 +701,19 @@ egp.fitrange <-
   }
 
 #' @inheritParams egp
+#' @param transform logical; if \code{TRUE} and \code{type="wald"}, intervals for \code{kappa} are computed on the log-scale and back-transformed.
 #' @param ... additional arguments for the plot function, currently ignored
 #' @rdname fit.egp
 #' @export
+#' @examples
+#' xdat <- rgp(n = 1000)
+#' tstab.egp(
+#'  xdat = xdat,
+#'  thresh = c(0, quantile(xdat, 0.5)),
+#'  model = "gj-tnorm",
+#'  param = "kappa",
+#'  transform = TRUE)
+#'
 tstab.egp <- function(
   xdat,
   thresh,
@@ -702,6 +728,7 @@ tstab.egp <- function(
   ),
   param = c("shape", "kappa"),
   type = c("wald", "profile"),
+  transform = FALSE,
   level = 0.95,
   plot = TRUE,
   ...
@@ -741,6 +768,7 @@ tstab.egp <- function(
       "shape" = 3L
     )
   }
+  transform <- isTRUE(as.logical(transform)[1])
   # Option for backward compatibility
   if (2L %in% plots) {
     warning("Modified scale not available for EGPD models.")
@@ -800,19 +828,51 @@ tstab.egp <- function(
     if (inherits(mle, "try-error")) {
       next
     } else {
+      est <- coef(mle)
       if (type == "wald") {
         if (1L %in% plots) {
+          if (transform) {
+            est[1] <- log(est[1] + 1e-8)
+            fn_numderiv <- function(par) {
+              -egp.ll(
+                par = c(exp(par[1]), par[2], par[3]),
+                xdat = xdat,
+                thresh = thresh[i],
+                model = model
+              )
+            }
+            opt <- optim(
+              par = est,
+              fn = fn_numderiv,
+              method = "Nelder",
+              hessian = TRUE
+            )
+            se <- try(
+              expr = suppressWarnings(
+                sqrt(diag(solve(opt$hessian)))[1]
+              ),
+              silent = TRUE
+            )
+            if (inherits(se, "try-error")) {
+              se <- NA
+            }
+          } else {
+            se <- mle$std.err[1]
+          }
           kappa_pars[i, 1] <- coef(mle)[1]
           if (
             isTRUE(all.equal(kappa_pars[i, 1], 0, check.attributes = FALSE))
           ) {
             boundary <- TRUE
-            crit <- c(-1, 1) * sqrt(0.5 * qchisq(level))
+            crit <- c(-1, 1) * sqrt(0.5 * qchisq(level, df = 1))
           } else {
             boundary <- FALSE
             crit <- qnorm(c((1 - level) / 2, 1 - (1 - level) / 2))
           }
-          kappa_pars[i, 2:3] <- coef(mle)[1] + crit * mle$std.err[1]
+          kappa_pars[i, 2:3] <- est[1] + crit * se
+          if (transform) {
+            kappa_pars[i, 2:3] <- exp(kappa_pars[i, 2:3])
+          }
         }
         if (3L %in% plots) {
           shape_pars[i, 1] <- coef(mle)[3]
@@ -1224,6 +1284,27 @@ qegp.G7 <- function(x, kappa, a = 1 / 32) {
 }
 
 
+#' Extended generalized Pareto distribution
+#'
+#' Density function, distribution function, quantile function and
+#' random number generation for various extended generalized Pareto
+#' distributions
+#'
+#' @param x,q vector of quantiles
+#' @param p vector of probabilities
+#' @param n scalar number of observations
+#' @param kappa shape parameter for the tilting distribution.
+#' @param scale scale parameter, strictly positive.
+#' @param shape shape parameter.
+#' @param model string giving the distribution of the model
+#' @param lower.tail logical; if \code{TRUE} (default), the lower tail probability \eqn{\Pr(X \leq x)} is returned.
+#' @param log.p,log logical; if \code{FALSE} (default), values are returned on the probability scale.
+#' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143, <doi:10.1016/j.jspi.2012.07.001>.
+#' @references Gamet, P. and Jalbert, J. (2022). A flexible extended generalized Pareto distribution for tail estimation. \emph{Environmetrics}, \bold{33}(6), <doi:10.1002/env.2744>.
+#' @name egpdist
+
+#' @rdname egpdist
+#' @export
 pegp <- function(
   q,
   scale,
@@ -1276,6 +1357,8 @@ pegp <- function(
   }
 }
 
+#' @rdname egpdist
+#' @export
 degp <- function(
   x,
   scale,
@@ -1319,6 +1402,8 @@ degp <- function(
   }
 }
 
+#' @rdname egpdist
+#' @export
 qegp <- function(
   p,
   scale,
@@ -1375,6 +1460,8 @@ qegp <- function(
 }
 
 
+#' @rdname egpdist
+#' @export
 regp <- function(
   n,
   scale,
@@ -1411,7 +1498,21 @@ regp <- function(
   qgp(pg, loc = 0, scale = scale, shape = shape)
 }
 
-# TODO profile for return levels
+#' Profile log likelihood for extended generalized Pareto models
+#'
+#' Computes the profile log likelihood over a grid of values of \eqn{\psi} for various parameters, including return levels.
+#' @export
+#' @param psi grid of values for the parameter to profile
+#' @param model string; choice of extended eneralized Pareto model.
+#' @param param string; parameter to profile
+#' @param mle; a vector or matrix with maximum likelihood estimates of \code{kappa}, \code{scale}, \code{shape}. This can be a matrix if there are multiple threshold
+#' @param xdat vector of observations
+#' @param thresh vector of positive thresholds. If \code{NULL}, defaults to zero.
+#' @param method string giving the optimization method for the outer optimization in the augmented Lagrangian routine; one of \code{nlminb} or \code{BFGS}
+#' @param plot logical; if \code{TRUE}, returns a plot of the profile log likelihood
+#' @param p tail probability for return level if \code{param="retlev"}.
+#' @param ... additional arguments, currently ignored
+#' @return an object of class \code{eprof}
 egp.pll <- function(
   psi,
   model = c(
@@ -1428,7 +1529,7 @@ egp.pll <- function(
   xdat,
   thresh = NULL,
   plot = FALSE,
-  method = c("nlminb", "BFGS"),
+  method = c("Nelder", "nlminb", "BFGS"),
   p,
   ...
 ) {
@@ -1622,12 +1723,13 @@ egp.pll <- function(
           shape = par[2],
           model = model
         )
-      -egp.ll(
+      nll <- -egp.ll(
         xdat = xdat,
         thresh = 0,
         par = c(par[1], scale, par[2]),
         model = model
       )
+      ifelse(is.finite(nll), nll, 1e10)
     }
     xmax <- max(xdata)
     egp_retlev_hin <- function(
@@ -1657,25 +1759,38 @@ egp.pll <- function(
     pars[mid, -ind] <- coef(mle)[-2]
     pars[, ind] <- psi
     pll[mid] <- -mle$nllh
-    opt_fun <- function(pars, retlev) {
-      alabama::auglag(
-        par = pars,
-        fn = egp_pll_retlev,
-        retlev = retlev,
-        hin = egp_retlev_hin,
-        control.outer = list(method = method, trace = FALSE),
-        control.optim = switch(
-          method,
-          nlminb = list(
-            iter.max = 500L,
-            rel.tol = 1e-10,
-            step.min = 1e-10
+    if (method == "Nelder") {
+      opt_fun <- function(pars, retlev) {
+        optim(
+          par = pars,
+          fn = egp_pll_retlev,
+          retlev = retlev,
+          method = "Nelder",
+          xdat = xdata,
+          model = model
+        )
+      }
+    } else {
+      opt_fun <- function(pars, retlev) {
+        alabama::auglag(
+          par = pars,
+          fn = egp_pll_retlev,
+          retlev = retlev,
+          hin = egp_retlev_hin,
+          control.outer = list(method = method, trace = FALSE),
+          control.optim = switch(
+            method,
+            nlminb = list(
+              iter.max = 500L,
+              rel.tol = 1e-10,
+              step.min = 1e-10
+            ),
+            list(maxit = 1000L, reltol = 1e-10)
           ),
-          list(maxit = 1000L, reltol = 1e-10)
-        ),
-        xdat = xdata,
-        model = model
-      )
+          xdat = xdata,
+          model = model
+        )
+      }
     }
     if (mid > 1) {
       for (i in (mid - 1):1) {

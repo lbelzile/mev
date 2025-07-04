@@ -21,6 +21,7 @@ egp.retlev(
   model = c("pt-beta", "pt-gamma", "pt-power", "gj-tnorm", "gj-beta", "exptilt",
     "logist"),
   p,
+  confint = FALSE,
   plot = TRUE
 )
 }

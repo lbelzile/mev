@@ -15,7 +15,7 @@
 - Function `fit.gpd` with method `obre` now returns ordered exceedances and weights.
 - `spunif` now correctly handles missing values
 - `confint.eprof` has an argument for boundary non-regular null distribution (for the most common case). 
-- Breaking changes to `fit.egp`, `egp.retlev`, `tstab.egp`. The former now allows fixed parameters (for profiling), and others .
+- Breaking changes to `fit.egp`, `egp.retlev`, `tstab.egp`. The former now allows fixed parameters (for profiling)
 
 
 # mev 1.17  (Release date 2024-07-09)

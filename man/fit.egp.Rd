@@ -11,7 +11,7 @@ fit.egp(
   model = c("pt-beta", "pt-gamma", "pt-power", "gj-tnorm", "gj-beta", "exptilt",
     "logist"),
   start = NULL,
-  method = c("nlminb", "BFGS"),
+  method = c("Nelder", "nlminb", "BFGS"),
   fpar = NULL,
   show = FALSE,
   ...
@@ -24,6 +24,7 @@ tstab.egp(
     "logist"),
   param = c("shape", "kappa"),
   type = c("wald", "profile"),
+  transform = FALSE,
   level = 0.95,
   plot = TRUE,
   ...
@@ -41,6 +42,8 @@ tstab.egp(
 \item{show}{logical; if \code{TRUE}, print the results of the optimization}
 
 \item{...}{additional arguments for the plot function, currently ignored}
+
+\item{transform}{logical; if \code{TRUE} and \code{type="wald"}, intervals for \code{kappa} are computed on the log-scale and back-transformed.}
 
 \item{plot}{logical; if \code{TRUE}, a plot of the return levels}
 
@@ -91,7 +94,7 @@ fit.egp(
  model = "pt-power",
  show = TRUE,
  fpar = list(kappa = 1),
- method = "BFGS"
+ method = "Nelder"
 )
 }
 \references{
