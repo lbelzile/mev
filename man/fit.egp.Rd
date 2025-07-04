@@ -7,11 +7,14 @@
 \usage{
 fit.egp(
   xdat,
-  thresh,
+  thresh = 0,
   model = c("pt-beta", "pt-gamma", "pt-power", "gj-tnorm", "gj-beta", "exptilt",
     "logist"),
-  init,
-  show = FALSE
+  start = NULL,
+  method = c("nlminb", "BFGS"),
+  fpar = NULL,
+  show = FALSE,
+  ...
 )
 
 tstab.egp(
@@ -19,12 +22,10 @@ tstab.egp(
   thresh,
   model = c("pt-beta", "pt-gamma", "pt-power", "gj-tnorm", "gj-beta", "exptilt",
     "logist"),
-  plots = 1:3,
+  param = c("shape", "kappa"),
   type = c("wald", "profile"),
-  umin,
-  umax,
-  nint,
-  changepar = TRUE,
+  level = 0.95,
+  plot = TRUE,
   ...
 )
 }
@@ -35,21 +36,15 @@ tstab.egp(
 
 \item{model}{a string indicating which extended family to fit}
 
-\item{init}{vector of initial values, with \eqn{\log(\kappa)}{log(\kappa)} and \eqn{\log(\sigma)}{log(\sigma)}; can be omitted.}
+\item{start}{optional named list of initial values, with \eqn{\kappa}{\kappa}, \eqn{sigma}{\sigma} or \eqn{xi}{\xi}.}
 
 \item{show}{logical; if \code{TRUE}, print the results of the optimization}
 
-\item{plots}{vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots}
-
-\item{umin}{optional minimum value considered for threshold (if \code{thresh} is not provided)}
-
-\item{umax}{optional maximum value considered for threshold (if \code{thresh} is not provided)}
-
-\item{nint}{optional integer number specifying the number of thresholds to test.}
-
-\item{changepar}{logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.}
-
 \item{...}{additional arguments for the plot function, currently ignored}
+
+\item{plot}{logical; if \code{TRUE}, a plot of the return levels}
+
+\item{plots}{vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots}
 }
 \value{
 \code{fit.egp} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
@@ -76,14 +71,28 @@ xdat <- mev::rgp(
 fitted <- fit.egp(
   xdat = xdat,
   thresh = 1,
-  model = "egp2",
+  model = "pt-gamma",
   show = TRUE)
 thresh <- mev::qgp(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
 tstab.egp(
    xdat = xdat,
    thresh = thresh,
-   model = "egp2",
+   model = "pt-gamma",
    plots = 1:3)
+xdat <- regp(
+  n = 100,
+  scale = 1,
+  shape = 0.1,
+  kappa = 0.5,
+  model = "pt-power"
+)
+fit.egp(
+ xdat = xdat,
+ model = "pt-power",
+ show = TRUE,
+ fpar = list(kappa = 1),
+ method = "BFGS"
+)
 }
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.

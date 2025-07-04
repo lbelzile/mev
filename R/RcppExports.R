@@ -21,10 +21,11 @@ distg <- function(loc, scale, rho) {
 #' Distance matrix with geometric anisotropy
 #'
 #' The function computes the distance between locations, with geometric anisotropy.
-#' Consider real parameters \eqn{\theta_1} and \eqn{theta_2}, and the transformation \eqn{\psi=\arctan(\theta_1/\theta_2)/2} and \eqn{r=1 +\theta_1^2 + \theta_2^2}.
+#' Consider real parameters \eqn{\theta_1} and \eqn{\theta_2}, and the transformation \eqn{\psi=\arctan(\theta_1/\theta_2)/2} and \eqn{r=1 +\theta_1^2 + \theta_2^2}.
 #' The dilation and rotation matrix is
 #' \deqn{\left(\begin{matrix} \sqrt{r}\cos(\rho) & -\sqrt{r}\sin(\rho) \\ \sin(\rho)/\sqrt{r} & \cos(\rho)/\sqrt{r} \end{matrix} \right).}
-#'
+#' The parametrization is convenient for optimization purposes, as the parameter vector is unconstrained
+#' and the transformation has unit Jacobian.
 #' @param loc a \code{d} by 2 matrix of locations giving the coordinates of a site per row.
 #' @param theta numeric vector of length 2, real parameters
 #' @references Rai, K. and Brown, P.E. (2025), A parameter transformation of the anisotropic Matérn covariance function. Canadian Journal of Statistics e11839. \doi{10.1002/cjs.11839}

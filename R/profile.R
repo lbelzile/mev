@@ -63,12 +63,12 @@
 # }
 
 #' @export
-print.eprof <- function(x, ...){
+print.eprof <- function(x, ...) {
   confint.eprof(x, print = TRUE)
 }
 
 #' @export
-summary.eprof <- function(object, ...){
+summary.eprof <- function(object, ...) {
   confint.eprof(object, print = TRUE)
 }
 
@@ -85,19 +85,23 @@ summary.eprof <- function(object, ...){
 #' @param method string for the method, either \code{cobs} (constrained robust B-spline from eponym package) or \code{smooth.spline}
 #' @param ... additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.
 #' @param print should a summary be printed. Default to \code{FALSE}.
+#' @param boundary logical; if \code{TRUE}, the null distribution is assumed to be a mixture of a point mass and half a chi-square with one degree of freedom.
 #' @return returns a 2 by 3 matrix containing point estimates, lower and upper confidence intervals based on the likelihood root and modified version thereof
 #' @export
 #' @importFrom Rsolnp solnp
 #' @importFrom alabama auglag
 #' @importFrom utils tail
 confint.eprof <-
-  function(object,
-           parm,
-           level = 0.95,
-           prob = c((1 - level) / 2, 1 - (1 - level) / 2),
-           print = FALSE,
-           method = c("cobs", "smooth.spline"),
-           ...) {
+  function(
+    object,
+    parm,
+    level = 0.95,
+    prob = c((1 - level) / 2, 1 - (1 - level) / 2),
+    print = FALSE,
+    method = c("cobs", "smooth.spline"),
+    boundary = FALSE,
+    ...
+  ) {
     if (!isTRUE(all.equal(diff(prob), level, check.attributes = FALSE))) {
       warning("Incompatible arguments: \"level\" does not match \"prob\".")
     }
@@ -131,7 +135,6 @@ confint.eprof <-
         parm <- c(parm, "modif.empcov")
         ind <- c(ind, 4)
       }
-
     } else {
       if (is.numeric(parm)) {
         ind <- parm
@@ -163,6 +166,9 @@ confint.eprof <-
       stop("Invalid \"parm\" argument.")
     }
     qulev <- qnorm(1 - prob)
+    if (isTRUE(boundary[1])) {
+      qulev <- sqrt(0.5) * qulev
+    }
     conf <- matrix(ncol = 4, nrow = 3)
     for (i in ind) {
       if (i == 1) {
@@ -172,15 +178,20 @@ confint.eprof <-
         if (is.null(object$r)) {
           # no r object, but must have pll + maxpll
           object$r <-
-            suppressWarnings(sign(object$psi.max - object$psi) * sqrt(2 * (object$maxpll - object$pll)))
-        } else{
+            suppressWarnings(
+              sign(object$psi.max - object$psi) *
+                sqrt(2 * (object$maxpll - object$pll))
+            )
+        } else {
           object$r[is.infinite(object$r)] <- NA
         }
         if (is.null(object$normal)) {
           object$normal <- c(object$psi.max, object$std.error)
         }
-        if (method == "cobs" &&
-            requireNamespace("cobs", quietly = TRUE)) {
+        if (
+          method == "cobs" &&
+            requireNamespace("cobs", quietly = TRUE)
+        ) {
           fit.r <-
             cobs::cobs(
               x = object$r,
@@ -197,7 +208,10 @@ confint.eprof <-
           pr <- predict(fit.r, c(0, qulev))[, 2]
         } else {
           fit.r <-
-            stats::smooth.spline(x = na.omit(cbind(object$r, object$psi)), cv = FALSE)
+            stats::smooth.spline(
+              x = na.omit(cbind(object$r, object$psi)),
+              cv = FALSE
+            )
           pr <- predict(fit.r, c(0, qulev))$y
           pr[1] <- object$normal[1]
         }
@@ -218,8 +232,10 @@ confint.eprof <-
         if (is.null(object$rstar)) {
           break
         }
-        if (method == "cobs" &&
-            requireNamespace("cobs", quietly = TRUE)) {
+        if (
+          method == "cobs" &&
+            requireNamespace("cobs", quietly = TRUE)
+        ) {
           fit.rst <-
             cobs::cobs(
               x = object$rstar,
@@ -235,37 +251,47 @@ confint.eprof <-
           prst <- predict(fit.rst, c(0, qulev))[, 2]
         } else {
           fit.rst <-
-            stats::smooth.spline(x = na.omit(cbind(object$rstar, object$psi)),
-                                 cv = FALSE)
+            stats::smooth.spline(
+              x = na.omit(cbind(object$rstar, object$psi)),
+              cv = FALSE
+            )
           prst <- predict(fit.rst, c(0, qulev))$y
         }
         if (!is.null(object$tem.psimax)) {
           prst[1] <- object$tem.psimax
-        } else{
+        } else {
           object$tem.psimax <- prst[1]
         }
         conf[, i] <- prst
         # lines(x=object$rstar,fit.rst$fitted,col=2,pch=19)
         if (warn) {
           if (!any(object$rstar > qulev[2])) {
-            warning("Extrapolating the adjusted lower confidence interval for rstar.")
+            warning(
+              "Extrapolating the adjusted lower confidence interval for rstar."
+            )
           }
           if (!any(object$rstar < qulev[1])) {
-            warning("Extrapolating the adjusted upper confidence interval for rstar")
+            warning(
+              "Extrapolating the adjusted upper confidence interval for rstar"
+            )
           }
         }
       } else if (i == 3) {
         if (is.null(object$tem.pll)) {
           break
         }
-        if (method == "cobs" &&
-            requireNamespace("cobs", quietly = TRUE)) {
+        if (
+          method == "cobs" &&
+            requireNamespace("cobs", quietly = TRUE)
+        ) {
           fit.mtem <-
             cobs::cobs(
-              x = sign(object$tem.mle - object$psi) * suppressWarnings(sqrt(
-                -2 * (object$tem.pll -
-                        object$tem.maxpll)
-              )),
+              x = sign(object$tem.mle - object$psi) *
+                suppressWarnings(sqrt(
+                  -2 *
+                    (object$tem.pll -
+                      object$tem.maxpll)
+                )),
               y = object$psi,
               constraint = "decrease",
               lambda = 0,
@@ -278,13 +304,16 @@ confint.eprof <-
           ptem <- predict(fit.mtem, c(0, qulev))[, 2]
         } else {
           fit.mtem <-
-            stats::smooth.spline(x = na.omit(cbind(
-              sign(object$tem.mle - object$psi) *
-                suppressWarnings(sqrt(
-                  -2 * (object$tem.pll - object$tem.maxpll)
-                )),
-              object$psi
-            )), cv = FALSE)
+            stats::smooth.spline(
+              x = na.omit(cbind(
+                sign(object$tem.mle - object$psi) *
+                  suppressWarnings(sqrt(
+                    -2 * (object$tem.pll - object$tem.maxpll)
+                  )),
+                object$psi
+              )),
+              cv = FALSE
+            )
           ptem <- predict(fit.mtem, c(0, qulev))$y
         }
         ptem[1] <- object$tem.mle
@@ -294,14 +323,17 @@ confint.eprof <-
         if (is.null(object$empcov.pll)) {
           break
         }
-        if (method == "cobs" &&
-            requireNamespace("cobs", quietly = TRUE)) {
+        if (
+          method == "cobs" &&
+            requireNamespace("cobs", quietly = TRUE)
+        ) {
           fit.mempcov <-
             cobs::cobs(
-              x = sign(object$empcov.mle - object$psi) * suppressWarnings(sqrt(
-                -2 *
-                  (object$empcov.pll - object$empcov.maxpll)
-              )),
+              x = sign(object$empcov.mle - object$psi) *
+                suppressWarnings(sqrt(
+                  -2 *
+                    (object$empcov.pll - object$empcov.maxpll)
+                )),
               y = object$psi,
               constraint = "decrease",
               lambda = 0,
@@ -314,14 +346,19 @@ confint.eprof <-
           pempcov <- predict(fit.mempcov, c(0.5, qulev))[, 2]
         } else {
           fit.mempcov <-
-            stats::smooth.spline(x = na.omit(cbind(
-              sign(object$empcov.mle -
-                     object$psi) * suppressWarnings(sqrt(
-                       -2 * (object$empcov.pll - object$empcov.maxpll)
-                     )),
-              object$psi
-            )),
-            cv = FALSE)
+            stats::smooth.spline(
+              x = na.omit(cbind(
+                sign(
+                  object$empcov.mle -
+                    object$psi
+                ) *
+                  suppressWarnings(sqrt(
+                    -2 * (object$empcov.pll - object$empcov.maxpll)
+                  )),
+                object$psi
+              )),
+              cv = FALSE
+            )
           pempcov <- predict(fit.mempcov, c(0.5, qulev))$y
         }
         pempcov[1] <- object$empcov.mle
@@ -346,25 +383,29 @@ confint.eprof <-
         cat("Point estimate for the parameter of interest psi:\n")
         cat("Maximum likelihood          :", round(object$psi.max, 3), "\n")
         if (2 %in% ind) {
-          cat("Tangent exponential model   :",
-              round(object$tem.psimax, 3),
-              "\n")
+          cat(
+            "Tangent exponential model   :",
+            round(object$tem.psimax, 3),
+            "\n"
+          )
         }
         if (3 %in% ind) {
-          cat("Severini's profile (TEM)    :",
-              round(object$tem.mle, 3),
-              "\n")
+          cat("Severini's profile (TEM)    :", round(object$tem.mle, 3), "\n")
         }
         if (4 %in% ind) {
-          cat("Severini's profile (empcov) :",
-              round(object$empcov.mle, 3),
-              "\n")
+          cat(
+            "Severini's profile (empcov) :",
+            round(object$empcov.mle, 3),
+            "\n"
+          )
         }
         cat("\n")
         cat("Confidence intervals, levels :", prob, "\n")
-        cat("Wald intervals               :",
-            round(object$psi.max + sort(qulev) * object$std.error, 3),
-            "\n")
+        cat(
+          "Wald intervals               :",
+          round(object$psi.max + sort(qulev) * object$std.error, 3),
+          "\n"
+        )
         cat("Profile likelihood           :", round(conf[2:3, 1], 3), "\n")
         if (2 %in% ind) {
           cat("Tangent exponential model    :", round(conf[2:3, 2], 3), "\n")
@@ -397,7 +438,7 @@ plot.eprof <- function(x, ...) {
   args <- list(...)
   lik <- list()
   if (is.null(x$pll) && !is.null(x$r)) {
-    lik$npll <- -x$r ^ 2 / 2
+    lik$npll <- -x$r^2 / 2
   } else if (!is.null(x$pll)) {
     lik$npll <- x$pll - x$maxpll
   } else {
@@ -411,10 +452,16 @@ plot.eprof <- function(x, ...) {
   }
 
   if (is.null(args$ylim)) {
-    ylim <- c(max(-8, min(unlist(
-      lapply(lik, min, na.rm = TRUE)
-    ))), 0)
-  } else{
+    ylim <- c(
+      max(
+        -8,
+        min(unlist(
+          lapply(lik, min, na.rm = TRUE)
+        ))
+      ),
+      0
+    )
+  } else {
     ylim <- args$ylim
   }
 
@@ -428,9 +475,7 @@ plot.eprof <- function(x, ...) {
       tikz <- TRUE
     }
   }
-  if (any(!is.null(args$which),
-          !is.null(args$ind),
-          !is.null(args$parm))) {
+  if (any(!is.null(args$which), !is.null(args$ind), !is.null(args$parm))) {
     if (!is.null(args$parm)) {
       parm <-
         match.arg(
@@ -467,19 +512,17 @@ plot.eprof <- function(x, ...) {
 
   if (is.null(args$xlim)) {
     xlim <- c(min(x$psi), max(x$psi))
-  } else{
+  } else {
     xlim <- args$xlim
   }
   if (is.null(args$xlab)) {
-    xlab <- ifelse(!tikz,
-                   expression(psi),
-                   "$\\psi$")
-  } else{
+    xlab <- ifelse(!tikz, expression(psi), "$\\psi$")
+  } else {
     xlab <- args$xlab
   }
   if (is.null(args$ylab)) {
     ylab <- "profile log likelihood"
-  } else{
+  } else {
     ylab <- args$ylab
   }
   plot(
@@ -515,9 +558,7 @@ plot.eprof <- function(x, ...) {
     )
   }
   if (2 %in% ind && !is.null(x$tem.psimax)) {
-    abline(v = x$tem.psimax,
-           lwd = 0.5,
-           col = 3)
+    abline(v = x$tem.psimax, lwd = 0.5, col = 3)
   }
   abline(v = x$psi.max, lwd = 0.5)
   if (4 %in% ind && !is.null(lik$empcov.npll)) {
@@ -534,22 +575,14 @@ plot.eprof <- function(x, ...) {
     llegend <- c(llegend, "modif. emp. cov.")
   }
   if (3 %in% ind && !is.null(lik$tem.npll)) {
-    lines(x$psi,
-          lik$tem.npll,
-          lty = 2,
-          col = 2,
-          lwd = 2)
+    lines(x$psi, lik$tem.npll, lty = 2, col = 2, lwd = 2)
     lcols <- c(lcols, 2)
     llty <- c(llty, 2)
     llwd <- c(llwd, 2)
     llegend <- c(llegend, "modif. tem.")
   }
   if (2 %in% ind && !is.null(x$rstar)) {
-    lines(x$psi,
-          -x$rstar ^ 2 / 2,
-          lwd = 2,
-          col = 3,
-          lty = 5)
+    lines(x$psi, -x$rstar^2 / 2, lwd = 2, col = 3, lty = 5)
     lcols <- c(lcols, 3)
     llty <- c(llty, 5)
     llwd <- c(llwd, 2)
@@ -575,9 +608,7 @@ plot.eprof <- function(x, ...) {
     )
   }
   #par(old.pars)
-
 }
-
 
 
 #' Profile log-likelihood for the generalized extreme value distribution
@@ -648,16 +679,18 @@ plot.eprof <- function(x, ...) {
 #' gev.pll(psi = seq(12, 90, length = 50), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
 gev.pll <-
-  function(psi,
-           param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
-           mod = "profile",
-           dat,
-           N = NULL,
-           p = NULL,
-           q = NULL,
-           correction = TRUE,
-           plot = TRUE,
-           ...) {
+  function(
+    psi,
+    param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
+    mod = "profile",
+    dat,
+    N = NULL,
+    p = NULL,
+    q = NULL,
+    correction = TRUE,
+    plot = TRUE,
+    ...
+  ) {
     param <- match.arg(param)
     mod <-
       match.arg(mod, c("profile", "tem", "modif"), several.ok = TRUE)
@@ -717,7 +750,6 @@ gev.pll <-
 
     # if(missing(psi) || any(is.null(psi)) || any(is.na(psi))){ psi <- mle[param] } psi <- as.vector(psi)
 
-
     # Extract the components, notably V for model `tem`. Keep other components for optimization
     Vprovided <- FALSE
     extra.args <- list(...)
@@ -751,7 +783,6 @@ gev.pll <-
       )
     }
 
-
     # Obtained constrained maximum likelihood estimates for given value of psi
     if (param %in% c("loc", "scale", "shape")) {
       # Define observation-wise gradient
@@ -762,34 +793,58 @@ gev.pll <-
         xi = as.vector(par[3])
         if (!isTRUE(all.equal(xi, 0, tolerance = 1e-8))) {
           cbind(
-            -(-(mu - dat) * xi / sigma + 1) ^ (-1 / xi - 1) / sigma - xi * (1 / xi + 1) /
-              (sigma *
-                 ((mu - dat) * xi / sigma - 1)),
-            -(dat - mu) * ((dat - mu) * xi / sigma + 1) ^ (-1 / xi -
-                                                             1) / sigma ^ 2 + (dat - mu) * xi * (1 / xi + 1) / (sigma ^
-                                                                                                                  2 * ((dat - mu) * xi / sigma +
-                                                                                                                         1)) - 1 / sigma,
-            -(mu - dat) * (1 / xi + 1) / (sigma * ((mu - dat) * xi / sigma -
-                                                     1)) - (log1p(-(mu - dat) * xi / sigma) / xi ^ 2 - (mu - dat) /
-                                                              (sigma * ((mu -
-                                                                           dat) * xi / sigma - 1
-                                                              ) * xi)) / (-(mu - dat) * xi / sigma + 1) ^ (1 / xi) + log1p(-(mu -
-                                                                                                                               dat) * xi / sigma) / xi ^ 2
+            -(-(mu - dat) * xi / sigma + 1)^(-1 / xi - 1) /
+              sigma -
+              xi *
+                (1 / xi + 1) /
+                (sigma *
+                  ((mu - dat) * xi / sigma - 1)),
+            -(dat - mu) *
+              ((dat - mu) * xi / sigma + 1)^(-1 / xi - 1) /
+              sigma^2 +
+              (dat - mu) *
+                xi *
+                (1 / xi + 1) /
+                (sigma^2 * ((dat - mu) * xi / sigma + 1)) -
+              1 / sigma,
+            -(mu - dat) *
+              (1 / xi + 1) /
+              (sigma * ((mu - dat) * xi / sigma - 1)) -
+              (log1p(-(mu - dat) * xi / sigma) /
+                xi^2 -
+                (mu - dat) /
+                  (sigma *
+                    ((mu -
+                      dat) *
+                      xi /
+                      sigma -
+                      1) *
+                    xi)) /
+                (-(mu - dat) * xi / sigma + 1)^(1 / xi) +
+              log1p(
+                -(mu -
+                  dat) *
+                  xi /
+                  sigma
+              ) /
+                xi^2
           )
         } else {
           cbind(
             -exp(mu / sigma - dat / sigma) / sigma + 1 / sigma,
-            mu * exp(mu / sigma - dat / sigma) / sigma ^ 2 -
-              dat * exp(mu / sigma - dat / sigma) / sigma ^ 2 - mu /
-              sigma ^ 2 - 1 / sigma + dat / sigma ^ 2,
+            mu *
+              exp(mu / sigma - dat / sigma) /
+              sigma^2 -
+              dat * exp(mu / sigma - dat / sigma) / sigma^2 -
+              mu /
+                sigma^2 -
+              1 / sigma +
+              dat / sigma^2,
             rep(0, length(dat))
           )
         }
       }
-      ind <- switch(param,
-                    loc = 1,
-                    scale = 2,
-                    shape = 3)
+      ind <- switch(param, loc = 1, scale = 2, shape = 3)
       maxll <- gev.ll(mle, dat = dat)
       std.error <-
         sqrt(solve(gev.infomat(
@@ -801,8 +856,13 @@ gev.pll <-
         x0 = c(median(dat / sigmat), 0.05)
         if (is.nan(gev.ll(c(x0[1], sigmat, x0[2]), dat = dat))) {
           constr_fit <-
-            try(mev::fit.gev(xdat = dat,
-                             fpar = list(scale = sigmat, shape = x0[2])), silent = TRUE)
+            try(
+              mev::fit.gev(
+                xdat = dat,
+                fpar = list(scale = sigmat, shape = x0[2])
+              ),
+              silent = TRUE
+            )
           if (!inherits(constr_fit, what = "try-error")) {
             if (constr_fit$convergence == "successful") {
               x0 <- as.vector(c(constr_fit$estimate["loc"], 0.05))
@@ -822,78 +882,103 @@ gev.pll <-
         #     -gev.score(c(par[1], sigmat, par[2]), dat = dat)[-2]
         # }))
         opt <-
-          try(suppressWarnings(suppressMessages(
-            alabama::auglag(
-              par = x0,
-              fn = function(par) {
-                -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
-              },
-              gr = function(par) {
-                -gev.score(c(par[1], sigmat, par[2]), dat = dat)[-2]
-              },
-              hin = function(par) {
-                ifelse(par[2] <= 0,
-                       sigmat + par[2] * (xmax - par[1]),
-                       sigmat + par[2] * (xmin -
-                                            par[1]))
-              },
-              control.outer = list(trace = FALSE, method = "nlminb")
-            )
-          )), silent = TRUE)
+          try(
+            suppressWarnings(suppressMessages(
+              alabama::auglag(
+                par = x0,
+                fn = function(par) {
+                  -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
+                },
+                gr = function(par) {
+                  -gev.score(c(par[1], sigmat, par[2]), dat = dat)[-2]
+                },
+                hin = function(par) {
+                  ifelse(
+                    par[2] <= 0,
+                    sigmat + par[2] * (xmax - par[1]),
+                    sigmat +
+                      par[2] *
+                        (xmin -
+                          par[1])
+                  )
+                },
+                control.outer = list(trace = FALSE, method = "nlminb")
+              )
+            )),
+            silent = TRUE
+          )
         if (!inherits(opt, what = "try-error")) {
           if (opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
             return(c(opt$par, opt$value))
           }
         }
-        opt2 <- try(suppressWarnings(suppressMessages(Rsolnp::solnp(
-          pars = x0,
-          fun = function(par) {
-            -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
-          },
-          control = list(trace = 0)
-        ))),
-        silent = TRUE)
+        opt2 <- try(
+          suppressWarnings(suppressMessages(Rsolnp::solnp(
+            pars = x0,
+            fun = function(par) {
+              -gev.ll(c(par[1], sigmat, par[2]), dat = dat)
+            },
+            control = list(trace = 0)
+          ))),
+          silent = TRUE
+        )
         if (!inherits(opt2, what = "try-error")) {
-          if (opt2$convergence == 0 &&
-              !isTRUE(all.equal(tail(opt2$values, 1), 1e+10))) {
+          if (
+            opt2$convergence == 0 &&
+              !isTRUE(all.equal(tail(opt2$values, 1), 1e+10))
+          ) {
             return(c(opt2$par, tail(opt2$values, 1)))
           }
         }
         return(rep(NA, 3))
       }
       constr.mle.loc <- function(mut, dat = dat) {
-        opt <- try(suppressMessages(suppressWarnings(
-          alabama::auglag(
-            par = c(mad(dat, constant = 1), 0.1),
-            fn = function(par) {
-              val <- -gev.ll(c(mut, par[1:2]), dat = dat)
-              ifelse(is.infinite(val), 1e+10, val)
-            },
-            gr = function(par) {
-              -gev.score(c(mut, par[1:2]), dat = dat)[-ind]
-            },
-            hin = function(par) {
-              ifelse(par[2] <= 0, par[1] + par[2] * (xmax - mut), par[1] + par[2] * (xmin -
-                                                                                       mut))
-            },
-            control.outer = list(method = "nlminb", trace = FALSE)
-          )
-        )), silent = TRUE)
+        opt <- try(
+          suppressMessages(suppressWarnings(
+            alabama::auglag(
+              par = c(mad(dat, constant = 1), 0.1),
+              fn = function(par) {
+                val <- -gev.ll(c(mut, par[1:2]), dat = dat)
+                ifelse(is.infinite(val), 1e+10, val)
+              },
+              gr = function(par) {
+                -gev.score(c(mut, par[1:2]), dat = dat)[-ind]
+              },
+              hin = function(par) {
+                ifelse(
+                  par[2] <= 0,
+                  par[1] + par[2] * (xmax - mut),
+                  par[1] +
+                    par[2] *
+                      (xmin -
+                        mut)
+                )
+              },
+              control.outer = list(method = "nlminb", trace = FALSE)
+            )
+          )),
+          silent = TRUE
+        )
         if (!inherits(opt, what = "try-error")) {
           if (opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
             return(c(opt$par, opt$value))
           }
         }
-        opt2 <- try(suppressWarnings(suppressMessages(Rsolnp::solnp(
-          pars = c(mad(dat, constant = 1), 0.1),
-          fun = function(par) {
-            -gev.ll(c(mut, par), dat = dat)
-          },
-          control = list(trace = 0)
-        ))), silent = TRUE)
+        opt2 <- try(
+          suppressWarnings(suppressMessages(Rsolnp::solnp(
+            pars = c(mad(dat, constant = 1), 0.1),
+            fun = function(par) {
+              -gev.ll(c(mut, par), dat = dat)
+            },
+            control = list(trace = 0)
+          ))),
+          silent = TRUE
+        )
         if (!inherits(opt2, what = "try-error")) {
-          if (opt2$convergence == 0 &&
-              !isTRUE(all.equal(tail(opt2$values, 1), 1e+10))) {
+          if (
+            opt2$convergence == 0 &&
+              !isTRUE(all.equal(tail(opt2$values, 1), 1e+10))
+          ) {
             return(c(opt2$par, tail(opt2$values, 1)))
           }
         }
@@ -933,13 +1018,23 @@ gev.pll <-
       constr.mle.shape <- function(xit, dat = dat) {
         if (abs(xit) < 1e-08) {
           xit <- 0
-        }  #because rgev does not handle this case!
+        } #because rgev does not handle this case!
         start.scale <-
-          mad(dat, constant = 1) / median(abs(mev::rgev(2000, shape = xit) -
-                                                mev::qgev(0.5, shape = xit)))
+          mad(dat, constant = 1) /
+          median(abs(
+            mev::rgev(2000, shape = xit) -
+              mev::qgev(0.5, shape = xit)
+          ))
         start.loc <-
-          median(dat) - start.scale * ifelse(xit == 0, log(log(2)), (log(2) ^ (-xit) -
-                                                                       1) / xit)
+          median(dat) -
+          start.scale *
+            ifelse(
+              xit == 0,
+              log(log(2)),
+              (log(2)^(-xit) -
+                1) /
+                xit
+            )
         if (start.scale + xit * (xmax - start.loc) <= 0) {
           if (xit < 0) {
             start.loc <- start.scale / xit + xmax + 0.001
@@ -947,47 +1042,69 @@ gev.pll <-
             start.loc <- start.scale / xit + xmin + 0.001
           }
         }
-        opt <- try(suppressMessages(suppressWarnings(
-          alabama::auglag(
-            par = c(start.loc, start.scale),
-            fn = function(par) {
-              val <- -gev.ll(c(par[1:2], xit), dat = dat)
-              ifelse(is.infinite(val) || is.na(val), 1e+10, val)
-            },
-            gr = function(par) {
-              -gev.score(c(par[1:2], xit), dat = dat)[-ind]
-            },
-            hin = function(par) {
-              ifelse(xit <= 0, par[2] + xit * (xmax - par[1]), par[2] + xit * (xmin - par[1]))
-            },
-            control.outer = list(method = "nlminb", trace = FALSE)
-          )
-        )), silent = TRUE)
+        opt <- try(
+          suppressMessages(suppressWarnings(
+            alabama::auglag(
+              par = c(start.loc, start.scale),
+              fn = function(par) {
+                val <- -gev.ll(c(par[1:2], xit), dat = dat)
+                ifelse(is.infinite(val) || is.na(val), 1e+10, val)
+              },
+              gr = function(par) {
+                -gev.score(c(par[1:2], xit), dat = dat)[-ind]
+              },
+              hin = function(par) {
+                ifelse(
+                  xit <= 0,
+                  par[2] + xit * (xmax - par[1]),
+                  par[2] + xit * (xmin - par[1])
+                )
+              },
+              control.outer = list(method = "nlminb", trace = FALSE)
+            )
+          )),
+          silent = TRUE
+        )
         if (!inherits(opt, what = "try-error")) {
           if (opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e+10))) {
             return(c(opt$par, opt$value))
           }
         }
-        opt2 <- try(suppressMessages(suppressWarnings(
-          Rsolnp::solnp(
-            pars = c(start.loc, start.scale),
-            fun = function(par) {
-              val <- -gev.ll(c(par[1:2], xit), dat = dat)
-              ifelse(is.infinite(val) ||
-                       is.na(val), 1e+10, val)
-            },
-            ineqfun = function(par) {
-              ifelse(xit <= 0, par[2] + xit * (xmax - par[1]), par[2] + xit * (xmin -
-                                                                                 par[1]))
-            },
-            ineqLB = 0,
-            ineqUB = Inf,
-            control = list(trace = 0)
-          )
-        )), silent = TRUE)
+        opt2 <- try(
+          suppressMessages(suppressWarnings(
+            Rsolnp::solnp(
+              pars = c(start.loc, start.scale),
+              fun = function(par) {
+                val <- -gev.ll(c(par[1:2], xit), dat = dat)
+                ifelse(
+                  is.infinite(val) ||
+                    is.na(val),
+                  1e+10,
+                  val
+                )
+              },
+              ineqfun = function(par) {
+                ifelse(
+                  xit <= 0,
+                  par[2] + xit * (xmax - par[1]),
+                  par[2] +
+                    xit *
+                      (xmin -
+                        par[1])
+                )
+              },
+              ineqLB = 0,
+              ineqUB = Inf,
+              control = list(trace = 0)
+            )
+          )),
+          silent = TRUE
+        )
         if (!inherits(opt2, what = "try-error")) {
-          if (isTRUE(opt2$convergence == 0) &&
-              !isTRUE(all.equal(tail(opt2$values, 1), 1e+10))) {
+          if (
+            isTRUE(opt2$convergence == 0) &&
+              !isTRUE(all.equal(tail(opt2$values, 1), 1e+10))
+          ) {
             return(c(opt2$par, tail(opt2$values, 1)))
           }
         }
@@ -997,7 +1114,10 @@ gev.pll <-
       if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
         if (ind == 2) {
           psirangelow <-
-            unique(min(1e-05, seq(-4, -1.5, length = 10) * std.error + mle[param]))
+            unique(min(
+              1e-05,
+              seq(-4, -1.5, length = 10) * std.error + mle[param]
+            ))
         } else {
           psirangelow <- seq(-4, -1.5, length = 10) * std.error + mle[param]
         }
@@ -1005,35 +1125,49 @@ gev.pll <-
           switch(
             param,
             loc = constr.mle.loc(par, dat = dat),
-            scale = constr.mle.scale(par,
-                                     dat = dat),
+            scale = constr.mle.scale(par, dat = dat),
             shape = constr.mle.shape(par, dat = dat)
           )
-        }))[, 3] - maxll
+        }))[, 3] -
+          maxll
         psirangehigh <-
           seq(1.5, 4, length = 10) * std.error + mle[param]
         highvals <- -t(sapply(psirangehigh, function(par) {
           switch(
             param,
             loc = constr.mle.loc(par, dat = dat),
-            scale = constr.mle.scale(par,
-                                     dat = dat),
+            scale = constr.mle.scale(par, dat = dat),
             shape = constr.mle.shape(par, dat = dat)
           )
-        }))[, 3] - maxll
+        }))[, 3] -
+          maxll
         lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
         hi <-
           approx(x = highvals, y = psirangehigh, xout = -4)$y
         lo <-
-          ifelse(is.na(lo), predict(lm(psirangelow ~ lowvals), newdata = data.frame(lowvals = -4))[[1]],
-                 lo)
+          ifelse(
+            is.na(lo),
+            predict(
+              lm(psirangelow ~ lowvals),
+              newdata = data.frame(lowvals = -4)
+            )[[1]],
+            lo
+          )
         hi <-
-          ifelse(is.na(hi), predict(lm(psirangehigh ~ highvals), newdata = data.frame(highvals = -4))[[1]],
-                 hi)
+          ifelse(
+            is.na(hi),
+            predict(
+              lm(psirangehigh ~ highvals),
+              newdata = data.frame(highvals = -4)
+            )[[1]],
+            hi
+          )
         psi <- seq(lo, hi, length = 55)
       }
       if (param == "shape" && min(psi) < -1) {
-        warning("psi includes shape parameters below -1. These will be automatically removed.")
+        warning(
+          "psi includes shape parameters below -1. These will be automatically removed."
+        )
         psi <- psi[psi > -1]
       }
       # Calculate profile likelihood at psi
@@ -1041,8 +1175,7 @@ gev.pll <-
         switch(
           param,
           loc = constr.mle.loc(par, dat = dat),
-          scale = constr.mle.scale(par,
-                                   dat = dat),
+          scale = constr.mle.scale(par, dat = dat),
           shape = constr.mle.shape(par, dat = dat)
         )
       }))
@@ -1050,10 +1183,15 @@ gev.pll <-
         switch(
           param,
           loc = cbind(psi, lambda[, 1:2, drop = FALSE]),
-          scale = cbind(lambda[,
-                               1, drop = FALSE], psi, lambda[, 2, drop = FALSE]),
-          shape = cbind(lambda[, 1:2,
-                               drop = FALSE], psi)
+          scale = cbind(
+            lambda[,
+              1,
+              drop = FALSE
+            ],
+            psi,
+            lambda[, 2, drop = FALSE]
+          ),
+          shape = cbind(lambda[, 1:2, drop = FALSE], psi)
         )
       # Profile log likelihood values for psi
       profll <- -lambda[, 3]
@@ -1062,37 +1200,50 @@ gev.pll <-
         # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
         phi.mle <- gev.phi(par = mle, dat = dat, V = V)
         q2num <-
-          ifelse(ind %% 2 == 0, -1, 1) * apply(pars, 1, function(par) {
-            det(rbind(c(
-              c(phi.mle) - gev.phi(
+          ifelse(ind %% 2 == 0, -1, 1) *
+          apply(pars, 1, function(par) {
+            det(rbind(
+              c(
+                c(phi.mle) -
+                  gev.phi(
+                    par = par,
+                    dat = dat,
+                    V = V
+                  )
+              ),
+              gev.dphi(
                 par = par,
                 dat = dat,
                 V = V
-              )
-            ), gev.dphi(
-              par = par,
-              dat = dat,
-              V = V
-            )[-ind,]))
+              )[-ind, ]
+            ))
           })
         if (isTRUE(any(sign(q2num) * sign(r) < 0, na.rm = TRUE))) {
-          warning("Correction factor and likelihood root are of opposite sign - check output")
+          warning(
+            "Correction factor and likelihood root are of opposite sign - check output"
+          )
         }
         logq <- apply(pars, 1, function(par) {
-          -0.5 * log(det(gev.infomat(
-            par = par,
-            dat = dat,
-            method = "obs"
-          )[-ind, -ind]))
-        }) + log(abs(q2num))
+          -0.5 *
+            log(det(gev.infomat(
+              par = par,
+              dat = dat,
+              method = "obs"
+            )[-ind, -ind]))
+        }) +
+          log(abs(q2num))
         qmlecontrib <-
           -log(det(gev.dphi(
-            par = mle, dat = dat, V = V
-          ))) + 0.5 * log(det(gev.infomat(
             par = mle,
             dat = dat,
-            method = "obs"
-          )))
+            V = V
+          ))) +
+          0.5 *
+            log(det(gev.infomat(
+              par = mle,
+              dat = dat,
+              method = "obs"
+            )))
         logq <- logq + qmlecontrib
         qcor <- sign(q2num) * exp(logq)
         rstar <- ifelse(r == 0, 0, r + (logq - log(abs(r))) / r)
@@ -1103,35 +1254,41 @@ gev.pll <-
             switch(
               param,
               loc = constr.mle.loc(psi, dat = dat),
-              scale = constr.mle.scale(psi,
-                                       dat = dat),
+              scale = constr.mle.scale(psi, dat = dat),
               shape = constr.mle.shape(psi, dat = dat)
             )[1:2]
           para <-
-            switch(ind,
-                   c(psi, lambda),
-                   c(lambda[1], psi, lambda[2]),
-                   c(lambda,
-                     psi))
+            switch(
+              ind,
+              c(psi, lambda),
+              c(lambda[1], psi, lambda[2]),
+              c(lambda, psi)
+            )
           pll <- gev.ll(par = para, dat = dat)
           rs <- 2 * (maxll - pll)
           logq <-
-            -0.5 * log(det(gev.infomat(
+            -0.5 *
+            log(det(gev.infomat(
               par = para,
               dat = dat,
               method = "obs"
-            )[-ind,
-              -ind])) + qmlecontrib + log(abs(det(rbind(
-                c(c(phi.mle) - gev.phi(
-                  par = para,
-                  dat = dat,
-                  V = V
-                )), gev.dphi(
-                  par = para,
-                  dat = dat,
-                  V = V
-                )[-ind,]
-              ))))
+            )[-ind, -ind])) +
+            qmlecontrib +
+            log(abs(det(rbind(
+              c(
+                c(phi.mle) -
+                  gev.phi(
+                    par = para,
+                    dat = dat,
+                    V = V
+                  )
+              ),
+              gev.dphi(
+                par = para,
+                dat = dat,
+                V = V
+              )[-ind, ]
+            ))))
           abs(rs + logq - log(sqrt(abs(rs))))
           # rs is r squared - finding the maximum by multiplying rstar by r
           # when rstar vanishes at zero, so does rstar*r
@@ -1143,7 +1300,11 @@ gev.pll <-
             fn = tem.max.opt,
             method = "Brent",
             dat = dat,
-            lower = ifelse(ind == 2, max(1e-05, mle[ind] - std.error), mle[ind] - std.error),
+            lower = ifelse(
+              ind == 2,
+              max(1e-05, mle[ind] - std.error),
+              mle[ind] - std.error
+            ),
             upper = mle[ind] + std.error,
             control = list(abstol = 1e-10)
           )$par
@@ -1152,35 +1313,34 @@ gev.pll <-
       # Modified profile likelihood based on p* approximation, two modifications due to Severini
       if ("modif" %in% mod) {
         tem.objfunc <- function(par, dat = dat) {
-          0.5 * log(det(gev.infomat(
-            par, dat = dat, method = "obs"
-          )[-ind, -ind])) -
+          0.5 *
+            log(det(gev.infomat(
+              par,
+              dat = dat,
+              method = "obs"
+            )[-ind, -ind])) -
             log(abs(det(
               gev.dphi(
                 par = par,
                 dat = dat,
                 V = V[, -ind]
-              )[-ind,]
+              )[-ind, ]
             )))
         }
         optim.tem.fn <-
-          function(psi,
-                   dat = dat,
-                   param = param) {
+          function(psi, dat = dat, param = param) {
             theta.psi.opt <-
               switch(
                 param,
                 loc = constr.mle.loc(psi, dat = dat),
-                scale = constr.mle.scale(psi,
-                                         dat = dat),
+                scale = constr.mle.scale(psi, dat = dat),
                 shape = constr.mle.shape(psi, dat = dat)
               )
             para <-
               switch(
                 param,
                 loc = c(psi, theta.psi.opt[1:2]),
-                scale = c(theta.psi.opt[1],
-                          psi, theta.psi.opt[2]),
+                scale = c(theta.psi.opt[1], psi, theta.psi.opt[2]),
                 shape = c(theta.psi.opt[1:2], psi)
               )
             ll <- -theta.psi.opt[3]
@@ -1206,19 +1366,19 @@ gev.pll <-
             control = list(fnscale = -1)
           )
 
-
         # Severini empirical covariance function adjustment to profile likelihood Score function -
         # observation-wise
 
         # Score at MLE (sums to zero)
         score.scale.mle <-
-          gev.score.f(mle, dat)[, -ind]  #keep s_lambda
+          gev.score.f(mle, dat)[, -ind] #keep s_lambda
         empcov.objfunc <- function(par, dat) {
-          0.5 * log(det(gev.infomat(
-            par = par,
-            dat = dat,
-            method = "obs"
-          )[-ind, -ind])) -
+          0.5 *
+            log(det(gev.infomat(
+              par = par,
+              dat = dat,
+              method = "obs"
+            )[-ind, -ind])) -
             log(abs(sum(
               score.scale.mle * gev.score.f(par, dat)[, -ind]
             )))
@@ -1226,23 +1386,19 @@ gev.pll <-
         profllempcov <-
           profll + apply(pars, 1, empcov.objfunc, dat = dat)
         optim.empcov.fn <-
-          function(psi,
-                   param = param,
-                   dat = dat) {
+          function(psi, param = param, dat = dat) {
             theta.psi.opt <-
               switch(
                 param,
                 loc = constr.mle.loc(psi, dat = dat),
-                scale = constr.mle.scale(psi,
-                                         dat = dat),
+                scale = constr.mle.scale(psi, dat = dat),
                 shape = constr.mle.shape(psi, dat = dat)
               )
             para <-
               switch(
                 param,
                 loc = c(psi, theta.psi.opt[1:2]),
-                scale = c(theta.psi.opt[1],
-                          psi, theta.psi.opt[2]),
+                scale = c(theta.psi.opt[1], psi, theta.psi.opt[2]),
                 shape = c(theta.psi.opt[1:2], psi)
               )
             ll <- -theta.psi.opt[3]
@@ -1258,8 +1414,11 @@ gev.pll <-
             param = param,
             lower = ifelse(
               param == "scale",
-              max(1e-05, mle[ind] -
-                    std.error),
+              max(
+                1e-05,
+                mle[ind] -
+                  std.error
+              ),
               mle[ind] - std.error
             ),
             upper = mle[ind] + std.error,
@@ -1268,7 +1427,7 @@ gev.pll <-
       }
 
       # Return levels, quantiles or value-at-risk
-    }  else if (param %in% c("Nquant", "Nmean")) {
+    } else if (param %in% c("Nquant", "Nmean")) {
       qty <- switch(param, Nquant = "quantile", Nmean = "mean")
       maxll <- gevN.ll(
         mle,
@@ -1297,37 +1456,51 @@ gev.pll <-
         # routine without risking hanging despite the algorithm begin more robust and faster for
         # this problem...
         opt <-
-          try(suppressMessages(suppressWarnings(
-            alabama::auglag(
-              par = st_vals,
-              fn = function(par) {
-                val <-
-                  -gevN.ll(
-                    par = c(par[1], zt, par[2]),
-                    dat = dat,
-                    q = q,
-                    qty = qty,
-                    N = N
+          try(
+            suppressMessages(suppressWarnings(
+              alabama::auglag(
+                par = st_vals,
+                fn = function(par) {
+                  val <-
+                    -gevN.ll(
+                      par = c(par[1], zt, par[2]),
+                      dat = dat,
+                      q = q,
+                      qty = qty,
+                      N = N
+                    )
+                  ifelse(
+                    isTRUE(any(
+                      is.infinite(val),
+                      is.na(val),
+                      val <= -maxll
+                    )),
+                    1e+10,
+                    val
                   )
-                ifelse(isTRUE(any(
-                  is.infinite(val), is.na(val), val <= -maxll
-                )), 1e+10, val)
-              },
-              hin = function(par) {
-                sigma <-
-                  switch(
-                    qty,
-                    quantile = (zt - par[1]) * par[2] / (N ^ par[2] * (log(1 / q)) ^ (-par[2]) -
-                                                           1),
-                    mean = (zt - par[1]) * par[2] / (N ^ par[2] * gamma(1 - par[2]) - 1)
+                },
+                hin = function(par) {
+                  sigma <-
+                    switch(
+                      qty,
+                      quantile = (zt - par[1]) *
+                        par[2] /
+                        (N^par[2] * (log(1 / q))^(-par[2]) - 1),
+                      mean = (zt - par[1]) *
+                        par[2] /
+                        (N^par[2] * gamma(1 - par[2]) - 1)
+                    )
+                  c(
+                    sigma,
+                    sigma + par[2] * (xmax - par[1]),
+                    sigma + par[2] * (xmin - par[1])
                   )
-                c(sigma,
-                  sigma + par[2] * (xmax - par[1]),
-                  sigma + par[2] * (xmin - par[1]))
-              },
-              control.outer = list(method = "nlminb", trace = FALSE)
-            )
-          )), silent = TRUE)
+                },
+                control.outer = list(method = "nlminb", trace = FALSE)
+              )
+            )),
+            silent = TRUE
+          )
         #With `alabama` package opt <- try(suppressWarnings( alabama::auglag(par = c(median(dat),
         # 0.1), fn = function(par){ val <- -gevN.ll(par = c(par[1], zt, par[2]), dat = dat, q = q,
         # qty = qty, N = N); ifelse(is.infinite(val) || is.na(val), 1e10, val)}, gr =
@@ -1338,48 +1511,64 @@ gev.pll <-
         # sigma + par[2]*(xmin-par[1]))}, control.outer = list (trace = FALSE) )))
         if (!inherits(opt, what = "try-error")) {
           # if(opt$convergence == 0 && !isTRUE(all.equal(opt$value, 1e10))){
-          if (isTRUE(opt$convergence == 0) &&
-              !isTRUE(all.equal(opt$value, 1e+10))) {
+          if (
+            isTRUE(opt$convergence == 0) &&
+              !isTRUE(all.equal(opt$value, 1e+10))
+          ) {
             return(c(opt$par, opt$value))
-          } else{
+          } else {
             st_vals <- opt$par
           }
         }
-        opt2 <- try(suppressMessages(suppressWarnings(
-          Rsolnp::solnp(
-            par = st_vals,
-            fun = function(par) {
-              val <-
-                -gevN.ll(
-                  par = c(par[1], zt, par[2]),
-                  dat = dat,
-                  q = q,
-                  qty = qty,
-                  N = N
+        opt2 <- try(
+          suppressMessages(suppressWarnings(
+            Rsolnp::solnp(
+              par = st_vals,
+              fun = function(par) {
+                val <-
+                  -gevN.ll(
+                    par = c(par[1], zt, par[2]),
+                    dat = dat,
+                    q = q,
+                    qty = qty,
+                    N = N
+                  )
+                ifelse(
+                  is.infinite(val) ||
+                    is.na(val),
+                  1e+10,
+                  val
                 )
-              ifelse(is.infinite(val) ||
-                       is.na(val), 1e+10, val)
-            },
-            ineqfun = function(par) {
-              sigma <-
-                switch(
-                  qty,
-                  quantile = (zt - par[1]) * par[2] / (N ^ par[2] * (log(1 / q)) ^ (-par[2]) -
-                                                         1),
-                  mean = (zt - par[1]) * par[2] / (N ^ par[2] * gamma(1 - par[2]) - 1)
+              },
+              ineqfun = function(par) {
+                sigma <-
+                  switch(
+                    qty,
+                    quantile = (zt - par[1]) *
+                      par[2] /
+                      (N^par[2] * (log(1 / q))^(-par[2]) - 1),
+                    mean = (zt - par[1]) *
+                      par[2] /
+                      (N^par[2] * gamma(1 - par[2]) - 1)
+                  )
+                c(
+                  sigma,
+                  sigma + par[2] * (xmax - par[1]),
+                  sigma + par[2] * (xmin - par[1])
                 )
-              c(sigma,
-                sigma + par[2] * (xmax - par[1]),
-                sigma + par[2] * (xmin - par[1]))
-            },
-            ineqLB = rep(0, 3),
-            ineqUB = rep(Inf, 3),
-            control = list(trace = 0)
-          )
-        )), silent = TRUE)
+              },
+              ineqLB = rep(0, 3),
+              ineqUB = rep(Inf, 3),
+              control = list(trace = 0)
+            )
+          )),
+          silent = TRUE
+        )
         if (!inherits(opt2, what = "try-error")) {
-          if (isTRUE(opt2$convergence == 0) &&
-              !isTRUE(all.equal(tail(opt2$values, 1), 1e+10))) {
+          if (
+            isTRUE(opt2$convergence == 0) &&
+              !isTRUE(all.equal(tail(opt2$values, 1), 1e+10))
+          ) {
             return(c(opt2$par, tail(opt2$values, 1)))
           }
         }
@@ -1388,14 +1577,18 @@ gev.pll <-
       # Missing psi vector
       if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
         psirangelow <-
-          pmax(1e-05, seq(ifelse(mle[3] < 0, -3.5, -2.5), -0.5, length = 6) *
-                 std.error + mle[2])
+          pmax(
+            1e-05,
+            seq(ifelse(mle[3] < 0, -3.5, -2.5), -0.5, length = 6) *
+              std.error +
+              mle[2]
+          )
         lowvals <-
-          -sapply(psirangelow, constr.mle.N, dat = dat)[3,] - maxll
+          -sapply(psirangelow, constr.mle.N, dat = dat)[3, ] - maxll
         psirangehigh <-
           seq(2.5, (1 + mle[3]) * 8, length = 10) * std.error + mle[2]
         highvals <-
-          -sapply(psirangehigh, constr.mle.N, dat = dat)[3,] - maxll
+          -sapply(psirangehigh, constr.mle.N, dat = dat)[3, ] - maxll
 
         lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
         hi <-
@@ -1403,7 +1596,11 @@ gev.pll <-
         lo <-
           ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[2], lo)
         hi <-
-          ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[2], hi)
+          ifelse(
+            is.na(hi),
+            lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[2],
+            hi
+          )
         psi <-
           c(seq(lo, mle[2], length = 20)[-20], seq(mle[2], hi, length = 55)[-1])
       }
@@ -1427,14 +1624,15 @@ gev.pll <-
         q2num <- apply(pars, 1, function(par) {
           -det(rbind(
             c(
-              c(phi.mle) - gevN.phi(
-                par = par,
-                dat = dat,
-                V = V,
-                N = N,
-                q = q,
-                qty = qty
-              )
+              c(phi.mle) -
+                gevN.phi(
+                  par = par,
+                  dat = dat,
+                  V = V,
+                  N = N,
+                  q = q,
+                  qty = qty
+                )
             ),
             gevN.dphi(
               par = par,
@@ -1443,25 +1641,29 @@ gev.pll <-
               N = N,
               q = q,
               qty = qty
-            )[-2,]
+            )[-2, ]
           ))
         })
         if (isTRUE(any(sign(q2num) * sign(r) < 0, na.rm = TRUE))) {
-          warning("Correction factor and likelihood root are of opposite sign - check output")
+          warning(
+            "Correction factor and likelihood root are of opposite sign - check output"
+          )
         }
 
         logq <- apply(pars, 1, function(par) {
-          -0.5 * log(det(
-            gevN.infomat(
-              par = par,
-              dat = dat,
-              method = "obs",
-              N = N,
-              q = q,
-              qty = qty
-            )[-2, -2]
-          ))
-        }) + log(abs(q2num))
+          -0.5 *
+            log(det(
+              gevN.infomat(
+                par = par,
+                dat = dat,
+                method = "obs",
+                N = N,
+                q = q,
+                qty = qty
+              )[-2, -2]
+            ))
+        }) +
+          log(abs(q2num))
         qmlecontrib <-
           -log(det(gevN.dphi(
             par = mle,
@@ -1471,16 +1673,17 @@ gev.pll <-
             q = q,
             qty = qty
           ))) +
-          0.5 * log(det(
-            gevN.infomat(
-              par = mle,
-              dat = dat,
-              method = "obs",
-              N = N,
-              q = q,
-              qty = qty
-            )
-          ))
+          0.5 *
+            log(det(
+              gevN.infomat(
+                par = mle,
+                dat = dat,
+                method = "obs",
+                N = N,
+                q = q,
+                qty = qty
+              )
+            ))
         logq <- logq + qmlecontrib
         qcor <- sign(q2num) * exp(logq)
         rstar <- ifelse(r == 0, 0, r + (logq - log(abs(r))) / r)
@@ -1491,7 +1694,8 @@ gev.pll <-
           pll <- -lam[3]
           rs <- 2 * (maxll - pll)
           logq <-
-            -0.5 * log(det(
+            -0.5 *
+            log(det(
               gevN.infomat(
                 par = para,
                 dat = dat,
@@ -1500,7 +1704,9 @@ gev.pll <-
                 q = q,
                 qty = qty
               )[-2, -2]
-            )) + qmlecontrib + log(abs(det(rbind(
+            )) +
+            qmlecontrib +
+            log(abs(det(rbind(
               c(
                 c(phi.mle) -
                   gevN.phi(
@@ -1519,7 +1725,7 @@ gev.pll <-
                 q = q,
                 N = N,
                 qty = qty
-              )[-2,]
+              )[-2, ]
             ))))
           abs(rs + logq - log(sqrt(abs(rs))))
         }
@@ -1529,8 +1735,7 @@ gev.pll <-
             fn = tem.max.opt,
             method = "Brent",
             dat = dat,
-            lower = max(1e-05,
-                        mle[2] - std.error),
+            lower = max(1e-05, mle[2] - std.error),
             upper = mle[2] + std.error,
             control = list(abstol = 1e-10)
           )$par
@@ -1539,38 +1744,33 @@ gev.pll <-
       if ("modif" %in% mod) {
         # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
         tem.objfunc.N <-
-          function(par,
-                   dat = dat,
-                   N = N,
-                   qty = qty,
-                   q = q) {
-            0.5 * log(det(
-              gevN.infomat(
-                par = par,
-                dat = dat,
-                method = "obs",
-                N = N,
-                qty = qty,
-                q = q
-              )[-2, -2]
-            )) - log(abs(det(
-              gevN.dphi(
-                par = par,
-                dat = dat,
-                N = N,
-                V = V[,
-                      -2],
-                qty = qty,
-                q = q
-              )[-2,]
-            )))
+          function(par, dat = dat, N = N, qty = qty, q = q) {
+            0.5 *
+              log(det(
+                gevN.infomat(
+                  par = par,
+                  dat = dat,
+                  method = "obs",
+                  N = N,
+                  qty = qty,
+                  q = q
+                )[-2, -2]
+              )) -
+              log(abs(det(
+                gevN.dphi(
+                  par = par,
+                  dat = dat,
+                  N = N,
+                  V = V[,
+                    -2
+                  ],
+                  qty = qty,
+                  q = q
+                )[-2, ]
+              )))
           }
         optim.tem.fn.N <-
-          function(psi,
-                   dat = dat,
-                   q = q,
-                   qty = qty,
-                   N = N) {
+          function(psi, dat = dat, q = q, qty = qty, N = N) {
             theta.psi.opt <- constr.mle.N(psi, dat = dat)
             param <- c(theta.psi.opt[1], psi, theta.psi.opt[2])
             ll <-
@@ -1581,17 +1781,19 @@ gev.pll <-
                 q = q,
                 qty = qty
               )
-            ll + tem.objfunc.N(
-              param,
-              dat = dat,
-              N = N,
-              qty = qty,
-              q = q
-            )
+            ll +
+              tem.objfunc.N(
+                param,
+                dat = dat,
+                N = N,
+                qty = qty,
+                q = q
+              )
           }
         # TEM profile log likelihood values for psi
         proflltem <-
-          profll + suppressWarnings(apply(
+          profll +
+          suppressWarnings(apply(
             pars,
             1,
             tem.objfunc.N,
@@ -1618,109 +1820,221 @@ gev.pll <-
         # Severini empirical covariance function adjustment to profile likelihood Score function -
         # observation-wise for xi
         gevN.score.f <-
-          function(par,
-                   dat,
-                   N,
-                   q = q,
-                   qty = qty) {
+          function(par, dat, N, q = q, qty = qty) {
             qty <- match.arg(qty, c("mean", "quantile"))
             mu = par[1]
             z = par[2]
             xi = par[3]
-            Npxi <- N ^ xi
+            Npxi <- N^xi
             log1q <- log(1 / q)
             logN <- log(N)
             if (qty == "quantile") {
               # quantiles at prob. q
-              cbind(((-(Npxi * log1q ^ (-xi) - 1) * (dat - mu) / (mu - z) + 1) ^
-                       (-1 / xi -
-                          1) * ((Npxi * log1q ^ (-xi) - 1) * (dat - mu) / (mu - z) ^
-                                  2 + (Npxi * log1q ^ (-xi) -
-                                         1) / (mu - z)
-                          ) / xi + ((Npxi * log1q ^ (-xi) - 1) * (dat - mu) / (mu - z) ^ 2 +
-                                      (Npxi * log1q ^ (-xi) - 1) / (mu - z)
-                          ) * (1 / xi + 1) / ((Npxi * log1q ^ (-xi) -
-                                                 1) * (dat - mu) / (mu - z) - 1) - 1 / (mu - z)
-              ),
-              (
-                -(Npxi * log1q ^ (-xi) -
-                    1) * (dat - mu) * (-(Npxi * log1q ^ (-xi) - 1) * (dat - mu) /
-                                         (mu - z) +
-                                         1) ^ (-1 / xi - 1) / ((mu - z) ^ 2 * xi) - (Npxi * log1q ^
-                                                                                       (-xi) - 1) * (dat -
-                                                                                                       mu) * (1 / xi + 1) / (((Npxi * log1q ^ (-xi) - 1) * (dat - mu) /
-                                                                                                                                (mu - z) -
-                                                                                                                                1
-                                                                                                       ) * (mu - z) ^ 2) + 1 / (mu - z)
-              ),
-              ((-(Npxi * log1q ^ (-xi) - 1) * (dat -
-                                                 mu) / (mu - z) + 1) ^ (-1 / xi) * ((
-                                                   Npxi * log1q ^ (-xi) * logN - Npxi * log1q ^ (-xi) *
-                                                     log(log1q)
-                                                 ) * (dat - mu) / (((Npxi * log1q ^ (-xi) - 1) * (dat - mu) / (mu -
-                                                                                                                 z) - 1
-                                                 ) * (mu - z) * xi) - log1p(-(Npxi * log1q ^ (-xi) - 1) * (dat - mu) / (mu -
-                                                                                                                          z)) / xi ^ 2
-                                                 ) - (
-                                                   Npxi * log1q ^ (-xi) * logN - Npxi * log1q ^ (-xi) *
-                                                     log(log1q)
-                                                 ) * (dat - mu) * (1 / xi + 1) / (((Npxi * log1q ^ (-xi) - 1) *
-                                                                                     (dat - mu) / (mu - z) - 1
-                                                 ) * (mu - z)) + (Npxi * log1q ^ (-xi) - 1) * ((
-                                                   Npxi *
-                                                     log1q ^ (-xi) * logN - Npxi * log1q ^ (-xi) * log(log1q)
-                                                 ) * (mu -
-                                                        z) * xi / (Npxi * log1q ^ (-xi) - 1) ^ 2 - (mu - z) /
-                                                   (Npxi * log1q ^ (-xi) -
-                                                      1)
-                                                 ) / ((mu - z) * xi) + log1p(-(Npxi * log1q ^ (-xi) - 1) * (dat - mu) / (mu -
-                                                                                                                           z)) / xi ^ 2
-              )
+              cbind(
+                ((-(Npxi * log1q^(-xi) - 1) * (dat - mu) / (mu - z) + 1)^(-1 /
+                  xi -
+                  1) *
+                  ((Npxi * log1q^(-xi) - 1) *
+                    (dat - mu) /
+                    (mu - z)^2 +
+                    (Npxi * log1q^(-xi) - 1) / (mu - z)) /
+                  xi +
+                  ((Npxi * log1q^(-xi) - 1) *
+                    (dat - mu) /
+                    (mu - z)^2 +
+                    (Npxi * log1q^(-xi) - 1) / (mu - z)) *
+                    (1 / xi + 1) /
+                    ((Npxi * log1q^(-xi) - 1) * (dat - mu) / (mu - z) - 1) -
+                  1 / (mu - z)),
+                (-(Npxi * log1q^(-xi) - 1) *
+                  (dat - mu) *
+                  (-(Npxi * log1q^(-xi) - 1) * (dat - mu) / (mu - z) + 1)^(-1 /
+                    xi -
+                    1) /
+                  ((mu - z)^2 * xi) -
+                  (Npxi * log1q^(-xi) - 1) *
+                    (dat -
+                      mu) *
+                    (1 / xi + 1) /
+                    (((Npxi * log1q^(-xi) - 1) * (dat - mu) / (mu - z) - 1) *
+                      (mu - z)^2) +
+                  1 / (mu - z)),
+                ((-(Npxi * log1q^(-xi) - 1) *
+                  (dat -
+                    mu) /
+                  (mu - z) +
+                  1)^(-1 / xi) *
+                  ((Npxi *
+                    log1q^(-xi) *
+                    logN -
+                    Npxi * log1q^(-xi) * log(log1q)) *
+                    (dat - mu) /
+                    (((Npxi * log1q^(-xi) - 1) *
+                      (dat - mu) /
+                      (mu -
+                        z) -
+                      1) *
+                      (mu - z) *
+                      xi) -
+                    log1p(
+                      -(Npxi * log1q^(-xi) - 1) *
+                        (dat - mu) /
+                        (mu -
+                          z)
+                    ) /
+                      xi^2) -
+                  (Npxi *
+                    log1q^(-xi) *
+                    logN -
+                    Npxi * log1q^(-xi) * log(log1q)) *
+                    (dat - mu) *
+                    (1 / xi + 1) /
+                    (((Npxi * log1q^(-xi) - 1) *
+                      (dat - mu) /
+                      (mu - z) -
+                      1) *
+                      (mu - z)) +
+                  (Npxi * log1q^(-xi) - 1) *
+                    ((Npxi *
+                      log1q^(-xi) *
+                      logN -
+                      Npxi * log1q^(-xi) * log(log1q)) *
+                      (mu -
+                        z) *
+                      xi /
+                      (Npxi * log1q^(-xi) - 1)^2 -
+                      (mu - z) /
+                        (Npxi * log1q^(-xi) - 1)) /
+                    ((mu - z) * xi) +
+                  log1p(
+                    -(Npxi * log1q^(-xi) - 1) *
+                      (dat - mu) /
+                      (mu -
+                        z)
+                  ) /
+                    xi^2)
               )
             } else {
               # Mean
-              cbind(((-(Npxi * gamma(-xi + 1) - 1) * (dat - mu) / (mu - z) + 1) ^
-                       (-1 / xi -
-                          1) * ((Npxi * gamma(-xi + 1) - 1) * (dat - mu) / (mu - z) ^
-                                  2 + (Npxi * gamma(-xi +
-                                                      1) - 1) / (mu - z)
-                          ) / xi + ((Npxi * gamma(-xi + 1) - 1) * (dat - mu) / (mu -
-                                                                                  z) ^ 2 + (Npxi * gamma(-xi + 1) - 1) / (mu - z)
-                          ) * (1 / xi + 1) / ((Npxi * gamma(-xi +
-                                                              1) - 1) * (dat - mu) / (mu - z) - 1) - 1 / (mu - z)
-              ),
-              (
-                -(Npxi * gamma(-xi +
-                                 1) - 1) * (dat - mu) * (-(Npxi * gamma(-xi + 1) - 1) * (dat - mu) /
-                                                           (mu -
-                                                              z) + 1) ^ (-1 / xi - 1) / ((mu - z) ^ 2 * xi) - (Npxi * gamma(-xi + 1) - 1) * (dat -
-                                                                                                                                               mu) * (1 / xi + 1) / (((Npxi * gamma(-xi + 1) - 1) * (dat - mu) /
-                                                                                                                                                                        (mu - z) -
-                                                                                                                                                                        1
-                                                                                                                                               ) * (mu - z) ^ 2) + 1 / (mu - z)
-              ),
-              ((-(Npxi * gamma(-xi + 1) - 1) * (dat -
-                                                  mu) / (mu - z) + 1) ^ (-1 / xi) * ((
-                                                    Npxi * logN * gamma(-xi + 1) - Npxi * psigamma(-xi +
-                                                                                                     1) * gamma(-xi + 1)
-                                                  ) * (dat - mu) / (((Npxi * gamma(-xi + 1) - 1) * (dat -
-                                                                                                      mu) / (mu - z) - 1
-                                                  ) * (mu - z) * xi) - log1p(-(Npxi * gamma(-xi + 1) - 1) *
-                                                                               (dat - mu) / (mu - z)) / xi ^ 2
-                                                  ) - (
-                                                    Npxi * logN * gamma(-xi + 1) - Npxi *
-                                                      psigamma(-xi + 1) * gamma(-xi + 1)
-                                                  ) * (dat - mu) * (1 / xi + 1) / (((Npxi *
-                                                                                       gamma(-xi + 1) - 1) * (dat - mu) / (mu - z) - 1
-                                                  ) * (mu - z)) + (Npxi * gamma(-xi +
-                                                                                  1) - 1) * ((
-                                                                                    Npxi * logN * gamma(-xi + 1) - Npxi * psigamma(-xi + 1) *
-                                                                                      gamma(-xi + 1)
-                                                                                  ) * (mu - z) * xi / (Npxi * gamma(-xi + 1) - 1) ^ 2 - (mu - z) / (Npxi *
-                                                                                                                                                      gamma(-xi + 1) - 1)
-                                                                                  ) / ((mu - z) * xi) + log1p(-(Npxi * gamma(-xi + 1) - 1) *
-                                                                                                                (dat - mu) / (mu - z)) / xi ^ 2
-              )
+              cbind(
+                ((-(Npxi * gamma(-xi + 1) - 1) *
+                  (dat - mu) /
+                  (mu - z) +
+                  1)^(-1 / xi - 1) *
+                  ((Npxi * gamma(-xi + 1) - 1) *
+                    (dat - mu) /
+                    (mu - z)^2 +
+                    (Npxi *
+                      gamma(
+                        -xi +
+                          1
+                      ) -
+                      1) /
+                      (mu - z)) /
+                  xi +
+                  ((Npxi * gamma(-xi + 1) - 1) *
+                    (dat - mu) /
+                    (mu -
+                      z)^2 +
+                    (Npxi * gamma(-xi + 1) - 1) / (mu - z)) *
+                    (1 / xi + 1) /
+                    ((Npxi *
+                      gamma(
+                        -xi +
+                          1
+                      ) -
+                      1) *
+                      (dat - mu) /
+                      (mu - z) -
+                      1) -
+                  1 / (mu - z)),
+                (-(Npxi *
+                  gamma(
+                    -xi +
+                      1
+                  ) -
+                  1) *
+                  (dat - mu) *
+                  (-(Npxi * gamma(-xi + 1) - 1) *
+                    (dat - mu) /
+                    (mu -
+                      z) +
+                    1)^(-1 / xi - 1) /
+                  ((mu - z)^2 * xi) -
+                  (Npxi * gamma(-xi + 1) - 1) *
+                    (dat -
+                      mu) *
+                    (1 / xi + 1) /
+                    (((Npxi * gamma(-xi + 1) - 1) * (dat - mu) / (mu - z) - 1) *
+                      (mu - z)^2) +
+                  1 / (mu - z)),
+                ((-(Npxi * gamma(-xi + 1) - 1) *
+                  (dat -
+                    mu) /
+                  (mu - z) +
+                  1)^(-1 / xi) *
+                  ((Npxi *
+                    logN *
+                    gamma(-xi + 1) -
+                    Npxi *
+                      psigamma(
+                        -xi +
+                          1
+                      ) *
+                      gamma(-xi + 1)) *
+                    (dat - mu) /
+                    (((Npxi * gamma(-xi + 1) - 1) *
+                      (dat -
+                        mu) /
+                      (mu - z) -
+                      1) *
+                      (mu - z) *
+                      xi) -
+                    log1p(
+                      -(Npxi * gamma(-xi + 1) - 1) *
+                        (dat - mu) /
+                        (mu - z)
+                    ) /
+                      xi^2) -
+                  (Npxi *
+                    logN *
+                    gamma(-xi + 1) -
+                    Npxi *
+                      psigamma(-xi + 1) *
+                      gamma(-xi + 1)) *
+                    (dat - mu) *
+                    (1 / xi + 1) /
+                    (((Npxi *
+                      gamma(-xi + 1) -
+                      1) *
+                      (dat - mu) /
+                      (mu - z) -
+                      1) *
+                      (mu - z)) +
+                  (Npxi *
+                    gamma(
+                      -xi +
+                        1
+                    ) -
+                    1) *
+                    ((Npxi *
+                      logN *
+                      gamma(-xi + 1) -
+                      Npxi * psigamma(-xi + 1) * gamma(-xi + 1)) *
+                      (mu - z) *
+                      xi /
+                      (Npxi * gamma(-xi + 1) - 1)^2 -
+                      (mu - z) /
+                        (Npxi *
+                          gamma(-xi + 1) -
+                          1)) /
+                    ((mu - z) * xi) +
+                  log1p(
+                    -(Npxi * gamma(-xi + 1) - 1) *
+                      (dat - mu) /
+                      (mu - z)
+                  ) /
+                    xi^2)
               )
             }
           }
@@ -1728,32 +2042,32 @@ gev.pll <-
         score.N.mle <-
           gevN.score.f(mle, dat, N, qty = qty, q = q)
         empcov.objfunc.N <-
-          function(par,
-                   dat = dat,
-                   q = q,
-                   qty = qty,
-                   N = N) {
-            0.5 * log(det(
-              gevN.infomat(
-                par = par,
-                dat = dat,
-                method = "obs",
-                N = N,
-                q = q,
-                qty = qty
-              )[-2, -2]
-            )) - log(abs(sum(
-              score.N.mle * gevN.score.f(
-                par,
-                dat,
-                N = N,
-                qty = qty,
-                q = q
-              )
-            )))
+          function(par, dat = dat, q = q, qty = qty, N = N) {
+            0.5 *
+              log(det(
+                gevN.infomat(
+                  par = par,
+                  dat = dat,
+                  method = "obs",
+                  N = N,
+                  q = q,
+                  qty = qty
+                )[-2, -2]
+              )) -
+              log(abs(sum(
+                score.N.mle *
+                  gevN.score.f(
+                    par,
+                    dat,
+                    N = N,
+                    qty = qty,
+                    q = q
+                  )
+              )))
           }
         profllempcov <-
-          profll + suppressWarnings(apply(
+          profll +
+          suppressWarnings(apply(
             pars,
             1,
             empcov.objfunc.N,
@@ -1763,11 +2077,7 @@ gev.pll <-
             qty = qty
           ))
         optim.empcov.fn.N <-
-          function(psi,
-                   dat = dat,
-                   q = q,
-                   qty = qty,
-                   N = N) {
+          function(psi, dat = dat, q = q, qty = qty, N = N) {
             theta.psi.opt <- constr.mle.N(psi, dat = dat)
             param <- c(theta.psi.opt[1], psi, theta.psi.opt[2])
             ll <-
@@ -1778,13 +2088,14 @@ gev.pll <-
                 q = q,
                 qty = qty
               )
-            ll + empcov.objfunc.N(
-              param,
-              dat = dat,
-              q = q,
-              qty = qty,
-              N = N
-            )
+            ll +
+              empcov.objfunc.N(
+                param,
+                dat = dat,
+                q = q,
+                qty = qty,
+                N = N
+              )
           }
         empcov.mle.opt <-
           optim(
@@ -1912,19 +2223,29 @@ gev.pll <-
 #' gpd.pll(psi = seq(15, 90, by=1), param = 'Nquant', N = 100, dat = dat, q = 0.5)
 #' }
 gpd.pll <-
-  function(psi,
-           param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
-           mod = "profile",
-           mle = NULL,
-           dat,
-           m = NULL,
-           N = NULL,
-           p = NULL,
-           q = NULL,
-           correction = TRUE,
-           threshold = NULL,
-           plot = TRUE,
-           ...) {
+  function(
+    psi,
+    param = c(
+      "scale",
+      "shape",
+      "quant",
+      "VaR",
+      "ES",
+      "Nmean",
+      "Nquant"
+    ),
+    mod = "profile",
+    mle = NULL,
+    dat,
+    m = NULL,
+    N = NULL,
+    p = NULL,
+    q = NULL,
+    correction = TRUE,
+    threshold = NULL,
+    plot = TRUE,
+    ...
+  ) {
     param <- match.arg(param)
     mod <-
       match.arg(mod, c("profile", "tem", "modif"), several.ok = TRUE)
@@ -2003,18 +2324,15 @@ gpd.pll <-
         switch(
           param,
           scale = gpd.Vfun(par = mle, dat = dat),
-          shape = gpd.Vfun(par = mle,
-                           dat = dat),
+          shape = gpd.Vfun(par = mle, dat = dat),
           quant = gpdr.Vfun(par = mle, dat = dat, m = 1 / p),
-          VaR = gpdr.Vfun(par = mle,
-                          dat = dat, m = m),
+          VaR = gpdr.Vfun(par = mle, dat = dat, m = m),
           ES = gpde.Vfun(par = mle, dat = dat, m = m),
-          Nmean = gpdN.Vfun(par = mle,
-                            dat = dat, N = N),
+          Nmean = gpdN.Vfun(par = mle, dat = dat, N = N),
           Nquant = gpdr.Vfun(
             par = mle,
             dat = dat,
-            m = 1 / (1 - q ^ (1 / N))
+            m = 1 / (1 - q^(1 / N))
           )
         )
     }
@@ -2048,12 +2366,14 @@ gpd.pll <-
           pmax(1e-05, seq(-3, -1.5, length = 6) * std.error + mle[1])
         lowvals <- sapply(psirangelow, function(par) {
           gpd.ll(c(par, constr.mle.scale(par)), dat = dat)
-        }) - maxll
+        }) -
+          maxll
         psirangehigh <-
           seq(2.5, 4, length = 6) * std.error + mle[1]
         highvals <- sapply(psirangehigh, function(par) {
           gpd.ll(c(par, constr.mle.scale(par)), dat = dat)
-        }) - maxll
+        }) -
+          maxll
 
         lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
         hi <-
@@ -2061,7 +2381,11 @@ gpd.pll <-
         lo <-
           ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[1], lo)
         hi <-
-          ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[1], hi)
+          ifelse(
+            is.na(hi),
+            lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[1],
+            hi
+          )
         psi <- seq(lo, hi, length = 55)
       }
       if (any(as.vector(psi) < 0)) {
@@ -2081,36 +2405,48 @@ gpd.pll <-
       if ("tem" %in% mod) {
         phi.mle <- gpd.phi(par = mle, dat = dat, V = V)
         q2num <- apply(pars, 1, function(par) {
-          det(rbind(c(
-            c(phi.mle) - gpd.phi(
+          det(rbind(
+            c(
+              c(phi.mle) -
+                gpd.phi(
+                  par = par,
+                  dat = dat,
+                  V = V
+                )
+            ),
+            gpd.dphi(
               par = par,
               dat = dat,
               V = V
-            )
-          ), gpd.dphi(
-            par = par,
-            dat = dat,
-            V = V
-          )[-1,]))
+            )[-1, ]
+          ))
         })
         if (isTRUE(any(sign(q2num) * sign(r) < 0, na.rm = TRUE))) {
-          warning("Correction factor and likelihood root are of opposite sign - check output")
+          warning(
+            "Correction factor and likelihood root are of opposite sign - check output"
+          )
         }
         logq <- apply(pars, 1, function(par) {
-          -0.5 * log(gpd.infomat(
-            par = par,
-            dat = dat,
-            method = "obs"
-          )[-1, -1])
-        }) + log(abs(q2num))
+          -0.5 *
+            log(gpd.infomat(
+              par = par,
+              dat = dat,
+              method = "obs"
+            )[-1, -1])
+        }) +
+          log(abs(q2num))
         qmlecontrib <-
           -log(det(gpd.dphi(
-            par = mle, dat = dat, V = V
-          ))) + 0.5 * log(det(gpd.infomat(
             par = mle,
             dat = dat,
-            method = "obs"
-          )))
+            V = V
+          ))) +
+          0.5 *
+            log(det(gpd.infomat(
+              par = mle,
+              dat = dat,
+              method = "obs"
+            )))
         logq <- logq + qmlecontrib
         qcor <- sign(q2num) * exp(logq)
         rstar <- ifelse(r == 0, 0, r + (logq - log(abs(r))) / r)
@@ -2119,21 +2455,27 @@ gpd.pll <-
           pll <- gpd.ll(par = para, dat = dat)
           rs <- 2 * (maxll - pll)
           logq <-
-            -0.5 * log(gpd.infomat(
+            -0.5 *
+            log(gpd.infomat(
               par = para,
               dat = dat,
               method = "obs"
             )[-1, -1]) +
-            qmlecontrib + log(abs(det(rbind(
-              c(c(phi.mle) - gpd.phi(
+            qmlecontrib +
+            log(abs(det(rbind(
+              c(
+                c(phi.mle) -
+                  gpd.phi(
+                    par = para,
+                    dat = dat,
+                    V = V
+                  )
+              ),
+              gpd.dphi(
                 par = para,
                 dat = dat,
                 V = V
-              )), gpd.dphi(
-                par = para,
-                dat = dat,
-                V = V
-              )[-1,]
+              )[-1, ]
             ))))
           rs + logq - log(sqrt(abs(rs)))
         }
@@ -2143,8 +2485,7 @@ gpd.pll <-
             fn = tem.max.opt,
             method = "Brent",
             dat = dat,
-            lower = max(1e-05,
-                        mle[1] - std.error),
+            lower = max(1e-05, mle[1] - std.error),
             upper = mle[1] + std.error,
             control = list(abstol = 1e-10)
           )$par
@@ -2153,11 +2494,12 @@ gpd.pll <-
       if ("modif" %in% mod) {
         # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
         tem.objfunc.scale <- function(par) {
-          0.5 * log(gpd.infomat(
-            par = par,
-            dat = dat,
-            method = "obs"
-          )[2, 2]) -
+          0.5 *
+            log(gpd.infomat(
+              par = par,
+              dat = dat,
+              method = "obs"
+            )[2, 2]) -
             log(abs(gpd.dphi(
               par = par,
               dat = dat,
@@ -2167,7 +2509,7 @@ gpd.pll <-
         optim.tem.fn.scale <- function(psi) {
           theta.psi.opt <- constr.mle.scale(psi)
           param <-
-            c(psi, theta.psi.opt)  #ll <- -theta.psi.opt$nllh
+            c(psi, theta.psi.opt) #ll <- -theta.psi.opt$nllh
           ll <- gpd.ll(param, dat = dat)
           ll + tem.objfunc.scale(param)
         }
@@ -2180,8 +2522,7 @@ gpd.pll <-
             par = mle[1],
             fn = optim.tem.fn.scale,
             method = "Brent",
-            lower = max(1e-05,
-                        mle[1] - std.error),
+            lower = max(1e-05, mle[1] - std.error),
             upper = mle[1] + std.error,
             control = list(fnscale = -1)
           )
@@ -2195,25 +2536,29 @@ gpd.pll <-
           xi = par[2]
           if (!isTRUE(all.equal(0, xi))) {
             cbind(
-              dat * (xi + 1) / (sigma ^ 2 * (dat * xi / sigma + 1)) - 1 / sigma,
-              -dat * (1 / xi +
-                        1) / (sigma * (dat * xi / sigma + 1)) + log(pmax(dat * xi /
-                                                                           sigma + 1, 0)) / xi ^ 2
+              dat * (xi + 1) / (sigma^2 * (dat * xi / sigma + 1)) - 1 / sigma,
+              -dat *
+                (1 / xi + 1) /
+                (sigma * (dat * xi / sigma + 1)) +
+                log(pmax(dat * xi / sigma + 1, 0)) / xi^2
             )
           } else {
-            cbind((dat - sigma) / sigma ^ 2,
-                  1 / 2 * (dat - 2 * sigma) * dat / sigma ^ 2)
+            cbind(
+              (dat - sigma) / sigma^2,
+              1 / 2 * (dat - 2 * sigma) * dat / sigma^2
+            )
           }
         }
         # Score at MLE (sums to zero)
         score.scale.mle <-
-          gpd.score.f(mle, dat)[, 2]  #keep s_lambda
+          gpd.score.f(mle, dat)[, 2] #keep s_lambda
         empcov.objfunc.scale <- function(par) {
-          0.5 * log(gpd.infomat(
-            par = par,
-            dat = dat,
-            method = "obs"
-          )[2, 2]) -
+          0.5 *
+            log(gpd.infomat(
+              par = par,
+              dat = dat,
+              method = "obs"
+            )[2, 2]) -
             log(abs(sum(
               score.scale.mle * gpd.score.f(par, dat)[, 2]
             )))
@@ -2236,24 +2581,26 @@ gpd.pll <-
             control = list(fnscale = -1)
           )
         empcov.mle <-
-          c(empcov.mle.opt$par,
-            constr.mle.scale(empcov.mle.opt$par))
+          c(empcov.mle.opt$par, constr.mle.scale(empcov.mle.opt$par))
       }
       # Shape parameter
     } else if (param == "shape") {
       maxll <- try(gpd.ll(mle, dat = dat))
-      if(inherits(maxll, "try-error")){
-        stop(paste("Could not find maximum likelihood estimation for the sample of size", length(dat)))
+      if (inherits(maxll, "try-error")) {
+        stop(paste(
+          "Could not find maximum likelihood estimation for the sample of size",
+          length(dat)
+        ))
       }
-      if(isTRUE(mle['shape'] > -0.5)){
-      std.error <-
-        sqrt(solve(gpd.infomat(
-          par = mle,
-          dat = dat,
-          method = "exp"
-        ))[2, 2])
-      } else{
-       std.error <- NA
+      if (isTRUE(mle['shape'] > -0.5)) {
+        std.error <-
+          sqrt(solve(gpd.infomat(
+            par = mle,
+            dat = dat,
+            method = "exp"
+          ))[2, 2])
+      } else {
+        std.error <- NA
       }
       constr.mle.shape <- function(xit) {
         as.vector(suppressWarnings(
@@ -2271,31 +2618,43 @@ gpd.pll <-
       }
       # Missing psi vector
       if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
-        if(isTRUE(is.finite(std.error))){
-        psirangelow <-
-          seq(ifelse(mle[2] < 0, -7, -5), -1.5, length = 10) * std.error +  mle[2]
-        psirangelow <- psirangelow[psirangelow > -1]
-        if(length(psirangelow) > 0L){
-        lowvals <- sapply(psirangelow, function(par) {
-          gpd.ll(c(constr.mle.shape(par), par), dat = dat)
-        }) - maxll
-        }
-        psirangehigh <-
-          seq(1.5, 10, length = 10) * std.error + mle[2]
-        highvals <- sapply(psirangehigh, function(par) {
-          gpd.ll(c(constr.mle.shape(par), par), dat = dat)
-        }) - maxll
+        if (isTRUE(is.finite(std.error))) {
+          psirangelow <-
+            seq(ifelse(mle[2] < 0, -7, -5), -1.5, length = 10) *
+            std.error +
+            mle[2]
+          psirangelow <- psirangelow[psirangelow > -1]
+          if (length(psirangelow) > 0L) {
+            lowvals <- sapply(psirangelow, function(par) {
+              gpd.ll(c(constr.mle.shape(par), par), dat = dat)
+            }) -
+              maxll
+          }
+          psirangehigh <-
+            seq(1.5, 10, length = 10) * std.error + mle[2]
+          highvals <- sapply(psirangehigh, function(par) {
+            gpd.ll(c(constr.mle.shape(par), par), dat = dat)
+          }) -
+            maxll
 
-        lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
-        hi <-
-          approx(x = highvals, y = psirangehigh, xout = -4)$y
-        lo <-
-          ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[2], lo)
-        hi <-
-          ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[2], hi)
-        psi <- seq(lo, hi, length = 55)
-        psi <- psi[psi > -1]
-        } else{
+          lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
+          hi <-
+            approx(x = highvals, y = psirangehigh, xout = -4)$y
+          lo <-
+            ifelse(
+              is.na(lo),
+              lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[2],
+              lo
+            )
+          hi <-
+            ifelse(
+              is.na(hi),
+              lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[2],
+              hi
+            )
+          psi <- seq(lo, hi, length = 55)
+          psi <- psi[psi > -1]
+        } else {
           psi <- seq(-1, 0, length.out = 21)
         }
       }
@@ -2309,36 +2668,48 @@ gpd.pll <-
       if ("tem" %in% mod) {
         phi.mle <- gpd.phi(par = mle, dat = dat, V = V)
         q2num <- apply(pars, 1, function(par) {
-          det(rbind(gpd.dphi(
-            par = par,
-            dat = dat,
-            V = V
-          )[-2,], c(
-            c(phi.mle) - gpd.phi(
+          det(rbind(
+            gpd.dphi(
               par = par,
               dat = dat,
               V = V
+            )[-2, ],
+            c(
+              c(phi.mle) -
+                gpd.phi(
+                  par = par,
+                  dat = dat,
+                  V = V
+                )
             )
-          )))
+          ))
         })
         if (isTRUE(any(sign(q2num) * sign(r) < 0, na.rm = TRUE))) {
-          warning("Correction factor and likelihood root are of opposite sign - check output")
+          warning(
+            "Correction factor and likelihood root are of opposite sign - check output"
+          )
         }
         logq <- apply(pars, 1, function(par) {
-          -0.5 * log(gpd.infomat(
-            par = par,
-            dat = dat,
-            method = "obs"
-          )[-2, -2])
-        }) + log(abs(q2num))
+          -0.5 *
+            log(gpd.infomat(
+              par = par,
+              dat = dat,
+              method = "obs"
+            )[-2, -2])
+        }) +
+          log(abs(q2num))
         qmlecontrib <-
           -log(det(gpd.dphi(
-            par = mle, dat = dat, V = V
-          ))) + 0.5 * log(det(gpd.infomat(
             par = mle,
             dat = dat,
-            method = "obs"
-          )))
+            V = V
+          ))) +
+          0.5 *
+            log(det(gpd.infomat(
+              par = mle,
+              dat = dat,
+              method = "obs"
+            )))
         logq <- logq + qmlecontrib
         qcor <- sign(q2num) * exp(logq)
         rstar <- ifelse(r == 0, 0, r + (logq - log(abs(r))) / r)
@@ -2348,21 +2719,27 @@ gpd.pll <-
           pll <- gpd.ll(par = para, dat = dat)
           rs <- 2 * (maxll - pll)
           logq <-
-            -0.5 * log(gpd.infomat(
+            -0.5 *
+            log(gpd.infomat(
               par = para,
               dat = dat,
               method = "obs"
             )[-2, -2]) +
-            qmlecontrib + log(abs(det(rbind(
-              c(c(phi.mle) - gpd.phi(
+            qmlecontrib +
+            log(abs(det(rbind(
+              c(
+                c(phi.mle) -
+                  gpd.phi(
+                    par = para,
+                    dat = dat,
+                    V = V
+                  )
+              ),
+              gpd.dphi(
                 par = para,
                 dat = dat,
                 V = V
-              )), gpd.dphi(
-                par = para,
-                dat = dat,
-                V = V
-              )[-2,]
+              )[-2, ]
             ))))
           rs + logq - log(sqrt(abs(rs)))
         }
@@ -2377,16 +2754,16 @@ gpd.pll <-
             upper = mle[2] + std.error,
             control = list(abstol = 1e-10)
           )$par
-
       }
       if ("modif" %in% mod) {
         # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
         tem.objfunc.shape <- function(par) {
-          0.5 * log(gpd.infomat(
-            par = par,
-            dat = dat,
-            method = "obs"
-          )[1, 1]) -
+          0.5 *
+            log(gpd.infomat(
+              par = par,
+              dat = dat,
+              method = "obs"
+            )[1, 1]) -
             log(abs(gpd.dphi(
               par = par,
               dat = dat,
@@ -2422,25 +2799,29 @@ gpd.pll <-
           xi = par[2]
           if (!isTRUE(all.equal(0, xi))) {
             cbind(
-              dat * (xi + 1) / (sigma ^ 2 * (dat * xi / sigma + 1)) - 1 / sigma,
-              -dat * (1 / xi +
-                        1) / (sigma * (dat * xi / sigma + 1)) + log(pmax(dat * xi /
-                                                                           sigma + 1, 0)) / xi ^ 2
+              dat * (xi + 1) / (sigma^2 * (dat * xi / sigma + 1)) - 1 / sigma,
+              -dat *
+                (1 / xi + 1) /
+                (sigma * (dat * xi / sigma + 1)) +
+                log(pmax(dat * xi / sigma + 1, 0)) / xi^2
             )
           } else {
-            cbind((dat - sigma) / sigma ^ 2,
-                  1 / 2 * (dat - 2 * sigma) * dat / sigma ^ 2)
+            cbind(
+              (dat - sigma) / sigma^2,
+              1 / 2 * (dat - 2 * sigma) * dat / sigma^2
+            )
           }
         }
         # Score at MLE (sums to zero)
         score.shape.mle <-
-          gpd.score.f(mle, dat)[, 1]  #keep s_lambda
+          gpd.score.f(mle, dat)[, 1] #keep s_lambda
         empcov.objfunc.shape <- function(par) {
-          0.5 * log(gpd.infomat(
-            par = par,
-            dat = dat,
-            method = "obs"
-          )[1, 1]) -
+          0.5 *
+            log(gpd.infomat(
+              par = par,
+              dat = dat,
+              method = "obs"
+            )[1, 1]) -
             log(abs(sum(
               score.shape.mle * gpd.score.f(par, dat)[, 1]
             )))
@@ -2463,8 +2844,7 @@ gpd.pll <-
             control = list(fnscale = -1)
           )
         empcov.mle <-
-          c(constr.mle.shape(empcov.mle.opt$par),
-            empcov.mle.opt$par)
+          c(constr.mle.shape(empcov.mle.opt$par), empcov.mle.opt$par)
       }
 
       # Return levels, quantiles or value-at-risk
@@ -2473,7 +2853,7 @@ gpd.pll <-
         m <- 1 / p
       }
       if (param == "Nquant") {
-        m <- 1 / (1 - q ^ (1 / N))
+        m <- 1 / (1 - q^(1 / N))
       }
       maxll <- gpdr.ll(mle, dat = dat, m = m)
       std.error <-
@@ -2482,36 +2862,38 @@ gpd.pll <-
           dat = dat,
           method = "exp",
           m = m
-        ))[1,
-           1])
+        ))[1, 1])
       constr.mle.quant <- function(quant) {
         suppressWarnings(suppressMessages(
-          Rsolnp::solnp(par = 0.01, function(lambda, psi, m) {
-            -gpdr.ll(par = c(psi, lambda),
-                     dat = dat,
-                     m = m)
-          }, psi = quant, m = m,  control = list(trace = 0))$par
+          Rsolnp::solnp(
+            par = 0.01,
+            function(lambda, psi, m) {
+              -gpdr.ll(par = c(psi, lambda), dat = dat, m = m)
+            },
+            psi = quant,
+            m = m,
+            control = list(trace = 0)
+          )$par
         ))
       }
-
 
       # Missing psi vector
       if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
         psirangelow <-
-          unique(pmax(mean(dat), seq(-3, -0.5, length = 12) * std.error +
-                        mle[1]))
+          unique(pmax(
+            mean(dat),
+            seq(-3, -0.5, length = 12) * std.error + mle[1]
+          ))
         lowvals <- sapply(psirangelow, function(par) {
-          gpdr.ll(c(par, constr.mle.quant(par)),
-                  m = m,
-                  dat = dat)
-        }) - maxll
+          gpdr.ll(c(par, constr.mle.quant(par)), m = m, dat = dat)
+        }) -
+          maxll
         psirangehigh <-
           seq(2, 10, length = 12) * std.error + mle[1]
         highvals <- sapply(psirangehigh, function(par) {
-          gpdr.ll(c(par, constr.mle.quant(par)),
-                  m = m,
-                  dat = dat)
-        }) - maxll
+          gpdr.ll(c(par, constr.mle.quant(par)), m = m, dat = dat)
+        }) -
+          maxll
 
         lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
         hi <-
@@ -2519,15 +2901,20 @@ gpd.pll <-
         lo <-
           ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[1], lo)
         hi <-
-          ifelse(is.na(hi), lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[1], hi)
+          ifelse(
+            is.na(hi),
+            lm(psirangehigh ~ highvals)$coef[2] * -4 + mle[1],
+            hi
+          )
         psi <- seq(lo, hi, length = 55)
-      } else{
+      } else {
         psi <- psi - threshold
         if (any(psi < 0)) {
-          stop("Invalid psi sequence: rescaled psi for quantiles must be positive")
+          stop(
+            "Invalid psi sequence: rescaled psi for quantiles must be positive"
+          )
         }
       }
-
 
       pars <- cbind(psi, sapply(psi, constr.mle.quant))
       # Profile log likelihood values for psi
@@ -2544,75 +2931,86 @@ gpd.pll <-
         )
         q2num <- apply(pars, 1, function(par) {
           det(rbind(
-            c(c(phi.mle) - gpdr.phi(
-              par = par,
-              dat = dat,
-              V = V,
-              m = m
-            )),
+            c(
+              c(phi.mle) -
+                gpdr.phi(
+                  par = par,
+                  dat = dat,
+                  V = V,
+                  m = m
+                )
+            ),
             gpdr.dphi(
               par = par,
               dat = dat,
               V = V,
               m = m
-            )[-1,]
+            )[-1, ]
           ))
         })
         if (isTRUE(any(sign(q2num) * sign(r) < 0, na.rm = TRUE))) {
-          warning("Correction factor and likelihood root are of opposite sign - check output")
+          warning(
+            "Correction factor and likelihood root are of opposite sign - check output"
+          )
         }
         logq <- apply(pars, 1, function(par) {
-          -0.5 * log(gpdr.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            m = m
-          )[-1, -1])
-        }) + log(abs(q2num))
+          -0.5 *
+            log(gpdr.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              m = m
+            )[-1, -1])
+        }) +
+          log(abs(q2num))
         qmlecontrib <-
           -log(det(gpdr.dphi(
             par = mle,
             dat = dat,
             V = V,
             m = m
-          ))) + 0.5 *
-          log(det(gpdr.infomat(
-            par = mle,
-            dat = dat,
-            method = "obs",
-            m = m
-          )))
+          ))) +
+          0.5 *
+            log(det(gpdr.infomat(
+              par = mle,
+              dat = dat,
+              method = "obs",
+              m = m
+            )))
         logq <- logq + qmlecontrib
         qcor <- sign(q2num) * exp(logq)
         rstar <- ifelse(r == 0, 0, r + (logq - log(abs(r))) / r)
 
         tem.max.opt <- function(psi, dat = dat) {
           para <- c(psi, constr.mle.quant(psi))
-          pll <- gpdr.ll(par = para,
-                         dat = dat,
-                         m = m)
+          pll <- gpdr.ll(par = para, dat = dat, m = m)
           rs <- 2 * (maxll - pll)
           logq <-
-            -0.5 * log(gpdr.infomat(
+            -0.5 *
+            log(gpdr.infomat(
               par = para,
               dat = dat,
               method = "obs",
               m = m
-            )[-1,
-              -1]) + qmlecontrib + log(abs(det(rbind(
-                c(c(phi.mle) - gpdr.phi(
-                  par = para,
-                  dat = dat,
-                  V = V,
-                  m = m
-                )),
-                gpdr.dphi(
-                  par = para,
-                  dat = dat,
-                  V = V,
-                  m = m
-                )[-1,]
-              ))))
+            )[-1, -1]) +
+            qmlecontrib +
+            log(abs(det(rbind(
+              c(
+                c(phi.mle) -
+                  gpdr.phi(
+                    par = para,
+                    dat = dat,
+                    V = V,
+                    m = m
+                  )
+              ),
+              gpdr.dphi(
+                par = para,
+                dat = dat,
+                V = V,
+                m = m
+              )[-1, ]
+            ))))
           rs + logq - log(sqrt(abs(rs)))
         }
         tem.max <-
@@ -2621,22 +3019,21 @@ gpd.pll <-
             fn = tem.max.opt,
             method = "Brent",
             dat = dat,
-            lower = max(1e-05,
-                        mle[1] - std.error),
+            lower = max(1e-05, mle[1] - std.error),
             upper = mle[1] + std.error,
             control = list(abstol = 1e-10)
           )$par
-
       }
       if ("modif" %in% mod) {
         # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
         tem.objfunc.quant <- function(par) {
-          0.5 * log(gpdr.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            m = m
-          )[2, 2]) -
+          0.5 *
+            log(gpdr.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              m = m
+            )[2, 2]) -
             log(abs(gpdr.dphi(
               par = par,
               dat = dat,
@@ -2659,8 +3056,7 @@ gpd.pll <-
             par = mle[1],
             fn = optim.tem.fn.quant,
             method = "Brent",
-            lower = max(1e-05,
-                        mle[1] - std.error),
+            lower = max(1e-05, mle[1] - std.error),
             upper = mle[1] + std.error,
             control = list(fnscale = -1)
           )
@@ -2672,21 +3068,37 @@ gpd.pll <-
         gpdr.score.f <- function(par, dat, m) {
           xi = par[2]
           r = par[1]
-          - dat * m ^ xi * (1 / xi + 1) * log(m) / ((dat * (m ^ xi - 1) /
-                                                       r + 1) * r) + (m ^ xi *
-                                                                        r * xi * log(m) / (m ^ xi - 1) ^ 2 - r / (m ^ xi - 1)) * (m ^
-                                                                                                                                    xi - 1) / (r * xi) + log(dat *
-                                                                                                                                                               (m ^ xi - 1) / r + 1) / xi ^ 2
+          -dat *
+            m^xi *
+            (1 / xi + 1) *
+            log(m) /
+            ((dat * (m^xi - 1) / r + 1) * r) +
+            (m^xi *
+              r *
+              xi *
+              log(m) /
+              (m^xi - 1)^2 -
+              r / (m^xi - 1)) *
+              (m^xi - 1) /
+              (r * xi) +
+            log(
+              dat *
+                (m^xi - 1) /
+                r +
+                1
+            ) /
+              xi^2
         }
         # Score at MLE (sums to zero)
         score.quant.mle <- gpdr.score.f(mle, dat, m)
         empcov.objfunc.quant <- function(par) {
-          0.5 * log(gpdr.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            m = m
-          )[2, 2]) -
+          0.5 *
+            log(gpdr.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              m = m
+            )[2, 2]) -
             log(abs(sum(
               score.quant.mle * gpdr.score.f(par, dat, m = m)
             )))
@@ -2709,8 +3121,7 @@ gpd.pll <-
             control = list(fnscale = -1)
           )
         empcov.mle <-
-          c(empcov.mle.opt$par,
-            constr.mle.quant(empcov.mle.opt$par))
+          c(empcov.mle.opt$par, constr.mle.quant(empcov.mle.opt$par))
       }
     } else if (param == "ES") {
       maxll <- gpde.ll(mle, dat = dat, m = m)
@@ -2720,8 +3131,7 @@ gpd.pll <-
           dat = dat,
           method = "exp",
           m = m
-        ))[1,
-           1])
+        ))[1, 1])
       constr.mle.es <- function(psif) {
         # nloptr::auglag(x0 = 0.1, fn = function(x){-gpde.ll(par = c(psif, x), dat = dat, m = m)},
         # hin = function(x){ c(psif*(1-x)*((m^x-1)/x+1)^(-1),
@@ -2730,9 +3140,7 @@ gpd.pll <-
         optim(
           par = 0.1,
           fn = function(x) {
-            -gpde.ll(par = c(psif, x),
-                     dat = dat,
-                     m = m)
+            -gpde.ll(par = c(psif, x), dat = dat, m = m)
           },
           method = "Brent",
           lower = -1 + 1e-10,
@@ -2743,16 +3151,20 @@ gpd.pll <-
       # Missing psi vector
       if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
         psirangelow <-
-          unique(pmax(mean(dat), seq(-3, -0.1, length = 15) * std.error +
-                        mle[1]))
+          unique(pmax(
+            mean(dat),
+            seq(-3, -0.1, length = 15) * std.error + mle[1]
+          ))
         lowvals <- sapply(psirangelow, function(par) {
           gpde.ll(c(par, constr.mle.es(par)), m = m, dat = dat)
-        }) - maxll
+        }) -
+          maxll
         psirangehigh <-
           seq(2.5, 30, length = 12) * std.error + mle[1]
         highvals <- sapply(psirangehigh, function(par) {
           gpde.ll(c(par, constr.mle.es(par)), m = m, dat = dat)
-        }) - maxll
+        }) -
+          maxll
 
         lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
         hi <-
@@ -2760,12 +3172,16 @@ gpd.pll <-
         lo <-
           ifelse(is.na(lo), lm(psirangelow ~ lowvals)$coef[2] * -4 + mle[1], lo)
         hi <-
-          ifelse(is.na(hi),
-                 lm(psirangehigh ~ highvals)$coef[2] * -4.5 + mle[1],
-                 hi)
+          ifelse(
+            is.na(hi),
+            lm(psirangehigh ~ highvals)$coef[2] * -4.5 + mle[1],
+            hi
+          )
         psi <-
-          c(seq(lo, mle[1], length = 15)[-15], seq(mle[1], min(mle[1] + 2 * std.error,
-                                                               hi), length = 25)[-1])
+          c(
+            seq(lo, mle[1], length = 15)[-15],
+            seq(mle[1], min(mle[1] + 2 * std.error, hi), length = 25)[-1]
+          )
         if (mle[1] + 2 * std.error < hi) {
           psi <- c(psi, seq(mle[1] + 2 * std.error, hi, length = 20))
         }
@@ -2788,75 +3204,86 @@ gpd.pll <-
         )
         q2num <- apply(pars, 1, function(par) {
           det(rbind(
-            c(c(phi.mle) - gpde.phi(
-              par = par,
-              dat = dat,
-              V = V,
-              m = m
-            )),
+            c(
+              c(phi.mle) -
+                gpde.phi(
+                  par = par,
+                  dat = dat,
+                  V = V,
+                  m = m
+                )
+            ),
             gpde.dphi(
               par = par,
               dat = dat,
               V = V,
               m = m
-            )[-1,]
+            )[-1, ]
           ))
         })
         if (isTRUE(any(sign(q2num) * sign(r) < 0, na.rm = TRUE))) {
-          warning("Correction factor and likelihood root are of opposite sign - check output")
+          warning(
+            "Correction factor and likelihood root are of opposite sign - check output"
+          )
         }
         logq <- apply(pars, 1, function(par) {
-          -0.5 * log(gpde.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            m = m
-          )[-1, -1])
-        }) + log(abs(q2num))
+          -0.5 *
+            log(gpde.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              m = m
+            )[-1, -1])
+        }) +
+          log(abs(q2num))
         qmlecontrib <-
           -log(det(gpde.dphi(
             par = mle,
             dat = dat,
             V = V,
             m = m
-          ))) + 0.5 *
-          log(det(gpde.infomat(
-            par = mle,
-            dat = dat,
-            method = "obs",
-            m = m
-          )))
+          ))) +
+          0.5 *
+            log(det(gpde.infomat(
+              par = mle,
+              dat = dat,
+              method = "obs",
+              m = m
+            )))
         logq <- logq + qmlecontrib
         qcor <- sign(q2num) * exp(logq)
         rstar <- ifelse(r == 0, 0, r + (logq - log(abs(r))) / r)
 
         tem.max.opt <- function(psi, dat = dat) {
           para <- c(psi, constr.mle.es(psi))
-          pll <- gpde.ll(par = para,
-                         dat = dat,
-                         m = m)
+          pll <- gpde.ll(par = para, dat = dat, m = m)
           rs <- 2 * (maxll - pll)
           logq <-
-            -0.5 * log(gpde.infomat(
+            -0.5 *
+            log(gpde.infomat(
               par = para,
               dat = dat,
               method = "obs",
               m = m
-            )[-1,
-              -1]) + qmlecontrib + log(abs(det(rbind(
-                c(c(phi.mle) - gpde.phi(
-                  par = para,
-                  dat = dat,
-                  V = V,
-                  m = m
-                )),
-                gpde.dphi(
-                  par = para,
-                  dat = dat,
-                  V = V,
-                  m = m
-                )[-1,]
-              ))))
+            )[-1, -1]) +
+            qmlecontrib +
+            log(abs(det(rbind(
+              c(
+                c(phi.mle) -
+                  gpde.phi(
+                    par = para,
+                    dat = dat,
+                    V = V,
+                    m = m
+                  )
+              ),
+              gpde.dphi(
+                par = para,
+                dat = dat,
+                V = V,
+                m = m
+              )[-1, ]
+            ))))
           rs + logq - log(sqrt(abs(rs)))
         }
         tem.max <-
@@ -2865,22 +3292,21 @@ gpd.pll <-
             fn = tem.max.opt,
             method = "Brent",
             dat = dat,
-            lower = max(1e-05,
-                        mle[1] - std.error),
+            lower = max(1e-05, mle[1] - std.error),
             upper = mle[1] + std.error,
             control = list(abstol = 1e-10)
           )$par
-
       }
       if ("modif" %in% mod) {
         # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
         tem.objfunc.es <- function(par) {
-          0.5 * log(gpde.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            m = m
-          )[2, 2]) -
+          0.5 *
+            log(gpde.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              m = m
+            )[2, 2]) -
             log(abs(gpde.dphi(
               par = par,
               dat = dat,
@@ -2904,8 +3330,7 @@ gpd.pll <-
             par = mle[1],
             fn = optim.tem.fn.es,
             method = "Brent",
-            lower = max(quantile(dat,
-                                 1 - 1 / m), mle[1] - std.error),
+            lower = max(quantile(dat, 1 - 1 / m), mle[1] - std.error),
             upper = mle[1] + std.error,
             control = list(fnscale = -1)
           )
@@ -2917,25 +3342,47 @@ gpd.pll <-
         gpde.score.f <- function(par, dat, m) {
           xi = par[2]
           es = par[1]
-          - ((m ^ xi * log(m) + 1) * dat / (es * (xi - 1)) - dat * (m ^
-                                                                      xi + xi - 1) / (es * (xi -
-                                                                                              1) ^ 2)) * (1 / xi + 1) / (dat * (m ^ xi + xi - 1) / (es * (xi - 1)) - 1) + (m ^
-                                                                                                                                                                             xi +
-                                                                                                                                                                             xi - 1) * ((m ^ xi * log(m) + 1) * (xi - 1) * xi / (m ^
-                                                                                                                                                                                                                                   xi + xi - 1) ^ 2 - (xi -
-                                                                                                                                                                                                                                                         1) / (m ^ xi + xi - 1) - xi / (m ^ xi + xi - 1)
-                                                                                                                                                                             ) / ((xi - 1) * xi) + log(pmax(0, -dat *
-                                                                                                                                                                                                              (m ^ xi + xi - 1) / (es * (xi - 1)) + 1)) / xi ^ 2
+          -((m^xi * log(m) + 1) *
+            dat /
+            (es * (xi - 1)) -
+            dat *
+              (m^xi + xi - 1) /
+              (es *
+                (xi -
+                  1)^2)) *
+            (1 / xi + 1) /
+            (dat * (m^xi + xi - 1) / (es * (xi - 1)) - 1) +
+            (m^xi +
+              xi -
+              1) *
+              ((m^xi * log(m) + 1) *
+                (xi - 1) *
+                xi /
+                (m^xi + xi - 1)^2 -
+                (xi -
+                  1) /
+                  (m^xi + xi - 1) -
+                xi / (m^xi + xi - 1)) /
+              ((xi - 1) * xi) +
+            log(pmax(
+              0,
+              -dat *
+                (m^xi + xi - 1) /
+                (es * (xi - 1)) +
+                1
+            )) /
+              xi^2
         }
         # Score at MLE (sums to zero)
         score.es.mle <- gpde.score.f(mle, dat, m)
         empcov.objfunc.es <- function(par) {
-          0.5 * log(gpde.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            m = m
-          )[2, 2]) -
+          0.5 *
+            log(gpde.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              m = m
+            )[2, 2]) -
             log(abs(sum(
               score.es.mle * gpde.score.f(par, dat, m = m)
             )))
@@ -2971,63 +3418,69 @@ gpd.pll <-
         ))[1])
       constr.mle.Nmean <- function(Nmeant) {
         suppressWarnings(
-          alabama::auglag(par = 0.01, function(lambda, psi, N) {
-            -gpdN.ll(par = c(psi, lambda),
-                     dat = dat,
-                     N = N)
-          }, gr = function(lambda, psi, N) {
-            -gpdN.score(par = c(psi, lambda),
-                        dat = dat,
-                        N = N)[2]
-          },
-          hin = function(lambda, psi, N) {
-            sigma = ifelse(
-              abs(lambda > 1e-8),
-              psi * lambda / (exp(
-                lgamma(N + 1) + lgamma(-lambda + 1) - lgamma(N - lambda + 1)
-              ) - 1),
-              psi / (0.57721566490153231044 + psigamma(N + 1))
-            )
-            if (lambda >= 0) {
-              c(1e-8, sigma, 1 - lambda, lambda + 1)
-            } else{
-              c(-sigma / lambda - xmax, sigma, 1 - lambda, lambda + 1)
-            }
-          },
-          psi = Nmeant, N = N, control.outer = list(trace = FALSE))$par
+          alabama::auglag(
+            par = 0.01,
+            function(lambda, psi, N) {
+              -gpdN.ll(par = c(psi, lambda), dat = dat, N = N)
+            },
+            gr = function(lambda, psi, N) {
+              -gpdN.score(par = c(psi, lambda), dat = dat, N = N)[2]
+            },
+            hin = function(lambda, psi, N) {
+              sigma = ifelse(
+                abs(lambda > 1e-8),
+                psi *
+                  lambda /
+                  (exp(
+                    lgamma(N + 1) + lgamma(-lambda + 1) - lgamma(N - lambda + 1)
+                  ) -
+                    1),
+                psi / (0.57721566490153231044 + psigamma(N + 1))
+              )
+              if (lambda >= 0) {
+                c(1e-8, sigma, 1 - lambda, lambda + 1)
+              } else {
+                c(-sigma / lambda - xmax, sigma, 1 - lambda, lambda + 1)
+              }
+            },
+            psi = Nmeant,
+            N = N,
+            control.outer = list(trace = FALSE)
+          )$par
         )
       }
       # Missing psi vector
       if (missing(psi) || any(is.null(psi)) || any(is.na(psi))) {
         #compute profile log-lik on a grid left and right of the MLE
         psirangelow <-
-          unique(pmax(mean(dat), seq(-3, -0.25, length = 20) * std.error +
-                        mle[1]))
+          unique(pmax(
+            mean(dat),
+            seq(-3, -0.25, length = 20) * std.error + mle[1]
+          ))
         lowvals <- sapply(psirangelow, function(par) {
-          gpdN.ll(c(par, constr.mle.Nmean(par)),
-                  dat = dat,
-                  N = N)
-        }) - maxll
+          gpdN.ll(c(par, constr.mle.Nmean(par)), dat = dat, N = N)
+        }) -
+          maxll
         psirangehigh <-
           seq(2.5, 50, length = 20) * std.error + mle[1]
         highvals <- sapply(psirangehigh, function(par) {
-          gpdN.ll(c(par, constr.mle.Nmean(par)),
-                  dat = dat,
-                  N = N)
-        }) - maxll
+          gpdN.ll(c(par, constr.mle.Nmean(par)), dat = dat, N = N)
+        }) -
+          maxll
         #Try to do linear interpolation - only works if value inside the interval lowvals or highvals
         lo <- approx(x = lowvals, y = psirangelow, xout = -4)$y
         #Else linear interpolation with linear model fitted to lower values
         lo <-
-          ifelse(is.na(lo),
-                 spline(x = lowvals, y = psirangelow, xout = -4)$y,
-                 lo)
+          ifelse(
+            is.na(lo),
+            spline(x = lowvals, y = psirangelow, xout = -4)$y,
+            lo
+          )
         psirangelow <- seq(lo, mle[1], length = 20)
         lowvals <- sapply(psirangelow, function(par) {
-          gpdN.ll(c(par, constr.mle.Nmean(par)),
-                  dat = dat,
-                  N = N)
-        }) - maxll
+          gpdN.ll(c(par, constr.mle.Nmean(par)), dat = dat, N = N)
+        }) -
+          maxll
         #hi <- approx(x = highvals, y = psirangehigh, xout = -4)$y
         #For upper, use spline approx
         hi <-
@@ -3035,10 +3488,9 @@ gpd.pll <-
         #Recompute the range
         psirangehigh <- seq(psirangehigh[1], hi, length = 30)
         highvals <- sapply(psirangehigh, function(par) {
-          gpdN.ll(c(par, constr.mle.Nmean(par)),
-                  dat = dat,
-                  N = N)
-        }) - maxll
+          gpdN.ll(c(par, constr.mle.Nmean(par)), dat = dat, N = N)
+        }) -
+          maxll
         #Remove NAs, inf, etc.
         highvals <- highvals[is.finite(highvals)]
         psirangehigh <- psirangehigh[1:length(highvals)]
@@ -3058,7 +3510,7 @@ gpd.pll <-
               xout = seq(-0.1, highvals[length(highvals)], length = 20)
             )$y
           ))
-      } else{
+      } else {
         psi <- psi - threshold
       }
 
@@ -3085,76 +3537,87 @@ gpd.pll <-
         )
         q2num <- apply(pars, 1, function(par) {
           det(rbind(
-            c(c(phi.mle) - gpdN.phi(
-              par = par,
-              dat = dat,
-              V = V,
-              N = N
-            )),
+            c(
+              c(phi.mle) -
+                gpdN.phi(
+                  par = par,
+                  dat = dat,
+                  V = V,
+                  N = N
+                )
+            ),
             gpdN.dphi(
               par = par,
               dat = dat,
               V = V,
               N = N
-            )[-1,]
+            )[-1, ]
           ))
         })
         if (isTRUE(any(sign(q2num) * sign(r) < 0, na.rm = TRUE))) {
-          warning("Correction factor and likelihood root are of opposite sign - check output")
+          warning(
+            "Correction factor and likelihood root are of opposite sign - check output"
+          )
         }
 
         logq <- apply(pars, 1, function(par) {
-          -0.5 * log(gpdN.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            N = N
-          )[-1, -1])
-        }) + log(abs(q2num))
+          -0.5 *
+            log(gpdN.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              N = N
+            )[-1, -1])
+        }) +
+          log(abs(q2num))
         qmlecontrib <-
           -log(det(gpdN.dphi(
             par = mle,
             dat = dat,
             V = V,
             N = N
-          ))) + 0.5 *
-          log(det(gpdN.infomat(
-            par = mle,
-            dat = dat,
-            method = "obs",
-            N = N
-          )))
+          ))) +
+          0.5 *
+            log(det(gpdN.infomat(
+              par = mle,
+              dat = dat,
+              method = "obs",
+              N = N
+            )))
         logq <- logq + qmlecontrib
         qcor <- sign(q2num) * exp(logq)
         rstar <- ifelse(r == 0, 0, r + (logq - log(abs(r))) / r)
 
         tem.max.opt <- function(psi, dat = dat) {
           para <- c(psi, constr.mle.Nmean(psi))
-          pll <- gpdN.ll(par = para,
-                         dat = dat,
-                         N = N)
+          pll <- gpdN.ll(par = para, dat = dat, N = N)
           rs <- 2 * (maxll - pll)
           logq <-
-            -0.5 * log(gpdN.infomat(
+            -0.5 *
+            log(gpdN.infomat(
               par = para,
               dat = dat,
               method = "obs",
               N = N
-            )[-1,
-              -1]) + qmlecontrib + log(abs(det(rbind(
-                c(c(phi.mle) - gpdN.phi(
-                  par = para,
-                  dat = dat,
-                  V = V,
-                  N = N
-                )),
-                gpdN.dphi(
-                  par = para,
-                  dat = dat,
-                  V = V,
-                  N = N
-                )[-1,]
-              ))))
+            )[-1, -1]) +
+            qmlecontrib +
+            log(abs(det(rbind(
+              c(
+                c(phi.mle) -
+                  gpdN.phi(
+                    par = para,
+                    dat = dat,
+                    V = V,
+                    N = N
+                  )
+              ),
+              gpdN.dphi(
+                par = para,
+                dat = dat,
+                V = V,
+                N = N
+              )[-1, ]
+            ))))
           rs + logq - log(sqrt(abs(rs)))
         }
         tem.max <-
@@ -3163,22 +3626,21 @@ gpd.pll <-
             fn = tem.max.opt,
             method = "Brent",
             dat = dat,
-            lower = max(1e-05,
-                        mle[1] - std.error),
+            lower = max(1e-05, mle[1] - std.error),
             upper = mle[1] + std.error,
             control = list(abstol = 1e-10)
           )$par
-
       }
       if ("modif" %in% mod) {
         # Tangent exponential model approximation of Fraser and Reid to the profile likelihood
         tem.objfunc.Nmean <- function(par) {
-          0.5 * log(gpdN.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            N = N
-          )[2, 2]) -
+          0.5 *
+            log(gpdN.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              N = N
+            )[2, 2]) -
             log(abs(gpdN.dphi(
               par = par,
               dat = dat,
@@ -3201,8 +3663,7 @@ gpd.pll <-
             par = mle[1],
             fn = optim.tem.fn.Nmean,
             method = "Brent",
-            lower = max(1e-05,
-                        mle[1] - std.error),
+            lower = max(1e-05, mle[1] - std.error),
             upper = mle[1] + std.error,
             control = list(fnscale = -1)
           )
@@ -3216,22 +3677,44 @@ gpd.pll <-
           xi = par[2]
           cst <-
             exp(lgamma(N + 1) + lgamma(1 - xi) - lgamma(N + 1 - xi))
-          - (psigamma(N - xi + 1) * cst - psigamma(-xi + 1) * cst) * dat * (1 /
-                                                                              xi + 1) / (z *
-                                                                                           (dat * (cst - 1) / z + 1)) + ((psigamma(N - xi + 1) * cst - psigamma(-xi +
-                                                                                                                                                                  1) * cst) * xi * z / (cst - 1) ^ 2 - z / (cst - 1)) * (cst - 1) /
-            (xi * z) + log(dat *
-                             (cst - 1) / z + 1) / xi ^ 2
+          -(psigamma(N - xi + 1) * cst - psigamma(-xi + 1) * cst) *
+            dat *
+            (1 /
+              xi +
+              1) /
+            (z *
+              (dat * (cst - 1) / z + 1)) +
+            ((psigamma(N - xi + 1) *
+              cst -
+              psigamma(
+                -xi +
+                  1
+              ) *
+                cst) *
+              xi *
+              z /
+              (cst - 1)^2 -
+              z / (cst - 1)) *
+              (cst - 1) /
+              (xi * z) +
+            log(
+              dat *
+                (cst - 1) /
+                z +
+                1
+            ) /
+              xi^2
         }
         # Score at MLE (sums to zero)
         score.Nmean.mle <- gpdN.score.f(mle, dat, N)
         empcov.objfunc.Nmean <- function(par) {
-          0.5 * log(gpdN.infomat(
-            par = par,
-            dat = dat,
-            method = "obs",
-            N = N
-          )[2, 2]) -
+          0.5 *
+            log(gpdN.infomat(
+              par = par,
+              dat = dat,
+              method = "obs",
+              N = N
+            )[2, 2]) -
             log(abs(sum(
               score.Nmean.mle * gpdN.score.f(par, dat, N = N)
             )))
@@ -3254,8 +3737,7 @@ gpd.pll <-
             control = list(fnscale = -1)
           )
         empcov.mle <-
-          c(empcov.mle.opt$par,
-            constr.mle.Nmean(empcov.mle.opt$par))
+          c(empcov.mle.opt$par, constr.mle.Nmean(empcov.mle.opt$par))
       }
     }
     # Return profile likelihood and quantities of interest (modified likelihoods)
@@ -3288,7 +3770,6 @@ gpd.pll <-
       if (correction && length(psi) > 10) {
         ans <- spline.corr(ans)
       }
-
     }
     if ("modif" %in% mod) {
       ans$tem.mle <- ifelse(param == "shape", tem.mle[2], tem.mle[1])
@@ -3317,9 +3798,7 @@ gpd.pll <-
       plot(ans)
     }
     return(invisible(ans))
-
   }
-
 
 
 #' Plot of tangent exponential model profile likelihood
@@ -3338,7 +3817,7 @@ gpd.pll <-
 #' @export
 plot.fr <- function(x, ...) {
   # plot a fraser-reid object
-  whichPlot <- c(1:4)  #default
+  whichPlot <- c(1:4) #default
   if (length(list(...)) > 0) {
     if ("which" %in% names(list(...))) {
       whichPlot <- list(...)$which
@@ -3373,17 +3852,25 @@ plot.fr <- function(x, ...) {
       ylim = c(-4, 4),
       panel.first = abline(
         h = qnorm(c(
-          0.005, 0.025, 0.05, 0.5, 0.95, 0.975, 0.995
+          0.005,
+          0.025,
+          0.05,
+          0.5,
+          0.95,
+          0.975,
+          0.995
         )),
         col = "grey",
         lwd = 0.7
       ),
       bty = "l"
     )
-    lines(fr$psi,
-          (fr$normal[1] - fr$psi) / fr$normal[2],
-          col = "green",
-          lwd = 1.5)
+    lines(
+      fr$psi,
+      (fr$normal[1] - fr$psi) / fr$normal[2],
+      col = "green",
+      lwd = 1.5
+    )
     lines(fr$psi, fr$q, col = "red", lwd = 1.5)
     lines(fr$psi, fr$r, lwd = 1.5)
     lines(fr$psi, fr$rstar, col = "blue")
@@ -3394,8 +3881,7 @@ plot.fr <- function(x, ...) {
       x.intersp = 0.2,
       lwd = 1.5,
       seg.len = 0.5,
-      col = c("green",
-              "black", "blue", "red"),
+      col = c("green", "black", "blue", "red"),
       bty = "n",
       cex = 0.9,
       xjust = 1
@@ -3405,12 +3891,11 @@ plot.fr <- function(x, ...) {
   if (2 %in% whichPlot) {
     plot(
       fr$psi,
-      -fr$r ^ 2 / 2,
+      -fr$r^2 / 2,
       type = "l",
       xlab = xl,
       ylab = "Profile log likelihood",
-      ylim = c(-8,
-               0),
+      ylim = c(-8, 0),
       panel.first = abline(
         h = -qchisq(c(0.95, 0.99), df = 1) / 2,
         col = "grey",
@@ -3419,10 +3904,7 @@ plot.fr <- function(x, ...) {
       lwd = 1.5,
       bty = "l"
     )
-    lines(fr$psi,
-          -fr$rstar ^ 2 / 2,
-          col = "blue",
-          lwd = 1.5)
+    lines(fr$psi, -fr$rstar^2 / 2, col = "blue", lwd = 1.5)
     legend(
       x = "bottomright",
       c("profile", "tem"),
@@ -3444,8 +3926,7 @@ plot.fr <- function(x, ...) {
       type = "l",
       xlab = xl,
       ylab = "Significance function",
-      ylim = c(0,
-               1),
+      ylim = c(0, 1),
       panel.first = abline(
         h = c(0.025, 0.05, 0.5, 0.95, 0.975),
         col = "grey",
@@ -3455,15 +3936,11 @@ plot.fr <- function(x, ...) {
       bty = "l"
     )
     lines(fr$psi, pnorm(fr$q), col = "red", lwd = 1.5)
-    lines(fr$psi,
-          pnorm(fr$rstar),
-          col = "blue",
-          lwd = 1.5)
+    lines(fr$psi, pnorm(fr$rstar), col = "blue", lwd = 1.5)
     legend(
       x = "topright",
       c("lik. root", "modif. root", expression(q(psi))),
-      lty = c(1,
-              1, 1),
+      lty = c(1, 1, 1),
       col = c("black", "blue", "red"),
       bty = "n",
       x.intersp = 0.2,
@@ -3484,12 +3961,8 @@ plot.fr <- function(x, ...) {
       xlab = "Likelihood root r",
       ylab = expression(paste("Correction factor log(q/r)/r")),
       panel.first = {
-        abline(h = 0,
-               col = "grey",
-               lwd = 0.7)
-        abline(v = 0,
-               col = "grey",
-               lwd = 0.7)
+        abline(h = 0, col = "grey", lwd = 0.7)
+        abline(v = 0, col = "grey", lwd = 0.7)
         abline(
           v = pr,
           col = "grey",
@@ -3502,9 +3975,7 @@ plot.fr <- function(x, ...) {
     )
   }
 
-
   par(old.pars)
-
 }
 
 #' Spline correction for Fraser-Reid approximations
@@ -3540,7 +4011,7 @@ spline.corr <- function(fr, method = c("cobs", "smooth.spline")) {
     fr$q <- fr$q[-fitfailed]
     fr$psi <- fr$psi[-fitfailed]
   }
-  w <- pchisq(fr$r ^ 2, 0.5)
+  w <- pchisq(fr$r^2, 0.5)
   # If any correction for q failed and returned NA
   corfailed <- which(!is.finite(fr$rstar))
   # If equispaced values for psi between MLE and other, then we have r = 0
@@ -3553,8 +4024,10 @@ spline.corr <- function(fr, method = c("cobs", "smooth.spline")) {
     resp <- (fr$rstar - fr$r)
     regr <- fr$r
   }
-  if (method == "cobs" &&
-      requireNamespace("cobs", quietly = TRUE)) {
+  if (
+    method == "cobs" &&
+      requireNamespace("cobs", quietly = TRUE)
+  ) {
     spline <-
       cobs::cobs(
         y = resp,
@@ -3568,27 +4041,32 @@ spline.corr <- function(fr, method = c("cobs", "smooth.spline")) {
       )$fitted
   } else {
     spline <-
-      rev(stats::smooth.spline(
-        y = resp,
-        x = regr,
-        w = w,
-        spar = 0.9,
-        cv = TRUE
-      )$y)
+      rev(
+        stats::smooth.spline(
+          y = resp,
+          x = regr,
+          w = w,
+          spar = 0.9,
+          cv = TRUE
+        )$y
+      )
   }
   # Compute difference between fitted values and rstar
   departure <- spline - resp
   # Ad-hoc fix of the values close to MLE where the numerical precision causes difficulty
   # Outlier detection via chi-square test From package outliers, (c)Lukasz Komsta
   scores <- function(x, prob = NA) {
-    (x - mean(x)) ^ 2 / var(x) > qchisq(prob, 1)
+    (x - mean(x))^2 / var(x) > qchisq(prob, 1)
   }
   bad <- which(scores(departure, prob = 0.95))
 
   if (length(bad) > 0) {
     # Exclude those values if they are in the end of the distribution
     bad <-
-      bad[intersect(which(bad < 0.85 * length(departure)), which(bad > 0.15 * length(departure)))]
+      bad[intersect(
+        which(bad < 0.85 * length(departure)),
+        which(bad > 0.15 * length(departure))
+      )]
     # Remove outliers and fit again (with less smoothness)
   }
   if (length(bad) > 0) {
@@ -3614,9 +4092,11 @@ spline.corr <- function(fr, method = c("cobs", "smooth.spline")) {
       predict(spline, fr$r, interval = "none")[, 2] + fr$r
   } else {
     spline <-
-      stats::smooth.spline(x = na.omit(cbind(regr, resp)),
-                           cv = FALSE,
-                           all.knots = TRUE)
+      stats::smooth.spline(
+        x = na.omit(cbind(regr, resp)),
+        cv = FALSE,
+        all.knots = TRUE
+      )
     fr$spline <- spline
     fr$rstar <- predict(spline, fr$r)$y + fr$r
   }
@@ -3728,19 +4208,20 @@ tem.corr <- function(fr, print.warning = FALSE) {
 #' gev.tem('Nquant', dat = dat, q = 0.5, N=100, plot = TRUE)
 #' }
 gev.tem <-
-  function(param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
-           dat,
-           psi = NULL,
-           p = NULL,
-           q = 0.5,
-           N = NULL,
-           n.psi = 50,
-           plot = TRUE,
-           correction = TRUE) {
-    if (param %in% c("VaR", "retlev"))
-    {
+  function(
+    param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
+    dat,
+    psi = NULL,
+    p = NULL,
+    q = 0.5,
+    N = NULL,
+    n.psi = 50,
+    plot = TRUE,
+    correction = TRUE
+  ) {
+    if (param %in% c("VaR", "retlev")) {
       param <- "quant"
-    }  #Compatibility following change of notation 13/07/2017
+    } #Compatibility following change of notation 13/07/2017
     if (param == "scale" && !is.null(psi)) {
       if (isTRUE(any(psi < 0))) {
         stop("Invalid argument: scale parameter must be positive")
@@ -3821,17 +4302,19 @@ gev.tem <-
 #' m6 <- gpd.tem(param = 'Nquant', dat = dat, N = 100, q = 0.7, correction = FALSE)
 #' }
 gpd.tem <-
-  function(dat,
-           param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
-           psi = NULL,
-           m = NULL,
-           threshold = 0,
-           n.psi = 50,
-           N = NULL,
-           p = NULL,
-           q = NULL,
-           plot = FALSE,
-           correction = TRUE) {
+  function(
+    dat,
+    param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
+    psi = NULL,
+    m = NULL,
+    threshold = 0,
+    n.psi = 50,
+    N = NULL,
+    p = NULL,
+    q = NULL,
+    plot = FALSE,
+    correction = TRUE
+  ) {
     if (param %in% c("VaR", "ES") && is.null(m)) {
       stop("Parameter \"m\" missing")
     }

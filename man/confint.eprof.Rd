@@ -11,6 +11,7 @@
   prob = c((1 - level)/2, 1 - (1 - level)/2),
   print = FALSE,
   method = c("cobs", "smooth.spline"),
+  boundary = FALSE,
   ...
 )
 }
@@ -27,6 +28,8 @@ either a vector of numbers or a vector of names. If missing, all parameters are 
 \item{print}{should a summary be printed. Default to \code{FALSE}.}
 
 \item{method}{string for the method, either \code{cobs} (constrained robust B-spline from eponym package) or \code{smooth.spline}}
+
+\item{boundary}{logical; if \code{TRUE}, the null distribution is assumed to be a mixture of a point mass and half a chi-square with one degree of freedom.}
 
 \item{...}{additional arguments passed to functions. Providing a logical \code{warn=FALSE} turns off warning messages when the lower or upper confidence interval for \code{psi} are extrapolated beyond the provided calculations.}
 }

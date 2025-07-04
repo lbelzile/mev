@@ -21,13 +21,13 @@
 \value{
 \code{egp.ll} returns the log-likelihood value.
 
-\code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a matrix of return levels.
+\code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a list with tail probabilities \code{p}, return levels \code{retlev}, thresholds \code{thresh} and model name \code{model}.
 }
 \description{
 This function provides the log-likelihood and quantiles for the three different families presented
 in Papastathopoulos and Tawn (2013) and the two proposals of Gamet and Jalbert (2022), plus exponential tilting. All of the models contain an additional parameter, \eqn{\kappa \ge 0}.
 All families share the same tail index as the generalized Pareto distribution, while allowing for lower thresholds.
-For most models, the distribution reduce to the generalised Pareto when \eqn{\kappa=1} (for models \code{gj-tnorm} and \code{logist}, on the boundary of the parameter space when \eqn{kappa \to 0}.
+For most models, the distribution reduce to the generalised Pareto when \eqn{\kappa=1} (for models \code{gj-tnorm} and \code{logist}, on the boundary of the parameter space when \eqn{kappa \to 0}).
 
 \code{egp.retlev} gives the return levels for the extended generalised Pareto distributions
 }

@@ -3,7 +3,7 @@
 #' @description This function provides the log-likelihood and quantiles for the three different families presented
 #' in Papastathopoulos and Tawn (2013) and the two proposals of Gamet and Jalbert (2022), plus exponential tilting. All of the models contain an additional parameter, \eqn{\kappa \ge 0}.
 #' All families share the same tail index as the generalized Pareto distribution, while allowing for lower thresholds.
-#' For most models, the distribution reduce to the generalised Pareto when \eqn{\kappa=1} (for models \code{gj-tnorm} and \code{logist}, on the boundary of the parameter space when \eqn{kappa \to 0}.
+#' For most models, the distribution reduce to the generalised Pareto when \eqn{\kappa=1} (for models \code{gj-tnorm} and \code{logist}, on the boundary of the parameter space when \eqn{kappa \to 0}).
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143, <doi:10.1016/j.jspi.2012.07.001>.
 #' @references Gamet, P. and Jalbert, J. (2022). A flexible extended generalized Pareto distribution for tail estimation. \emph{Environmetrics}, \bold{33}(6), <doi:10.1002/env.2744>.
@@ -20,7 +20,7 @@
 #' @param show logical; if \code{TRUE}, print the results of the optimization
 #' @param p extreme event probability; \code{p} must be greater than the rate of exceedance for the calculation to make sense. See \bold{Details}.
 #' @param plot logical; if \code{TRUE}, a plot of the return levels
-#' @importFrom grDevices rainbow
+#' @importFrom grDevices hcl.colors
 #'
 #' @details
 #'
@@ -29,7 +29,7 @@
 #' to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
 #' @author Leo Belzile
 #' @return \code{egp.ll} returns the log-likelihood value.
-#' @return \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a matrix of return levels.
+#' @return \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a list with tail probabilities \code{p}, return levels \code{retlev}, thresholds \code{thresh} and model name \code{model}.
 #' @examples
 #' set.seed(123)
 #' xdat <- mev::rgp(1000, loc = 0, scale = 2, shape = 0.5)
@@ -172,11 +172,25 @@ egp.retlev <- function(
     )
   }
   model <- match.arg(model)
-  if (length(par) %% 3 != 0) {
-    stop("Invalid parameter input")
-  }
-  if (!inherits(par, "matrix")) {
-    par = matrix(c(par), ncol = 3)
+  if (missing(par)) {
+    par <- matrix(ncol = 3, nrow = length(thresh))
+    for (i in seq_along(thresh)) {
+      par[i, ] <- coef(
+        fit.egp(
+          xdat = xdat,
+          thresh = thresh[i],
+          model = model
+        )
+      )
+    }
+  } else {
+    if (length(par) %% 3 != 0) {
+      stop("Invalid parameter input")
+    }
+    if (!inherits(par, "matrix")) {
+      par <- matrix(c(par), ncol = 3)
+    }
+    stopifnot(length(par) == (length(thresh) * 3L))
   }
   rate <- sapply(thresh, function(u) {
     length(xdat[xdat > u]) / length(xdat)
@@ -184,7 +198,11 @@ egp.retlev <- function(
   if (!isTRUE(all.equal(length(rate), length(thresh), nrow(par)))) {
     stop("Input dimension does not match")
   }
-  retlev <- matrix(0, nrow = length(thresh), ncol = length(p))
+  retlev <- matrix(
+    data = 0,
+    nrow = length(thresh),
+    ncol = length(p)
+  )
   if (
     any(sapply(rate, function(zeta) {
       zeta < p
@@ -194,65 +212,94 @@ egp.retlev <- function(
       "Some probabilities \"p\" are higher than the exceedance rate. Evaluate those empirically."
     )
   }
-  p <- sort(p)
+  p <- sort(p, decreasing = TRUE)
   pq <- rev(1 / p)
   np <- length(p)
   for (i in 1:length(thresh)) {
     for (j in 1:np) {
       pl = 1 - p[j] / rate[i]
-      retlev[i, np - j + 1] <- thresh[i] +
-        qegp(p = pl, scale = par[i, 2], shape = par[i, 3], kappa = par[i, 1])
+      retlev[i, j] <- thresh[i] +
+        qegp(
+          p = pl,
+          scale = par[i, 2],
+          shape = par[i, 3],
+          kappa = par[i, 1],
+          model = model
+        )
     }
   }
+  if (length(thresh) == 1L) {
+    retlev <- c(retlev)
+    names(retlev) <- round(1 - p, 4)
+  } else {
+    rownames(retlev) <- thresh
+    colnames(retlev) <- round(1 - p, 4)
+  }
+  obj <- list(
+    p = p,
+    thresh = thresh,
+    retlev = retlev,
+    model = model
+  )
+  class(obj) <- c("mev_egp_retlev")
   if (plot) {
-    if (length(thresh) > 1L) {
-      cols <- hcl.colors(
-        n = length(thresh),
-        palette = "viridis"
-      )
-    } else {
-      cols <- "black"
-    }
-    matplot(
-      pq,
-      t(retlev),
-      pch = 20,
-      type = "b",
-      lty = rep(1, length(thresh)),
-      col = cols,
-      xlab = "return period",
-      ylab = "return level",
-      bty = "l"
-    )
-    text <- switch(
-      model,
-      "pt-beta" = "Papastathopoulos-Tawn's EGP 1",
-      "pt-gamma" = "Papastathopoulos-Tawn's EGP 2",
-      "pt-power" = "Papastathopoulos-Tawn's EGP 3 (power)",
-      "gj-tnorm" = "Gamet-Jonathan's truncated normal EGP",
-      "gj-beta" = "Gamet-Jonathan's beta EGP",
-      "logist" = "logistic EGP",
-      "exptilt" = "exponential tilting EGP"
-    )
-    mtext(text, side = 3, cex = 0.9, line = 0.5, adj = 0)
-    if (length(thresh) > 1) {
-      legend(
-        x = "bottomright",
-        inset = c(0, 1),
-        cex = 0.8,
-        xpd = TRUE,
-        horiz = TRUE,
-        bty = "n",
-        legend = thresh,
-        col = cols,
-        pch = 20
-      )
-    }
+    plot(obj)
   }
-  res <- retlev
-  colnames(res) <- pq
-  rownames(res) <- thresh
-  return(invisible(res))
+  # res <- retlev
+  # colnames(res) <- pq
+  # rownames(res) <- thresh
+  return(invisible(obj))
+}
+
+#' @export
+plot.mev_egp_retlev <- function(x, ...) {
+  p <- x$p
+  thresh <- x$thresh
+  retlev <- x$retlev
+
+  if (length(thresh) > 1L) {
+    cols <- hcl.colors(
+      n = length(thresh),
+      palette = "viridis"
+    )
+  } else {
+    cols <- "black"
+  }
+  matplot(
+    rev(1 / p),
+    t(retlev),
+    pch = 20,
+    type = "b",
+    lty = rep(1, length(thresh)),
+    col = cols,
+    xlab = "return period",
+    ylab = "return level",
+    bty = "l"
+  )
+  text <- switch(
+    x$model,
+    "pt-beta" = "Papastathopoulos-Tawn's EGP 1",
+    "pt-gamma" = "Papastathopoulos-Tawn's EGP 2",
+    "pt-power" = "Papastathopoulos-Tawn's EGP 3 (power)",
+    "gj-tnorm" = "Gamet-Jalbert's truncated normal EGP",
+    "gj-beta" = "Gamet-Jalbert's beta EGP",
+    "logist" = "logistic EGP",
+    "exptilt" = "exponential tilting EGP"
+  )
+  mtext(text, side = 3, cex = 0.9, line = 0.5, adj = 0)
+  if (length(thresh) > 1) {
+    legend(
+      x = "bottomright",
+      inset = c(0, 1),
+      cex = 0.8,
+      xpd = TRUE,
+      horiz = TRUE,
+      bty = "n",
+      legend = thresh,
+      col = cols,
+      pch = 20
+    )
+  }
 }
 
 #' Parameter stability plot and maximum likelihood routine for extended GP models
@@ -263,7 +310,7 @@ egp.retlev <- function(
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.
 #' @inheritParams egp
 #' @author Leo Belzile
-#' @param init vector of initial values, with \eqn{\log(\kappa)}{log(\kappa)} and \eqn{\log(\sigma)}{log(\sigma)}; can be omitted.
+#' @param start optional named list of initial values, with \eqn{\kappa}{\kappa}, \eqn{sigma}{\sigma} or \eqn{xi}{\xi}.
 #' @return \code{fit.egp} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
 #' @name fit.egp
 #' @description The function \code{tstab.egp} provides classical threshold stability plot for (\eqn{\kappa}, \eqn{\sigma}, \eqn{\xi}).
@@ -273,10 +320,6 @@ egp.retlev <- function(
 #' \code{tstab.egp} can also be used to fit the model to multiple thresholds.
 #' @param plots vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots
 #' @inheritParams egp
-#' @param umin optional minimum value considered for threshold (if \code{thresh} is not provided)
-#' @param umax optional maximum value considered for threshold (if \code{thresh} is not provided)
-#' @param nint optional integer number specifying the number of thresholds to test.
-#' @param changepar logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.
 #' @return \code{tstab.egp} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
 #' @importFrom graphics arrows points polygon title
 #' @export
@@ -289,17 +332,31 @@ egp.retlev <- function(
 #' fitted <- fit.egp(
 #'   xdat = xdat,
 #'   thresh = 1,
-#'   model = "egp2",
+#'   model = "pt-gamma",
 #'   show = TRUE)
 #' thresh <- mev::qgp(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
 #' tstab.egp(
 #'    xdat = xdat,
 #'    thresh = thresh,
-#'    model = "egp2",
+#'    model = "pt-gamma",
 #'    plots = 1:3)
+#' xdat <- regp(
+#'   n = 100,
+#'   scale = 1,
+#'   shape = 0.1,
+#'   kappa = 0.5,
+#'   model = "pt-power"
+#' )
+#' fit.egp(
+#'  xdat = xdat,
+#'  model = "pt-power",
+#'  show = TRUE,
+#'  fpar = list(kappa = 1),
+#'  method = "BFGS"
+#' )
 fit.egp <- function(
   xdat,
-  thresh,
+  thresh = 0,
   model = c(
     "pt-beta",
     "pt-gamma",
@@ -309,9 +366,25 @@ fit.egp <- function(
     "exptilt",
     "logist"
   ),
-  init,
-  show = FALSE
+  start = NULL,
+  method = c("nlminb", "BFGS"),
+  fpar = NULL,
+  show = FALSE,
+  ...
 ) {
+  # Include backward compatibility for init
+  args <- list(...)
+  if (!is.null(args$init)) {
+    stopifnot(length(args$init) == 2L)
+    if (is.null(start)) {
+      start <- list(
+        kappa = exp(args$init[1]),
+        scale = exp(args$init[2]),
+        shape = 0.1
+      )
+    }
+  }
+  # Backward compatibility for model names
   if (model %in% c("egp1", "egp2", "egp3") & length(model) == 1) {
     model <- switch(
       model,
@@ -320,65 +393,142 @@ fit.egp <- function(
       egp3 = "pt-power"
     )
   }
-  model <- match.arg(model)
+  model <- match.arg(
+    model,
+    choices = c(
+      "pt-beta",
+      "pt-gamma",
+      "pt-power",
+      "gj-tnorm",
+      "gj-beta",
+      "exptilt",
+      "logist"
+    ),
+    several.ok = FALSE
+  )
   if (length(thresh) > 1) {
     warning(
       "Length of threshold vector greater than one. Selecting first component."
     )
     thresh <- thresh[1]
   }
-  if (sum(xdat > thresh[1]) < 4L) {
+  stopifnot(thresh >= 0)
+  if (sum(xdat > thresh) < 5L) {
     stop("Not enough observations to fit an extended generalized Pareto model.")
   }
-  # If no initial values are provided, fit a GP distribution to obtain them
-  changinit <- missing(init)
-  if (!changinit) {
-    if (!isTRUE(any(init[1:2] < 0))) {
-      changinit <- TRUE
+  xdat <- as.numeric(xdat[is.finite(xdat)])
+  # Keep exceedances only
+  xdata <- xdat[xdat > thresh] - thresh
+  xmax <- max(xdata)
+  # Fit submodel to check convergence afterwards
+  gpfit <- fit.gpd(xdata, threshold = 0, show = FALSE)
+  # Can also be used for initial values in case
+  # there were not provided by the user
+  param_names <- c("kappa", "scale", "shape")
+  stopifnot(is.null(fpar) | is.list(fpar))
+  wf <- (param_names %in% names(fpar))
+  if (sum(wf) == 3L) {
+    # TODO turn this into a warning and evaluate nllh?
+    stop("Invalid input: all of the model parameters are fixed.")
+  }
+  if (is.list(fpar) && (length(fpar) >= 1L)) {
+    #NULL has length zero
+    if (is.null(names(fpar))) {
+      stop("\"fpar\" must be a named list")
+    }
+    if (!isTRUE(all(names(fpar) %in% param_names))) {
+      stop(
+        "Unknown fixed parameter: must be one of \"kappa\",\"scale\" or \"shape\". "
+      )
+    }
+    if (!isTRUE(all(unlist(lapply(fpar, length)) == rep(1L, sum(wf))))) {
+      stop("Each fixed parameter must be of length one.")
     }
   }
-  gpfit <- fit.gpd(xdat, threshold = thresh[1], show = FALSE)
-  if (changinit) {
-    init <- c(
+  method <- match.arg(method)
+  if (is.null(start)) {
+    spar <- c(
       kappa = ifelse(model %in% c("gj-tnorm", "logist"), 0.01, 1.01),
       suppressWarnings(gpfit$est)
     )
     # Change starting values for boundary cases, otherwise the optimization stalls
-    if (init[3] < -0.99) {
-      init[3] <- -0.9
+    if (spar[3] < -0.99) {
+      spar[3] <- -0.9
+    }
+    names(spar) <- param_names
+  } else {
+    stopifnot(length(start) == (3L - sum(wf)))
+    spar <- vector(mode = "numeric", length = 3L)
+    names(spar) <- param_names
+    if (is.null(names(start))) {
+      spar[!wf] <- unlist(start) # assume order, for better or worse
+    } else {
+      stopifnot(isTRUE(all(names(start) %in% param_names)))
+      for (name in names(start)) {
+        spar[name] <- unlist(start[name])
+      }
     }
   }
+  for (i in seq_along(fpar)) {
+    spar[names(fpar[i])] <- unlist(fpar[i])[1]
+  }
+  stopifnot(
+    spar[1] > 0,
+    spar[2] > 0,
+    spar[3] > -1 - 1e-8
+  )
   if (
-    !is.finite(egp.ll(par = init, xdat = xdat, thresh = thresh, model = model))
+    !is.finite(
+      egp.ll(
+        par = spar,
+        xdat = xdata,
+        thresh = 0,
+        model = model
+      )
+    )
   ) {
     stop("Invalid starting parameters.")
   }
-  # Keep exceedances only
-  xdata <- xdat[xdat > thresh] - thresh
-  xmax <- max(xdata)
-  mle <- alabama::auglag(
-    par = init,
-    fn = function(par, xdat, thresh, model) {
-      -egp.ll(par = par, xdat = xdata, thresh = thresh, model = model)
-    },
-    hin = function(par, ...) {
-      c(
-        par[1] - 1e-10,
-        par[2] - 1e-10,
-        par[3] + 1,
-        ifelse(par[3] < 0, thresh - par[2] / par[3] - xmax, 1)
+  start_vals <- spar[!wf]
+  fixed_vals <- spar[wf] #when empty, a num vector of length zero
+  wfo <- order(c(which(!wf), which(wf)))
+  mle <- try(suppressWarnings(
+    alabama::auglag(
+      par = start_vals,
+      fpar = fixed_vals,
+      wfixed = wf,
+      wfo = wfo,
+      fn = function(par, fpar, wfixed, wfo) {
+        params <- c(par, fpar)[wfo]
+        nll <- -egp.ll(params, xdat = xdata, thresh = 0, model = model)
+        ifelse(is.finite(nll), nll, 1e10)
+      },
+      hin = function(par, fpar, wfixed, wfo) {
+        params <- c(par, fpar)[wfo]
+        # TODO check whether parameters are
+        # constrained to be positive
+        c(
+          params[1],
+          params[2],
+          params[3] + 1,
+          params[2] + params[3] * xmax
+        )
+      },
+      control.outer = list(method = method, trace = FALSE),
+      control.optim = switch(
+        method,
+        nlminb = list(
+          iter.max = 500L,
+          rel.tol = 1e-10,
+          step.min = 1e-10
+        ),
+        list(maxit = 1000L, reltol = 1e-10)
       )
-    },
-    xdat = xdata,
-    thresh = 0,
-    model = model,
-    control.outer = list(trace = FALSE, method = "BFGS"),
-    control.optim = list(maxit = 500, reltol = 1e-10)
-  )
-  browser()
+    )
+  ))
   boundary <- FALSE
   if (model %in% c("gj-tnorm", "logist")) {
-    if (isTRUE(mle$value <= gpfit$nllh)) {
+    if (isTRUE(mle$value >= gpfit$nllh) & sum(wf) == 0L) {
       boundary <- TRUE
       mle$par <- c(0, coef(gpfit))
       mle$value <- gpfit$nllh
@@ -407,16 +557,28 @@ fit.egp <- function(
     }
   }
   fitted <- list()
-  fitted$estimate <- fitted$param <- mle$par
+  fitted$estimate <- mle$par
+  fitted$param <- c(mle$par, spar[wf])[wfo]
   fitted$deviance <- 2 * mle$value
   fitted$nllh <- mle$value
-  if (mle$convergence == 0) {
+  if (
+    mle$convergence == 0 |
+      isTRUE(mle$kkt1 & mle$kkt2)
+  ) {
     fitted$convergence <- "successful"
-    fitted$vcov <- try(solve(mle$hessian))
-    fitted$std.err <- try(sqrt(diag(fitted$vcov)))
-    if (inherits(fitted$std.err, what = "try-error") || mle$par[3] < -0.5) {
+    fitted$vcov <- try(
+      expr = solve(mle$hessian),
+      silent = TRUE
+    )
+    fitted$std.err <- try(
+      expr = sqrt(diag(fitted$vcov)),
+      silent = TRUE
+    )
+    if (
+      inherits(fitted$std.err, what = "try-error") || fitted$param[3] < -0.5
+    ) {
       fitted$vcov <- NULL
-      fitted$se <- rep(NA, 3)
+      fitted$std.err <- rep(NA, 3)
     }
   } else {
     fitted$convergence <- mle$convergence
@@ -428,13 +590,13 @@ fit.egp <- function(
     "kappa",
     "scale",
     "shape"
-  )
+  )[!wf]
   if (!is.null(fitted$vcov)) {
     colnames(fitted$vcov) <- rownames(fitted$vcov) <- c(
       "kappa",
       "scale",
       "shape"
-    )
+    )[!wf]
   }
   fitted$counts <- mle$counts
   fitted$threshold <- thresh
@@ -461,8 +623,8 @@ print.mev_egp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
     "pt-beta" = "Papastathopoulos-Tawn's EGP 1",
     "pt-gamma" = "Papastathopoulos-Tawn's EGP 2",
     "pt-power" = "Papastathopoulos-Tawn's EGP 3 (power)",
-    "gj-tnorm" = "Gamet-Jonathan's truncated normal EGP",
-    "gj-beta" = "Gamet-Jonathan's beta EGP",
+    "gj-tnorm" = "Gamet-Jalbert's truncated normal EGP",
+    "gj-beta" = "Gamet-Jalbert's beta EGP",
     "logist" = "logistic EGP",
     "exptilt" = "exponential tilting EGP"
   )
@@ -480,7 +642,7 @@ print.mev_egp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
     quote = FALSE,
     ...
   )
-  if (!is.na(x$std.err[1]) && x$estimate[3] > -0.5) {
+  if (!is.na(x$std.err[1])) {
     cat("\nStandard Errors\n")
     print.default(
       format(x$std.err, digits = digits),
@@ -538,14 +700,29 @@ tstab.egp <- function(
     "exptilt",
     "logist"
   ),
-  plots = 1:3,
+  param = c("shape", "kappa"),
   type = c("wald", "profile"),
-  umin,
-  umax,
-  nint,
-  changepar = TRUE,
+  level = 0.95,
+  plot = TRUE,
   ...
 ) {
+  args <- list(...)
+  plots <- args$plots
+  changepar <- args$changepar
+  if (is.null(changepar)) {
+    changepar <- TRUE
+  } else {
+    changepar <- isTRUE(args$changepar)
+  }
+  if (missing(thresh)) {
+    if (!is.null(args$umin) & !is.null(args$umax) & !is.null(args$nint)) {
+      umin <- args$umin
+      umax <- args$umax
+      nint <- args$nint
+    } else {
+      stop("Threshold vector not provided")
+    }
+  }
   if (model %in% c("egp1", "egp2", "egp3") & length(model) == 1) {
     model <- switch(
       model,
@@ -553,6 +730,24 @@ tstab.egp <- function(
       egp2 = "pt-gamma",
       egp3 = "pt-power"
     )
+  }
+  type <- match.arg(type)
+  if (is.numeric(plots)) {
+    plots <- as.integer(plots)
+  } else {
+    plots <- switch(
+      param,
+      "kappa" = 1L,
+      "shape" = 3L
+    )
+  }
+  # Option for backward compatibility
+  if (2L %in% plots) {
+    warning("Modified scale not available for EGPD models.")
+  }
+  plots <- sort(plots[plots %in% c(1L, 3L)])
+  if (length(plots) == 0) {
+    stop("No option for plots")
   }
   model <- match.arg(model)
   type <- match.arg(type)
@@ -574,156 +769,217 @@ tstab.egp <- function(
       "Invalid argument\"thresh\" provided;\n please use a vector of threshold candidates of length at least 2"
     )
   }
-  pe <- se <- matrix(NA, ncol = 4, nrow = length(thresh))
-  conv <- rep(0, length(thresh))
-  fit <- try(suppressWarnings(fit.egp(
-    xdat = xdat,
-    thresh = thresh[1],
-    model = model
-  )))
-  if (!inherits(fit, "try-error")) {
-    pe[1, -4] <- fit$param
-    colnames(pe) <- colnames(se) <- c(names(fit$param), "modif scale")
-    se[1, -4] <- fit$std.err
-    conv[1] <- ifelse(is.character(fit$convergence), 0, fit$convergence)
-    se[1, 4] <- sqrt(
-      cbind(1, -thresh[1]) %*%
-        solve(fit$hessian[-1, -1]) %*%
-        rbind(1, -thresh[1])
-    )[1]
+  if (1L %in% plots) {
+    kappa_pars <- matrix(
+      data = NA,
+      nrow = length(thresh),
+      ncol = 3
+    )
+  } else {
+    kappa_pars <- NULL
   }
-  for (i in 2:length(thresh)) {
-    fit <- try(
-      suppressWarnings(
-        fit.egp(
-          xdat = xdat,
-          thresh = thresh[i],
-          model = model,
-          init = pe[i - 1, -4]
-        )
+  if (3L %in% plots) {
+    shape_pars <- matrix(
+      data = NA,
+      nrow = length(thresh),
+      ncol = 3
+    )
+  } else {
+    shape_pars <- NULL
+  }
+  for (i in seq_along(thresh)) {
+    mle <- try(
+      fit.egp(
+        xdat = xdat,
+        thresh = thresh[i],
+        model = model,
+        method = "BFGS"
       ),
       silent = TRUE
     )
-    if (inherits(fit, "try-error")) {
-      fit <- try(
-        suppressWarnings(
-          fit.egp(
-            xdat = xdat,
-            thresh = thresh[i],
-            model = model
+    if (inherits(mle, "try-error")) {
+      next
+    } else {
+      if (type == "wald") {
+        if (1L %in% plots) {
+          kappa_pars[i, 1] <- coef(mle)[1]
+          if (
+            isTRUE(all.equal(kappa_pars[i, 1], 0, check.attributes = FALSE))
+          ) {
+            boundary <- TRUE
+            crit <- c(-1, 1) * sqrt(0.5 * qchisq(level))
+          } else {
+            boundary <- FALSE
+            crit <- qnorm(c((1 - level) / 2, 1 - (1 - level) / 2))
+          }
+          kappa_pars[i, 2:3] <- coef(mle)[1] + crit * mle$std.err[1]
+        }
+        if (3L %in% plots) {
+          shape_pars[i, 1] <- coef(mle)[3]
+          shape_pars[i, 2:3] <- coef(mle)[3] +
+            qnorm(c((1 - level) / 2, 1 - (1 - level) / 2)) * mle$std.err[3]
+        }
+      } else if (type == "profile") {
+        if (1L %in% plots) {
+          prof_kappa <- try(
+            egp.pll(
+              model = model,
+              param = "kappa",
+              mle = mle,
+              plot = FALSE,
+              thresh = thresh[i],
+              xdat = xdat
+            ),
+            silent = TRUE
           )
-        ),
-        silent = TRUE
+          if (!inherits(prof_kappa, "try-error")) {
+            boundary <- ifelse(
+              isTRUE(all.equal(
+                pmax(0, coef(mle)[1]),
+                0,
+                check.attributes = FALSE
+              )),
+              TRUE,
+              FALSE
+            )
+            kappa_pars[i, ] <- confint(
+              prof_kappa,
+              level = level,
+              boundary = boundary
+            )
+            if (boundary) {
+              kappa_pars[i, 1:2] <- 0
+            }
+          }
+        }
+        if (3L %in% plots) {
+          prof_shape <- try(
+            egp.pll(
+              model = model,
+              param = "shape",
+              mle = mle,
+              plot = FALSE,
+              thresh = thresh[i],
+              xdat = xdat
+            ),
+            silent = TRUE
+          )
+          if (!inherits(prof_shape, "try-error")) {
+            shape_pars[i, ] <- confint(prof_kappa, level = level)
+          }
+        }
+      }
+    }
+  }
+  if (!is.null(kappa_pars)) {
+    colnames(kappa_pars) <- c("estimate", "lower", "upper")
+    kappa_pars[, 2] <- pmax(0, kappa_pars[, 2])
+  }
+  if (!is.null(shape_pars)) {
+    colnames(shape_pars) <- c("estimate", "lower", "upper")
+  }
+  obj <- list(
+    thresh = thresh,
+    kappa = kappa_pars,
+    shape = shape_pars,
+    level = level,
+    model = model,
+    type = type
+  )
+  class(obj) <- c("mev_egp_tstab")
+  if (isTRUE(plot)) {
+    plot(obj, changepar)
+  }
+  return(invisible(obj))
+}
+#' @export
+plot.mev_egp_tstab <- function(x, ...) {
+  args <- list(...)
+  thresh <- x$thresh
+  kappa <- x$kappa
+  shape <- x$shape
+  if (!is.null(args$param)) {
+    param <- match.arg(
+      arg = args$param,
+      choices = c("shape", "kappa"),
+      several.ok = TRUE
+    )
+    if ("shape" %in% param & is.null(shape)) {
+      stop("Invalid plot choice: \"shape\" is missing from object.")
+    }
+    if ("kappa" %in% param & is.null(kappa)) {
+      stop("Invalid plot choice: \"kappa\" is missing from object")
+      ng <- length(param)
+    }
+  } else {
+    param <- c("kappa", "shape")[
+      !c(
+        is.null(kappa),
+        is.null(shape)
       )
-    }
-    if (!inherits(fit, "try-error")) {
-      pe[i, -4] <- fit$param
-      se[i, -4] <- fit$std.err
-      conv[i] <- ifelse(is.character(fit$convergence), 0, fit$convergence)
-      # Standard error for the modified scale via the delta-method
-      se[i, 4] <- sqrt(
-        cbind(1, -thresh[i]) %*%
-          solve(fit$hessian[-1, -1]) %*%
-          rbind(1, -thresh[i])
-      )[1]
-      # Modify point estimates for the modif scale (all at once)
-      pe[, 4] <- pe[, 2] - pe[, 3] * thresh
-    }
+    ]
+    ng <- length(param)
+  }
+  changepar <- args$changepar
+  if (is.null(changepar)) {
+    changepar <- TRUE
+  }
+  if (!(ng > 0)) {
+    stop("Invalid inputs")
   }
   # Graphics
-  plots <- plots[is.finite(plots)]
-  if (!isTRUE(all(conv == 0))) {
-    warning(paste("Convergence failed for", sum(conv != 0), "thresholds"))
-    plots <- NULL
+  if (isTRUE(changepar)) {
+    old.par <- par(no.readonly = TRUE)
+    on.exit(par(old.par))
+    par(
+      mfrow = c(1, ng),
+      mar = c(4.5, 4.5, 3.1, 0.1)
+    )
   }
-  if (length(plots) > 0 & !isTRUE(all(is.na(pe)))) {
-    plots <- sort(unique(plots))
-    if (!isTRUE(all(plots %in% 1:3))) {
-      stop(
-        "Invalid plot selection. Must be a vector of integers containing indices 1, 2 or 3."
+  for (i in seq_along(param)) {
+    pars <- get(param[i])
+    ylims <- range(pars, na.rm = TRUE)
+    plot(
+      x = thresh,
+      y = pars[, 1],
+      pch = 20,
+      xlab = "threshold",
+      bty = "l",
+      ylab = c(expression(kappa), expression(xi))[i],
+      ylim = ylims,
+      type = "n"
+    )
+    if (i == ng) {
+      text <- switch(
+        x$model,
+        "pt-beta" = "Papastathopoulos-Tawn's EGP 1",
+        "pt-gamma" = "Papastathopoulos-Tawn's EGP 2",
+        "pt-power" = "Papastathopoulos-Tawn's EGP 3 (power)",
+        "gj-tnorm" = "Gamet-Jalbert's truncated normal EGP",
+        "gj-beta" = "Gamet-Jalbert's beta EGP",
+        "logist" = "logistic EGP",
+        "exptilt" = "exponential tilting EGP"
       )
+      mtext(text, side = 3, cex = 0.9, line = 0.5, adj = 1)
     }
-    if (changepar) {
-      old.par <- par(no.readonly = TRUE)
-      on.exit(par(old.par))
-      par(mfrow = c(1, length(plots)), mar = c(4.5, 4.5, 3.1, 0.1))
+    if (param[i] == "kappa") {
+      abline(h = 1, lwd = 0.5, col = "gray20", lty = 2)
     }
-    for (i in plots) {
-      if (i == 2) {
-        i <- 4
-      } #Get modified scale
-      # Plotting devices limits
-      ylims = c(
-        min(pe[, i]) - qnorm(0.975) * max(se[, i]),
-        max(pe[, i]) + qnorm(0.975) * max(se[, i])
-      )
-      plot(
-        x = thresh,
-        y = pe[, i],
-        pch = 20,
-        xlab = "threshold",
-        bty = "l",
-        ylab = switch(
-          i,
-          expression(kappa),
-          expression(sigma),
-          expression(xi),
-          expression(tilde(sigma))
-        ),
-        ylim = ylims,
-        type = "n"
-      )
-      polygon(
-        x = c(thresh, rev(thresh)),
-        y = c(
-          pe[, i] - qnorm(0.975) * se[, i],
-          rev(pe[, i] + qnorm(0.975) * se[, i])
-        ),
-        col = "gray95",
-        border = FALSE
-      )
-      # if (i == min(plots)) {
-      # title(
-      #   paste0("Parameter stability plots for EGP", substr(model, 4, 4), ""),
-      #   outer = FALSE
-      # )
-      # }
-      if (i == max(plots)) {
-        text <- switch(
-          model,
-          "pt-beta" = "Papastathopoulos-Tawn's EGP 1",
-          "pt-gamma" = "Papastathopoulos-Tawn's EGP 2",
-          "pt-power" = "Papastathopoulos-Tawn's EGP 3 (power)",
-          "gj-tnorm" = "Gamet-Jonathan's truncated normal EGP",
-          "gj-beta" = "Gamet-Jonathan's beta EGP",
-          "logist" = "logistic EGP",
-          "exptilt" = "exponential tilting EGP"
-        )
-        mtext(text, side = 3, cex = 0.9, line = 0.5, adj = 1)
-      }
-      if (i == 1) {
-        abline(h = 1, lwd = 0.5, col = "gray20", lty = 2)
-      }
-      arrows(
-        x0 = thresh,
-        y0 = pe[, i] - qnorm(0.975) * se[, i],
-        y1 = pe[, i] + qnorm(0.975) * se[, i],
-        length = 0.05,
-        angle = 90,
-        code = 3
-      )
-      points(x = thresh, y = pe[, i], type = "p", pch = 20)
-    }
+    arrows(
+      x0 = thresh,
+      y0 = pars[, 2],
+      y1 = pars[, 3],
+      length = 0.05,
+      angle = 90,
+      code = 3
+    )
+    points(
+      x = thresh,
+      y = pars[, 1],
+      type = "p",
+      pch = 20
+    )
   }
-  pval <- 2 * pnorm(abs(pe[, 1] - 1) / se[, 1], lower.tail = FALSE)
-  return(invisible(list(
-    par = pe[, -4],
-    se = se[, -4],
-    model = model,
-    pval = pval,
-    conv = conv,
-    thresh = thresh
-  )))
 }
 
 
@@ -1152,9 +1408,10 @@ regp <- function(
     "exptilt" = qegp.G6(runif(n), kappa = kappa),
     "logist" = qegp.G7(runif(n), kappa = kappa)
   )
+  qgp(pg, loc = 0, scale = scale, shape = shape)
 }
 
-
+# TODO profile for return levels
 egp.pll <- function(
   psi,
   model = c(
@@ -1166,26 +1423,41 @@ egp.pll <- function(
     "exptilt",
     "logist"
   ),
-  param = c("shape", "kappa"),
+  param = c("kappa", "scale", "shape", "retlev"),
   mle = NULL,
   xdat,
-  threshold = NULL,
-  plot = FALSE
+  thresh = NULL,
+  plot = FALSE,
+  method = c("nlminb", "BFGS"),
+  p,
+  ...
 ) {
   param <- match.arg(param)
-  if (is.null(threshold)) {
-    threshold <- 0
+  method <- match.arg(method)
+  if (param == "retlev") {
+    if (missing(p)) {
+      stop("Tail probability \"p\" missing.")
+    }
+  }
+  if (is.null(thresh)) {
+    thresh <- 0
+    rate <- 1
   } else {
     stopifnot(
-      is.numeric(threshold),
-      length(threshold) == 1L
+      is.numeric(thresh),
+      length(thresh) == 1L
     )
-    stopifnot(threshold >= 0)
-    xdat <- xdat[xdat > threshold] - threshold
+    stopifnot(thresh >= 0)
+    xdata <- xdat[xdat > thresh] - thresh
+    rate <- length(xdata) / length(xdat)
   }
   if (is.null(mle)) {
     mle <- try(
-      fit.egp(xdat = xdat, thresh = threshold, model = model),
+      fit.egp(
+        xdat = xdata,
+        thresh = 0,
+        model = model
+      ),
       silent = TRUE
     )
     if (inherits(mle, "try-error")) {
@@ -1194,131 +1466,249 @@ egp.pll <- function(
   } else {
     stopifnot(inherits(mle, what = "mev_egp"))
   }
-  ind <- switch(param, kappa = 1L, shape = 3L)
-  coef_mle <- coef(mle)[ind]
-  se_mle <- sqrt(diag(vcov(mle))[ind])
-  if (missing(psi)) {
-    if (is.numeric(se_mle) & is.finite(se_mle)) {
-      psi <- seq(-3 * se_mle, 3 * se_mle, length.out = 55) + coef_mle
-    } else {
-      stop("Could not determine a suitable sequence of values for profiling.")
+  if (param != "retlev") {
+    ind <- switch(
+      param,
+      kappa = 1L,
+      scale = 2L,
+      shape = 3L
+    )
+    coef_mle <- coef(mle)[ind]
+    se_mle <- mle$std.err[ind]
+    if (missing(psi)) {
+      if (is.numeric(se_mle) & is.finite(se_mle)) {
+        psi <- coef_mle +
+          seq(
+            from = -3 * se_mle,
+            to = 3 * se_mle,
+            length.out = 55
+          )
+      } else {
+        stop("Could not determine a suitable sequence of values for profiling.")
+      }
     }
-  } else {
+    if (param %in% c("kappa", "scale")) {
+      psi <- psi[psi > 0]
+    } else if (param == "shape") {
+      psi <- psi[psi >= -1]
+    }
     psi <- sort(unique(c(psi, coef_mle)))
-  }
-  if (param == "kappa") {
-    psi <- psi[psi > 0]
-  } else if (param == "shape") {
-    psi <- psi[psi > -1]
-  }
-  mid <- which(psi == coef_mle)
-  # should be 28 for seq of psi if no zero values
-  pars <- matrix(nrow = length(psi), ncol = 3L)
-  pll <- numeric(length(psi))
-  pll[mid] <- -mle$nllh
-  pars[mid, ] <- coef(mle)
-  xmax <- max(xdat)
-  if (param == "kappa") {
-    nll_egp_kappa <- function(eta, psi, xdat, model) {
+    mid <- which(psi == coef_mle)
+    if (mid == 1L) {
+      psi <- c(
+        seq(0.01, coef_mle, length.out = 10L)[-10],
+        psi
+      )
+      mid <- which(psi == coef_mle)
+    }
+    # should be 28 for seq of psi if no zero values
+    pars <- matrix(nrow = length(psi), ncol = 3L)
+    colnames(pars) <- c("kappa", "scale", "shape")
+    pll <- numeric(length(psi))
+    pll[mid] <- -mle$nllh
+    pars[mid, ] <- coef(mle)
+    pars[, ind] <- psi
+    if (mid > 1) {
+      for (i in (mid - 1):1) {
+        fpar <- list(as.numeric(pars[i, ind]))
+        names(fpar) <- param
+        fit_sub <- fit.egp(
+          xdat = xdata,
+          thresh = 0,
+          model = model,
+          fpar = fpar,
+          start = c(sapply(
+            pars[i + 1, -ind],
+            function(x) {
+              list(x)
+            }
+          ))
+        )
+        pars[i, -ind] <- coef(fit_sub)
+        pll[i] <- -fit_sub$nllh
+      }
+    }
+    if (mid < length(psi)) {
+      for (i in (mid + 1):length(psi)) {
+        fpar <- list(as.numeric(pars[i, ind]))
+        names(fpar) <- param
+        fit_sub <- fit.egp(
+          xdat = xdata,
+          thresh = 0,
+          model = model,
+          fpar = fpar,
+          method = method,
+          start = c(sapply(
+            pars[i - 1, -ind],
+            function(x) {
+              list(x)
+            }
+          ))
+        )
+        pars[i, -ind] <- coef(fit_sub)
+        pll[i] <- -fit_sub$nllh
+      }
+    }
+
+    ans <- list(
+      mle = coef_mle,
+      psi.max = coef_mle,
+      param = param,
+      std.error = se_mle,
+      psi = psi,
+      pll = pll,
+      maxpll = -mle$nllh,
+      family = "egp",
+      threshold = thresh
+    )
+  } else if (param == "retlev") {
+    # Get point estimate and
+    # standard errors (via Delta-method)
+    mle_retlev <- qegp(
+      p = 1 - p / rate,
+      scale = coef(mle)[2],
+      kappa = coef(mle)[1],
+      shape = coef(mle)[3],
+      model = model
+    )
+    grad_g <- numDeriv::grad(
+      func = function(pars) {
+        qegp(
+          p = p / rate,
+          scale = pars[2],
+          shape = pars[3],
+          kappa = pars[1],
+          model = model,
+          lower.tail = FALSE
+        )
+      },
+      x = coef(mle)
+    )
+    se_retlev <- c(t(grad_g) %*% vcov(mle) %*% grad_g)
+    if (missing(psi)) {
+      psi <- mle_retlev +
+        seq(
+          from = -1.5 * se_retlev,
+          to = 4 * se_retlev,
+          length.out = 55L
+        )
+      psi <- psi[
+        psi >
+          quantile(
+            xdata,
+            probs = min(0.75, 1 - 2 * p)
+          )
+      ]
+    } else {
+      psi <- psi[psi > 0]
+    }
+
+    psi <- sort(unique(c(psi, mle_retlev)))
+    mid <- which(psi == mle_retlev)
+    pars <- matrix(nrow = length(psi), ncol = 3L)
+    colnames(pars) <- c("kappa", "retlev", "shape")
+    pll <- numeric(length(psi))
+    egp_pll_retlev <- function(
+      par,
+      retlev,
+      xdat,
+      model
+    ) {
+      scale <- retlev /
+        qegp(
+          p = 1 - p / rate,
+          scale = 1,
+          kappa = par[1],
+          shape = par[2],
+          model = model
+        )
       -egp.ll(
         xdat = xdat,
         thresh = 0,
-        par = c(psi, eta),
+        par = c(par[1], scale, par[2]),
         model = model
       )
     }
-    for (i in seq_len(mid - 1)) {
-      fit_const <- alabama::auglag(
-        par = pars[mid - i + 1, -1],
-        fn = nll_egp_kappa,
-        hin = function(par, ...) {
-          c(
-            par[1] - 1e-10,
-            par[2] + 1,
-            ifelse(par[2] < 0, -par[1] / par[2] - xmax, 1)
-          )
-        },
-        xdat = xdat,
-        psi = psi[mid - i],
-        model = model,
-        control.outer = list(trace = FALSE, method = "nlminb")
+    xmax <- max(xdata)
+    egp_retlev_hin <- function(
+      par,
+      retlev,
+      xdat,
+      model
+    ) {
+      scale <- retlev /
+        qegp(
+          p = 1 - p / rate,
+          scale = 1,
+          kappa = par[1],
+          shape = par[2],
+          model = model
+        )
+      params <- c(par[1], scale, par[2])
+      c(
+        params[1],
+        params[2],
+        params[3] + 1,
+        params[2] + params[3] * xmax
       )
-      pars[mid - i, ] <- c(psi[mid - i], fit_const$par)
-      pll[mid - i] <- -fit_const$value
     }
-    for (i in seq_len(length(psi) - mid)) {
-      fit_const <- alabama::auglag(
-        par = pars[mid + i - 1, -1],
-        fn = nll_egp_kappa,
-        hin = function(par, ...) {
-          c(
-            par[1] - 1e-10,
-            par[2] + 1,
-            ifelse(par[2] < 0, -par[1] / par[2] - xmax, 1)
-          )
-        },
-        xdat = xdat,
-        psi = psi[mid + i],
-        model = model,
-        control.outer = list(trace = FALSE, method = "nlminb")
-      )
-      pars[mid + i, ] <- c(psi[mid + i], fit_const$par)
-      pll[mid + i] <- -fit_const$value
-    }
-  } else if (param == "shape") {
-    nll_egp_shape <- function(eta, psi, xdat, model) {
-      -egp.ll(
-        xdat = xdat,
-        thresh = 0,
-        par = c(exp(eta), psi),
+    mid <- which(psi == mle_retlev)
+    ind <- 2L
+    pars[mid, -ind] <- coef(mle)[-2]
+    pars[, ind] <- psi
+    pll[mid] <- -mle$nllh
+    opt_fun <- function(pars, retlev) {
+      alabama::auglag(
+        par = pars,
+        fn = egp_pll_retlev,
+        retlev = retlev,
+        hin = egp_retlev_hin,
+        control.outer = list(method = method, trace = FALSE),
+        control.optim = switch(
+          method,
+          nlminb = list(
+            iter.max = 500L,
+            rel.tol = 1e-10,
+            step.min = 1e-10
+          ),
+          list(maxit = 1000L, reltol = 1e-10)
+        ),
+        xdat = xdata,
         model = model
       )
     }
-    for (i in seq_len(mid - 1)) {
-      fit_const <- alabama::auglag(
-        par = log(pars[mid - i + 1, -3]),
-        fn = nll_egp_shape,
-        hin = function(par, psi, ...) {
-          # TODO check if this is correct
-          c(ifelse(psi < 0, -exp(par[2]) / psi - xmax, 1))
-        },
-        xdat = xdat,
-        psi = psi[mid - i],
-        model = model,
-        control.outer = list(trace = FALSE, method = "nlminb")
-      )
-      pars[mid - i, ] <- c(exp(fit_const$par), psi[mid - i])
-      pll[mid - i] <- -fit_const$value
+    if (mid > 1) {
+      for (i in (mid - 1):1) {
+        opt <- opt_fun(pars = pars[i + 1, -ind], retlev = psi[i])
+        pars[i, -ind] <- opt$par
+        pll[i] <- -opt$value
+      }
     }
-    for (i in seq_len(length(psi) - mid)) {
-      fit_const <- alabama::auglag(
-        par = log(pars[mid + i - 1, -3]),
-        fn = nll_egp_shape,
-        hin = function(par, psi, ...) {
-          c(ifelse(psi < 0, -exp(par[2]) / psi - xmax, 1))
-        },
-        xdat = xdat,
-        psi = psi[mid + i],
-        model = model,
-        control.outer = list(trace = FALSE, method = "nlminb")
-      )
-      pars[mid + i, ] <- c(exp(fit_const$par), psi[mid + i])
-      pll[mid + i] <- -fit_const$value
+    for (i in (mid + 1):length(psi)) {
+      opt <- opt_fun(pars = pars[i - 1, -ind], retlev = psi[i])
+      pars[i, -ind] <- opt$par
+      pll[i] <- -opt$value
     }
+    coef_mle <- mle_retlev
+    ans <- list(
+      mle = coef_mle + thresh,
+      psi.max = coef_mle + thresh,
+      param = param,
+      std.error = se_retlev,
+      psi = psi + thresh,
+      pll = pll,
+      maxpll = -mle$nllh,
+      family = "egp",
+      threshold = thresh
+    )
   }
-  ans <- list(
-    mle = coef(mle),
-    psi.max = coef_mle,
-    param = param,
-    std.error = se_mle,
-    psi = psi,
-    pll = pll,
-    maxpll = -mle$nllh,
-    family = "egp",
-    threshold = threshold
+
+  ans$r <- sign(coef_mle - psi) *
+    sqrt(2 * (ans$maxpll - ans$pll))
+  ans$normal <- c(
+    coef = as.numeric(ans$psi.max),
+    "std.error" = as.numeric(ans$std.error)
   )
-  ans$r <- sign(coef_mle - psi) * sqrt(2 * (ans$maxpll - ans$pll))
-  ans$normal <- c(ans$psi.max, ans$std.error)
   class(ans) <- "eprof"
   if (isTRUE(plot)) {
     plot(ans)
