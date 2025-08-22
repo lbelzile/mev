@@ -19,7 +19,9 @@ Imports:
 Suggests: 
     boot,
     cobs,
+    eBsc,
     evd,
+    expint,
     knitr,
     MASS,
     mvPot (>= 0.1.4),

@@ -1,4 +1,3 @@
-
 #' Intensity function for the extremal Student model
 #'
 #' The intensity function includes the normalizing constants
@@ -19,10 +18,19 @@ intensXstud <- function(tdat, df, Sigma, cholPrecis = NULL) {
   }
   ldet <- -2 * sum(log(diag(A)))
 
-  N * ((1 - D) * log(df) - 0.5 * (D - 1) * log(pi) - 0.5 * ldet - lgamma((df + 1) / 2) + lgamma((df + D) / 2)) +
-    (1 / df - 1) * sum(log(abs(tdat))) - 0.5 * (df + D) * sum(log(apply(sign(tdat) * abs(tdat)^(1 / df), 1, function(v) {
-      tcrossprod(t(v) %*% A)
-    })))
+  N *
+    ((1 - D) *
+      log(df) -
+      0.5 * (D - 1) * log(pi) -
+      0.5 * ldet -
+      lgamma((df + 1) / 2) +
+      lgamma((df + D) / 2)) +
+    (1 / df - 1) * sum(log(abs(tdat))) -
+    0.5 *
+      (df + D) *
+      sum(log(apply(sign(tdat) * abs(tdat)^(1 / df), 1, function(v) {
+        tcrossprod(t(v) %*% A)
+      })))
   # faster with sweep?
 }
 
@@ -40,18 +48,25 @@ intensBR <- function(tdat, Lambda, cholPrecis = NULL) {
   D <- ncol(Lambda)
   N <- nrow(tdat)
   if (is.null(cholPrecis)) {
-    A <- backsolve(chol(Lambda2cov(Lambda = Lambda, co = 1, subA = -1)), diag(D - 1))
+    A <- backsolve(
+      chol(Lambda2cov(Lambda = Lambda, co = 1, subA = -1)),
+      diag(D - 1)
+    )
   } else {
     A <- cholPrecis
   }
   # Om <- t(apply(tdat, 1, function(x){log(x[-1])-log(x[1])+ 2*Lambda[1,-1]}))
   ldet <- -2 * sum(log(diag(A)))
   # mu = -diag(Sigma)/2 == -semivario(di)[-1,1] == -2*Lambda[1,-1]
-  N * (-0.5 * (D - 1) * log(pi) - 0.5 * ldet) - sum(log(tdat[, -1])) - 2 * sum(log(tdat[, 1])) - 0.5 * sum(apply(tdat, 1, function(x) {
-    tcrossprod(t(log(x[-1]) - log(x[1]) + Lambda[1, -1]) %*% A)
-  }))
+  N *
+    (-0.5 * (D - 1) * log(pi) - 0.5 * ldet) -
+    sum(log(tdat[, -1])) -
+    2 * sum(log(tdat[, 1])) -
+    0.5 *
+      sum(apply(tdat, 1, function(x) {
+        tcrossprod(t(log(x[-1]) - log(x[1]) + Lambda[1, -1]) %*% A)
+      }))
 }
-
 
 
 #' Jacobian of the transformation from generalized Pareto to unit Pareto distribution
@@ -66,10 +81,27 @@ intensBR <- function(tdat, Lambda, cholPrecis = NULL) {
 #' @return log-likelihood contribution for the Jacobian
 #' @keywords internal
 #' @export
-jac <- function(dat, loc = 0, scale, shape, lambdau = 1, censored) {
+jac_gpd_pareto <- function(
+  dat,
+  loc = 0,
+  scale,
+  shape,
+  lambdau = 1,
+  censored
+) {
   if (is.vector(dat)) {
-    stopifnot(all(is.vector(censored), length(censored) == length(dat), length(scale) == 1, length(shape) == 1))
-    return(-(length(dat) - sum(censored)) * log(scale) + (1 / shape - 1) * sum(log(1 + shape / scale * pmax(0, dat[!censored] - loc))))
+    stopifnot(all(
+      is.vector(censored),
+      length(censored) == length(dat),
+      length(scale) == 1,
+      length(shape) == 1
+    ))
+    return(
+      -(length(dat) - sum(censored)) *
+        log(scale) +
+        (1 / shape - 1) *
+          sum(log(1 + shape / scale * pmax(0, dat[!censored] - loc)))
+    )
   } else {
     dat <- as.matrix(dat)
     if (!is.matrix(dat)) {
@@ -86,7 +118,12 @@ jac <- function(dat, loc = 0, scale, shape, lambdau = 1, censored) {
     lambdau <- rep(lambdau, length.out = D)
     ll <- 0
     for (j in seq_len(D)) {
-      ll <- ll - (N - sum(censored[, j])) * (log(scale[j]) + log(lambdau[j])) + (1 / shape[j] - 1) * sum(log(1 + shape[j] / scale[j] * pmax(0, dat[!censored[, j], j] - loc[j])))
+      ll <- ll -
+        (N - sum(censored[, j])) * (log(scale[j]) + log(lambdau[j])) +
+        (1 / shape[j] - 1) *
+          sum(log(
+            1 + shape[j] / scale[j] * pmax(0, dat[!censored[, j], j] - loc[j])
+          ))
     }
     return(ll)
   }
@@ -95,13 +132,18 @@ jac <- function(dat, loc = 0, scale, shape, lambdau = 1, censored) {
 
 #' Transformation from the generalized Pareto to unit Pareto
 #'
-#' @inheritParams jac
+#' @inheritParams jac_gpd_pareto
 #' @return a vector or matrix of the same dimension as \code{dat} with unit Pareto observations
 #' @keywords internal
 #' @export
 gpdtopar <- function(dat, loc = 0, scale, shape, lambdau = 1) {
   if (is.vector(dat)) {
-   stopifnot(length(loc) == 1L, length(scale) == 1L, length(shape) == 1L, length(lambdau) == 1L)
+    stopifnot(
+      length(loc) == 1L,
+      length(scale) == 1L,
+      length(shape) == 1L,
+      length(lambdau) == 1L
+    )
     return((1 + shape / scale * pmax(dat - loc, 0))^(1 / shape) / lambdau)
   } else {
     loc <- rep(loc, length.out = ncol(dat))
@@ -109,7 +151,9 @@ gpdtopar <- function(dat, loc = 0, scale, shape, lambdau = 1) {
     shape <- rep(shape, length.out = ncol(dat))
     sapply(1:ncol(dat), function(j) {
       if (!isTRUE(all.equal(shape[j], 0))) {
-        pmax(0, (1 + shape[j] / scale[j] * (dat[, j] - loc[j])))^(1 / shape[j]) / lambdau[j]
+        pmax(0, (1 + shape[j] / scale[j] * (dat[, j] - loc[j])))^(1 /
+          shape[j]) /
+          lambdau[j]
       } else {
         exp((dat[, j] - loc[j]) / scale[j]) / lambdau[j]
       }
@@ -145,19 +189,20 @@ gpdtopar <- function(dat, loc = 0, scale, shape, lambdau = 1) {
 #' }
 #' @return the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
 #' @export
-likmgp <- function(dat,
-                   thresh,
-                   loc,
-                   scale,
-                   shape,
-                   par,
-                   model = c("log", "br", "xstud"),
-                   likt = c("mgp", "pois", "binom"),
-                   lambdau = 1,
-                   ...) {
+likmgp <- function(
+  dat,
+  thresh,
+  loc,
+  scale,
+  shape,
+  par,
+  model = c("log", "br", "xstud"),
+  likt = c("mgp", "pois", "binom"),
+  lambdau = 1,
+  ...
+) {
   # Rename arguments
-  stopifnot(length(thresh) == 1L,
-            is.numeric(thresh))
+  stopifnot(length(thresh) == 1L, is.numeric(thresh))
   tdat <- dat
   N <- nrow(dat)
   D <- ncol(dat)
@@ -191,7 +236,7 @@ likmgp <- function(dat,
     if (alpha < 0) {
       stop("Invalid \"par\" for \"log\" model.")
     }
-  }  else if (model == "neglog") {
+  } else if (model == "neglog") {
     alpha <- par$alpha
     if (is.null(alpha)) {
       stop("Invalid \"par\"")
@@ -206,15 +251,19 @@ likmgp <- function(dat,
   if (likt %in% c("pois", "binom")) {
     ntot <- ellips$ntot
     if (is.null(ntot)) {
-      stop("Poisson/binomial likelihood requires the total number of observations above the threshold")
+      stop(
+        "Poisson/binomial likelihood requires the total number of observations above the threshold"
+      )
     }
   }
-
 
   # Schur complement of submatrix \code{Sigma} excluding indices \code{ind}
   schurcompC <- function(Sigma, ind) {
     stopifnot(c(length(ind) > 0, ncol(Sigma) - length(ind) > 0))
-    Sigma[-ind, -ind, drop = FALSE] - Sigma[-ind, ind, drop = FALSE] %*% solve(Sigma[ind, ind, drop = FALSE]) %*% Sigma[ind, -ind, drop = FALSE]
+    Sigma[-ind, -ind, drop = FALSE] -
+      Sigma[-ind, ind, drop = FALSE] %*%
+        solve(Sigma[ind, ind, drop = FALSE]) %*%
+        Sigma[ind, -ind, drop = FALSE]
   }
   # Copy from ellipsis
   mmin <- ellips$mmin
@@ -226,7 +275,13 @@ likmgp <- function(dat,
     mmin <- apply(tdat, 2, min, na.rm = TRUE)
   }
   # Check for marginal constraints
-  if (!isTRUE(all(ifelse(xi < 0, A + (xi * mmax - B) > 0, A + (xi * mmin - B) > 0)))) {
+  if (
+    !isTRUE(all(ifelse(
+      xi < 0,
+      A + (xi * mmax - B) > 0,
+      A + (xi * mmin - B) > 0
+    )))
+  ) {
     return(-1e10)
   }
   # Compute marginal transformation and Jacobian
@@ -239,7 +294,8 @@ likmgp <- function(dat,
       tdat[, j] <- tdat[, j]^(1 / xi[j]) / lambdau[j]
       # Map thresholds
       tu[j] <- (1 + xi[j] * (thresh - B[j]) / A[j])^(1 / xi[j]) / lambdau[j]
-    } else { # xi is zero
+    } else {
+      # xi is zero
       tdat[, j] <- (dat[, j] - B[j]) / A[j] # this is a transformation onto log scale
       # Jacobian of marginal transformation - for both models
       jac <- jac + sum(tdat[, j])
@@ -248,31 +304,52 @@ likmgp <- function(dat,
       tu[j] <- exp((thresh - B[j]) / A[j]) / lambdau[j]
     }
   }
-  if(model %in% c("br", "xstud")){
-    if(ncol(dat) == 2L){
+  if (model %in% c("br", "xstud")) {
+    if (ncol(dat) == 2L) {
       stop("Function does not support bivariate data sets.")
     }
-  if (!requireNamespace("mvPot", quietly = TRUE)) {
-    stop(
-      "Package \"mvPot\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-  genvec1 <- ellips$genvec1
-  B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
-  antithetic <- ifelse(is.null(ellips$antithetic), FALSE, ellips$antithetic)
-  if (is.null(genvec1)) {
-    genvec1 <- mvPot::genVecQMC(B1, ncol(dat) - 1L)$genVec
-  }
-  M1 <- ifelse(is.null(ellips$M1), 1L, ellips$M1)
-  ncores <- ifelse(is.null(ellips$ncores), 1L, ellips$ncores)
+    if (!requireNamespace("mvPot", quietly = TRUE)) {
+      stop(
+        "Package \"mvPot\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    genvec1 <- ellips$genvec1
+    B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
+    antithetic <- ifelse(is.null(ellips$antithetic), FALSE, ellips$antithetic)
+    if (is.null(genvec1)) {
+      genvec1 <- mvPot::genVecQMC(B1, ncol(dat) - 1L)$genVec
+    }
+    M1 <- ifelse(is.null(ellips$M1), 1L, ellips$M1)
+    ncores <- ifelse(is.null(ellips$ncores), 1L, ellips$ncores)
   }
   if (model == "br") {
     intens <- intensBR(tdat = tdat, Lambda = Lambda)
-    exponentMeasure <- sum(.weightsBR(z = tu, Lambda = Lambda, prime = B1, method = "mvPot", genvec = genvec1, nrep = 1) / tu)
+    exponentMeasure <- sum(
+      .weightsBR(
+        z = tu,
+        Lambda = Lambda,
+        prime = B1,
+        method = "mvPot",
+        genvec = genvec1,
+        nrep = 1
+      ) /
+        tu
+    )
   } else if (model == "xstud") {
     intens <- intensXstud(tdat = tdat, df = df, Sigma = Sigma)
-    exponentMeasure <- sum(.weightsXstud(z = tu, Sigma = Sigma, df = df, method = "mvPot", prime = B1, genvec = genvec1, nrep = 1) / tu)
+    exponentMeasure <- sum(
+      .weightsXstud(
+        z = tu,
+        Sigma = Sigma,
+        df = df,
+        method = "mvPot",
+        prime = B1,
+        genvec = genvec1,
+        nrep = 1
+      ) /
+        tu
+    )
   } else if (model == "log") {
     lVfunlog <- function(x, alpha) {
       if (is.null(dim(x))) {
@@ -288,19 +365,24 @@ likmgp <- function(dat,
     }
     ldVfunlog <- function(x, alpha, lV) {
       falf <- lfalfacto1(alpha, ncol(x))
-      -length(dat) * log(alpha) + nrow(x) * falf -
-        (1 / alpha + 1) * sum(log(x)) + (alpha - ncol(x)) * lV / alpha
+      -length(dat) *
+        log(alpha) +
+        nrow(x) * falf -
+        (1 / alpha + 1) * sum(log(x)) +
+        (alpha - ncol(x)) * lV / alpha
     }
     intens <- ldVfunlog(x = tdat, alpha = alpha, lV = lVx)
     exponentMeasure <- exp(lVu)
-  } else if(model == "neglog"){
-    lVfun_neglog <- function(x, alpha){
+  } else if (model == "neglog") {
+    lVfun_neglog <- function(x, alpha) {
       stopifnot(is.vector(x))
       xa <- x^alpha
       p <- length(x)
       Vx <- 0
-      for(i in seq_len(p)){
-          Vx <- Vx + ifelse(i%%2 == 0, 1, -1)*sum(combn(xa, m = i, FUN = sum)^(-1/alpha))
+      for (i in seq_len(p)) {
+        Vx <- Vx +
+          ifelse(i %% 2 == 0, 1, -1) *
+            sum(combn(xa, m = i, FUN = sum)^(-1 / alpha))
       }
       return(log(Vx))
     }
@@ -309,16 +391,22 @@ likmgp <- function(dat,
     ldVfun_neglog <- function(x, alpha) {
       x <- as.matrix(x^alpha)
       p <- ncol(x)
-      prod(dim(x))*log(alpha) + nrow(x)*(lgamma(1/alpha + 1) - lgamma(1/alpha + p - 1)) +
-        (1 - 1/alpha)*log(sum(x)) - (1/alpha + p)*sum(log(rowSums(x)))
+      prod(dim(x)) *
+        log(alpha) +
+        nrow(x) * (lgamma(1 / alpha + 1) - lgamma(1 / alpha + p - 1)) +
+        (1 - 1 / alpha) * log(sum(x)) -
+        (1 / alpha + p) * sum(log(rowSums(x)))
     }
     intens <- ldVfun_neglog(x = tdat, alpha = alpha)
   }
-  res <- intens + jac + switch(likt,
-    mgp = -N * log(exponentMeasure),
-    pois = ntot * exponentMeasure + N * log(ntot) - lgamma(N + 1),
-    binom = -(ntot - N) * log(1 - exponentMeasure) + lchoose(ntot, N)
-  )
+  res <- intens +
+    jac +
+    switch(
+      likt,
+      mgp = -N * log(exponentMeasure),
+      pois = ntot * exponentMeasure + N * log(ntot) - lgamma(N + 1),
+      binom = -(ntot - N) * log(1 - exponentMeasure) + lchoose(ntot, N)
+    )
   attributes(res) <- list("expme" = exponentMeasure)
   res
 }
@@ -350,28 +438,32 @@ likmgp <- function(dat,
 #' @return the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
 #' @export
 #' @keywords internal
-clikmgp <- function(dat,
-                    thresh,
-                    mthresh = thresh,
-                    loc,
-                    scale,
-                    shape,
-                    par,
-                    model = c("log", "neglog", "br", "xstud"),
-                    likt = c("mgp", "pois", "binom"),
-                    lambdau = 1,
-                    ...) {
-  stopifnot(length(thresh) == 1L,
-            is.numeric(thresh),
-            is.finite(thresh),
-            is.finite(mthresh),
-            is.finite(scale),
-            is.finite(loc),
-            is.finite(shape),
-            is.finite(lambdau))
+clikmgp <- function(
+  dat,
+  thresh,
+  mthresh = thresh,
+  loc,
+  scale,
+  shape,
+  par,
+  model = c("log", "neglog", "br", "xstud"),
+  likt = c("mgp", "pois", "binom"),
+  lambdau = 1,
+  ...
+) {
+  stopifnot(
+    length(thresh) == 1L,
+    is.numeric(thresh),
+    is.finite(thresh),
+    is.finite(mthresh),
+    is.finite(scale),
+    is.finite(loc),
+    is.finite(shape),
+    is.finite(lambdau)
+  )
 
   # Rename arguments
-  if(is.data.frame(dat)){
+  if (is.data.frame(dat)) {
     dat <- as.matrix(dat)
   }
   stopifnot(all(mthresh <= thresh))
@@ -408,7 +500,7 @@ clikmgp <- function(dat,
     if (alpha < 0) {
       stop("Invalid \"par\" for \"log\" model.")
     }
-  }  else if (model == "neglog") {
+  } else if (model == "neglog") {
     alpha <- par$alpha
     if (is.null(alpha)) {
       stop("Invalid \"par\"")
@@ -426,7 +518,9 @@ clikmgp <- function(dat,
   if (likt == "pois") {
     ntot <- ellips$ntot
     if (is.null(ntot)) {
-      stop("Poisson likelihood requires the total number of observations above the mthreshold")
+      stop(
+        "Poisson likelihood requires the total number of observations above the mthreshold"
+      )
     }
   }
 
@@ -434,24 +528,30 @@ clikmgp <- function(dat,
   numAbovePerRow <- ellips$numAbovePerRow
   numAbovePerCol <- ellips$numAbovePerCol
   mmax <- ellips$mmax
-  if(model %in% c("br","xstud")){
-    if(ncol(dat) == 2L){
+  if (model %in% c("br", "xstud")) {
+    if (!requireNamespace("mvPot", quietly = TRUE)) {
+      stop(
+        "Package \"mvPot\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    if (ncol(dat) == 2L) {
       stop("Function does not support bivariate data sets.")
     }
-  genvec1 <- ellips$genvec1
-  genvec2 <- ellips$genvec2
-  B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
-  B2 <- ifelse(is.null(ellips$B2), 499L, ellips$B2)
-  antithetic <- ifelse(is.null(ellips$antithetic), FALSE, ellips$antithetic)
-  if (is.null(genvec1)) {
-    genvec1 <- mvPot::genVecQMC(B1, ncol(dat) - 1L)$genVec
-  }
-  if (is.null(genvec2)) {
-    genvec2 <- mvPot::genVecQMC(B2, ncol(dat) - 1L)$genVec
-  }
-  M1 <- ifelse(is.null(ellips$M1), 1L, ellips$M1)
-  M2 <- ifelse(is.null(ellips$M2), 1L, ellips$M2)
-  ncores <- ifelse(is.null(ellips$ncores), 1L, ellips$ncores)
+    genvec1 <- ellips$genvec1
+    genvec2 <- ellips$genvec2
+    B1 <- ifelse(is.null(ellips$B1), 1009L, ellips$B1)
+    B2 <- ifelse(is.null(ellips$B2), 499L, ellips$B2)
+    antithetic <- ifelse(is.null(ellips$antithetic), FALSE, ellips$antithetic)
+    if (is.null(genvec1)) {
+      genvec1 <- mvPot::genVecQMC(B1, ncol(dat) - 1L)$genVec
+    }
+    if (is.null(genvec2)) {
+      genvec2 <- mvPot::genVecQMC(B2, ncol(dat) - 1L)$genVec
+    }
+    M1 <- ifelse(is.null(ellips$M1), 1L, ellips$M1)
+    M2 <- ifelse(is.null(ellips$M2), 1L, ellips$M2)
+    ncores <- ifelse(is.null(ellips$ncores), 1L, ellips$ncores)
   }
   censored <- ellips$censored
   if (is.null(censored)) {
@@ -464,7 +564,10 @@ clikmgp <- function(dat,
   # Schur complement of submatrix \code{Sigma} excluding indices \code{ind}
   schurcompC <- function(Sigma, ind) {
     stopifnot(c(length(ind) > 0, ncol(Sigma) - length(ind) > 0))
-    Sigma[-ind, -ind, drop = FALSE] - Sigma[-ind, ind, drop = FALSE] %*% solve(Sigma[ind, ind, drop = FALSE]) %*% Sigma[ind, -ind, drop = FALSE]
+    Sigma[-ind, -ind, drop = FALSE] -
+      Sigma[-ind, ind, drop = FALSE] %*%
+        solve(Sigma[ind, ind, drop = FALSE]) %*%
+        Sigma[ind, -ind, drop = FALSE]
   }
 
   if (is.null(numAbovePerRow)) {
@@ -498,9 +601,11 @@ clikmgp <- function(dat,
         tdat[, j] <- tdat[, j]^(1 / xi[j]) / lambdau[j]
       }
       # Map mthresholds
-      yth[j] <- (1 + xi[j] * (mthresh[j] - B[j]) / A[j])^(1 / xi[j]) / lambdau[j]
+      yth[j] <- (1 + xi[j] * (mthresh[j] - B[j]) / A[j])^(1 / xi[j]) /
+        lambdau[j]
       tu[j] <- (1 + xi[j] * (thresh - B[j]) / A[j])^(1 / xi[j]) / lambdau[j]
-    } else { # xi is zero
+    } else {
+      # xi is zero
       tdat[, j] <- (dat[, j] - B[j]) / A[j] # this is a transformation onto log scale
       # Jacobian of marginal transformation - for both models
       jac <- jac + sum(tdat[!censored[, j], j])
@@ -514,7 +619,7 @@ clikmgp <- function(dat,
     }
   }
   # Dependence structure
-  if (model %in% c("br","xstud")) {
+  if (model %in% c("br", "xstud")) {
     likelihood_xstud <- function(i) {
       if (i < N + 1) {
         k <- numAbovePerRow[i]
@@ -524,35 +629,56 @@ clikmgp <- function(dat,
           cholS <- chol(Sigma[ab, ab])
           logdetS <- 2 * sum(log(diag(cholS)))
           Siginv <- chol2inv(cholS)
-          schurcomp <- Sigma[-ab, -ab, drop = FALSE] - Sigma[-ab, ab, drop = FALSE] %*% Siginv %*% Sigma[ab, -ab, drop = FALSE]
+          schurcomp <- Sigma[-ab, -ab, drop = FALSE] -
+            Sigma[-ab, ab, drop = FALSE] %*%
+              Siginv %*%
+              Sigma[ab, -ab, drop = FALSE]
           vecS <- Siginv %*% Zin
         } else {
           logdetS <- log(Sigma[ab, ab])
           vecS <- Zin / Sigma[ab, ab]
-          schurcomp <- Sigma[-ab, -ab, drop = FALSE] - Sigma[-ab, ab, drop = FALSE] %*% Sigma[ab, -ab, drop = FALSE]
+          schurcomp <- Sigma[-ab, -ab, drop = FALSE] -
+            Sigma[-ab, ab, drop = FALSE] %*% Sigma[ab, -ab, drop = FALSE]
           # faster than crossprod
         }
         kst <- c(Zin %*% vecS)
         muC <- c(Sigma[-ab, ab, drop = FALSE] %*% vecS)
         if (D - numAbovePerRow[i] > 0) {
           contribBelow <- mvPot::mvTProbQuasiMonteCarlo(
-            p = B2, upperBound = yth[-ab] - muC,
-            cov = kst / (length(ab) + df) * schurcomp, nu = df + length(ab),
-            genVec = genvec2[1:length(muC)], nrep = M2, antithetic = antithetic
+            p = B2,
+            upperBound = yth[-ab] - muC,
+            cov = kst / (length(ab) + df) * schurcomp,
+            nu = df + length(ab),
+            genVec = genvec2[1:length(muC)],
+            nrep = M2,
+            antithetic = antithetic
           )[1]
         } else {
           contribBelow <- 1
         } # fixed 19-04-2019 to account for the fact that tdat^(1/df) already
-        contribAbove <- -(k + df) / 2 * log(kst) + (1 - df) * sum(log(Zin)) + lgamma((df + k) / 2) -
-          lgamma((df + 1) / 2) - 0.5 * logdetS - (k - 1) * log(df) - (k - 1) / 2 * log(pi)
+        contribAbove <- -(k + df) /
+          2 *
+          log(kst) +
+          (1 - df) * sum(log(Zin)) +
+          lgamma((df + k) / 2) -
+          lgamma((df + 1) / 2) -
+          0.5 * logdetS -
+          (k - 1) * log(df) -
+          (k - 1) / 2 * log(pi)
         return(log(contribBelow) + contribAbove)
       } else if (i > N) {
         # Compute exponent measure
         j <- i - N
         mvPot::mvTProbQuasiMonteCarlo(
-          p = B1, upperBound = (exp((log(tu[-j]) - log(tu[j])) / df) - Sigma[-j, j]),
-          cov = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE]) / (df + 1),
-          nu = df + 1, genVec = genvec1, nrep = M1, antithetic = antithetic
+          p = B1,
+          upperBound = (exp((log(tu[-j]) - log(tu[j])) / df) - Sigma[-j, j]),
+          cov = (Sigma[-j, -j] -
+            Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE]) /
+            (df + 1),
+          nu = df + 1,
+          genVec = genvec1,
+          nrep = M1,
+          antithetic = antithetic
         )[1]
       }
     }
@@ -568,39 +694,90 @@ clikmgp <- function(dat,
         # remove first non-censored, shift indices by 1
         be2 <- be - I(be > ab[1])
         ab2 <- ab[-1] - I(ab[-1] > ab[1])
-        SigmaD <- outer(2 * Lambda[ab[1], -ab[1]], 2 * Lambda[ab[1], -ab[1]], "+") - 2 * Lambda[-ab[1], -ab[1]]
+        SigmaD <- outer(
+          2 * Lambda[ab[1], -ab[1]],
+          2 * Lambda[ab[1], -ab[1]],
+          "+"
+        ) -
+          2 * Lambda[-ab[1], -ab[1]]
         muD <- -2 * Lambda[ab[1], -ab[1]] + tdat[i, ab[1]]
-        if (numAbovePerRow[i] == 1) { # all but one observation fall below mthreshold, so censored
-          contribBelow <- mvPot::mvtNormQuasiMonteCarlo(p = B2, upperBound = log(yth[-ab]) - muD, cov = SigmaD, genVec = genvec2[1:length(muD)], nrep = M2, antithetic = antithetic)[1]
+        if (numAbovePerRow[i] == 1) {
+          # all but one observation fall below mthreshold, so censored
+          contribBelow <- mvPot::mvtNormQuasiMonteCarlo(
+            p = B2,
+            upperBound = log(yth[-ab]) - muD,
+            cov = SigmaD,
+            genVec = genvec2[1:length(muD)],
+            nrep = M2,
+            antithetic = antithetic
+          )[1]
           logcontribAbove <- -2 * tdat[i, ab[1]]
-        } else if (numAbovePerRow[i] == D) { # all above!
+        } else if (numAbovePerRow[i] == D) {
+          # all above!
           contribBelow <- 1
-          logcontribAbove <- -tdat[i, ab[1]] - sum(tdat[i, ]) + .dmvnorm_arma(x = tdat[i, ab[-1], drop = FALSE], mean = muD, sigma = SigmaD, log = TRUE)
+          logcontribAbove <- -tdat[i, ab[1]] -
+            sum(tdat[i, ]) +
+            .dmvnorm_arma(
+              x = tdat[i, ab[-1], drop = FALSE],
+              mean = muD,
+              sigma = SigmaD,
+              log = TRUE
+            )
         } else {
           # return(- sum(tdat[i,ab]) - tdat[i,ab[1]] + dcondmvtnorm(x = tdat[i,-ab[1]], ind = be2, ubound = log(yth[-ab]), mu = muD, Sigma = SigmaD, model = "norm", n = 500, log = TRUE))
-          logcontribAbove <- -sum(tdat[i, ab]) - tdat[i, ab[1]] +
-            .dmvnorm_arma(x = tdat[i, ab[-1], drop = FALSE], mean = as.vector(muD[ab2]), log = TRUE, sigma = as.matrix(SigmaD[ab2, ab2]))
-          muC <- c(muD[be2] + SigmaD[be2, ab2] %*% solve(SigmaD[ab2, ab2]) %*% (tdat[i, ab[-1]] - muD[ab2]))
+          logcontribAbove <- -sum(tdat[i, ab]) -
+            tdat[i, ab[1]] +
+            .dmvnorm_arma(
+              x = tdat[i, ab[-1], drop = FALSE],
+              mean = as.vector(muD[ab2]),
+              log = TRUE,
+              sigma = as.matrix(SigmaD[ab2, ab2])
+            )
+          muC <- c(
+            muD[be2] +
+              SigmaD[be2, ab2] %*%
+                solve(SigmaD[ab2, ab2]) %*%
+                (tdat[i, ab[-1]] - muD[ab2])
+          )
           contribBelow <- mvPot::mvtNormQuasiMonteCarlo(
-            p = B2, upperBound = log(yth[-ab]) - muC, cov = schurcompC(SigmaD, ab2),
-            genVec = genvec2[1:length(muC)], nrep = M2, antithetic = antithetic
+            p = B2,
+            upperBound = log(yth[-ab]) - muC,
+            cov = schurcompC(SigmaD, ab2),
+            genVec = genvec2[1:length(muC)],
+            nrep = M2,
+            antithetic = antithetic
           )[1]
         }
         return(log(contribBelow) + logcontribAbove)
       } else if (i > N) {
         # Compute exponent measure
         j <- i - N
-        mvPot::mvtNormQuasiMonteCarlo(p = B1, upperBound = (2 * Lambda[-j, j] + log(tu[-j]) - log(tu[j])), cov = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]), genVec = genvec1[1:(D - 1)], nrep = M1, antithetic = antithetic)[1]
+        mvPot::mvtNormQuasiMonteCarlo(
+          p = B1,
+          upperBound = (2 * Lambda[-j, j] + log(tu[-j]) - log(tu[j])),
+          cov = 2 *
+            (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]),
+          genVec = genvec1[1:(D - 1)],
+          nrep = M1,
+          antithetic = antithetic
+        )[1]
       }
     }
     if (ncores > 1 && !requireNamespace("parallel", quietly = TRUE)) {
-      pro <- parallel::mclapply(X = 1:(D + N), FUN = switch(model, br = likelihood_br, xstud = likelihood_xstud))
+      pro <- parallel::mclapply(
+        X = 1:(D + N),
+        FUN = switch(model, br = likelihood_br, xstud = likelihood_xstud)
+      )
     } else {
-      pro <- lapply(X = 1:(D + N), FUN = switch(model, br = likelihood_br, xstud = likelihood_xstud))
+      pro <- lapply(
+        X = 1:(D + N),
+        FUN = switch(model, br = likelihood_br, xstud = likelihood_xstud)
+      )
     }
     exponentMeasure <- sum(unlist(pro)[(1 + N):(D + N)] / tu)
     intens <- sum(unlist(pro)[1:N])
-  } else if(model == "log") { # Logistic (Gumbel) multivariate model
+  } else if (model == "log") {
+    # Logistic (Gumbel) multivariate model
     #tdat <- tdat[,numAbovePerRow>0]
     lVfunlog <- function(x, alpha) {
       if (is.null(dim(x))) {
@@ -618,42 +795,62 @@ clikmgp <- function(dat,
       sum(log(abs(seq(x, x - s + 1, by = -1))))
     }
     ldVfunlog <- function(x, censored, alpha, numAbovePerRow, lV) {
-      falf <- c(log(alpha), sapply(2:D, function(s) {
-        lfalfacto1(alpha, s)
-      }))
-      -sum(numAbovePerRow) * log(alpha) + sum(falf[numAbovePerRow]) -
-        (1 / alpha + 1) * sum(log(x[!censored])) + sum((alpha - numAbovePerRow) * lV) / alpha
+      falf <- c(
+        log(alpha),
+        sapply(2:D, function(s) {
+          lfalfacto1(alpha, s)
+        })
+      )
+      -sum(numAbovePerRow) *
+        log(alpha) +
+        sum(falf[numAbovePerRow]) -
+        (1 / alpha + 1) * sum(log(x[!censored])) +
+        sum((alpha - numAbovePerRow) * lV) / alpha
     }
-    intens <- ldVfunlog(x = cdat, censored = censored, alpha = alpha, numAbovePerRow = numAbovePerRow, lV = lVx)
+    intens <- ldVfunlog(
+      x = cdat,
+      censored = censored,
+      alpha = alpha,
+      numAbovePerRow = numAbovePerRow,
+      lV = lVx
+    )
     exponentMeasure <- exp(lVu)
-  } else if(model == "neglog"){
+  } else if (model == "neglog") {
     cdat <- t(apply(tdat, 1, function(x) {
       pmax(yth, x)
     }))
-    cdat <- exp(alpha*log(cdat))
+    cdat <- exp(alpha * log(cdat))
     # Standardize otherwise numerical overflow
     # TODO unstandardize inputs for comparison
     #  with other models
 
     # Parametrization that follows is in the
     # 'mev' vignette with alpha > 0
-    Vfunneglog <- function(x, alpha){
-      xa <- exp(alpha*log(x))
-      if (is.null(dim(x))) { # vector
+    Vfunneglog <- function(x, alpha) {
+      xa <- exp(alpha * log(x))
+      if (is.null(dim(x))) {
+        # vector
         p <- length(x)
         Vx <- 0
-        for(i in seq_len(p)){
-          Vx <- Vx + ifelse(i%%2 == 0, -1, 1)*
-            sum(combn(xa, m = i, FUN = sum)^(-1/alpha))
+        for (i in seq_len(p)) {
+          Vx <- Vx +
+            ifelse(i %% 2 == 0, -1, 1) *
+              sum(combn(xa, m = i, FUN = sum)^(-1 / alpha))
         }
-      } else { # matrix
+      } else {
+        # matrix
         p <- ncol(xa)
         Vx <- rep(0, nrow(xa))
-        for(i in seq_len(p)){
-          Vx <- Vx + ifelse(i%%2 == 0, -1, 1) *
-            rowSums(apply(
-              combn(seq_len(p), i), 2, function(ind){
-                rowSums(xa[,ind, drop = FALSE])^(1/alpha)}))
+        for (i in seq_len(p)) {
+          Vx <- Vx +
+            ifelse(i %% 2 == 0, -1, 1) *
+              rowSums(apply(
+                combn(seq_len(p), i),
+                2,
+                function(ind) {
+                  rowSums(xa[, ind, drop = FALSE])^(1 / alpha)
+                }
+              ))
         }
       }
       return(Vx)
@@ -664,68 +861,79 @@ clikmgp <- function(dat,
     # alpha positive shape parameter
     # numAbovePerRow vector of the row sums of \code{censored}.
     ldVfunneglog <- function(x, censored, alpha, numAbovePerRow) {
-      lssum <- function(x, pow = 1){
+      lssum <- function(x, pow = 1) {
         bi <- log(abs(x))
         # This is from Lemma 5.1(2) of
         # Hofert, Maechler and McNeil
         # First, we break all terms individually (no summing)
         # then, we use min instead of max (because pow will be negative, so min^pow is the max)
         # then, we use pow
-         if(pow < 0){
-           pow*min(bi) + log(sum(sign(xt)*exp(pow*(bi - min(bi)))))
-         } else{
-          pow*max(bi) + log(sum(sign(x)*exp(pow*(bi - max(bi)))))
-         }
+        if (pow < 0) {
+          pow * min(bi) + log(sum(sign(xt) * exp(pow * (bi - min(bi)))))
+        } else {
+          pow * max(bi) + log(sum(sign(x) * exp(pow * (bi - max(bi)))))
+        }
       }
       x <- as.matrix(x)
       p <- ncol(x)
-      res <- sum(numAbovePerRow)*log(alpha) - nrow(x)*lgamma(1/alpha) + sum(lgamma(1/alpha + numAbovePerRow)) +
-        (1 - 1/alpha)*sum(log(x[!censored]))
+      res <- sum(numAbovePerRow) *
+        log(alpha) -
+        nrow(x) * lgamma(1 / alpha) +
+        sum(lgamma(1 / alpha + numAbovePerRow)) +
+        (1 - 1 / alpha) * sum(log(x[!censored]))
       # Compute individual contributions
-       for(i in seq_len(nrow(x))){
-         sumAbove <- sum(x[i,!censored[i,]])
+      for (i in seq_len(nrow(x))) {
+        sumAbove <- sum(x[i, !censored[i, ]])
         # if there are censored components
-        if(numAbovePerRow[i] == p){
-          res <- res + (-1/alpha - p)*log(sumAbove)
-        } else if(numAbovePerRow[i] < p){
-      #     xt <- c(
-      #       ifelse(numAbovePerRow[i]%%2 == 0, -1, 1) * sumAbove,
-      #     unlist(sapply(
-      #               seq_len(p - numAbovePerRow[i]),
-      #                    function(j){
-      #                      rep(x = ifelse((j - numAbovePerRow[i])%%2 == 0, -1, 1),
-      #                          length.out = choose(n = p - numAbovePerRow[i], j))*
-      # (combn(x[i,censored[i,]], j, FUN = sum) + sumAbove)
-      #                      })))
-          xt <- c(sumAbove*
-            ifelse(numAbovePerRow[i]%%2 == 0, -1, 1),
+        if (numAbovePerRow[i] == p) {
+          res <- res + (-1 / alpha - p) * log(sumAbove)
+        } else if (numAbovePerRow[i] < p) {
+          #     xt <- c(
+          #       ifelse(numAbovePerRow[i]%%2 == 0, -1, 1) * sumAbove,
+          #     unlist(sapply(
+          #               seq_len(p - numAbovePerRow[i]),
+          #                    function(j){
+          #                      rep(x = ifelse((j - numAbovePerRow[i])%%2 == 0, -1, 1),
+          #                          length.out = choose(n = p - numAbovePerRow[i], j))*
+          # (combn(x[i,censored[i,]], j, FUN = sum) + sumAbove)
+          #                      })))
+          xt <- c(
+            sumAbove *
+              ifelse(numAbovePerRow[i] %% 2 == 0, -1, 1),
             unlist(sapply(
               seq_len(p - numAbovePerRow[i]),
-              function(j){
-                ifelse((j - numAbovePerRow[i])%%2 == 0, -1, 1)*
-                  (combn(x[i,censored[i,]], j, FUN = sum) + sumAbove)
-              #     (-1/alpha - numAbovePerRow[i])*log1p(exp(log(combn(x[i,censored[i,]], j, FUN = sum)) - log(sumAbove))))
-               })))
-     res <- res + lssum(xt, (-1/alpha - numAbovePerRow[i]))
+              function(j) {
+                ifelse((j - numAbovePerRow[i]) %% 2 == 0, -1, 1) *
+                  (combn(x[i, censored[i, ]], j, FUN = sum) + sumAbove)
+                #     (-1/alpha - numAbovePerRow[i])*log1p(exp(log(combn(x[i,censored[i,]], j, FUN = sum)) - log(sumAbove))))
+              }
+            ))
+          )
+          res <- res + lssum(xt, (-1 / alpha - numAbovePerRow[i]))
           # print(lssum(xt, (-1/alpha - numAbovePerRow[i])))
         }
       }
       return(res)
     }
 
-    intens <- ldVfunneglog(x = cdat,
-                           censored = censored,
-                           alpha = alpha,
-                           numAbovePerRow = numAbovePerRow)
+    intens <- ldVfunneglog(
+      x = cdat,
+      censored = censored,
+      alpha = alpha,
+      numAbovePerRow = numAbovePerRow
+    )
     # Undo Jacobian of transformation
     # browser()
     intens <- -length(cdat) + intens
   }
-  res <- jac + intens + switch(likt,
-    mgp = -N * log(exponentMeasure),
-    pois = -ntot * exponentMeasure + N * log(ntot) - lgamma(N + 1),
-    binom = -(ntot - N) * log(1 - exponentMeasure) + lchoose(ntot, N)
-  )
+  res <- jac +
+    intens +
+    switch(
+      likt,
+      mgp = -N * log(exponentMeasure),
+      pois = -ntot * exponentMeasure + N * log(ntot) - lgamma(N + 1),
+      binom = -(ntot - N) * log(1 - exponentMeasure) + lchoose(ntot, N)
+    )
   attributes(res) <- list("expme" = exponentMeasure)
   return(res)
 }
@@ -759,11 +967,21 @@ clikmgp <- function(dat,
 #' Sigma <- outer(Vmat[-1, 1], Vmat[1, -1], "+") - Vmat[-1, -1]
 #' expme(z = rep(1, ncol(Lambda)), par = list(Lambda = Lambda), model = "br", method = "mvPot")
 #' }
-expme <- function(z, par, model = c("log", "neglog", "hr", "br", "xstud"),
-                  method = c("TruncatedNormal", "mvtnorm", "mvPot")) {
-  model <- match.arg(model[1], choices = c("log", "neglog", "hr", "br", "xstud"))
+expme <- function(
+  z,
+  par,
+  model = c("log", "neglog", "hr", "br", "xstud"),
+  method = c("TruncatedNormal", "mvtnorm", "mvPot")
+) {
+  model <- match.arg(
+    model[1],
+    choices = c("log", "neglog", "hr", "br", "xstud")
+  )
   if (model != "log") {
-    method <- match.arg(method[1], choices = c("mvtnorm", "mvPot", "TruncatedNormal"))
+    method <- match.arg(
+      method[1],
+      choices = c("mvtnorm", "mvPot", "TruncatedNormal")
+    )
     if (method == "mvtnorm") {
       if (!requireNamespace("mvtnorm", quietly = TRUE)) {
         warning("\"mvtnorm\" package is not installed.")
@@ -774,14 +992,14 @@ expme <- function(z, par, model = c("log", "neglog", "hr", "br", "xstud"),
         warning("\"mvPot\" package is not installed.")
         method <- "TruncatedNormal"
       }
-    } else if(method == "TruncatedNormal"){
+    } else if (method == "TruncatedNormal") {
       if (!requireNamespace("TruncatedNormal", quietly = TRUE)) {
         stop(
           "Package \"TruncatedNormal\" must be installed to use this function.",
           call. = FALSE
         )
       }
-      if(!utils::packageVersion("TruncatedNormal") > "1.1"){
+      if (!utils::packageVersion("TruncatedNormal") > "1.1") {
         stop(
           "Please update package \"TruncatedNormal\" to a more recent version.",
           call. = FALSE
@@ -790,14 +1008,14 @@ expme <- function(z, par, model = c("log", "neglog", "hr", "br", "xstud"),
     }
   }
   if (model == "log") {
-  if(is.numeric(par)){
-    alpha <- par
-  } else if(is.list(par)){
-    alpha <- par$alpha
-    if (is.null(alpha)) {
-      stop("Missing arguments for the logistic model")
+    if (is.numeric(par)) {
+      alpha <- par
+    } else if (is.list(par)) {
+      alpha <- par$alpha
+      if (is.null(alpha)) {
+        stop("Missing arguments for the logistic model")
+      }
     }
-  }
     if (any(c(alpha < 0, length(alpha) > 1))) {
       stop("Invalid or missing arguments for the logistic model")
     }
@@ -813,41 +1031,49 @@ expme <- function(z, par, model = c("log", "neglog", "hr", "br", "xstud"),
     }
     return(exp(lVfunlog(z, alpha)))
   } else if (model == "neglog") {
-    if(is.numeric(par)){
-    alpha <- par
-  } else if(is.list(par)){
-    alpha <- par$alpha
-    if (is.null(alpha)) {
-      stop("Missing arguments for the logistic model")
+    if (is.numeric(par)) {
+      alpha <- par
+    } else if (is.list(par)) {
+      alpha <- par$alpha
+      if (is.null(alpha)) {
+        stop("Missing arguments for the logistic model")
+      }
     }
-  }
     alpha <- alpha[1]
     if (alpha < 0) {
       alpha <- -alpha
     }
-    Vfunneglog <- function(x, alpha){
-      xa <- exp(alpha*log(x))
-      if (is.null(dim(x))) { # vector
+    Vfunneglog <- function(x, alpha) {
+      xa <- exp(alpha * log(x))
+      if (is.null(dim(x))) {
+        # vector
         p <- length(x)
         Vx <- 0
-        for(i in seq_len(p)){
-          Vx <- Vx + ifelse(i%%2 == 0, -1, 1)*
-            sum(combn(xa, m = i, FUN = sum)^(-1/alpha))
+        for (i in seq_len(p)) {
+          Vx <- Vx +
+            ifelse(i %% 2 == 0, -1, 1) *
+              sum(combn(xa, m = i, FUN = sum)^(-1 / alpha))
         }
-      } else { # matrix
+      } else {
+        # matrix
         p <- ncol(xa)
         Vx <- rep(0, nrow(xa))
-        for(i in seq_len(p)){
-          Vx <- Vx + ifelse(i%%2 == 0, -1, 1) *
-            rowSums(apply(
-              combn(seq_len(p), i), 2, function(ind){
-                rowSums(xa[,ind, drop = FALSE])^(1/alpha)}))
+        for (i in seq_len(p)) {
+          Vx <- Vx +
+            ifelse(i %% 2 == 0, -1, 1) *
+              rowSums(apply(
+                combn(seq_len(p), i),
+                2,
+                function(ind) {
+                  rowSums(xa[, ind, drop = FALSE])^(1 / alpha)
+                }
+              ))
         }
       }
       return(Vx)
     }
     return(Vfunneglog(z, alpha))
-    } else if (model == "hr") {
+  } else if (model == "hr") {
     m <- par$m
     Sigma <- par$Sigma
     if (any(c(is.null(m), is.null(Sigma), ncol(Sigma) != nrow(Sigma)))) {
@@ -879,22 +1105,40 @@ expme <- function(z, par, model = c("log", "neglog", "hr", "br", "xstud"),
   }
 }
 
-expmeBR <- function(z, Lambda, method = c("mvtnorm", "mvPot", "TruncatedNormal")) {
+expmeBR <- function(
+  z,
+  Lambda,
+  method = c("mvtnorm", "mvPot", "TruncatedNormal")
+) {
   weights <- .weightsBR(z = z, Lambda = Lambda, method = method)
   sum(weights / z)
 }
 
-expmeHR <- function(z, Q, L, method = c("mvtnorm", "mvPot", "TruncatedNormal")) {
+expmeHR <- function(
+  z,
+  Q,
+  L,
+  method = c("mvtnorm", "mvPot", "TruncatedNormal")
+) {
   weights <- .weightsHR(z = z, Q = Q, L = L, method = method)
   sum(weights / z)
 }
 
-expmeBR_WT <- function(z, Sigma, method = c("mvtnorm", "mvPot", "TruncatedNormal")) {
+expmeBR_WT <- function(
+  z,
+  Sigma,
+  method = c("mvtnorm", "mvPot", "TruncatedNormal")
+) {
   weights <- .weightsBR_WT(z = z, Sigma = Sigma, method = method)
   sum(weights / z)
 }
 
-expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNormal")) {
+expmeXS <- function(
+  z,
+  Sigma,
+  df,
+  method = c("mvtnorm", "mvPot", "TruncatedNormal")
+) {
   D <- length(z)
   stopifnot(ncol(Sigma) == D | nrow(Sigma) == D | df > 0)
   if (!isTRUE(all.equal(as.vector(diag(Sigma)), rep(1, D)))) {
@@ -908,8 +1152,16 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
   sum(weights / z)
 }
 
-.weightsHR <- function(z, L, Q, method = c("mvtnorm", "mvPot", "TruncatedNormal")) {
-  method <- match.arg(method, choices = c("mvtnorm", "mvPot", "TruncatedNormal"))[1]
+.weightsHR <- function(
+  z,
+  L,
+  Q,
+  method = c("mvtnorm", "mvPot", "TruncatedNormal")
+) {
+  method <- match.arg(
+    method,
+    choices = c("mvtnorm", "mvPot", "TruncatedNormal")
+  )[1]
   D <- ncol(Q)
   weights <- rep(0, D)
   if (method == "mvPot") {
@@ -917,17 +1169,25 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
   }
   for (j in 1:D) {
     Qmiinv <- solve(Q[-j, -j])
-    weights[j] <- det(Qmiinv)^(0.5) * exp(0.5 * t(L[-j]) %*% Qmiinv %*% L[-j])[1] *
-      switch(method,
-        mvtnorm = mvtnorm::pmvnorm(upper = c(-Qmiinv %*% L[-j]), sigma = Qmiinv),
+    weights[j] <- det(Qmiinv)^(0.5) *
+      exp(0.5 * t(L[-j]) %*% Qmiinv %*% L[-j])[1] *
+      switch(
+        method,
+        mvtnorm = mvtnorm::pmvnorm(
+          upper = c(-Qmiinv %*% L[-j]),
+          sigma = Qmiinv
+        ),
         mvPot = mvPot::mvtNormQuasiMonteCarlo(
           p = genVec$primeP,
-          upperBound = c(-Qmiinv %*% L[-j]), cov = Qmiinv,
+          upperBound = c(-Qmiinv %*% L[-j]),
+          cov = Qmiinv,
           genVec = genVec$genVec
         )[1],
         TruncatedNormal = TruncatedNormal::mvNqmc(
-          l = rep(-Inf, D - 1), n = 1e5,
-          u = c(-Qmiinv %*% L[-j]), Sig = Qmiinv
+          l = rep(-Inf, D - 1),
+          n = 1e5,
+          u = c(-Qmiinv %*% L[-j]),
+          Sig = Qmiinv
         )$prob
       )
   }
@@ -935,8 +1195,16 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
 }
 
 
-.weightsBR <- function(z, Lambda, method = c("mvtnorm", "mvPot", "TruncatedNormal"), ...) {
-  method <- match.arg(method, choices = c("mvtnorm", "mvPot", "TruncatedNormal"))[1]
+.weightsBR <- function(
+  z,
+  Lambda,
+  method = c("mvtnorm", "mvPot", "TruncatedNormal"),
+  ...
+) {
+  method <- match.arg(
+    method,
+    choices = c("mvtnorm", "mvPot", "TruncatedNormal")
+  )[1]
   ellipsis <- list(...)
   D <- length(z)
   stopifnot(ncol(Lambda) == D | nrow(Lambda) == D)
@@ -944,8 +1212,10 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
   if (method == "mvtnorm") {
     for (j in 1:D) {
       weights[j] <- mvtnorm::pmvnorm(
-        lower = rep(-Inf, D - 1), upper = 2 * Lambda[-j, j] + log(z[-j]) - log(z[j]),
-        sigma = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j])
+        lower = rep(-Inf, D - 1),
+        upper = 2 * Lambda[-j, j] + log(z[-j]) - log(z[j]),
+        sigma = 2 *
+          (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j])
       )
     }
   } else if (method == "mvPot") {
@@ -963,24 +1233,35 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
       weights[j] <- mvPot::mvtNormQuasiMonteCarlo(
         p = prime,
         upperBound = 2 * Lambda[-j, j] + log(z[-j]) - log(z[j]),
-        cov = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]),
+        cov = 2 *
+          (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j]),
         genVec = genVec
       )[1]
     }
   } else if (method == "TruncatedNormal") {
     for (j in 1:D) {
       weights[j] <- TruncatedNormal::mvNqmc(
-        l = rep(-Inf, D - 1), n = 1e5,
+        l = rep(-Inf, D - 1),
+        n = 1e5,
         u = 2 * Lambda[-j, j] + log(z[-j]) - log(z[j]),
-        Sig = 2 * (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j])
+        Sig = 2 *
+          (outer(Lambda[-j, j], Lambda[j, -j], FUN = "+") - Lambda[-j, -j])
       )$prob
     }
   }
   return(weights)
 }
 
-.weightsBR_WT <- function(z, Sigma, method = c("mvtnorm", "mvPot", "TruncatedNormal"), ...) {
-  method <- match.arg(method, choices = c("mvtnorm", "mvPot", "TruncatedNormal"))[1]
+.weightsBR_WT <- function(
+  z,
+  Sigma,
+  method = c("mvtnorm", "mvPot", "TruncatedNormal"),
+  ...
+) {
+  method <- match.arg(
+    method,
+    choices = c("mvtnorm", "mvPot", "TruncatedNormal")
+  )[1]
   ellipsis <- list(...)
   D <- length(z)
   stopifnot(ncol(Sigma) == D | nrow(Sigma) == D)
@@ -996,7 +1277,10 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
     if (method == "mvtnorm") {
       weights[j] <- mvtnorm::pmvnorm(
         lower = rep(-Inf, D - 1),
-        upper = log(z[-j] / z[j]) + diag(Sigma)[-j] / 2 + Sigma[j, j] / 2 - Sigma[j, -j],
+        upper = log(z[-j] / z[j]) +
+          diag(Sigma)[-j] / 2 +
+          Sigma[j, j] / 2 -
+          Sigma[j, -j],
         sigma = Ti %*% Sigma %*% t(Ti)
       )
     } else if (method == "mvPot") {
@@ -1012,14 +1296,21 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
       }
       weights[j] <- mvPot::mvtNormQuasiMonteCarlo(
         p = prime,
-        upperBound = log(z[-j] / z[j]) + diag(Sigma)[-j] / 2 + Sigma[j, j] / 2 - Sigma[j, -j],
+        upperBound = log(z[-j] / z[j]) +
+          diag(Sigma)[-j] / 2 +
+          Sigma[j, j] / 2 -
+          Sigma[j, -j],
         cov = Ti %*% Sigma %*% t(Ti),
         genVec = genVec
       )[1]
     } else if (method == "TruncatedNormal") {
       weights[j] <- TruncatedNormal::mvNqmc(
-        l = rep(-Inf, D - 1), n = 1e5,
-        u = log(z[-j] / z[j]) + diag(Sigma)[-j] / 2 + Sigma[j, j] / 2 - Sigma[j, -j],
+        l = rep(-Inf, D - 1),
+        n = 1e5,
+        u = log(z[-j] / z[j]) +
+          diag(Sigma)[-j] / 2 +
+          Sigma[j, j] / 2 -
+          Sigma[j, -j],
         Sig = Ti %*% Sigma %*% t(Ti)
       )$prob
     }
@@ -1027,8 +1318,17 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
   return(weights)
 }
 
-.weightsXstud <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNormal"), ...) {
-  method <- match.arg(method, choices = c("mvtnorm", "mvPot", "TruncatedNormal"))[1]
+.weightsXstud <- function(
+  z,
+  Sigma,
+  df,
+  method = c("mvtnorm", "mvPot", "TruncatedNormal"),
+  ...
+) {
+  method <- match.arg(
+    method,
+    choices = c("mvtnorm", "mvPot", "TruncatedNormal")
+  )[1]
   ellipsis <- list(...)
   D <- nrow(Sigma)
   stopifnot(nrow(Sigma) == length(z))
@@ -1036,9 +1336,12 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
   if (method == "mvtnorm") {
     for (j in 1:D) {
       weights[j] <- mvtnorm::pmvt(
-        lower = rep(-Inf, D - 1), df = df + 1,
+        lower = rep(-Inf, D - 1),
+        df = df + 1,
         upper = exp((log(z[-j]) - log(z[j])) / df) - Sigma[-j, j],
-        sigma = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE]) / (df + 1)
+        sigma = (Sigma[-j, -j] -
+          Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE]) /
+          (df + 1)
       )
     }
   } else if (method == "mvPot") {
@@ -1056,17 +1359,24 @@ expmeXS <- function(z, Sigma, df, method = c("mvtnorm", "mvPot", "TruncatedNorma
       weights[j] <- mvPot::mvTProbQuasiMonteCarlo(
         p = prime,
         upperBound = exp((log(z[-j]) - log(z[j])) / df) - Sigma[-j, j],
-        cov = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE]) / (df + 1),
-        nu = df + 1, genVec = genVec
+        cov = (Sigma[-j, -j] -
+          Sigma[-j, j, drop = FALSE] %*% Sigma[j, -j, drop = FALSE]) /
+          (df + 1),
+        nu = df + 1,
+        genVec = genVec
       )[1]
     }
   } else if (method == "TruncatedNormal") {
     for (j in 1:D) {
       weights[j] <- TruncatedNormal::mvTqmc(
-        l = rep(-Inf, D - 1), df = df + 1, n = 1e5,
+        l = rep(-Inf, D - 1),
+        df = df + 1,
+        n = 1e5,
         u = exp((log(z[-j]) - log(z[j])) / df) - Sigma[-j, j],
-        Sig = (Sigma[-j, -j] - Sigma[-j, j, drop = FALSE] %*%
-          Sigma[j, -j, drop = FALSE]) / (df + 1)
+        Sig = (Sigma[-j, -j] -
+          Sigma[-j, j, drop = FALSE] %*%
+            Sigma[j, -j, drop = FALSE]) /
+          (df + 1)
       )$prob
     }
   }

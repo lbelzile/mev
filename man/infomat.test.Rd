@@ -32,7 +32,7 @@ an invisible list of matrices containing
 }
 }
 \description{
-The Information Matrix Test (IMT), proposed by Suveges and Davison (2010), is based
+The information matrix test (IMT), proposed by Suveges and Davison (2010), is based
 on the difference between the expected quadratic score and the second derivative of
 the log-likelihood. The asymptotic distribution for each threshold \code{u} and gap \code{K}
 is asymptotically \eqn{\chi^2}{chi-square} with one degree of freedom. The approximation is good for

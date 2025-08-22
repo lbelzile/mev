@@ -4,8 +4,35 @@
 \alias{erm}
 \title{Exponential regression estimator}
 \usage{
-erm(xdat, k, method = c("bdgm", "fh"))
+erm(xdat, k, method = c("bdgm", "fh"), bounds = NULL)
+}
+\arguments{
+\item{xdat}{vector of observations}
+
+\item{k}{vector of integer, the number of largest observations to consider}
+
+\item{method}{string; one of \code{bdgm} for the approach of Beirlant, Dierckx, Goegebeur and Matthys (1999)  or \code{fh} for Feuerverger and Hall (1999)}
+
+\item{bounds}{vector of length 2 giving the bounds for \code{\rho}, the second order parameter. Default to \eqn{[-5, -0.5]}}
+}
+\value{
+a data frame with columns
+\itemize{
+\item \code{k} number of exceedances
+\item \code{shape} estimate of the shape parameter
+\item \code{rho} estimate of the second-order regular variation index
+\item \code{scale} estimate of the scale parameter
+
+}
 }
 \description{
-Exponential regression estimator
+This function implements the exponential regression estimator of the shape parameter for the case of Pareto tails with positive shape index.
+}
+\details{
+The second-order parameter is difficult to pin down, and while values within \eqn{[-1,0)} are most logical under Hall model, the model parameters become unidentifiable when \eqn{\rho \to 0}. The default constraint restrict \eqn{-5 <\rho < -0.5}, with the upper bound changed to \eqn{-0.25} for sample of sizes larger than 5000 observations. Users can set the value of the bounds for \eqn{\rho} via argument \code{bounds}. The optimization is initialized at the Hill estimator
+}
+\references{
+Feuerverger, A. and P. Hall (1999), Estimating a tail exponent by modelling departure from a Pareto distribution, \emph{The Annals of Statistics} 27(\bold{2}), 760-781. <doi:10.1214/aos/1018031215>
+
+Beirlant, J., Dierckx, G., Goegebeur, Y. G. Matthys (1999). Tail Index Estimation and an Exponential Regression Model. \emph{Extremes}, 2, 177–200 (1999). <doi:10.1023/A:1009975020370>
 }

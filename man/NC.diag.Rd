@@ -69,3 +69,4 @@ diagnostics and uncertainty in extreme value modelling, \emph{J. R. Statist. Soc
 \author{
 Paul J. Northrop and Claire L. Coleman
 }
+\keyword{internal}

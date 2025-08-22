@@ -14,7 +14,7 @@ Natural Environment Research Council (1975). \emph{Flood Studies Report}, volume
 The data consists of exceedances over the threshold 65 cubic meter per second of the River Nidd at Hunsingore Weir, for 35 years of data between 1934 and 1969.
 }
 \references{
-Davison, A.C. and R.L. Smith (1990). Models for Exceedances over High Thresholds, \emph{Journal of the Royal Statistical Society. Series B (Methodological)}, \bold{52}(3), 393--442. With discussion.
+Davison, A.C. and R.L. Smith (1990). Models for Exceedances over High Thresholds (with discussion), \emph{Journal of the Royal Statistical Society. Series B (Methodological)}, \bold{52}(3), 393--442.
 }
 \seealso{
 \code{nidd.thresh} from the \code{evir} package
