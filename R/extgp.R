@@ -1701,9 +1701,9 @@ egp.pll <- function(
           )
       ]
     } else {
+      psi <- psi - thresh
       psi <- psi[psi > 0]
     }
-
     psi <- sort(unique(c(psi, mle_retlev)))
     mid <- which(psi == mle_retlev)
     pars <- matrix(nrow = length(psi), ncol = 3L)

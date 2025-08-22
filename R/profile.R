@@ -380,7 +380,10 @@ confint.eprof <-
         conf[3, ][wrong_above] <- NA
       }
       if (print) {
-        cat("Point estimate for the parameter of interest psi:\n")
+        if (is.null(object$param)) {
+          object$param <- "parameter psi"
+        }
+        cat(paste0("Point estimate for ", object$param, ":\n"))
         cat("Maximum likelihood          :", round(object$psi.max, 3), "\n")
         if (2 %in% ind) {
           cat(
@@ -704,7 +707,14 @@ gev.pll <-
     oldpar <-
       match.arg(
         param,
-        choices = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
+        choices = c(
+          "loc",
+          "scale",
+          "shape",
+          "quant",
+          "Nmean",
+          "Nquant"
+        ),
         several.ok = FALSE
       )
     # Arguments for parametrization of the log likelihood
@@ -2171,13 +2181,13 @@ gev.pll <-
 #' @param param string indicating the parameter to profile over
 #' @param mod string indicating the model. See \bold{Details}.
 #' @param mle maximum likelihood estimate in \eqn{(\psi, \xi)} parametrization if \eqn{\psi \neq \xi} and \eqn{(\sigma, \xi)} otherwise (optional).
-#' @param dat sample vector of excesses, unless \code{threshold} is provided (in which case user provides original data)
+#' @param dat sample vector of excesses, unless \code{thresh} is provided (in which case user provides original data)
 #' @param m number of observations of interest for return levels. Required only for \code{args} values \code{'VaR'} or \code{'ES'}
 #' @param N size of block over which to take maxima. Required only for \code{args} \code{Nmean} and \code{Nquant}.
 #' @param p tail probability, equivalent to \eqn{1/m}. Required only for \code{args} \code{quant}.
 #' @param q level of quantile for N-block maxima. Required only for \code{args} \code{Nquant}.
 #' @param correction logical indicating whether to use \code{spline.corr} to smooth the tem approximation.
-#' @param threshold numerical threshold above which to fit the generalized Pareto distribution
+#' @param thresh numerical threshold above which to fit the generalized Pareto distribution
 #' @param plot logical; should the profile likelihood be displayed? Default to \code{TRUE}
 #' @param ... additional arguments such as output from call to \code{Vfun} if \code{mode='tem'}.
 #'
@@ -2191,7 +2201,7 @@ gev.pll <-
 #' \item \code{pll}: values of the profile log likelihood at \code{psi}
 #' \item \code{maxpll}: value of maximum profile log likelihood
 #' \item \code{family}: a string indicating "gpd"
-#' \item \code{threshold}: value of the threshold, by default zero
+#' \item \code{thresh}: value of the threshold, by default zero
 #' }
 #' In addition, if \code{mod} includes \code{tem}
 #' \itemize{
@@ -2229,6 +2239,7 @@ gpd.pll <-
       "scale",
       "shape",
       "quant",
+      "retlev",
       "VaR",
       "ES",
       "Nmean",
@@ -2242,30 +2253,32 @@ gpd.pll <-
     p = NULL,
     q = NULL,
     correction = TRUE,
-    threshold = NULL,
+    thresh = NULL,
     plot = TRUE,
     ...
   ) {
     param <- match.arg(param)
-    mod <-
-      match.arg(mod, c("profile", "tem", "modif"), several.ok = TRUE)
+    mod <- match.arg(
+      arg = mod,
+      choices = c("profile", "tem", "modif"),
+      several.ok = TRUE
+    )
     #If there is a threshold
-    if (!is.null(threshold)) {
-      stopifnot(is.numeric(threshold), length(threshold) == 1)
-      if (min(dat) < threshold) {
-        dat <- dat[dat > threshold] - threshold
+    rate <- 1
+    if (!is.null(thresh)) {
+      stopifnot(is.numeric(thresh), length(thresh) == 1)
+      if (min(dat) < thresh) {
+        ntot <- length(dat)
+        dat <- dat[dat > thresh] - thresh
+        nabove <- length(dat)
+        rate <- nabove / ntot
       } else {
-        dat <- dat - threshold
+        dat <- dat - thresh
       }
     } else {
-      threshold <- 0
+      thresh <- 0
     }
-    # Arguments for parametrization of the log likelihood
-    if (param == "shape") {
-      args <- c("scale", "shape")
-    } else {
-      args <- c(param, "shape")
-    }
+
     # Sanity checks to ensure all arguments are provided
     if (is.null(N)) {
       if (param %in% c("Nmean", "Nquant")) {
@@ -2281,13 +2294,7 @@ gpd.pll <-
         m <- NA
       }
     }
-    if (is.null(p)) {
-      if (param == "quant") {
-        stop("Argument \"p\" missing. Procedure aborted")
-      } else {
-        p <- NA
-      }
-    }
+
     if (is.null(q)) {
       if (param == "Nquant") {
         stop("Argument \"q\" missing. Procedure aborted")
@@ -2295,8 +2302,25 @@ gpd.pll <-
         q <- NA
       }
     }
+    if (is.null(p)) {
+      if (param %in% c("quant", "retlev")) {
+        stop("Argument \"p\" missing. Procedure aborted")
+      } else {
+        p <- NA
+      }
+    }
+    if (param == "retlev") {
+      p <- p / rate
+      param <- "quant"
+    }
     xmin <- min(dat)
     xmax <- max(dat)
+    # Arguments for parametrization of the log likelihood
+    if (param == "shape") {
+      args <- c("scale", "shape")
+    } else {
+      args <- c(param, "shape")
+    }
     shiftres <- param %in% c("Nmean", "Nquant", "VaR", "quant")
     # If maximum likelihood estimates are not provided, find them
     if (is.null(mle) || length(mle) != 2) {
@@ -2908,7 +2932,7 @@ gpd.pll <-
           )
         psi <- seq(lo, hi, length = 55)
       } else {
-        psi <- psi - threshold
+        psi <- psi - thresh
         if (any(psi < 0)) {
           stop(
             "Invalid psi sequence: rescaled psi for quantiles must be positive"
@@ -3511,7 +3535,7 @@ gpd.pll <-
             )$y
           ))
       } else {
-        psi <- psi - threshold
+        psi <- psi - thresh
       }
 
       if (any(as.vector(psi) < 0)) {
@@ -3756,16 +3780,16 @@ gpd.pll <-
       )
     # Shift by threshold if non-null
     if (shiftres) {
-      ans$psi <- ans$psi + threshold
-      ans$mle[1] <- ans$psi.max <- ans$mle[1] + threshold
-      ans$pars[, 1] <- ans$pars[, 1] + threshold
+      ans$psi <- ans$psi + thresh
+      ans$mle[1] <- ans$psi.max <- ans$mle[1] + thresh
+      ans$pars[, 1] <- ans$pars[, 1] + thresh
     }
 
     if ("tem" %in% mod) {
       ans$q <- qcor
       ans$rstar <- rstar
       ans$tem.psimax <-
-        as.vector(tem.max) + ifelse(shiftres, threshold, 0)
+        as.vector(tem.max) + ifelse(shiftres, thresh, 0)
       ans$normal <- c(ans$psi.max, ans$std.error)
       if (correction && length(psi) > 10) {
         ans <- spline.corr(ans)
@@ -3774,14 +3798,14 @@ gpd.pll <-
     if ("modif" %in% mod) {
       ans$tem.mle <- ifelse(param == "shape", tem.mle[2], tem.mle[1])
       if (shiftres) {
-        ans$tem.mle[1] <- ans$tem.mle[1] + threshold
+        ans$tem.mle[1] <- ans$tem.mle[1] + thresh
       }
       ans$tem.pll <- proflltem
       ans$tem.maxpll <- as.vector(tem.mle.opt$value)
       ans$empcov.mle <-
         ifelse(param == "shape", empcov.mle[2], empcov.mle[1])
       if (shiftres) {
-        ans$empcov.mle[1] <- ans$empcov.mle[1] + threshold
+        ans$empcov.mle[1] <- ans$empcov.mle[1] + thresh
       }
       ans$empcov.pll <- as.vector(profllempcov)
       ans$empcov.maxpll <- as.vector(empcov.mle.opt$value)
@@ -3792,7 +3816,7 @@ gpd.pll <-
       class(ans) <- "eprof"
     }
     ans$family <- "gpd"
-    ans$threshold <- threshold
+    ans$thresh <- thresh
     ans$param <- param
     if (plot) {
       plot(ans)
@@ -3848,7 +3872,7 @@ plot.fr <- function(x, ...) {
       fr$r,
       type = "l",
       xlab = xl,
-      ylab = "Value of pivot",
+      ylab = "pivot",
       ylim = c(-4, 4),
       panel.first = abline(
         h = qnorm(c(
@@ -3868,12 +3892,12 @@ plot.fr <- function(x, ...) {
     lines(
       fr$psi,
       (fr$normal[1] - fr$psi) / fr$normal[2],
-      col = "green",
+      col = 3,
       lwd = 1.5
     )
-    lines(fr$psi, fr$q, col = "red", lwd = 1.5)
+    lines(fr$psi, fr$q, col = 2, lwd = 1.5)
     lines(fr$psi, fr$r, lwd = 1.5)
-    lines(fr$psi, fr$rstar, col = "blue")
+    lines(fr$psi, fr$rstar, col = 4)
     legend(
       x = "topright",
       c("Wald pivot", "lik. root", "modif. root", expression(q(psi))),
@@ -3881,7 +3905,7 @@ plot.fr <- function(x, ...) {
       x.intersp = 0.2,
       lwd = 1.5,
       seg.len = 0.5,
-      col = c("green", "black", "blue", "red"),
+      col = c(3, 1, 4, 2),
       bty = "n",
       cex = 0.9,
       xjust = 1
@@ -3904,7 +3928,7 @@ plot.fr <- function(x, ...) {
       lwd = 1.5,
       bty = "l"
     )
-    lines(fr$psi, -fr$rstar^2 / 2, col = "blue", lwd = 1.5)
+    lines(fr$psi, -fr$rstar^2 / 2, col = 4, lwd = 1.5)
     legend(
       x = "bottomright",
       c("profile", "tem"),
@@ -3912,7 +3936,7 @@ plot.fr <- function(x, ...) {
       x.intersp = 0.2,
       lwd = 1.5,
       seg.len = 0.5,
-      col = c("black", "blue"),
+      col = c("black", 4),
       bty = "n"
     )
     # optional: add diagnostic panels
@@ -3935,13 +3959,13 @@ plot.fr <- function(x, ...) {
       lwd = 1.5,
       bty = "l"
     )
-    lines(fr$psi, pnorm(fr$q), col = "red", lwd = 1.5)
-    lines(fr$psi, pnorm(fr$rstar), col = "blue", lwd = 1.5)
+    lines(fr$psi, pnorm(fr$q), col = 2, lwd = 1.5)
+    lines(fr$psi, pnorm(fr$rstar), col = 4, lwd = 1.5)
     legend(
       x = "topright",
       c("lik. root", "modif. root", expression(q(psi))),
       lty = c(1, 1, 1),
-      col = c("black", "blue", "red"),
+      col = c(1, 4, 2),
       bty = "n",
       x.intersp = 0.2,
       lwd = 1.5,
@@ -4209,7 +4233,14 @@ tem.corr <- function(fr, print.warning = FALSE) {
 #' }
 gev.tem <-
   function(
-    param = c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
+    param = c(
+      "loc",
+      "scale",
+      "shape",
+      "quant",
+      "Nmean",
+      "Nquant"
+    ),
     dat,
     psi = NULL,
     p = NULL,
@@ -4258,7 +4289,7 @@ gev.tem <-
 #' @details The interpretation for \code{m} is as follows: if there are on average \eqn{m_y} observations per year above the threshold, then  \eqn{m = Tm_y} corresponds to \eqn{T}-year return level.
 #'
 #' @param param parameter over which to profile
-#' @param threshold threshold value corresponding to the lower bound of the support or the location parameter of the generalized Pareto distribution.
+#' @param thresh threshold value corresponding to the lower bound of the support or the location parameter of the generalized Pareto distribution.
 #' @param psi scalar or ordered vector of values for the interest parameter. If \code{NULL} (default), a grid of values centered at the MLE is selected. If \code{psi} is of length 2 and \code{n.psi}>2, it is assumed to be the minimal and maximal values at which to evaluate the profile log likelihood.
 #' @param m number of observations of interest for return levels. See \strong{Details}. Required only for \code{param = 'VaR'} or \code{param = 'ES'}.
 #' @param N size of block over which to take maxima. Required only for \code{args} \code{Nmean} and \code{Nquant}.
@@ -4304,21 +4335,31 @@ gev.tem <-
 gpd.tem <-
   function(
     dat,
-    param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
+    param = c(
+      "scale",
+      "shape",
+      "quant",
+      "VaR",
+      "retlev",
+      "ES",
+      "Nmean",
+      "Nquant"
+    ),
     psi = NULL,
     m = NULL,
-    threshold = 0,
+    thresh = 0,
     n.psi = 50,
     N = NULL,
     p = NULL,
     q = NULL,
     plot = FALSE,
-    correction = TRUE
+    correction = TRUE,
+    ...
   ) {
-    if (param %in% c("VaR", "ES") && is.null(m)) {
-      stop("Parameter \"m\" missing")
+    args <- list(...)
+    if (!is.null(args$threshold)) {
+      thresh <- args$threshold
     }
-    dat <- dat - threshold
     tem <-
       gpd.pll(
         psi = psi,
@@ -4330,9 +4371,10 @@ gpd.tem <-
         mle = NULL,
         q = q,
         p = p,
+        thresh = thresh,
         correction = correction
       )
-    if (plot) {
+    if (isTRUE(plot)) {
       plot.fr(tem)
     }
     return(invisible(tem))

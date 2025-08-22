@@ -28,6 +28,12 @@ gpd.mle <- function(
     c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
     several.ok = TRUE
   )
+  if (isTRUE(all(missing(m), missing(N), missing(p), missing(q)))) {
+    args <- intersect(args, c("scale", "shape"))
+  }
+  if (length(args) == 0L) {
+    stop("Invalid call: missing arguments")
+  }
   fitted <- try(gp.fit(
     xdat = na.omit(as.vector(xdat)),
     threshold = 0,
@@ -83,7 +89,12 @@ gev.mle <- function(
     c("loc", "scale", "shape", "quant", "Nmean", "Nquant"),
     several.ok = TRUE
   )
-
+  if (isTRUE(all(missing(N), missing(p), missing(q)))) {
+    args <- intersect(args, c("loc", "scale", "shape"))
+  }
+  if (length(args) == 0L) {
+    stop("Invalid call: missing arguments")
+  }
   if (missing(q) && "Nquant" %in% args) {
     stop("Argument \"q\" missing for \"Nquant\"")
   }
@@ -743,7 +754,7 @@ fit.gev <- function(
   if (isTRUE(all(mle$kkt1, mle$kkt2))) {
     fitted$convergence <- "successful"
   } else {
-    fitted$convergence <- "converge dubious"
+    fitted$convergence <- "dubious convergence"
   }
   fitted$counts <- mle$counts
   fitted$xdat <- xdat

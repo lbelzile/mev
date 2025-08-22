@@ -6,7 +6,7 @@
 \usage{
 gpd.pll(
   psi,
-  param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
+  param = c("scale", "shape", "quant", "retlev", "VaR", "ES", "Nmean", "Nquant"),
   mod = "profile",
   mle = NULL,
   dat,
@@ -15,7 +15,7 @@ gpd.pll(
   p = NULL,
   q = NULL,
   correction = TRUE,
-  threshold = NULL,
+  thresh = NULL,
   plot = TRUE,
   ...
 )
@@ -29,7 +29,7 @@ gpd.pll(
 
 \item{mle}{maximum likelihood estimate in \eqn{(\psi, \xi)} parametrization if \eqn{\psi \neq \xi} and \eqn{(\sigma, \xi)} otherwise (optional).}
 
-\item{dat}{sample vector of excesses, unless \code{threshold} is provided (in which case user provides original data)}
+\item{dat}{sample vector of excesses, unless \code{thresh} is provided (in which case user provides original data)}
 
 \item{m}{number of observations of interest for return levels. Required only for \code{args} values \code{'VaR'} or \code{'ES'}}
 
@@ -41,7 +41,7 @@ gpd.pll(
 
 \item{correction}{logical indicating whether to use \code{spline.corr} to smooth the tem approximation.}
 
-\item{threshold}{numerical threshold above which to fit the generalized Pareto distribution}
+\item{thresh}{numerical threshold above which to fit the generalized Pareto distribution}
 
 \item{plot}{logical; should the profile likelihood be displayed? Default to \code{TRUE}}
 
@@ -58,7 +58,7 @@ a list with components
 \item \code{pll}: values of the profile log likelihood at \code{psi}
 \item \code{maxpll}: value of maximum profile log likelihood
 \item \code{family}: a string indicating "gpd"
-\item \code{threshold}: value of the threshold, by default zero
+\item \code{thresh}: value of the threshold, by default zero
 }
 In addition, if \code{mod} includes \code{tem}
 \itemize{

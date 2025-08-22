@@ -6,16 +6,17 @@
 \usage{
 gpd.tem(
   dat,
-  param = c("scale", "shape", "quant", "VaR", "ES", "Nmean", "Nquant"),
+  param = c("scale", "shape", "quant", "VaR", "retlev", "ES", "Nmean", "Nquant"),
   psi = NULL,
   m = NULL,
-  threshold = 0,
+  thresh = 0,
   n.psi = 50,
   N = NULL,
   p = NULL,
   q = NULL,
   plot = FALSE,
-  correction = TRUE
+  correction = TRUE,
+  ...
 )
 }
 \arguments{
@@ -27,7 +28,7 @@ gpd.tem(
 
 \item{m}{number of observations of interest for return levels. See \strong{Details}. Required only for \code{param = 'VaR'} or \code{param = 'ES'}.}
 
-\item{threshold}{threshold value corresponding to the lower bound of the support or the location parameter of the generalized Pareto distribution.}
+\item{thresh}{threshold value corresponding to the lower bound of the support or the location parameter of the generalized Pareto distribution.}
 
 \item{n.psi}{number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE}
 

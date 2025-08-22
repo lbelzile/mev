@@ -15,7 +15,8 @@
 - Function `fit.gpd` with method `obre` now returns ordered exceedances and weights.
 - `spunif` now correctly handles missing values
 - `confint.eprof` has an argument for boundary non-regular null distribution (for the most common case). 
-- Breaking changes to `fit.egp`, `egp.retlev`, `tstab.egp`. The former now allows fixed parameters (for profiling)
+- Breaking changes to `fit.egp`, `egp.retlev`, `tstab.egp`. The former now allows fixed parameters (for profiling).
+- All functions for automatic threshold selection are now named using the prefix `thselect.` Their arguments are somewhat standardized, and they each have distinct plot and print methods.
 
 
 # mev 1.17  (Release date 2024-07-09)

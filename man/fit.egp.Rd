@@ -96,6 +96,14 @@ fit.egp(
  fpar = list(kappa = 1),
  method = "Nelder"
 )
+xdat <- rgp(n = 1000)
+tstab.egp(
+ xdat = xdat,
+ thresh = c(0, quantile(xdat, 0.5)),
+ model = "gj-tnorm",
+ param = "kappa",
+ transform = TRUE)
+
 }
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.

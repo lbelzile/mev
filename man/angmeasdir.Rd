@@ -5,20 +5,21 @@
 \title{Dirichlet mixture smoothing of the angular measure}
 \usage{
 angmeasdir(
-  x,
-  th,
+  xdat,
+  thresh,
   Rnorm = c("l1", "l2", "linf"),
   Anorm = c("l1", "l2", "linf", "arctan"),
-  marg = c("Frechet", "Pareto"),
-  wgt = c("Empirical", "Euclidean"),
+  marg = c("frechet", "pareto"),
+  wgt = c("empirical", "euclidean"),
   region = c("sum", "min", "max"),
-  is.angle = FALSE
+  is.angle = FALSE,
+  ...
 )
 }
 \arguments{
-\item{x}{an \code{n} by \code{d} sample matrix}
+\item{xdat}{an \code{n} by \code{d} sample matrix}
 
-\item{th}{threshold of length 1 for \code{'sum'}, or \code{d} marginal thresholds otherwise.}
+\item{thresh}{threshold of length 1 for \code{'sum'}, or \code{d} marginal thresholds otherwise.}
 
 \item{Rnorm}{character string indicating the norm for the radial component.}
 
@@ -29,9 +30,11 @@ angmeasdir(
 \item{wgt}{character string indicating weighting function for the equation. Can be based on Euclidean or empirical likelihood for the mean}
 
 \item{region}{character string specifying which observations to consider (and weight). \code{'sum'} corresponds to a radial threshold
-\eqn{\sum x_i > }\code{th}, \code{'min'} to \eqn{\min x_i >}\code{th} and \code{'max'} to \eqn{\max x_i >}\code{th}.}
+\eqn{\sum x_i > }\code{thresh}, \code{'min'} to \eqn{\min x_i >}\code{thresh} and \code{'max'} to \eqn{\max x_i >}\code{thresh}.}
 
 \item{is.angle}{logical indicating whether observations are already angle with respect to \code{region}. Default to \code{FALSE}.}
+
+\item{...}{additional arguments}
 }
 \value{
 an invisible list with components
@@ -55,6 +58,6 @@ obtained from estimating the Euclidean likelihood problem without observation \e
 }
 \examples{
 set.seed(123)
-x <- rmev(n=100, d=2, param=0.5, model='log')
-out <- angmeasdir(x=x, th=0, Rnorm='l1', Anorm='l1', marg='Frechet', wgt='Empirical')
+x <- rmev(n = 100, d = 2L, param = 0.5, model = 'log')
+out <- angmeasdir(x)
 }

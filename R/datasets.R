@@ -110,7 +110,7 @@ NULL
 #' The data consists of exceedances over the threshold 65 cubic meter per second of the River Nidd at Hunsingore Weir, for 35 years of data between 1934 and 1969.
 #'
 #' @source Natural Environment Research Council (1975). \emph{Flood Studies Report}, volume 4.  pp. 235--236.
-#' @references Davison, A.C. and R.L. Smith (1990). Models for Exceedances over High Thresholds, \emph{Journal of the Royal Statistical Society. Series B (Methodological)}, \bold{52}(3), 393--442. With discussion.
+#' @references Davison, A.C. and R.L. Smith (1990). Models for Exceedances over High Thresholds (with discussion), \emph{Journal of the Royal Statistical Society. Series B (Methodological)}, \bold{52}(3), 393--442.
 #' @format a vector of size 154
 #' @name nidd
 #' @seealso \code{nidd.thresh} from the \code{evir} package
@@ -210,3 +210,23 @@ NULL
 #' @name pandemics
 #' @source Cirillo, P. and N.N. Taleb (2020). \emph{Tail risk of contagious diseases}. Nat. Phys. \bold{16}, 606–613 (2020). <doi:10.1038/s41567-020-0921-x>
 "pandemics"
+
+
+#' Leeds air pollution
+#'
+#' Daily maximum data (hourly for PM10) on air pollution for the Leeds Centre station in Yorkshire and Humberside station. The data goes from January 1st, 1993, until December 31st, 2024. Data show seasonality and there are some outliers. From December 2nd, 2008 onwards, particulate matters (PM10 and PM2.5) are measured using  a tapered element oscillating microbalance (TEOM) and Filter Dynamics Measurement System (FDMS). The data for PM2.5 is missing before the change of instrumentation. A total of 231 daily measurements with only missing values were removed during preprocessing.
+#'
+#' @format A data frame with 11455 rows and 8 variables:
+#' \describe{
+#'   \item{\code{date}}{[character] a date with format yyy-mm-dd}
+#'   \item{\code{O3}}{[integer] ozone (in nanograms per cubic meter)}
+#'   \item{\code{NO}}{[integer] nitrogen oxyde (in nanograms per cubic meter)}
+#'   \item{\code{CO}}{[double] carbon monoxyde (in micrograms per cubic meter)}
+#'   \item{\code{NO2}}{nitrogen dioxyde  (in nanograms per cubic meter)}
+#'   \item{\code{SO2}}{sulphur dioxide  (in nanograms per cubic meter)}
+#'   \item{\code{PM10}}{[integer] particulate matter 10, (in nanograms per cubic meter)}
+#'   \item{\code{PM2.5}}{[integer] particulate matter 2.5, (in nanograms per cubic meter)}
+#'}
+#'
+#' @source Crown 2025 copyright Defra via \code{uk-air.defra.gov.uk}, licenced under the Open Government Licence (OGL).
+"leedspollution"

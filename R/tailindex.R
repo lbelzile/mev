@@ -515,3 +515,52 @@ rho.ghp <- function(xdat, k, alpha = 2) {
     data.frame(k = k, rho = as.numeric(rho))
   }
 }
+
+
+#' Second order tail index estimator of Gomes et al.
+#'
+#' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data based on ratio of kernel goodness-of-fit statistics.
+#'
+#' @references Goegebeur, Y., J. Beirlant and T. de Wet (2008). \emph{Linking Pareto-tail kernel goodness-of-fit statistics with tail index at optimal threshold and second order estimation}.  REVSTAT-Statistical Journal, 6(1), 51-69. <doi:10.57805/revstat.v6i1.57>
+#'@param xdat vector of positive observations
+#'@param k number of highest order statistics to use for estimation
+#'@export
+rho.gbw08 <- function(
+  xdat,
+  k
+) {
+  k <- sort(as.integer(k))
+  kernel_jack <- function(u) {
+    -1 - log(u)
+  }
+  kernel_lewis <- function(u) {
+    u - 0.5
+  }
+  xdat <- sort(xdat, decreasing = TRUE)
+  kmax <- max(k)
+  stopifnot(xdat[kmax + 1] > 0)
+  Z <- (1:kmax) * diff(log(xdat[1:(kmax + 1)]))
+  rho <- numeric(length(k))
+  for (j in seq_along(k)) {
+    T1 <- mean(kernel_jack((1:k[j]) / (k[j] + 1)) * Z[1:k[j]])
+    T2 <- mean(kernel_lewis((1:k[j]) / (k[j] + 1)) * Z[1:k[j]])
+    rho[j] <- (4 * T2 + T1) / (2 * T2 + T1)
+  }
+  rho <- pmin(0, rho)
+  if (length(k) == 1L) {
+    return(as.numeric(rho))
+  } else {
+    data.frame(k = k, rho = as.numeric(rho))
+  }
+}
+
+## Ciuperca and Mercadier estimator of second-order regular variation
+# rho.cm <- function(xdat, k) {
+#   xdat <- as.numeric(xdat[is.finite(xdat)])
+#   k <- sort(k)
+#   kmax <- k[length(k)]
+#   stopifnot(xdat[kmax] > 0)
+#   logdata <- log(sort(xdat, decreasing = TRUE))
+#   n <- length(logdata)
+#   k <- as.integer(sort(k))
+# }

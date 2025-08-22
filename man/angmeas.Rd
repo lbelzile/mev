@@ -5,20 +5,21 @@
 \title{Rank-based transformation to angular measure}
 \usage{
 angmeas(
-  x,
-  th,
+  xdat,
+  thresh,
   Rnorm = c("l1", "l2", "linf"),
   Anorm = c("l1", "l2", "linf", "arctan"),
-  marg = c("Frechet", "Pareto"),
-  wgt = c("Empirical", "Euclidean"),
+  marg = c("frechet", "pareto"),
+  wgt = c("empirical", "euclidean"),
   region = c("sum", "min", "max"),
-  is.angle = FALSE
+  is.angle = FALSE,
+  ...
 )
 }
 \arguments{
-\item{x}{an \code{n} by \code{d} sample matrix}
+\item{xdat}{an \code{n} by \code{d} sample matrix}
 
-\item{th}{threshold of length 1 for \code{'sum'}, or \code{d} marginal thresholds otherwise.}
+\item{thresh}{threshold of length 1 for \code{'sum'}, or \code{d} marginal thresholds otherwise.}
 
 \item{Rnorm}{character string indicating the norm for the radial component.}
 
@@ -29,9 +30,11 @@ angmeas(
 \item{wgt}{character string indicating weighting function for the equation. Can be based on Euclidean or empirical likelihood for the mean}
 
 \item{region}{character string specifying which observations to consider (and weight). \code{'sum'} corresponds to a radial threshold
-\eqn{\sum x_i > }\code{th}, \code{'min'} to \eqn{\min x_i >}\code{th} and \code{'max'} to \eqn{\max x_i >}\code{th}.}
+\eqn{\sum x_i > }\code{thresh}, \code{'min'} to \eqn{\min x_i >}\code{thresh} and \code{'max'} to \eqn{\max x_i >}\code{thresh}.}
 
 \item{is.angle}{logical indicating whether observations are already angle with respect to \code{region}. Default to \code{FALSE}.}
+
+\item{...}{additional arguments}
 }
 \value{
 a list with arguments \code{ang} for the \eqn{d-1} pseudo-angular sample, \code{rad} with the radial component
@@ -48,7 +51,7 @@ a list with components
 The method uses the pseudo-polar transformation for suitable norms, transforming
 the data to pseudo-observations, than marginally to unit Frechet or unit Pareto.
 Empirical or Euclidean weights are computed and returned alongside with the angular and
-radial sample for values above threshold(s) \code{th}, specified in terms of quantiles
+radial sample for values above threshold(s) \code{thresh}, specified in terms of quantiles
 of the radial component \code{R} or marginal quantiles. Only complete tuples are kept.
 }
 \details{
@@ -57,9 +60,9 @@ The empirical likelihood weighted mean problem is implemented for all thresholds
  via \code{region=sum}.
 }
 \examples{
-x <- rmev(n=25, d=3, param=0.5, model='log')
-wts <- angmeas(x=x, th=0, Rnorm='l1', Anorm='l1', marg='Frechet', wgt='Empirical')
-wts2 <- angmeas(x=x, Rnorm='l2', Anorm='l2', marg='Pareto', th=0)
+x <- rmev(n = 25, d = 3, param = 0.5, model = 'log')
+wts <- angmeas(xdat = x, Rnorm = 'l1', Anorm = 'l1', marg = 'frechet', wgt = 'empirical')
+wts2 <- angmeas(xdat = x, Rnorm = 'l2', Anorm = 'l2', marg = 'pareto')
 }
 \references{
 Einmahl, J.H.J. and J. Segers (2009). Maximum empirical likelihood estimation of the spectral measure of an extreme-value distribution, \emph{Annals of Statistics}, \bold{37}(5B), 2953--2989.
