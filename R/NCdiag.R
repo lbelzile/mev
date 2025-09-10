@@ -332,7 +332,7 @@ plot.mev_thdiag_northropcoleman <- function(x, size = 0.05, ...) {
 
 #' @export
 print.mev_thdiag_northropcoleman <-
-  function(x, digits = max(3, getOption("digits") - 3), level = 0.05, ...) {
+  function(x, digits = min(3, getOption("digits") - 3), level = 0.05, ...) {
     cat("Threshold selection method: Northrop and Coleman penultimate model.\n")
     method <- "Score test"
     thselect <- x$thresh[which.max(which(x$e.p.values > level))]
@@ -342,7 +342,9 @@ print.mev_thdiag_northropcoleman <-
     }
     cat(method, "for piecewise generalized Pareto models.", "\n")
     cat(
-      "Largest threshold above which we always fail to reject null hypothesis of common generalized Pareto at level",
+      "Largest threshold above which we always fail to reject",
+      "\n",
+      "the null hypothesis of common generalized Pareto at level",
       level,
       "\n"
     )
@@ -666,11 +668,11 @@ print.mev_thdiag_northropcoleman <-
 #' Northop and Coleman piecewise generalized Pareto threshold selection diagnostic
 #'
 #' The model tests the null hypothesis of a generalized Pareto above each threshold in \code{thresh} against the alternative of a piecewise generalized Pareto model with continuity constraints.
-#' @param xdat vector of observations
-#' @param thresh vector of thresholds
-#' @param test string indicating whether to perform \code{score} test or likelihood ratio (\code{lr}) test. The latter requires fitting the alternative model, and so is more computationally expensive.
-#' @param plot logical; if \code{TRUE}, return a plot with the p-value path.
-#' @param level confidence level for tests. Default to 95%
+#' @param xdat [vector] observations
+#' @param thresh [vector] candidate thresholds
+#' @param test [string] indicating whether to perform \code{score} test or likelihood ratio (\code{lr}) test. The latter requires fitting the alternative model, and so is more computationally expensive.
+#' @param plot [logical]; if \code{TRUE}, return a plot with the p-value path.
+#' @param level [double] confidence level for confidence interval, defaults to 0.95
 #' @return an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{cthresh}).
 thselect.ncpgp <- function(
   xdat,
@@ -722,14 +724,16 @@ thselect.ncpgp <- function(
 
 #' @export
 print.mev_thselect_ncpgp <-
-  function(x, digits = max(3, getOption("digits") - 3), ...) {
+  function(x, digits = min(3, getOption("digits") - 3), ...) {
     cat(
-      "Threshold selection method: \nNorthrop and Coleman piecewise generalized Pareto.\n"
+      "Threshold selection method: \nNorthrop and Coleman piecewise generalized Pareto model.\n"
     )
     method <- ifelse(x$test == "score", "score test", "likelihood ratio test")
     cat(method, "for piecewise generalized Pareto models.", "\n")
     cat(
-      "Largest threshold above which we always fail to reject null hypothesis of common generalized Pareto at level",
+      "Largest threshold above which we always fail to reject ",
+      "\n",
+      "the null hypothesis of common generalized Pareto at level",
       1 - x$level,
       "\n"
     )

@@ -2,32 +2,32 @@
 % Please edit documentation in R/lthill.R
 \name{shape.lthill}
 \alias{shape.lthill}
-\title{Left-trimmed Hill estimator for the shape parameter}
+\title{Lower-trimmed Hill estimator for the shape parameter}
 \usage{
-shape.lthill(xdat, k, k0 = k, vectorize = FALSE, sorted = FALSE)
+shape.lthill(xdat, k, k0 = k, sorted = FALSE, ...)
 }
 \arguments{
 \item{xdat}{[numeric] vector of positive observations}
 
 \item{k}{[integer] number of order statistics for the threshold}
 
-\item{k0}{[integer] scalar number of largest order statistics, no greater than \code{k}}
-
-\item{vectorize}{[logical] if \code{TRUE}, computes for each value of}
+\item{k0}{[integer] vector of number of largest order statistics, no greater than \code{k}}
 
 \item{sorted}{[logical] if \code{TRUE}, data are assumed to be sorted in decreasing order}
 }
 \value{
-a scalar with the shape parameter estimate
+a scalar with the shape parameter estimate if \code{k0} is a scalar, otherwise a data frame with columns \code{k0} for the number of exceedances and \code{shape} for the tail index.
 }
 \description{
 Given a sample of Pareto-tailed samples (positive tail index),
-compute the left-trimmed Hill estimator. If \eqn{k0=k}, the estimator
-reduces to Hill's estimator for the shape index
+compute the lower-trimmed Hill estimator. If \eqn{k0=k}, the estimator reduces to Hill's estimator for the shape index
 }
 \examples{
 # Pareto sample
 n <- 200
 xdat <- 10/(1 - runif(n)) - 10
-shape.lthill(xdat = xdat, k = 100, k0 = 1:100)
+shape.lthill(xdat = xdat, k = 100, k0 = 5:100)
+}
+\references{
+Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
 }

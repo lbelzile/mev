@@ -7,15 +7,15 @@
 thselect.ncpgp(xdat, thresh, test = "score", plot = FALSE, level = 0.95, ...)
 }
 \arguments{
-\item{xdat}{vector of observations}
+\item{xdat}{[vector] observations}
 
-\item{thresh}{vector of thresholds}
+\item{thresh}{[vector] candidate thresholds}
 
-\item{test}{string indicating whether to perform \code{score} test or likelihood ratio (\code{lr}) test. The latter requires fitting the alternative model, and so is more computationally expensive.}
+\item{test}{[string] indicating whether to perform \code{score} test or likelihood ratio (\code{lr}) test. The latter requires fitting the alternative model, and so is more computationally expensive.}
 
-\item{plot}{logical; if \code{TRUE}, return a plot with the p-value path.}
+\item{plot}{[logical]; if \code{TRUE}, return a plot with the p-value path.}
 
-\item{level}{confidence level for tests. Default to 95%}
+\item{level}{[double] confidence level for confidence interval, defaults to 0.95}
 }
 \value{
 an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{cthresh}).

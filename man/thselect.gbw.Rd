@@ -8,14 +8,14 @@ thselect.gbw(
   xdat,
   kmax,
   kernel = c("Jackson", "Lewis"),
-  rho = c("gbw08", "ghp", "fagh", "cm", "gbw10"),
+  rho = c("gbw", "ghp", "fagh", "dk"),
   ...
 )
 }
 \arguments{
-\item{xdat}{vector of observations}
+\item{xdat}{[vector] sample exceedances}
 
-\item{kmax}{maximum number of exceedances considered}
+\item{kmax}{[int] maximum number of exceedances considered}
 
 \item{kernel}{[string] kernel choice, one of \code{Jackson} or \code{Lewis}}
 
@@ -26,4 +26,7 @@ thselect.gbw(
 }
 \description{
 Kernel-based threshold selection of Goegebeur, Beirlant and de Wet (2008)
+}
+\references{
+Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51–69. <doi:10.57805/revstat.v6i1.57>
 }

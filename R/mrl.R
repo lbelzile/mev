@@ -137,7 +137,7 @@ plot.mev_thselect_automrl <- function(x, ...) {
 
 print.mev_thselect_automrl <- function(
   x,
-  digits = max(3, getOption("digits") - 3),
+  digits = min(3, getOption("digits") - 3),
   ...
 ) {
   cat("Threshold selection method: mean residual life plot\n")
@@ -221,7 +221,9 @@ automrl <- function(
 #'  xdat = rgp(n = 100, shape = -0.5),
 #'  xlab = "thresh",
 #'  kmax = 50)
-#'
+#' tstab.mrl(
+#'  rexp(100),
+#'  thresh = qexp(seq(0, 0.9, by = 0.01)))
 tstab.mrl <- function(
   xdat,
   thresh,

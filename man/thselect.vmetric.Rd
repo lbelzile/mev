@@ -14,17 +14,6 @@ thselect.vmetric(
   neval = 1000L,
   ci = 0.95
 )
-
-thselect.vmetric(
-  xdat,
-  thresh,
-  B = 199L,
-  type = c("eqd", "exp", "qq", "pp"),
-  dist = c("l1", "l2"),
-  uq = FALSE,
-  neval = 1000L,
-  ci = 0.95
-)
 }
 \arguments{
 \item{xdat}{vector of observations}
@@ -54,27 +43,10 @@ an invisible list with components
 }
 }
 \description{
-Metric-based algorithm of Varty et al. for the
-independent and identically distributed case
-with no rounding.
-
 Adaptation of Varty et al.'s metric-based threshold
 automated diagnostic for the  independent and identically distributed case with no rounding.
 }
 \details{
-The algorithm proceeds by first computing the maximum
-likelihood algorithm and then simulating datasets from
-replication with parameters drawn from a bivariate normal
-approximation to the maximum likelihood estimator distribution.
-
-For each bootstrap sample, we refit the
- model and convert the quantiles to
-exponential or uniform variates.
-The mean absolute or mean squared distance
-is calculated on these. The threshold
-returned is the one with the lowest value
-of the metric.
-
 The algorithm proceeds by first computing the maximum
 likelihood algorithm and then simulating datasets from
 replication with parameters drawn from a bivariate normal
@@ -88,9 +60,13 @@ is calculated on these. The threshold
 returned is the one with the lowest value
 of the metric.
 }
+\examples{
+xdat <- rexp(1000, rate = 1/2)
+thresh <- quantile(xdat, prob = c(0.25,0.5, 0.75))
+
+}
 \references{
 Varty, Z. and J.A. Tawn and P.M. Atkinson and S. Bierman (2021+), Inference for extreme earthquake magnitudes accounting for a time-varying measurement process.
 
 Murphy, C., Tawn, J. A., & Varty, Z. (2024). \emph{Automated Threshold Selection and Associated Inference Uncertainty for Univariate Extremes}. Technometrics, 67(\bold{2}), 215–224. <doi:10.1080/00401706.2024.2421744>
 }
-\keyword{internal}

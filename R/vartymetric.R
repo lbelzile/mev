@@ -1,57 +1,5 @@
 #' Metric-based threshold selection
 #'
-#' Metric-based algorithm of Varty et al. for the
-#' independent and identically distributed case
-#' with no rounding.
-#'
-#' The algorithm proceeds by first computing the maximum
-#' likelihood algorithm and then simulating datasets from
-#' replication with parameters drawn from a bivariate normal
-#' approximation to the maximum likelihood estimator distribution.
-#'
-#' For each bootstrap sample, we refit the
-#'  model and convert the quantiles to
-#' exponential or uniform variates.
-#' The mean absolute or mean squared distance
-#' is calculated on these. The threshold
-#' returned is the one with the lowest value
-#' of the metric.
-#'
-#' @export
-#' @param xdat [numeric] vector of observations
-#' @param thresh [numeric] vector of thresholds
-#' @param B [integer] number of bootstrap replications
-#' @param type [string] type of graph, either \code{pp} for probability-probability plots, \code{qq} for quantile-quantile plots or \code{exp} for unit exponential Q-Q plots
-#' @param neval [integer] number of points at which to estimate the metric. Default to 1000
-#' @param dist [string] the distance used, either absolute distance (\code{l1}) or Euclidean distance (\code{l2})
-#' @param uq [logical] if \code{TRUE}, generate bootstrap samples accounting for the sampling distribution of parameters
-#' @keywords internal
-thselect.vmetric <- function(
-  xdat,
-  thresh,
-  B = 199L,
-  type = c("exp", "qq", "pp"),
-  dist = c("l1", "l2"),
-  uq = FALSE,
-  neval = 1000L
-) {
-  .Deprecated(
-    new = "thselect.vmetric",
-    package = "mev"
-  )
-  thselect.vmetric(
-    xdat = xdat,
-    thresh = thresh,
-    B = B,
-    type = type,
-    dist = dist,
-    uq = uq,
-    neval = neval
-  )
-}
-
-#' Metric-based threshold selection
-#'
 #' Adaptation of Varty et al.'s metric-based threshold
 #' automated diagnostic for the  independent and identically distributed case with no rounding.
 #'
@@ -87,6 +35,11 @@ thselect.vmetric <- function(
 #' @export
 #' @references Varty, Z. and J.A. Tawn and P.M. Atkinson and S. Bierman (2021+), Inference for extreme earthquake magnitudes accounting for a time-varying measurement process.
 #' @references Murphy, C., Tawn, J. A., & Varty, Z. (2024). \emph{Automated Threshold Selection and Associated Inference Uncertainty for Univariate Extremes}. Technometrics, 67(\bold{2}), 215–224. <doi:10.1080/00401706.2024.2421744>
+#'
+#' @examples
+#' xdat <- rexp(1000, rate = 1/2)
+#' thresh <- quantile(xdat, prob = c(0.25,0.5, 0.75))
+#'
 thselect.vmetric <- function(
   xdat,
   thresh,
@@ -166,7 +119,6 @@ thselect.vmetric <- function(
         method = "post"
       )
     }
-
     scale[i] <- coef(mle)[1]
     shape[i] <- coef(mle)[2]
     spars <- as.numeric(coef(mle))
@@ -177,16 +129,15 @@ thselect.vmetric <- function(
       if (isTRUE(uq)) {
         spars <- boot_par[j, ]
       }
-
       boot_samp[, j] <- mev::rgp(
         n = nobs(mle),
         scale = spars[1],
         shape = spars[2]
       )
-      boot_mle <- try(mev::fit.gpd(boot_samp[, j], threshold = 0))
+      boot_mle <- try(mev::fit.gpd(boot_samp[, j], thresh = 0))
       if (!inherits(boot_mle, "try-error")) {
         if (type %in% c("exp", "pp")) {
-          boot_samp[, j] <- revdbayes::pgp(
+          boot_samp[, j] <- pgp(
             q = boot_samp[, j],
             scale = coef(boot_mle)[1],
             shape = coef(boot_mle)[2]
@@ -203,20 +154,30 @@ thselect.vmetric <- function(
           pars = coef(boot_mle)
         )
       } else {
-        # if the fit failed, retry again!
+        # if the fit failed, try again!
+        # generates a new sample
         j = j - 1
       }
     }
     stat <- stat[is.finite(stat)]
     metric[i] <- mean(stat)
-
+    if (type %in% c("exp", "pp")) {
+      exc <- pgp(
+        q = exc,
+        scale = coef(mle)[1],
+        shape = coef(mle)[2]
+      )
+      if (type == "exp") {
+        exc <- qexp(exc)
+      }
+    }
     se_metric[i] <- sd(stat) / sqrt(length(stat))
-    boot_tolerance[[i]] <- t(apply(
+    boot_tolerance[[i]] <- apply(
       cbind(boot_samp, exc),
       2,
       quantile,
       probs = ps
-    ))
+    )
   }
   cindex <- which.min(metric)
   res <- list(
@@ -230,7 +191,7 @@ thselect.vmetric <- function(
     xdat = xdat,
     tolerance = t(apply(
       boot_tolerance[[cindex]],
-      2,
+      1,
       quantile,
       c((1 - ci) / 2, 1 - (1 - ci) / 2)
     ))
@@ -241,7 +202,7 @@ thselect.vmetric <- function(
 
 #' @export
 print.mev_thselect_vmetric <-
-  function(x, digits = max(3, getOption("digits") - 3), ...) {
+  function(x, digits = min(3, getOption("digits") - 3), ...) {
     cat("Threshold selection method: metric-based assessment\n")
     cat(
       switch(
@@ -266,14 +227,14 @@ print.mev_thselect_vmetric <-
 
 #' @export
 #' @param x an object of class \code{mev_thselect_vmetric} produced by a call to \code{thselect.vmetric}
-#' @param type string; asingle string indicating the choice of plot
+#' @param type string; a single string indicating the choice of plot
 #' @param B number of simulations for variability of estimation
 #' @param probs quantile levels for intervals.
 #' @return NULL; the function is used to produce a plot
 plot.mev_thselect_vmetric <-
   function(
     x,
-    type = c("qq", "pp", "metric"),
+    type = c("qq", "pp", "exp", "metric"),
     B = 1000L,
     probs = c(0.025, 0.975),
     ...
@@ -313,16 +274,60 @@ plot.mev_thselect_vmetric <-
     } else {
       thresh <- x$cthresh
       thid <- which(x$thresh == thresh)
-      if (type == "qq") {
-        expdat <- qexp(mev::pgp(
+      if (x$type == "pp") {
+        obs_quant_sim <- switch(
+          type,
+          pp = x$tolerance, # uniform
+          exp = qexp(x$tolerance),
+          qq = apply(
+            x$tolerance,
+            2,
+            qgp,
+            scale = x$scale[thid],
+            shape = x$shape[thid]
+          )
+        )
+      } else if (x$type == "exp") {
+        obs_quant_sim <- switch(
+          type,
+          pp = pexp(x$tolerance), # uniform
+          exp = x$tolerance,
+          qq = apply(
+            pexp(x$tolerance),
+            2,
+            qgp,
+            scale = x$scale[thid],
+            shape = x$shape[thid]
+          )
+        )
+      } else if (x$type == "qq") {
+        obs_quant_sim <- switch(
+          type,
+          pp = apply(
+            x$tolerance,
+            2,
+            pgp,
+            scale = x$scale[thid],
+            shape = x$shape[thid]
+          ),
+          exp = qexp(apply(
+            x$tolerance,
+            2,
+            pgp,
+            scale = x$scale[thid],
+            shape = x$shape[thid]
+          )),
+          qq = x$tolerance
+        )
+      }
+      np <- nrow(x$tolerance)
+      if (type == "exp") {
+        tdat <- qexp(mev::pgp(
           q = sort(x$xdat[x$xdat > thresh]),
           loc = thresh,
           scale = x$scale[thid],
           shape = x$shape[thid]
         ))
-        n <- length(expdat)
-        np <- nrow(x$tolerance)
-        xp <- qexp(ppoints(np))
         theo_quant_sim <-
           apply(
             apply(matrix(rexp(n = B * np), ncol = np), 1, sort),
@@ -330,62 +335,36 @@ plot.mev_thselect_vmetric <-
             quantile,
             probs = probs
           )
-        obs_quant_sim <- x$tolerance
-        obs_quant_sim_exp <- matrix(
-          qexp(mev::pgp(
-            q = obs_quant_sim,
-            scale = x$scale[thid],
-            shape = x$shape[thid]
-          )),
-          ncol = 2
+        xp <- qexp(ppoints(np))
+      } else if (type == "qq") {
+        tdat <- sort(x$xdat[x$xdat > thresh]) - thresh
+        xp <- qgp(
+          p = ppoints(np),
+          loc = 0,
+          scale = x$scale[thid],
+          shape = x$shape[thid]
         )
-        above_sim_int <- obs_quant_sim_exp[, 1] > theo_quant_sim[2, ]
-        below_sim_int <- obs_quant_sim_exp[, 2] < theo_quant_sim[1, ]
-        point_colours <- rep(1, np) #black
-        point_colours[above_sim_int] <- 2 #red
-        point_colours[below_sim_int] <- 4 #blue
-        lims <- c(
-          0,
-          pmax(expdat[n], obs_quant_sim_exp[np, 2], theo_quant_sim[2, np])
-        )
-        plot(
-          x = 1,
-          y = 1,
-          ylab = 'sample quantiles',
-          xlab = 'theoretical exponential quantiles',
-          type = 'n', # don't plot
-          bty = "l",
-          ylim = lims,
-          xlim = c(0, xp[np] + 0.1),
-          xaxs = "i",
-          yaxs = "i"
-        )
-        polygon(
-          x = c(xp, rev(xp)),
-          y = c(theo_quant_sim[1, ], rev(theo_quant_sim[2, ])),
-          col = "grey90",
-          border = NA
-        )
-        probs <- sort(probs)
-        stopifnot(probs[1] > 0, probs[2] < 1)
-        segments(
-          x0 = xp,
-          x1 = xp,
-          y0 = obs_quant_sim_exp[, 1],
-          y1 = obs_quant_sim_exp[, 2],
-          col = point_colours,
-          cex = 0.5
-        )
-        # points(qexp(ppoints(n)), expdat, pch = 20, col = 2)
+        theo_quant_sim <-
+          apply(
+            apply(
+              matrix(
+                rgp(n = B * np, scale = x$scale[thid], shape = x$shape[thid]),
+                ncol = np
+              ),
+              1,
+              sort
+            ),
+            1,
+            quantile,
+            probs = probs
+          )
       } else if (type == "pp") {
-        unifdat <- mev::pgp(
+        tdat <- mev::pgp(
           q = sort(x$xdat[x$xdat > thresh]),
           loc = thresh,
           scale = x$scale[thid],
           shape = x$shape[thid]
         )
-        n <- length(unifdat)
-        np <- nrow(x$tolerance)
         xp <- ppoints(np)
         theo_quant_sim <-
           apply(
@@ -394,44 +373,45 @@ plot.mev_thselect_vmetric <-
             quantile,
             probs = probs
           )
-        obs_quant_sim <- apply(
-          x$tolerance,
-          2,
-          mev::pgp,
-          scale = x$scale[thid],
-          shape = x$shape[thid]
-        )
-        above_sim_int <- obs_quant_sim[, 1] > theo_quant_sim[2, ]
-        below_sim_int <- obs_quant_sim[, 2] < theo_quant_sim[1, ]
-        point_colours <- rep(1, np) #black
-        point_colours[above_sim_int] <- 2 #red
-        point_colours[below_sim_int] <- 4 #blue
-        plot(
-          x = 1,
-          y = 1,
-          ylab = 'sample quantiles',
-          xlab = 'theoretical uniform quantiles',
-          type = 'n', # don't plot
-          bty = "l",
-          ylim = c(0, 1),
-          xlim = c(0, 1),
-          xaxs = "i",
-          yaxs = "i"
-        )
-        polygon(
-          x = c(xp, rev(xp)),
-          y = c(theo_quant_sim[1, ], rev(theo_quant_sim[2, ])),
-          col = "grey90",
-          border = NA
-        )
-        segments(
-          x0 = xp,
-          x1 = xp,
-          y0 = obs_quant_sim[, 1],
-          y1 = obs_quant_sim[, 2],
-          col = point_colours
-        )
       }
+      n <- length(tdat)
+      above_sim_int <- obs_quant_sim[, 1] > theo_quant_sim[2, ]
+      below_sim_int <- obs_quant_sim[, 2] < theo_quant_sim[1, ]
+      point_colours <- rep(1, np) #black
+      point_colours[above_sim_int] <- 2 #red
+      point_colours[below_sim_int] <- 4 #blue
+      lims <- c(
+        0,
+        pmax(tdat[n], obs_quant_sim[np, 2], theo_quant_sim[2, np])
+      )
+      plot(
+        x = 1,
+        y = 1,
+        ylab = 'sample quantiles',
+        xlab = 'theoretical quantiles',
+        type = 'n', # don't plot
+        bty = "l",
+        ylim = lims,
+        xlim = c(0, xp[np] + 0.1),
+        xaxs = "i",
+        yaxs = "i"
+      )
+      polygon(
+        x = c(xp, rev(xp)),
+        y = c(theo_quant_sim[1, ], rev(theo_quant_sim[2, ])),
+        col = "grey90",
+        border = NA
+      )
+      probs <- sort(probs)
+      stopifnot(probs[1] > 0, probs[2] < 1)
+      segments(
+        x0 = xp,
+        x1 = xp,
+        y0 = obs_quant_sim[, 1],
+        y1 = obs_quant_sim[, 2],
+        col = point_colours,
+        cex = 0.5
+      )
     }
     return(invisible(NULL))
   }

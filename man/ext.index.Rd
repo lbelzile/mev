@@ -6,7 +6,7 @@
 \usage{
 ext.index(
   xdat,
-  q = 0.95,
+  quantile = 0.95,
   method = c("wls", "mle", "intervals"),
   plot = FALSE,
   warn = FALSE
@@ -15,7 +15,7 @@ ext.index(
 \arguments{
 \item{xdat}{numeric vector of observations}
 
-\item{q}{a vector of quantile levels in (0,1). Defaults to 0.95}
+\item{quantile}{a vector of quantile levels in (0,1) for estimation of the extremal index. Defaults to 0.95}
 
 \item{method}{a string specifying the chosen method. Must be either \code{wls}
 for weighted least squares, \code{mle} for maximum likelihood estimation or \code{intervals}
@@ -54,12 +54,12 @@ A warning is emitted if the effective sample size is less than 50 observations.
 }
 \examples{
 set.seed(234)
-#Moving maxima model with theta=0.5
+# Moving maxima model with theta=0.5
 a <- 1; theta <-  1/(1+a)
 sim <- rgev(10001, loc=1/(1+a),scale=1/(1+a),shape=1)
 x <- pmax(sim[-length(sim)]*a,sim[-1])
-q <- seq(0.9,0.99,by=0.01)
-ext.index(xdat=x,q=q,method=c('wls','mle'))
+q <- seq(0.9, 0.99, by = 0.01)
+ext.index(xdat = x, quantile = q, method = c ('wls', 'mle'))
 }
 \references{
 Ferro and Segers (2003). Inference for clusters of extreme values,

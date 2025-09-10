@@ -7,29 +7,32 @@
 #'
 #' The calculations are based on the recursions provided in Lemma 4.3 of Oorschot et al.
 #' @param xdat vector of observations of length \eqn{n}
-#' @param k number of largest order statistics \eqn{3 \leq k \leq n}.
-#' @references Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  Electron. J. Statist. 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
+#' @param k number of largest order statistics \eqn{3 \leq k < n}.
+#' @references Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  Electronic Journal of Statistics 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
 #' @export
 #' @examples
 #' xdat <- rgp(n = 1000, shape = 0.2)
-#' shape.pickandsxu(xdat, k = 10)
-shape.pickandsxu <- function(xdat, k, ...) {
+#' shape.osz(xdat, k = 10)
+shape.osz <- function(xdat, k, ...) {
   args <- list(...)
   xdat <- na.omit(as.numeric(xdat))
   xdat <- sort(xdat, decreasing = TRUE)
+  k <- sort(as.integer(k))
   n <- length(xdat)
+  if (!missing(k)) {
+    k <- k[k >= 5 & k < n]
+    if (length(k) == 0L) {
+      stop("Invalid value for k")
+    }
+  }
   if (!is.null(args$m) & missing(k)) {
     m <- as.integer(args$m)
-  } else {
-    m <- n - as.integer(k)
+    k <- m
   }
-  k <- n - m
-  m <- sort(m, decreasing = TRUE)
-  stopifnot(m[length(m)] >= 3, is.vector(xdat), length(xdat) >= m[1])
-
-  shape <- numeric(length(m))
-  for (i in seq_along(m)) {
-    ms <- m[i]
+  k <- sort(k)
+  shape <- numeric(length(k))
+  for (i in seq_along(k)) {
+    ms <- k[i]
     # Initial recursion j=2
     shape0 <- (2 * (n - 1) / (ms - 2) - 2) * log(xdat[1] - xdat[2])
     mcst <- 1
@@ -46,7 +49,7 @@ shape.pickandsxu <- function(xdat, k, ...) {
     }
     shape[i] <- shape0 * ms * (ms - 1) * (ms - 2) / (n * (n - 1) * (n - ms + 1))
   }
-  if (length(m) == 1L) {
+  if (length(k) == 1L) {
     return(as.numeric(shape))
   } else {
     return(data.frame(k = as.integer(k), shape = as.numeric(shape)))
@@ -63,13 +66,36 @@ shape.pickandsxu <- function(xdat, k, ...) {
 #'
 #' The calculations are based on the recursions provided in Lemma 4.3 of Oorschot et al.
 #' @param xdat vector of observations of length \eqn{n}
-#' @param k number of largest order statistics \eqn{3 \leq k \leq n}.
+#' @param m number of largest order statistics \eqn{3 \leq k \leq n}.
 #' @references Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  Electron. J. Statist. 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
 #' @export
 #' @keywords internal
 PickandsXU <- function(xdat, m) {
   .Deprecated(new = "fit.pickandsxu", package = "mev")
-  shape.pickandsxu(xdat = xdat, m = m)
+  m <- as.integer(m)
+  stopifnot(m >= 3, is.vector(xdat), length(xdat) >= m)
+  xdat <- na.omit(as.numeric(xdat))
+  n <- length(xdat)
+  xdat <- sort(xdat, decreasing = TRUE)
+  shape <- (2 * (n - 1) / (m - 2) - 2) * log(xdat[1] - xdat[2])
+  mcst <- 1
+  for (j in seq.int(from = 3L, to = n - m + 3L, by = 1L)) {
+    mcst <- mcst * (n - j - m + 4L) / (n - j + 1L)
+    shape <- shape +
+      mcst *
+        (2 * (n - j + 1) / (m - 2) - j) *
+        sum(log(xdat[seq_len(j - 1)] - xdat[j]))
+  }
+  shape <- shape *
+    m *
+    (m - 1) *
+    (m - 2) /
+    (n *
+      (n - 1) *
+      (n -
+        m +
+        1))
+  return(shape)
 }
 
 #' Hill's estimator of the shape parameter
@@ -113,6 +139,203 @@ shape.hill <- function(xdat, k) {
   }
 }
 
+#' Threshold stability plot for Hill estimator
+#'
+#' @param xdat [vector] sample exceedances
+#' @param kmax [int] maximum number of order statistics
+#' @param method [string] name of estimator for shape parameter. Default to \code{hill}.
+#' @param log [logical] should the x-axis for the number of order statistics used for estimation be displayed on the log scale? Default to \code{TRUE}
+#' @return a plot of shape estimates as a function of the number of exceedances
+#' @examples
+#' xdat <-
+#' tstab.hill(xdat, km
+#'
+tstab.hill <- function(xdat, kmax, method = "hill", ..., log = TRUE) {
+  xdat <- xdat[is.finite(xdat) & xdat > 0]
+  if (missing(kmax)) {
+    kmax <- length(xdat)
+  } else {
+    kmax <- as.integer(kmax[1])
+  }
+  method <- match.arg(
+    method,
+    choices = unlist(
+      strsplit(
+        as.character(
+          formals(fit.shape)$method
+        ),
+        ","
+      )
+    )[-1],
+    several.ok = FALSE
+  )
+  hill <- fit.shape(xdat = xdat, method = method, k = 10:kmax, ...)
+  xp <- hill$k
+  hill$lbound <- hill$shape + qnorm(0.025) * abs(hill$shape) / sqrt(hill$k)
+  hill$ubound <- hill$shape + qnorm(0.975) * abs(hill$shape) / sqrt(hill$k)
+  if (method %in% c("genquant", "osz", "mom", "dekkers", "pickands")) {
+    lb <- min(hill$lbound)
+  } else {
+    lb <- 0
+  }
+  plot(
+    x = hill$k,
+    y = hill$shape,
+    log = ifelse(isTRUE(log), "x", ""),
+    ylim = c(lb, max(hill$ubound, na.rm = TRUE)),
+    bty = "l",
+    pch = 20,
+    panel.first = {
+      segments(
+        x0 = xp,
+        y0 = hill$lbound,
+        y1 = hill$ubound,
+        col = 'grey'
+      )
+    },
+    xlab = "number of exceedances",
+    ylab = "shape"
+  )
+  return(invisible(NULL))
+}
+
+#' Random block maxima shape estimator of Wager
+#'
+#' Computes the shape estimator for varying k up to sample size of maximum \code{kmax} largest observations
+#' @param xdat [vector] sample exceedances
+#' @param kmax [int] maximum number of observations to consider as sample size
+#' @param ... additional parameters, currently ignored
+#' @param
+#' @references
+#' @note Function adapted from **R** package \url{https://github.comswager/rbm}, under MIT license
+#'
+shape.rbm = function(xdat, k = 10:floor(length(xdat) / 2), ...) {
+  k <- as.integer(sort(k))
+  xdat <- xdat[is.finite(xdat) & xdat > 0]
+  n <- length(xdat)
+  kmin <- k[1]
+  kmax <- min(k[length(k)] + 1, n)
+  ks <- kmin:kmax
+  kw <- 2 * n / ks
+  logxdat <- log(sort(xdat, decreasing = TRUE))
+  M <- numeric(kmax - kmin + 2)
+  j <- 0
+  for (km in (kmin - 1):kmax) {
+    j <- j + 1L
+    M[j] <- sum(
+      exp(lchoose(n - 1:(n - km + 1), km - 1) - lchoose(n, km)) *
+        logxdat[1:(n - km + 1)]
+    )
+  }
+  shape <- diff(M) * kmin:kmax
+  empbayes <- c(
+    (diff(shape) / diff(log(rev(kw))))^2 + 0.5 * shape[-1]^2 / kw[-1],
+    NA
+  )
+  res <- data.frame(
+    k = ks,
+    shape = shape,
+    risk = empbayes,
+    thresh = xdat[ks]
+  )[ks %in% k, ]
+  attr(res, which = "row.names") <- NULL
+  class(res) <- "mev_shape_rbm"
+  if (length(k) == 1L) {
+    return(res$shape)
+  } else {
+    return(invisible(res))
+  }
+}
+
+#' @param x object of class \code{mev_shape_rbm} returned by \code{shape.rbm}
+#' @param type [string] type of plot, either \code{"shape"} for the tail index or \code{"risk"} for the empirical Bayes risk
+#' @param log [logical] if \code{TRUE} (default), the x-axis for the number of exceedances is displayed on the log scale.
+#' @return one or more plots
+#' @export
+plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
+  k0 <- which.min(x$risk)
+  type <- match.arg(
+    arg = type,
+    choices = c("shape", "risk"),
+    several.ok = TRUE
+  )
+  if ("shape" %in% type) {
+    plot(
+      x = x$k[x$k >= 10],
+      y = x$shape[x$k >= 10],
+      xlog = isTRUE(log),
+      xlab = "log number of exceedances",
+      ylab = "shape",
+      ylim = c(0, max(x$shape[x$k >= 10])),
+      bty = "l",
+      type = "l"
+    )
+    segments(
+      x0 = x$k[k0],
+      y0 = x$shape[k0] + qnorm(0.025) * x$shape[k0] / sqrt(x$k[k0]),
+      y1 = x$shape[k0] + qnorm(0.975) * x$shape[k0] / sqrt(x$k[k0]),
+      col = "grey",
+    )
+    mtext(
+      text = eval(bquote(expression(k[0] ~ "=" ~ .(x$k[k0])))),
+      side = 3,
+      adj = 1,
+      line = 0
+    )
+    rug(x = x$k[k0], ticksize = -0.1, col = "grey50")
+    rug(side = 2, x = x$shape[k0], ticksize = -0.1, col = "grey50")
+  }
+  if ("risk" %in% type) {
+    plot(
+      x = x$k[x$k >= 10],
+      y = log(x$risk[x$k >= 10]),
+      log = 'x',
+      xlab = "log number of exceedances",
+      ylab = "empirical Bayes log risk",
+      bty = "l",
+      type = "l"
+    )
+    mtext(
+      text = eval(bquote(expression(k[0] ~ "=" ~ .(x$k[k0])))),
+      side = 3,
+      adj = 1,
+      line = 0
+    )
+    rug(x = x$k[k0])
+  }
+}
+
+#' Threshold selection for the random block maxima method
+#' @inheritParams shape.rbm
+#' @return a list with elements
+thselect.rbm <- function(xdat, kmax = length(xdat)) {
+  xdat <- sort(xdat, decreasing = TRUE)
+  rbm <- shape.rbm(xdat = xdat, kmax = min(length(xdat) - 1L, kmax))
+  ind <- which.min(rbm$risk)
+  res <- list(
+    k0 = rbm$k[ind],
+    cthresh = rbm$thresh[ind],
+    shape = rbm$shape[ind]
+  )
+  class(res) <- "mev_thselect_rbm"
+  return(res)
+}
+
+print.mev_thselect_rbm <- function(
+  x,
+  digits = min(3, getOption("digits") - 3),
+  ...
+) {
+  cat(
+    "Threshold selection method: random block maxima of Wager (2014)\n"
+  )
+  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Number of exceedances:", round(x$k0, digits), "\n")
+  cat("Shape estimate:", round(x$shape, digits), "\n")
+  return(invisible(NULL))
+}
+
+
 #' Beirlant et al. generalized quantile shape estimator
 #'
 #' This estimator estimates the real shape parameter based on generalized quantile plots based on mean excess functions, generalized median excesses or trimmed mean excesses.
@@ -137,14 +360,13 @@ shape.genquant <- function(
   xdat <- sort(xdat[is.finite(xdat) & xdat > 0], decreasing = TRUE)
   n <- length(xdat)
   k <- as.integer(sort(k))
-  k <- k[k < n]
-  kmax <- k[length(k)]
-  if (k[1] < 5) {
+  k <- k[k >= 5 & k < n]
+  if (length(k) == 0) {
     stop(
-      "Invalid argument: \"k\" must be larger than 5 to reliably estimate the shape parameter."
+      "Invalid number of exceedances: must be five or more, or less than the sample size."
     )
   }
-  stopifnot(kmax < n)
+  kmax <- k[length(k)] + 1L
   weight_fun <- FALSE
   if (missing(weight)) {
     we <- 1
@@ -203,8 +425,13 @@ shape.genquant <- function(
 shape.pickands <- function(xdat, k) {
   k <- sort(as.integer(k))
   xdat <- sort(xdat[is.finite(xdat) & xdat > 0], decreasing = FALSE)
-  n <- length(xdat)
-  stopifnot(isTRUE(all(n >= k, k >= 5)))
+  n <- min(k[length(k)] + 1, length(xdat))
+  k <- k[k >= 5 & k < n]
+  if (length(k) == 0) {
+    stop(
+      "Invalid number of exceedances: must be five or more, or less than the sample size."
+    )
+  }
   shape <- numeric(length = length(k))
   for (i in seq_along(k)) {
     shape[i] <- as.numeric(
@@ -218,7 +445,7 @@ shape.pickands <- function(xdat, k) {
       data.frame(k, shape)
     )
   } else {
-    return(shape)
+    return(as.numeric(shape))
   }
 }
 
@@ -235,8 +462,13 @@ shape.moment <- function(xdat, k) {
   k <- sort(as.integer(k))
   xdat <- sort(xdat[is.finite(xdat) & xdat > 0], decreasing = TRUE)
   logdata <- as.numeric(log(xdat))
-  n <- min(k[length(k)], length(logdata))
-  stopifnot(k[1] >= 5, k[length(k)] < length(logdata))
+  n <- min(k[length(k)] + 1, length(logdata))
+  k <- k[k >= 5 & k < n]
+  if (length(k) == 0) {
+    stop(
+      "Invalid number of exceedances: must be five or more, or less than the sample size."
+    )
+  }
   cumlogdat <- cumsum(logdata[1:n])
   M1 <- cumlogdat[k] / k - logdata[k + 1]
   shape <- numeric(length = length(k))
@@ -249,7 +481,7 @@ shape.moment <- function(xdat, k) {
       data.frame(k, shape)
     )
   } else {
-    return(shape)
+    return(as.numeric(shape))
   }
 }
 
@@ -265,8 +497,13 @@ shape.vries <- function(xdat, k) {
   k <- sort(as.integer(k))
   xdat <- sort(xdat[is.finite(xdat) & xdat > 0], decreasing = TRUE)
   logdata <- as.numeric(log(xdat))
-  n <- min(k[length(k)], length(logdata))
-  stopifnot(k[1] >= 5, k[length(k)] < length(logdata))
+  n <- min(k[length(k)] + 1, length(logdata))
+  k <- k[k >= 5 & k < n]
+  if (length(k) == 0) {
+    stop(
+      "Invalid number of exceedances: must be five or more, or less than the sample size."
+    )
+  }
   cumlogdat <- cumsum(logdata[1:n])
   M1 <- cumlogdat[k] / k - logdata[k + 1]
   shape <- numeric(length = length(k))
@@ -279,7 +516,7 @@ shape.vries <- function(xdat, k) {
       data.frame(k, shape)
     )
   } else {
-    return(shape)
+    return(as.numeric(shape))
   }
 }
 
@@ -287,7 +524,7 @@ shape.vries <- function(xdat, k) {
 #' Shape parameter estimates
 #'
 #' Wrapper to estimate the tail index or shape parameter of an extreme value distribution. Each function has similar sets of arguments, a vector or scalar number of order statistics \code{k} and
-#' a vector of positive observations \code{xdat}. The \code{method} argument allows users to choose between different indicators, including the Hill estimator (\code{hill}, for positive observations and shape only), the moment estimator of Dekkers and de Haan (\code{mom} or \code{dekkers}), the Beirlant, Vynckier and Teugels generalized quantile estimator (\code{bvt} or \code{genquant}), the Pickands estimator (\code{pickands}), the extreme \eqn{U}-statistics estimator of Oorschot, Segers and Zhou (\code{osz}, or \code{pickandsxu}).
+#' a vector of positive observations \code{xdat}. The \code{method} argument allows users to choose between different indicators, including the Hill estimator (\code{hill}, for positive observations and shape only), the moment estimator of Dekkers and de Haan (\code{mom} or \code{dekkers}), the Beirlant, Vynckier and Teugels generalized quantile estimator (\code{bvt} or \code{genquant}), the Pickands estimator (\code{pickands}), the extreme \eqn{U}-statistics estimator of Oorschot, Segers and Zhou (\code{osz}), or the exponential rgression model of Beirlant et al. (\code{erm}).
 #' @export
 #' @inheritParams shape.pickands
 #' @param method estimation method.
@@ -298,14 +535,14 @@ fit.shape <- function(
   k,
   method = c(
     "hill",
-    "pickandsxu",
+    "rbm",
     "osz",
     "vries",
     "mom",
     "dekkers",
-    "bvt",
     "genquant",
-    "pickands"
+    "pickands",
+    "erm",
   ),
   ...
 ) {
@@ -322,6 +559,15 @@ fit.shape <- function(
     return(shape.pickands(xdat = xdat, k = k))
   } else if (method == "vries") {
     return(shape.vries(xdat = xdat, k = k))
+  } else if (method == "rbm") {
+    return(shape.rbm(xdat = xdat, kmax = max(k)))
+  } else if (method == "erm") {
+    res <- shape.erm(xdat = xdat, k = k, ...)
+    if (length(k) == 1L) {
+      return(res$shape)
+    } else {
+      return(data.frame(k = res$k, shape = res$shape))
+    }
   }
 }
 
@@ -517,7 +763,7 @@ rho.ghp <- function(xdat, k, alpha = 2) {
 }
 
 
-#' Second order tail index estimator of Gomes et al.
+#' Second order tail index estimator of Goegebeur et al. (2008)
 #'
 #' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data based on ratio of kernel goodness-of-fit statistics.
 #'
@@ -525,7 +771,7 @@ rho.ghp <- function(xdat, k, alpha = 2) {
 #'@param xdat vector of positive observations
 #'@param k number of highest order statistics to use for estimation
 #'@export
-rho.gbw08 <- function(
+rho.gbw <- function(
   xdat,
   k
 ) {

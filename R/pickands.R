@@ -79,7 +79,7 @@ plot.mev_thselect_pickands <- function(x, ...) {
 #' @export
 print.mev_thselect_pickands <- function(
   x,
-  digits = max(3, getOption("digits") - 3),
+  digits = min(3, getOption("digits") - 3),
   ...
 ) {
   cat(
@@ -155,7 +155,7 @@ thselect.alrs <- function(xdat, thresh, plot = FALSE) {
 
 #' @export
 print.mev_thselect_lmoment <-
-  function(x, digits = max(3, getOption("digits") - 3), ...) {
+  function(x, digits = min(3, getOption("digits") - 3), ...) {
     cat(
       "Threshold selection method: L-moments\nSilva Lomba and Fraga Alves (2020)\n"
     )
@@ -328,7 +328,7 @@ thselect.mahadist <- function(
 #' @export
 print.mev_thselect_mahalanobis <- function(
   x,
-  digits = max(3, getOption("digits") - 3),
+  digits = min(3, getOption("digits") - 3),
   ...
 ) {
   cat(

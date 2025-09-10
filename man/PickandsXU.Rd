@@ -9,7 +9,7 @@ PickandsXU(xdat, m)
 \arguments{
 \item{xdat}{vector of observations of length \eqn{n}}
 
-\item{k}{number of largest order statistics \eqn{3 \leq k \leq n}.}
+\item{m}{number of largest order statistics \eqn{3 \leq k \leq n}.}
 }
 \description{
 [Deprecated function]

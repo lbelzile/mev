@@ -43,7 +43,9 @@ tstab.mrl(
  xdat = rgp(n = 100, shape = -0.5),
  xlab = "thresh",
  kmax = 50)
-
+tstab.mrl(
+ rexp(100),
+ thresh = qexp(seq(0, 0.9, by = 0.01)))
 }
 \references{
 Davison, A.C. and R.L. Smith (1990). Models for Exceedances over High Thresholds (with discussion), \emph{Journal of the Royal Statistical Society. Series B (Methodological)}, \bold{52}(3), 393--442.

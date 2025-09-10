@@ -633,7 +633,7 @@ fit.egp <- function(
 # @param digits Number of digits to display in \code{print} call.
 # @param ... Additional argument passed to \code{print}.
 #' @export
-print.mev_egp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+print.mev_egp <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   text <- switch(
     x$model,
     "pt-beta" = "Papastathopoulos-Tawn's EGP 1",

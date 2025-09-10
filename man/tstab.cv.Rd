@@ -33,3 +33,7 @@ tstab.cv(
 \description{
 This function calculates parametric estimates of the coefficient of variation with pointwise Wald confidence intervals along with empirical estimates and returns a threshold stability plot.
 }
+\examples{
+tstab.cv(
+ tstab.cv(
+}

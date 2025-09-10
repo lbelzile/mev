@@ -88,6 +88,7 @@ W.diag <- function(
   plots = c("LRT", "WN", "PS"),
   UseQuantiles = FALSE,
   changepar = TRUE,
+  transform = TRUE,
   ...
 ) {
   stopifnot(
@@ -100,17 +101,19 @@ W.diag <- function(
   if (!is.null(plots)) {
     plots <- match.arg(plots, choices = c("LRT", "WN", "PS"), several.ok = TRUE)
   }
-  if (
-    ncol(as.matrix(xdat)) == 2 &&
-      model %in% c("exp", "invexp")
-  ) {
-    xdat <- -log(
-      1 -
-        apply(xdat, 2, function(y) {
-          rank(y, ties.method = "average") / (length(y) + 1)
-        })
-    )
-    xdat <- pmin(xdat[, 1], xdat[, 2])
+  if (transform) {
+    if (
+      ncol(as.matrix(xdat)) == 2 &&
+        model %in% c("exp", "invexp")
+    ) {
+      xdat <- -log(
+        1 -
+          apply(xdat, 2, function(y) {
+            rank(y, ties.method = "average") / (length(y) + 1)
+          })
+      )
+      xdat <- as.numeric(pmin(xdat[, 1], xdat[, 2]))
+    }
   }
   if (ncol(as.matrix(xdat)) != 1) {
     stop("Invalid input for \"xdat\"")
@@ -251,17 +254,20 @@ W.diag <- function(
     wn <-
       .C1(k) %*% J1$mle[, 3] / sqrt(diag(.C1(k) %*% J1$Cov.xi %*% t(.C1(k))))
     nl <- .norm_LRT(x = wn, u = u[-c(1, k + 1)])
-
     nlt <- NULL
     for (j in 1:nbs) {
       nlt[j] <- max(.norm_LRT(x = rnorm(k - 1), u[-c(1, k + 1)])[, 2])
     }
 
-    pval <- length(nlt[nlt > max(nl[, 2])]) / nbs
+    pval <- sum(nlt > max(nl[, 2])) / nbs
 
     if (pval < alpha) {
-      ustar <- nl[nl[, 2] == max(nl[, 2]), 1]
+      # Reject null that the white noise is mean zero throughout
+      # against changepoint alternative
+      # Pick threshold that maximizes the LRT
+      ustar <- nl[which.max(nl[, 2]), 1]
     } else {
+      # No evidence of shift, pick lowest threshold
       ustar <- min(u)
     }
     ind <- u[-(k + 1)] == ustar
@@ -273,92 +279,97 @@ W.diag <- function(
       qs <- NULL
       qlthresh <- NULL
     }
-    #   if(!is.null(plots)){
-    #   # Copy graphical elements from ellipsis
-    #   if (changepar) {
-    #     old.par <- par(no.readonly = TRUE)
-    #     on.exit(par(old.par))
-    #     par(mfrow = c(length(plots), 1),
-    #         mar = c(4.5, 4.5, 0.1, 0.1))
-    #   }
-    #   if (is.element("LRT", plots)) {
-    #     if (!UseQuantiles) {
-    #       plot(
-    #         qs,
-    #         c(rep(NA, 2), nl[, 2]),
-    #         xlab = "quantile",
-    #         ylab = "likelihood ratio statistic",
-    #         main = paste("p-value:", pval),
-    #         ...
-    #       )
-    #     } else {
-    #       plot(
-    #         u[-c(k + 1)],
-    #         c(rep(NA, 2), nl[, 2]),
-    #         bty = "l",
-    #         xlab = "threshold",
-    #         ylab = "likelihood ratio statistic",
-    #         main = paste("p-value:", pval),
-    #         ...
-    #       )
-    #     }
-    #   }
-    #
-    #   if (is.element("WN", plots)) {
-    #     if (!UseQuantiles) {
-    #       plot(qs,
-    #            c(NA, wn),
-    #            xlab = "quantile",
-    #            ylab = "white noise",
-    #            bty = "l",
-    #            ...)
-    #       abline(h = 0, col = 2)
-    #       abline(v = mean(xdat <= ustar), col = 4)
-    #     } else {
-    #       plot(u[-c(k + 1)],
-    #            c(NA, wn),
-    #            xlab = "threshold",
-    #            ylab = "white noise",
-    #            bty = "l",
-    #            ...)
-    #       abline(h = 0, col = 2)
-    #       abline(v = ustar, col = 4)
-    #     }
-    #   }
-    #
-    #   if (is.element("PS", plots)) {
-    #     TradCI <-
-    #       cbind(J1$mle[, 3] - qnorm(0.975) * sqrt(diag(J1$Cov.xi)),
-    #             J1$mle[, 3] + qnorm(0.975) * sqrt(diag(J1$Cov.xi)))
-    #     if (!UseQuantiles) {
-    #       plot(
-    #         qs,
-    #         J1$mle[, 3],
-    #         ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
-    #         xlab = "quantile",
-    #         bty = "l",
-    #         ylab = "shape",
-    #         ...
-    #       )
-    #       lines(qs, TradCI[, 1], lty = 2)
-    #       lines(qs, TradCI[, 2], lty = 2)
-    #       abline(v = mean(xdat <= ustar), col = 4)
-    #     } else {
-    #       plot(
-    #         u[-(k + 1)],
-    #         J1$mle[, 3],
-    #         ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
-    #         bty = "l",
-    #         xlab = "threshold",
-    #         ylab = "shape",
-    #         ...
-    #       )
-    #       lines(u[-(k + 1)], TradCI[, 1], lty = 2)
-    #       lines(u[-(k + 1)], TradCI[, 2], lty = 2)
-    #       abline(v = ustar, col = 4)
-    #     }
-    #   }
-    # }
+    if (!is.null(plots)) {
+      # Copy graphical elements from ellipsis
+      if (changepar) {
+        old.par <- par(no.readonly = TRUE)
+        on.exit(par(old.par))
+        par(mfrow = c(length(plots), 1), mar = c(4.5, 4.5, 0.1, 0.1))
+      }
+      if (is.element("LRT", plots)) {
+        if (!UseQuantiles) {
+          plot(
+            qs,
+            c(rep(NA, 2), nl[, 2]),
+            xlab = "quantile",
+            ylab = "likelihood ratio statistic",
+            main = paste("p-value:", pval),
+            ...
+          )
+        } else {
+          plot(
+            u[-c(k + 1)],
+            c(rep(NA, 2), nl[, 2]),
+            bty = "l",
+            xlab = "threshold",
+            ylab = "likelihood ratio statistic",
+            main = paste("p-value:", pval),
+            ...
+          )
+        }
+      }
+
+      if (is.element("WN", plots)) {
+        if (!UseQuantiles) {
+          plot(
+            qs,
+            c(NA, wn),
+            xlab = "quantile",
+            ylab = "white noise",
+            bty = "l",
+            ...
+          )
+          abline(h = 0, col = 2)
+          abline(v = mean(xdat <= ustar), col = 4)
+        } else {
+          plot(
+            u[-c(k + 1)],
+            c(NA, wn),
+            xlab = "threshold",
+            ylab = "white noise",
+            bty = "l",
+            ...
+          )
+          abline(h = 0, col = 2)
+          abline(v = ustar, col = 4)
+        }
+      }
+
+      if (is.element("PS", plots)) {
+        TradCI <-
+          cbind(
+            J1$mle[, 3] - qnorm(0.975) * sqrt(diag(J1$Cov.xi)),
+            J1$mle[, 3] + qnorm(0.975) * sqrt(diag(J1$Cov.xi))
+          )
+        if (!UseQuantiles) {
+          plot(
+            qs,
+            J1$mle[, 3],
+            ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+            xlab = "quantile",
+            bty = "l",
+            ylab = "shape",
+            ...
+          )
+          lines(qs, TradCI[, 1], lty = 2)
+          lines(qs, TradCI[, 2], lty = 2)
+          abline(v = mean(xdat <= ustar), col = 4)
+        } else {
+          plot(
+            u[-(k + 1)],
+            J1$mle[, 3],
+            ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+            bty = "l",
+            xlab = "threshold",
+            ylab = "shape",
+            ...
+          )
+          lines(u[-(k + 1)], TradCI[, 1], lty = 2)
+          lines(u[-(k + 1)], TradCI[, 2], lty = 2)
+          abline(v = ustar, col = 4)
+        }
+      }
+    }
     colnames(J1$mle) <- names(theta.hat) <- c("location", "scale", "shape")
     colnames(J1$Cov.xi) <- rownames(J1$Cov.xi) <- NULL
     ret_list <- list(
@@ -375,16 +386,6 @@ W.diag <- function(
       mle.u = theta.hat,
       model = "nhpp"
     )
-    class(ret_list) <- "mev_thselect_wadsworth"
-    if (!is.null(plots)) {
-      plot(
-        ret_list,
-        plots = plots,
-        changepar = changepar,
-        UseQuantiles = UseQuantiles,
-        ...
-      )
-    }
     invisible(ret_list)
   }
 
@@ -831,34 +832,30 @@ W.diag <- function(
 #'@return a \code{k-1} x \code{k} contrast matrix
 #'@keywords internal
 .C1 <- function(k) {
-  C <- diag(x = 1, nrow = k - 1, ncol = k)
-  C[row(C) + 1 == col(C)] <- -1
-  return(C)
+  Cm <- diag(x = 1, nrow = k - 1, ncol = k)
+  Cm[row(Cm) + 1 == col(Cm)] <- -1
+  return(Cm)
 }
 
 #' @export
+#' @param x object returned by a call to \code{thselect.wseq}
+#' @param type string giving the plots to produce
+#' @param ... additional arguments passed to plotting function
 plot.mev_thselect_wadsworth <-
-  function(x, plots = c("lrt", "wn", "ps"), ...) {
+  function(x, type = c("wn", "ps"), ...) {
     args <- list(...)
     args$`...` <- NULL #probably not needed anymore
-    if (is.null(args$UseQuantiles)) {
-      UseQuantiles <- FALSE
-    } else {
-      UseQuantiles <- args$UseQuantiles
-      args$UseQuantiles <- NULL
-      if (is.null(x$qlevel)) {
-        UseQuantiles <- FALSE
-      }
-    }
     model <- match.arg(
       arg = x$model,
       choices = c("nhpp", "exp", "invexp"),
       several.ok = FALSE
     )
-    plots <- tolower(plots)
-    plots <- match.arg(plots, choices = c("lrt", "wn", "ps"), several.ok = TRUE)
+    plots <- tolower(which)
+    plots <- match.arg(plots, choices = c("wn", "ps"), several.ok = TRUE)
     if (length(plots) < 1) {
-      stop("No choice selected; aborting.")
+      stop(
+        "Only options for white noise plot (\"wn\") and parameter stability plot (\"ps\") are supported."
+      )
     }
     # Copy graphical elements from ellipsis
     if (isTRUE(args$changepar)) {
@@ -867,45 +864,40 @@ plot.mev_thselect_wadsworth <-
       par(mfrow = c(length(plots), 1), mar = c(4.5, 4.5, 0.5, 0.5))
     }
     args$changepar <- NULL
-    if (!UseQuantiles) {
-      xp <- x$cthresh[-c(x$k + 1)]
-      xlab <- "threshold"
-    } else {
-      xp <- x$qthresh
-      xlab <- "quantile"
-    }
+    x$k <- length(x$thresh)
+    xp <- x$thresh[-c(x$k + 1)]
+    xlab <- "threshold"
     args$x <- args$y <- args$xlab <- args$ylab <- NULL
     if (is.null(args$bty)) {
       args$bty = "l"
     }
-    if (is.element("lrt", plots)) {
-      do.call(
-        what = plot,
-        args = c(
-          list(
-            x = xp,
-            y = c(rep(NA, 2), x$LRT[, 2]),
-            xlab = xlab,
-            ylab = "likelihood ratio"
-          ),
-          args
-        )
-      )
-      mtext(
-        cex = 0.8,
-        text = paste("p-value:", format.pval(pv = x$pval, eps = 1e-4)),
-        side = 3,
-        adj = 1
-      )
-    }
-
+    # if (is.element("lrt", plots)) {
+    #   do.call(
+    #     what = plot,
+    #     args = c(
+    #       list(
+    #         x = xp,
+    #         y = c(rep(NA, 2), x$LRT[, 2]),
+    #         xlab = xlab,
+    #         ylab = "likelihood ratio"
+    #       ),
+    #       args
+    #     )
+    #   )
+    #   mtext(
+    #     cex = 0.8,
+    #     text = paste("p-value:", format.pval(pv = x$pval, eps = 1e-4)),
+    #     side = 3,
+    #     adj = 1
+    #   )
+    # }
     if (is.element("wn", plots)) {
       do.call(
         what = plot,
         args = c(
           list(
             x = xp,
-            y = c(NA, x$WN),
+            y = c(NA, x$whitenoise),
             xlab = xlab,
             ylab = "white noise"
           ),
@@ -913,36 +905,42 @@ plot.mev_thselect_wadsworth <-
         )
       )
       abline(h = 0, col = 2)
-      abline(v = ifelse(UseQuantiles, x$qthresh, x$thresh), col = 4)
+      abline(v = x$cthresh, col = 4)
+      mtext(
+        text = paste0("p-value: ", round(x$pval, 3)),
+        side = 1,
+        line = 2,
+        adj = 1
+      )
     }
     if (is.element("ps", plots)) {
       col <- switch(model, nhpp = 3, exp = 1, invexp = 1)
-      TradCI <-
+      WaldCI <-
         cbind(
-          as.matrix(x$MLE)[, col] - qnorm(0.975) * sqrt(diag(x$Cov)),
-          as.matrix(x$MLE)[, col] + qnorm(0.975) * sqrt(diag(x$Cov))
+          as.matrix(x$coef)[, col] - qnorm(0.975) * sqrt(diag(x$vcov)),
+          as.matrix(x$coef)[, col] + qnorm(0.975) * sqrt(diag(x$vcov))
         )
       do.call(
         plot,
         args = c(
           list(
             x = xp,
-            y = as.matrix(x$MLE)[, col],
-            ylim = c(min(TradCI[, 1]), max(TradCI[, 2])),
+            y = as.matrix(x$coef)[, col],
+            ylim = c(min(WaldCI[, 1]), max(WaldCI[, 2])),
             xlab = xlab,
             ylab = switch(
               model,
               "nhpp" = "shape",
-              "invexp" = expression(hat(eta)),
-              "exp" = expression(hat(theta))
+              "invexp" = "tail dependence", #expression(hat(eta)),
+              "exp" = "reciprocal tail dependence" #expression(hat(theta))
             )
           ),
           args
         )
       )
-      lines(xp, TradCI[, 1], lty = 2)
-      lines(xp, TradCI[, 2], lty = 2)
-      abline(v = ifelse(UseQuantiles, x$qthresh, x$thresh), col = 4)
+      lines(xp, WaldCI[, 1], lty = 2)
+      lines(xp, WaldCI[, 2], lty = 2)
+      abline(v = x$cthresh, col = 4)
     }
     return(invisible(NULL))
   }
@@ -950,7 +948,7 @@ plot.mev_thselect_wadsworth <-
 
 #' @export
 print.mev_thselect_wadsworth <-
-  function(x, digits = max(3, getOption("digits") - 3), ...) {
+  function(x, digits = min(3, getOption("digits") - 3), ...) {
     cat(
       "Threshold selection method: Wadsworth's white noise test\n based on sequential Poisson process superposition.\n"
     )
@@ -958,12 +956,12 @@ print.mev_thselect_wadsworth <-
       switch(
         x$model,
         "nhpp" = "inhomogeneous Poisson process (shape)",
-        "invexp" = "coefficient of tail dependence \n(exponential, reciprocal rate)",
-        "exp" = "coefficient of tail dependence \n(exponential, rate)"
+        "invexp" = "coefficient of tail dependence (scale)",
+        "exp" = "reciprocal coefficient of tail dependence (rate)"
       ),
       "\n"
     )
-    cat("Selected threshold:", round(x$thresh, digits), "\n")
+    cat("Selected threshold:", round(x$cthresh, digits), "\n")
     return(invisible(NULL))
   }
 
@@ -972,86 +970,138 @@ print.mev_thselect_wadsworth <-
 #'
 #' Function to produce diagnostic plots and test statistics for the
 #' threshold diagnostics exploiting structure of maximum likelihood estimators
-#' based on the non-homogeneous Poisson process likelihood
+#' based on the non-homogeneous Poisson process likelihood or the coefficient of tail dependence
 #'
-#' @param xdat a numeric vector of data to be fitted.
-#' @param model string specifying whether the univariate or bivariate diagnostic should be used. Either \code{nhpp}
-#' for the univariate model, \code{exp} (\code{invexp}) for the bivariate exponential model with rate (inverse rate) parametrization. See details.
+#' @param xdat a numeric vector or matrix of data to be fitted.
 #' @param thresh vector of candidate thresholds.
-#' @param M number of superpositions or 'blocks' / 'years' the process corresponds to (can affect the optimization)
+#' @param quantile vector of probabilities for empirical quantiles used in place of the threshold, used if argument \code{thresh} is missing.
+#' @param model string specifying whether the univariate or multivariate diagnostic should be used. Either \code{nhpp} for the univariate model, or \code{exp} (\code{invexp}) for the bivariate exponential model with rate (inverse rate) parametrization. See details.
 #' @param nsim number of Monte Carlo simulations used to assess the null distribution of the test statistic
-#' @param alpha significance level of the test
-#' @param plots vector of strings indicating which plots to produce; \code{LRT}= likelihood ratio test, \code{WN} = white noise, \code{PS} = parameter stability. Use \code{NULL} if you do not want plots to be produced
-#' @param UseQuantiles logical; use quantiles as the thresholds in the plot?
-#' @param changepar logical; if \code{TRUE}, the graphical parameters (via a call to \code{par}) are modified.
-#' @param ... additional parameters passed to \code{plot}, overriding defaults including
+#' @param level confidence level of intervals, defaults to 0.95
+#' @param npp number of observations per period for the non-homogeneous point process model. Default to 1.
+#' @param plot logical; if \code{TRUE}, calls the plot routine
+#' @param ... additional parameters passed to internal routine
 #'
-#' @details The function is a wrapper for the univariate (non-homogeneous Poisson process model) and bivariate exponential dependence model.
-#' For the latter, the user can select either the rate or inverse rate parameter  (the inverse rate parametrization  works better for uniformity
-#' of the p-value distribution under the \code{LR} test.
+#' @details The function is a wrapper for the univariate (non-homogeneous Poisson process model) and exponential dependence model applied to the minimum component (tail dependence coefficient).
+#' For the latter, the user can select either the rate (\code{"taildep"} or inverse rate parameter  (\code{"rtaildep"}). The inverse rate parametrization  works better for uniformity of the p-value distribution under the likelihood ratio test for the changepoint.
 #'
-#' There are two options for the bivariate diagnostic: either provide pairwise minimum of marginally
-#' exponentially distributed margins or provide a \code{n} times 2 matrix with the original data, which
-#' is transformed to exponential margins using the empirical distribution function.
-#' @keywords internal
+#' For the coefficient of tail dependence, users must provide pairwise minimum of marginally exponentially distributed margins (see example)
 #' @references Wadsworth, J.L. (2016). Exploiting Structure of Maximum Likelihood Estimators for Extreme Value Threshold Selection, \emph{Technometrics}, \bold{58}(1), 116-126, \code{http://dx.doi.org/10.1080/00401706.2014.998345}.
 #'
-#' @author Jennifer L. Wadsworth
-#' @return plots of the requested diagnostics and an invisible list with components
+#' @author Jennifer L. Wadsworth, Léo Belzile
+#' @return an object of class invisible list with components
 #' \itemize{
-#' \item \code{MLE}: maximum likelihood estimates from all thresholds
-#' \item \code{Cov}: joint asymptotic covariance matrix for \eqn{\xi}, \eqn{\eta} or \eqn{1/\eta}.
-#' \item \code{WN}: values of the white noise process
-#' \item \code{LRT}: values of the likelihood ratio test statistic vs threshold
+#' \item \code{cthresh}: threshold selected by the likelihood ratio procedure
+#' \item \code{thresh}: vector of candidate thresholds
+#' \item \code{coef}: maximum likelihood estimates from all thresholds
+#' \item \code{vcov}: joint asymptotic covariance matrix for shape \eqn{\xi} or coefficient of tail dependence \eqn{\eta}, or it's reciprocal.
+#' \item \code{wn}: values of the white noise process
+#' \item \code{stat}: value of the likelihood ratio test statistic for the changepoint test
 #' \item \code{pval}: \emph{P}-value of the likelihood ratio test
-#' \item \code{k}: final number of thresholds used
-#' \item \code{thresh}: threshold selected by the likelihood ratio procedure
-#' \item \code{qthresh}: quantile level of threshold selected by the likelihood ratio procedure
-#' \item \code{cthresh}: vector of candidate thresholds
-#' \item \code{qcthresh}: quantile level of candidate thresholds
-#' \item \code{mle.u}: maximum likelihood estimates for the selected threshold
-#' \item \code{model}: model fitted
+#' \item \code{mle}: maximum likelihood estimates for the selected threshold
+#' \item \code{model}: model fitted, either \code{nhpp}, \code{exp} or \code{invexp}
+#' \item \code{nsim}: number of Monte Carlo simulations for changepoint test
+#' \item \code{xdat}: vector of observations
 #' }
 #'
 #' @examples
 #' \dontrun{
 #' set.seed(123)
-#' # Parameter stability only
-#' W.diag(xdat = abs(rnorm(5000)), model = 'nhpp',
-#'        k = 30, q1 = 0, plots = "PS")
-#' W.diag(rexp(1000), model = 'nhpp', k = 20, q1 = 0)
-#' xbvn <- mvrnorm(n = 6000,
+#' xdat <- abs(rnorm(5000))
+#' thresh <- quantile(xdat, seq(0, 0.9, by = 0.1))
+#' (diag <- thselect.wseq(
+#'  xdat = xdat,
+#'  thresh = thresh,
+#'  plot = TRUE,
+#'  type = "ps"))
+#' # Multivariate example, with coefficient of tail dependence
+#' xbvn <- mvrnorm(n = 6000L,
 #'                 mu = rep(0, 2),
 #'                 Sigma = cbind(c(1, 0.7), c(0.7, 1)))
-#' # Transform margins to exponential manually
-#' xbvn.exp <- -log(1 - pnorm(xbvn))
-#' #rate parametrization
-#' W.diag(xdat = apply(xbvn.exp, 1, min), model = 'exp',
-#'        k = 30, q1 = 0)
-#' W.diag(xdat = xbvn, model = 'exp', k = 30, q1 = 0)
+#' thselect.wseq(
+#'   xdat = xbvn,
+#'   quantile = seq(0, 0.9, length.out = 30),
+#'   model = 'taildep',
+#'   plot = TRUE)
 #' #inverse rate parametrization
-#' W.diag(xdat = apply(xbvn.exp, 1, min), model = 'invexp',
-#'        k = 30, q1 = 0)
 #' }
 #' @export
 thselect.wseq <- function(
   xdat,
   thresh,
-  model,
+  quantile,
+  model = c("nhpp", "taildep", "rtaildep"),
   npp = 1,
   nsim = 1000L,
   level = 0.95,
   plot = FALSE,
   ...
 ) {
-  wdiag <- W.diag(
-    xdat = xdat,
-    u = thresh,
-    model = model,
-    nbs = nsim,
-    M = length(xdat) / npp,
-    alpha = 1 - level,
-    ...,
-    plots = NULL
+  args <- list(...)
+  model <- match.arg(model)
+  mod <- switch(
+    model,
+    rtaildep = "exp",
+    taildep = "invexp",
+    nhpp = "nhpp"
   )
+  if (mod != "nhpp" && ncol(as.matrix(xdat)) > 1) {
+    xdat <- -log(
+      1 -
+        apply(xdat, 2, function(y) {
+          rank(y, ties.method = "average", na.last = "keep") /
+            (sum(is.finite(y)) + 1)
+        })
+    )
+    xdat <- apply(na.omit(xdat), 1, min)
+    args$transform <- FALSE
+  }
+  if (missing(thresh) && !missing(quantile)) {
+    stopifnot(isTRUE(all(quantile >= 0, quantile < 1, is.finite(quantile))))
+    thresh <- quantile(xdat, probs = quantile)
+  }
+  plots <- args$type
+  if (is.null(plots)) {
+    plots <- c("wn", "ps")
+  }
+  args$type <- NULL
+  wdiag <- do.call(
+    what = "W.diag",
+    args = c(
+      args,
+      list(
+        xdat = xdat,
+        u = thresh,
+        model = mod,
+        nbs = nsim,
+        M = length(xdat) / npp,
+        alpha = 1 - level,
+        plots = NULL
+      )
+    )
+  )
+  if (missing(quantile)) {
+    quantile <- NULL
+  }
+  res <- list(
+    thresh = as.numeric(thresh),
+    cthresh = wdiag$thresh,
+    quantile = quantile,
+    model = mod,
+    nsim = nsim,
+    level = level,
+    vcov = wdiag$Cov,
+    coef = wdiag$MLE,
+    mle = wdiag$mle.u,
+    whitenoise = wdiag$WN,
+    # P-value is for changepoint, taking the cutoff that maximizes the evidence
+    stat = max(wdiag$LRT[, 2]),
+    pval = wdiag$pval,
+    xdat = xdat
+  )
+  class(res) <- "mev_thselect_wadsworth"
+  if (isTRUE(plot)) {
+    plot(res, type = plots)
+  }
+  return(invisible(res))
 }

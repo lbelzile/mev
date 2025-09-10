@@ -1,6 +1,7 @@
 #' Kernel-based threshold selection of Goegebeur, Beirlant and de Wet (2008)
-#' @param xdat vector of observations
-#' @param kmax maximum number of exceedances considered
+#'
+#' @param xdat [vector] sample exceedances
+#' @param kmax [int] maximum number of exceedances considered
 #' @param kernel [string] kernel choice, one of \code{Jackson} or \code{Lewis}
 #' @param rho string for the estimator of the second order regular variation. Can also be a negative scalar
 #' @return a list with elements
@@ -10,11 +11,16 @@
 #' \item{\code{rho}:} second-order regular variation parameter estimate
 #' \item\code{gof}:} goodness-of-fit statistic for the \"best\" threshold.
 #' }
+#' @references Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51–69. <doi:10.57805/revstat.v6i1.57>
+#' @export
+#' @example
+#' xdat <- rgp(n = 1000, scale = 2, shape = 0.5)
+#' (thselect.gbw(xdat, kmax = 500))
 thselect.gbw <- function(
   xdat,
   kmax,
   kernel = c("Jackson", "Lewis"),
-  rho = c("gbw08", "ghp", "fagh", "cm", "gbw10"),
+  rho = c("gbw", "ghp", "fagh", "dk"),
   ...
 ) {
   args <- list(...)
@@ -64,12 +70,35 @@ thselect.gbw <- function(
       })^2
   }
   k0 <- k[which.min(gof)]
-  return(
-    list(
-      k0 = k0,
-      shape = mean(Z[1:k0]),
-      rho = erho[which.min(gof)],
-      gof = gof[k0]
-    )
+  res <- list(
+    k0 = k0,
+    cthresh = xdat[k0],
+    shape = mean(Z[1:k0]),
+    rho = erho[which.min(gof)],
+    method = ifelse(is.numeric(rho), "user-supplied", rho),
+    kernel = kernel,
+    gof = gof[k0]
   )
+  class(res) <- "mev_thselect_gbw"
+  return(invisible(res))
+}
+
+#' @export
+print.mev_thselect_gbw <- function(
+  x,
+  digits = min(3, getOption("digits") - 4),
+  ...
+) {
+  cat("Threshold selection method:", x$kernel, "kernel", "\n")
+  cat("Goegebeur, Beirlant and de Wet (2008)\n")
+  cat(
+    paste0("Second-order regular variation index (", x$method),
+    "estimator): ",
+    round(x$rho, digits),
+    "\n"
+  )
+  cat("Number of exceedances:", x$k0, "\n")
+  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Shape estimate:", round(x$shape, digits), "\n")
+  return(invisible(NULL))
 }

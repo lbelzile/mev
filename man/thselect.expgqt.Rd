@@ -9,18 +9,22 @@ thselect.expgqt(
   maxiter = 10L,
   tol = 2,
   kmin = max(10, floor(length(xdat)/100)),
-  propmax = 0.8,
+  kmax = floor(0.8 * length(xdat)),
   ...
 )
 }
 \arguments{
-\item{maxiter}{maximum number of iteration}
+\item{xdat}{[vector] sample of exceedances}
 
-\item{tol}{tolerance for difference in value of \eqn{k} for the fixed point}
+\item{maxiter}{[int] maximum number of iteration}
+
+\item{tol}{[double] tolerance for difference in value of \eqn{k} for the fixed point}
+
+\item{kmin}{[int] minimum number of exceedances for the estimator}
+
+\item{kmax}{[int] maximum number of exceedances for the estimator}
 
 \item{...}{additional arguments, currently ignored}
-
-\item{x}{sample of exceedances}
 }
 \value{
 a list with components

@@ -11,9 +11,11 @@
 #' Since the weights can become negative, there is no guarantee that the mean squared error estimate is positive, nor that
 #' the estimated value of \eqn{\rho} is nonpositive.
 #'
-#' @param x sample of exceedances
-#' @param maxiter maximum number of iteration
-#' @param tol tolerance for difference in value of \eqn{k} for the fixed point
+#' @param xdat [vector] sample of exceedances
+#' @param maxiter [int] maximum number of iteration
+#' @param tol [double] tolerance for difference in value of \eqn{k} for the fixed point
+#' @param kmin [int] minimum number of exceedances for the estimator
+#' @param kmax [int] maximum number of exceedances for the estimator
 #' @param ... additional arguments, currently ignored
 #' @return a list with components
 #' \itemize{
@@ -24,6 +26,7 @@
 #' \item \code{se} standard error of the shape parameter
 #' \item \code{convergence} logical; if \code{TRUE}, indicates that the method converged to a fixed point within \code{tol} before reaching the maximum number of iterations \code{maxiter}
 #' }
+#' @export
 #' @examples
 #' # Simulate Pareto data - log(xdat) is exponential with rate 2
 #' xdat <- rgp(n = 10000, loc = 1, scale = 0.5, shape = 0.5)
@@ -33,7 +36,7 @@ thselect.expgqt <- function(
   maxiter = 10L,
   tol = 2,
   kmin = max(10, floor(length(xdat) / 100)),
-  propmax = 0.8,
+  kmax = floor(0.8 * length(xdat)),
   ...
   # rho = c("btv","fgh"),
   # plot = FALSE
@@ -42,8 +45,8 @@ thselect.expgqt <- function(
   xdat <- sort(xdat, decreasing = TRUE)
   logx <- log(xdat)
   n <- length(logx)
-  stopifnot(propmax <= 1, propmax > 0)
-  kmax <- floor(propmax * n)
+  kmin <- as.integer(kmin)
+  kmax <- as.integer(kmax)
   if (kmax <= kmin) {
     stop(
       "Invalid input: the series is too short for estimation of the tail index"
@@ -341,12 +344,34 @@ thselect.expgqt <- function(
   # } else{
   #   se <- NA
   # }
-  list(
+  res <- list(
     k0 = k_cur,
     shape = gamma_cur,
     rho = rho_cur,
+    cthresh = exp(logx[k_cur + 1]),
     # mse = mse,
     # se = se,
     convergence = conv
   )
+  class(res) <- "mev_thselect_expgqt"
+  return(invisible(res))
+}
+
+#' @export
+print.mev_thselect_expgqt <- function(
+  x,
+  digits = min(3, getOption("digits") - 3),
+  ...
+) {
+  cat(
+    "Threshold selection method: Beirlant, Vynckier and Teugels (1996)\nGeneralized quantile threshold selection\n\n"
+  )
+  if (isTRUE(x$convergence)) {
+    cat("Selected threshold:", round(x$cthresh, digits), "\n")
+    cat("Number of exceedances:", round(x$k0, digits), "\n")
+    cat("Shape estimate:", round(x$shape, digits), "\n")
+  } else {
+    cat("Algorithm did not converge.\n")
+  }
+  return(invisible(NULL))
 }

@@ -31,6 +31,14 @@
 #' }
 #' @export
 #' @references del Castillo, J. and M. Padilla (2016). \emph{Modelling extreme values by the residual coefficient of variation}, SORT, 40(\bold{2}), pp. 303--320.
+#' @examples
+#' thselect.cv(
+#'  xdat = rgp(1000),
+#'  thresh = qgp(seq(0,0.9, by = 0.1)),
+#'  nsim = 99,
+#'  lazy = TRUE,
+#'  plot = TRUE)
+#'
 thselect.cv <- function(
   xdat,
   thresh,
@@ -51,7 +59,9 @@ thselect.cv <- function(
     is.logical(lazy),
     length(lazy) == 1L
   )
-
+  if (isTRUE(plot)) {
+    lazy <- FALSE
+  }
   # Set grid of thresholds or order them and keep exceedances
   if (!missing(thresh)) {
     thresh <- thresh[is.finite(thresh)]
@@ -191,12 +201,15 @@ thselect.cv <- function(
     level = level
   )
   class(ret) <- "mev_thselect_cv"
+  if (isTRUE(plot)) {
+    plot(ret)
+  }
   return(invisible(ret))
 }
 
 print.mev_thselect_cv <- function(
   x,
-  digits = max(3, getOption("digits") - 3),
+  digits = min(3, getOption("digits") - 3),
   ...
 ) {
   cat("Threshold selection method: coefficient of variation\n")
@@ -237,6 +250,16 @@ plot.mev_thselect_cv <- function(x, ...) {
 #'
 #' This function calculates parametric estimates of the coefficient of variation with pointwise Wald confidence intervals along with empirical estimates and returns a threshold stability plot.
 #' @inheritParams thselect.cv
+#' @export
+#' @examples
+#' tstab.cv(
+# xdat = rgp(1000),
+# thresh = qgp(seq(0,0.9, by = 0.1)),
+# method = "cv")
+#'  tstab.cv(
+# xdat = rgp(1000),
+# thresh = qgp(seq(0,0.9, by = 0.1)),
+# method = "empirical")
 tstab.cv <- function(
   xdat,
   thresh,
@@ -248,6 +271,7 @@ tstab.cv <- function(
   ...
 ) {
   args <- list(...)
+  method <- match.arg(method)
   if (method == "empirical") {
     if (!is.null(args$type)) {
       type <- match.arg(
@@ -377,6 +401,7 @@ tstab.cv <- function(
   return(invisible(res))
 }
 
+#' @export
 plot.mev_tstab_cv <- function(x, level = 0.05, legend = TRUE, ...) {
   args <- list(...)
   if (is.null(args$xlab)) {

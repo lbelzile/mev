@@ -7,8 +7,8 @@
 fit.shape(
   xdat,
   k,
-  method = c("hill", "pickandsxu", "osz", "vries", "mom", "dekkers", "bvt", "genquant",
-    "pickands"),
+  method = c("hill", "rbm", "osz", "vries", "mom", "dekkers", "genquant", "pickands",
+    "erm", ),
   ...
 )
 }
@@ -26,5 +26,5 @@ a data frame with the number of order statistics \code{k} and the shape paramete
 }
 \description{
 Wrapper to estimate the tail index or shape parameter of an extreme value distribution. Each function has similar sets of arguments, a vector or scalar number of order statistics \code{k} and
-a vector of positive observations \code{xdat}. The \code{method} argument allows users to choose between different indicators, including the Hill estimator (\code{hill}, for positive observations and shape only), the moment estimator of Dekkers and de Haan (\code{mom} or \code{dekkers}), the Beirlant, Vynckier and Teugels generalized quantile estimator (\code{bvt} or \code{genquant}), the Pickands estimator (\code{pickands}), the extreme \eqn{U}-statistics estimator of Oorschot, Segers and Zhou (\code{osz}, or \code{pickandsxu}).
+a vector of positive observations \code{xdat}. The \code{method} argument allows users to choose between different indicators, including the Hill estimator (\code{hill}, for positive observations and shape only), the moment estimator of Dekkers and de Haan (\code{mom} or \code{dekkers}), the Beirlant, Vynckier and Teugels generalized quantile estimator (\code{bvt} or \code{genquant}), the Pickands estimator (\code{pickands}), the extreme \eqn{U}-statistics estimator of Oorschot, Segers and Zhou (\code{osz}), or the exponential rgression model of Beirlant et al. (\code{erm}).
 }

@@ -18,6 +18,7 @@ W.diag(
   plots = c("LRT", "WN", "PS"),
   UseQuantiles = FALSE,
   changepar = TRUE,
+  transform = TRUE,
   ...
 )
 }

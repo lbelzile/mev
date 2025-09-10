@@ -1540,7 +1540,7 @@ plot.mev_pp <- function(
 # @param digits Number of digits to display in \code{print} call.
 # @param ... Additional argument passed to \code{print}.
 #' @export
-print.mev_gpd <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+print.mev_gpd <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   cat("Method:", x$method, "\n")
   cat("Log-likelihood:", round(-x$nllh, digits), "\n")
 
@@ -1590,7 +1590,7 @@ print.mev_gpd <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 #' @export
 print.mev_gpdbayes <- function(
   x,
-  digits = max(3, getOption("digits") - 3),
+  digits = min(3, getOption("digits") - 3),
   ...
 ) {
   cat(
@@ -1627,7 +1627,7 @@ print.mev_gpdbayes <- function(
 # @param digits Number of digits to display in \code{print} call.
 # @param ... Additional argument passed to \code{print}.
 #' @export
-print.mev_gev <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+print.mev_gev <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   cat("Log-likelihood:", -x$nllh, "\n")
 
   cat("\nEstimates\n")
@@ -1668,7 +1668,7 @@ print.mev_gev <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 # @param digits Number of digits to display in \code{print} call.
 # @param ... Additional argument passed to \code{print}.
 #' @export
-print.mev_pp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+print.mev_pp <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   cat("Log-likelihood:", -x$nllh, "\n")
 
   cat("\nThreshold:", round(x$threshold, digits), "\n")

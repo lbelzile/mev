@@ -17,7 +17,7 @@ after installing `remotes`.
 
 # Functionalities
 
-The functionalities of the package are sorted below by topic.
+The functionalities of the development version of the package (GIthub) are sorted below by topic.
 
 ## Univariate
 
@@ -38,25 +38,57 @@ Fitting procedures and higher order asymptotic inference for univariate extremes
 - `*.pll`: profile likelihood for objects
 - `*.tem` for tangent exponential model approximation to profile likelihood
 
-Two additional penultimate models and utilities for approximations
+Two additional models and utilities for penultimate approximations
 
-- `egp`: extended generalized Pareto models of Papastathopoulos and Tawn (2013)
-- `extgp`: extended generalized Pareto models of Naveau et al. for rainfall
+- `egp`: extended generalized Pareto models of Papastathopoulos and Tawn (2013), and Gamet and Jonathan (2022)
+- `extgp`: extended generalized Pareto models of Naveau et al. (2017)
 - `smith.penult`: Smith (1987) penultimate approximations to parametric models
 
+## Nonparametric estimators of shape and second order regular variation
 
-## Threshold selection
+The routine `fit.shape`, or alternatively one of subroutines for real or positive (*) shape parameters.
 
-Multiple functions can be used for threshold selection for the peaks over threshold method
+- `shape.hill`*: Hill's estimator
+- `shape.osz`: Pickands extreme U-statistic of Oorschot, Segers and Zhou
+- `shape.moment`: moment estimator of Dekkers and de Haan.
+- `shape.pickands`: Pickands estimator (poor performance)
+- `shape.vries`*: de Vries estimator
+- `shape.rbm`*: Wager's random block maxima estimator 
+- `shape.genquant`*: generalized quantile
+- `shape.trimhill`*: trimmed Hill estimator
+- `shape.lthill`*: left-truncated Hill estimator
 
-- `automrl`: automatic threshold selection for mean residual life plots
-- `cvselect`: threshold selection via coefficient of variation
-- `tstab.egp`: threshold stability plots for `egp` models
-- `infomat.test`: information matrix test for time series
-- `NC.diag`: Northrop and Coleman (2014) score tests 
-- `tstab.gp`: threshold stability plot for generalized Pareto distribution
-- `vmetric.diag`: metric-based threshold selection of Varty et al. 
-- `W.diag`: Wadsworth (2016) sequential analysis threshold diagnostics
+Note that both of the trimmed and truncated Hill estimators are not vectorized.
+
+## Threshold selection diagnostics
+
+Functions for automatic selection of threshold with the peaks over threshold method
+
+- `thselect.wseq`: Wadsworth (2016) sequential analysis threshold diagnostics
+- `thselect.vmetric`: metric-based threshold selection of Varty et al. (2025+)
+- `thselect.ncpgp`: Northrop and Coleman (2014) piecewise generalized Pareto
+- `thselect.cv`: del Castillo and Padilla (2016) coefficient of variation method
+- `thselect.sdinfo`: Suveges and Davison (2010) information matrix test
+- `thselect.mrl`: Langousis et al. (2016) automatization of mean residual life diagnostics
+- `thselect.pickands`: Pickands (1985) goodness-of-fit threshold selection diagnostic
+- `thselect.alrs`: automatic L-moments ratio selection method of Silva Lomba and Fraga Alves (2020)
+- `thselect.mahadist`: Mahalanobis distance-based selection method based on L-moments of Kiran and Srivinas (2021)
+
+Some semiparametric methods
+
+- `thselect.bab`: Bladt, Albrecher and Beirlant (2020) minimization of AMSE for Hill estimator via lower truncated Hill
+- `thselect.expgqt` Exponential generalized quantile threshold selection of Beirlant, Vynckier and Teugels (1996)
+- `thselect.gbw`: Kernel-based threshold selection of Goegebeur, Beirlant and de Wet (2008)
+- `thselect.rbm`: Random block maximum estimator of Wager (2014), with empirical Bayes risk minimization
+
+
+## Threshold stability plots
+
+- `tstab.gpd`: threshold stability plots for generalized Pareto
+- `tstab.egp`: threshold stability plots for extended generalized Pareto
+- `tstab.cv`: coefficient of variation stability plot
+- `tstab.mrl`: mean residual life plot
+- `tstab.hill`: Hill plot
 
 ## Multivariate 
 
@@ -112,9 +144,13 @@ Various datasets collected here and there, (exclusively?)  for univariate peaks 
 
 - `abisko`: Abisko rainfall
 - `eskrain`: Eskdalemuir observatory daily rainfall
+- `frwind`: time series of wind speeds
 - `geomagnetic`: magnitude of geomagnetic storms
+- `leedspollution`: multivariate air pollutant from Leeds 
 - `maiquetia`: Maiquetia daily rainfall series
 - `nidd`: river Nidd daily flow
+- `nutrients`: interview component from NHANES on nutrients
+- `pandemics`: estimated records on number of death from pandemics
 - `venice`: Venice sea level data
 - `w1500m`: women 1500m track records
 
@@ -124,7 +160,7 @@ Some functionalities for fitting spatial data
 
 - `distg`: matrix of pairwise distance with geometric anisotropy
 - Variogram models (unexported functions `powerexp.cor`, `power.vario`, `schlather.vario`)
-- `Lambda2cov`: conver variogram to covariance of conditional random field
+- `Lambda2cov`: convert variogram to covariance of conditional random field
 
 ## Miscellaneous
 

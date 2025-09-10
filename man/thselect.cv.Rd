@@ -57,6 +57,15 @@ highest threshold.
 The authors suggest transformation of \deqn{Y = -1/(X + c) + 1/c,}
 where \eqn{X} are exceedances and \eqn{c=\sigma/\xi} is the ratio of estimated scale and shape parameters. For heavy-tailed distributions with \eqn{\xi > 0.25}, this may be preferable, but must be conducted outside of the function.
 }
+\examples{
+thselect.cv(
+ xdat = rgp(1000),
+ thresh = qgp(seq(0,0.9, by = 0.1)),
+ nsim = 99,
+ lazy = TRUE,
+ plot = TRUE)
+
+}
 \references{
 del Castillo, J. and M. Padilla (2016). \emph{Modelling extreme values by the residual coefficient of variation}, SORT, 40(\bold{2}), pp. 303--320.
 }

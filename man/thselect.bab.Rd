@@ -8,22 +8,31 @@ thselect.bab(
   xdat,
   range = c(floor(0.2 * length(xdat)), length(xdat) - 1L),
   rho = -1,
+  test = FALSE,
+  nsim = 999L,
+  level = 0.95,
   ...
 )
 }
 \arguments{
-\item{xdat}{vector of observations.}
+\item{xdat}{[vector] positive vector of exceedances}
 
 \item{range}{[integer] vector of length 2 containing the minimum and maximum number of observations for the estimation of the shape parameter.}
 
-\item{rho}{second order regular variation index, a negative number.}
+\item{rho}{[double] scalar for the second order regular variation index, a negative number.}
+
+\item{test}{[logical] if \code{TRUE}, computes the goodness-of-fit statistic for the model using Monte Carlo}
+
+\item{nsim}{[int] number of replications for Monte Carlo test, used only if \code{test=TRUE}.}
+
+\item{...}{additional arguments, currently ignored}
 }
 \value{
-a list with the number of order statistics for the Hill estimator, \code{k0} and the corresponding shape estimate \code{shape.hill}, the average left-trimmed Hill estimator \code{shape.lth} and the number of order statistics upon which the latter is based, \code{nexc}.
+a list with the number of order statistics for the Hill estimator, \code{k0} and the corresponding shape estimate \code{shape}, the average lower-trimmed Hill estimator \code{shape._lth} and the number of order statistics upon which the latter is based, \code{k0_lth}.
 }
 \description{
 Given a sample of positive data with Pareto tail, the algorithm computes the optimal number of order statistics that minimizes the variance of the average left truncated tail index estimator, and uses the relationship to the Hill estimator for the Hall class of distributions to derive the optimal number (minimizing the asymptotic mean squared error) of the Hill estimator. The default value for the second order regular variation index is taken to be \eqn{rho=-1}.
 }
 \references{
-Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
+Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
 }
