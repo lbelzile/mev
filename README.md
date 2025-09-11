@@ -101,8 +101,8 @@ multivariate threshold models, but likelihoods are provided for logistic, Brown-
 
 Two tests, one for max-stability and the other for asymptotic independence
 
-- `maxstabtest`: test of max-stability
-- `scoreindep`: score test of asymptotic independence for bivariate logistic model
+- `test.maxstab`: graphical test of max-stability (P-P plot)
+- `test.scoreindep`: score test of asymptotic independence for bivariate logistic model
 
 ### Nonparametric
 

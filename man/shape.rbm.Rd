@@ -9,13 +9,22 @@ shape.rbm(xdat, k = 10:floor(length(xdat)/2), ...)
 \arguments{
 \item{xdat}{[vector] sample exceedances}
 
-\item{...}{additional parameters, currently ignored}
+\item{k}{[int] vector of integers for which to compute the estimator}
 
-\item{kmax}{[int] maximum number of observations to consider as sample size}
+\item{...}{additional parameters, currently ignored}
+}
+\value{
+a list with elements
+\describe{
+  \item{k}{number of exceedances}
+  \item{shape}{tail index estimate, strictly positive}
+  \item{risk}{empirical Bayes estimate of risk}
+  \item{thresh}{threshold given by the smallest order statistic considered in the sample}
+}
 }
 \description{
 Computes the shape estimator for varying k up to sample size of maximum \code{kmax} largest observations
 }
-\note{
-Function adapted from **R** package \url{https://github.comswager/rbm}, under MIT license
+\references{
+Wager, S. (2014). Subsampling extremes: From block maxima to smooth tail estimation, \emph{Journal of Multivariate Analysis}, 130, 335-353, \doi{10.1016/j.jmva.2014.06.010}
 }

@@ -22,6 +22,6 @@ value index using a kernel of order 3, based on
 The calculations are based on the recursions provided in Lemma 4.3 of Oorschot et al.
 }
 \references{
-Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  Electron. J. Statist. 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
+Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  \emph{Electronic Journal of Statistics}, 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
 }
 \keyword{internal}

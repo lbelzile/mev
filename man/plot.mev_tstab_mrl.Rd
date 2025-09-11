@@ -4,12 +4,20 @@
 \alias{plot.mev_tstab_mrl}
 \title{Mean residual life parameter stability plot}
 \usage{
-\method{plot}{mev_tstab_mrl}(x, xlab = c("thresh", "nexc"), level = 0.95, ...)
+\method{plot}{mev_tstab_mrl}(
+  x,
+  xlab = c("thresh", "nexc"),
+  level = 0.95,
+  type = c("band", "ptwise"),
+  ...
+)
 }
 \arguments{
-\item{xlab}{string; whether to plot mean residual life plot as a function of threshold value of number of exceedances}
+\item{xlab}{[string]; whether to plot mean residual life plot as a function of threshold value of number of exceedances}
 
-\item{level}{level of Wald confidence intervals}
+\item{level}{[numeric] level of Wald confidence intervals}
+
+\item{type}{[string] whether to plot pointwise confidence intervals using segments (\code{"ptwise"}) or using dashed lines (\code{"band"})}
 
 \item{...}{additional arguments, currently ignored}
 }

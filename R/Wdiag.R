@@ -837,10 +837,14 @@ W.diag <- function(
   return(Cm)
 }
 
+
+#' Sequential analysis diagnostic plots for threshold selection
+#'
 #' @export
 #' @param x object returned by a call to \code{thselect.wseq}
 #' @param type string giving the plots to produce
 #' @param ... additional arguments passed to plotting function
+#' @return \code{NULL}; the method is used to generate plots
 plot.mev_thselect_wadsworth <-
   function(x, type = c("wn", "ps"), ...) {
     args <- list(...)
@@ -850,7 +854,7 @@ plot.mev_thselect_wadsworth <-
       choices = c("nhpp", "exp", "invexp"),
       several.ok = FALSE
     )
-    plots <- tolower(which)
+    plots <- tolower(type)
     plots <- match.arg(plots, choices = c("wn", "ps"), several.ok = TRUE)
     if (length(plots) < 1) {
       stop(

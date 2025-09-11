@@ -9,11 +9,11 @@
 #' \item{\code{k0}:} number of exceedances
 #' \item{\code{shape}:} Hill's shape estimate
 #' \item{\code{rho}:} second-order regular variation parameter estimate
-#' \item\code{gof}:} goodness-of-fit statistic for the \"best\" threshold.
+#' \item{\code{gof}:} goodness-of-fit statistic for the \"best\" threshold.
 #' }
 #' @references Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51–69. <doi:10.57805/revstat.v6i1.57>
 #' @export
-#' @example
+#' @examples
 #' xdat <- rgp(n = 1000, scale = 2, shape = 0.5)
 #' (thselect.gbw(xdat, kmax = 500))
 thselect.gbw <- function(

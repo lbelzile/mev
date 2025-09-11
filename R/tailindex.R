@@ -3,7 +3,7 @@
 #' Given a random sample of \code{n} exceedances, the estimator
 #' returns an estimator of the shape parameter or extreme
 #' value index using a kernel of order 3, based on
-#' \code{k} largest exceedances of \code{xdat}. Oorschot et al. (2023) parametrize the model in terms of \eqn{m=n-k}, so that \eqn{m=n} corresponds to using only the three largest observations.
+#' \code{k} largest exceedances of \code{xdat}. Note that the method does not allow for ties.
 #'
 #' The calculations are based on the recursions provided in Lemma 4.3 of Oorschot et al.
 #' @param xdat vector of observations of length \eqn{n}
@@ -67,7 +67,7 @@ shape.osz <- function(xdat, k, ...) {
 #' The calculations are based on the recursions provided in Lemma 4.3 of Oorschot et al.
 #' @param xdat vector of observations of length \eqn{n}
 #' @param m number of largest order statistics \eqn{3 \leq k \leq n}.
-#' @references Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  Electron. J. Statist. 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
+#' @references Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  \emph{Electronic Journal of Statistics}, 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
 #' @export
 #' @keywords internal
 PickandsXU <- function(xdat, m) {
@@ -147,9 +147,9 @@ shape.hill <- function(xdat, k) {
 #' @param log [logical] should the x-axis for the number of order statistics used for estimation be displayed on the log scale? Default to \code{TRUE}
 #' @return a plot of shape estimates as a function of the number of exceedances
 #' @examples
-#' xdat <-
-#' tstab.hill(xdat, km
-#'
+#' xdat <- rgp(n = 250, loc = 1, scale = 2, shape = 0.5)
+#' tstab.hill(xdat)
+#' @export
 tstab.hill <- function(xdat, kmax, method = "hill", ..., log = TRUE) {
   xdat <- xdat[is.finite(xdat) & xdat > 0]
   if (missing(kmax)) {
@@ -203,12 +203,17 @@ tstab.hill <- function(xdat, kmax, method = "hill", ..., log = TRUE) {
 #'
 #' Computes the shape estimator for varying k up to sample size of maximum \code{kmax} largest observations
 #' @param xdat [vector] sample exceedances
-#' @param kmax [int] maximum number of observations to consider as sample size
+#' @param k [int] vector of integers for which to compute the estimator
 #' @param ... additional parameters, currently ignored
-#' @param
-#' @references
-#' @note Function adapted from **R** package \url{https://github.comswager/rbm}, under MIT license
-#'
+#' @return a list with elements
+#' \describe{
+#'   \item{k}{number of exceedances}
+#'   \item{shape}{tail index estimate, strictly positive}
+#'   \item{risk}{empirical Bayes estimate of risk}
+#'   \item{thresh}{threshold given by the smallest order statistic considered in the sample}
+#' }
+#' @references Wager, S. (2014). Subsampling extremes: From block maxima to smooth tail estimation, \emph{Journal of Multivariate Analysis}, 130, 335-353, \doi{10.1016/j.jmva.2014.06.010}
+#' @export
 shape.rbm = function(xdat, k = 10:floor(length(xdat) / 2), ...) {
   k <- as.integer(sort(k))
   xdat <- xdat[is.finite(xdat) & xdat > 0]
@@ -247,6 +252,10 @@ shape.rbm = function(xdat, k = 10:floor(length(xdat) / 2), ...) {
   }
 }
 
+#' Plots for random block maximum estimator
+#'
+#' The function returns plot of the shape estimator along with the value (and 95% Wald-based confidence interval) at the selected threshold, or a plot of the empirical Bayes risk.
+#'
 #' @param x object of class \code{mev_shape_rbm} returned by \code{shape.rbm}
 #' @param type [string] type of plot, either \code{"shape"} for the tail index or \code{"risk"} for the empirical Bayes risk
 #' @param log [logical] if \code{TRUE} (default), the x-axis for the number of exceedances is displayed on the log scale.
@@ -308,6 +317,7 @@ plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
 #' Threshold selection for the random block maxima method
 #' @inheritParams shape.rbm
 #' @return a list with elements
+#' @export
 thselect.rbm <- function(xdat, kmax = length(xdat)) {
   xdat <- sort(xdat, decreasing = TRUE)
   rbm <- shape.rbm(xdat = xdat, kmax = min(length(xdat) - 1L, kmax))
@@ -321,6 +331,7 @@ thselect.rbm <- function(xdat, kmax = length(xdat)) {
   return(res)
 }
 
+#' @export
 print.mev_thselect_rbm <- function(
   x,
   digits = min(3, getOption("digits") - 3),
@@ -579,6 +590,7 @@ fit.shape <- function(
 #' @param k number of highest order statistics to use for estimation
 #' @param method string for the estimator
 #' @param ... additional arguments passed to individual routinescurrently ignored.
+#' @export
 #' @examples
 #' # Example with rho = -0.2
 #' n <- 1000
@@ -607,6 +619,7 @@ fit.rho <- function(xdat, k, method = c("fagh", "dk", "ghp"), ...) {
 #' @param xdat vector of positive observations
 #' @param k number of highest order statistics to use for estimation
 #' @param tau tuning parameter \eqn{\tau \in (0,1)}
+#' @export
 rho.dk <- function(xdat, k, tau = 0.5) {
   stopifnot(length(tau) == 1L, tau > 0, tau < 1)
   xdat <- as.numeric(xdat[is.finite(xdat) & xdat > 0])
@@ -639,6 +652,7 @@ rho.dk <- function(xdat, k, tau = 0.5) {
 #' @param k number of highest order statistics to use for estimation
 #' @param method string; only the estimator of Fraga Alves et al. \code{fagh} is currently supported
 #' @param tau scalar real tuning parameter. Default values is 0, which is typically chosen whenever \eqn{\rho \ge -1}. The choice \eqn{\tau=1} otherwise.
+#' @export
 #' @examples
 #' # Example with rho = -0.2
 #' n <- 1000

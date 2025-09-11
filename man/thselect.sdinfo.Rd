@@ -18,7 +18,16 @@ thselect.sdinfo(xdat, thresh, quantile, plot = FALSE, kmax)
 \item{kmax}{[int] the largest K-gap under consideration for clusters}
 }
 \value{
-
+an invisible list of class  with elements
+\itemize{
+\item \code{thresh} a vector of thresholds based on empirical quantiles at supplied levels.
+\item \code{stat} a matrix of test statistics
+\item \code{pval} a matrix of approximate p-values (corresponding to probabilities under a \eqn{\chi^2_1}{chi-square(1)} distribution)
+\item \code{mle} a matrix of maximum likelihood estimates for each given pair of thresholds and gaps
+\item \code{loglik} a matrix of log-likelihood values at MLE for each given pair of elements in \code{thresh} and gap in \eqn{0, \ldots,\code{kmax}}
+\item \code{quantile} quantile levels for thresholds, if supplied by the user
+\item \code{kmax} the largest gap number
+}
 }
 \description{
 The information matrix test (IMT), proposed by Suveges and Davison (2010), is based

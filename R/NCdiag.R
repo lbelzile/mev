@@ -674,6 +674,7 @@ print.mev_thdiag_northropcoleman <-
 #' @param plot [logical]; if \code{TRUE}, return a plot with the p-value path.
 #' @param level [double] confidence level for confidence interval, defaults to 0.95
 #' @return an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{cthresh}).
+#' @export
 thselect.ncpgp <- function(
   xdat,
   thresh,

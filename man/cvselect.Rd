@@ -53,3 +53,4 @@ highest threshold
 \references{
 del Castillo, J. and M. Padilla (2016). \emph{Modelling extreme values by the residual coefficient of variation}, SORT, 40(\bold{2}), pp. 303--320.
 }
+\keyword{internal}

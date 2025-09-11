@@ -194,7 +194,7 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
 #' @param quantile [vector] probability levels to define threshold if \code{thresh} is missing.
 #' @param kmax [int] the largest K-gap under consideration for clusters
 #' @param plot [logical]; should the graphical diagnostic be plotted?
-#' @return an invisible list of class  \code{
+#' @return an invisible list of class  with elements
 #' \itemize{
 #' \item \code{thresh} a vector of thresholds based on empirical quantiles at supplied levels.
 #' \item \code{stat} a matrix of test statistics

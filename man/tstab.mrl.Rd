@@ -12,6 +12,7 @@ tstab.mrl(
   plot = TRUE,
   level = 0.95,
   xlab = c("thresh", "nexc"),
+  type = c("band", "ptwise"),
   ...
 )
 }
@@ -29,6 +30,8 @@ tstab.mrl(
 \item{level}{double giving the level of confidence intervals for the plot, default to 0.95}
 
 \item{xlab}{string indicating whether to use thresholds (\code{thresh}) or number of largest order statistics (\code{nexc}) for the x-axis}
+
+\item{type}{string whether to plot pointwise confidence intervals using segments (\code{"ptwise"}) or using dashed lines (\code{"band"})}
 
 \item{...}{additional arguments, currently ignored}
 }

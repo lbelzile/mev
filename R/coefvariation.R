@@ -206,7 +206,7 @@ thselect.cv <- function(
   }
   return(invisible(ret))
 }
-
+#' @export
 print.mev_thselect_cv <- function(
   x,
   digits = min(3, getOption("digits") - 3),
@@ -229,6 +229,7 @@ print.mev_thselect_cv <- function(
   return(invisible(NULL))
 }
 
+#' @export
 plot.mev_thselect_cv <- function(x, ...) {
   plot(
     y = x$pval,
@@ -480,7 +481,7 @@ plot.mev_tstab_cv <- function(x, level = 0.05, legend = TRUE, ...) {
 #' }
 #' @export
 #' @references del Castillo, J. and M. Padilla (2016). \emph{Modelling extreme values by the residual coefficient of variation}, SORT, 40(\bold{2}), pp. 303--320.
-#' @kewords internal
+#' @keywords internal
 cvselect <- function(
   xdat,
   thresh,

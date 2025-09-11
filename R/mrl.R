@@ -135,6 +135,7 @@ plot.mev_thselect_automrl <- function(x, ...) {
   abline(a = x$intercept, b = x$slope)
 }
 
+#' @export
 print.mev_thselect_automrl <- function(
   x,
   digits = min(3, getOption("digits") - 3),
@@ -214,6 +215,7 @@ automrl <- function(
 #' @param plot logical; if \code{TRUE}, call the plot method
 #' @param level double giving the level of confidence intervals for the plot, default to 0.95
 #' @param xlab string indicating whether to use thresholds (\code{thresh}) or number of largest order statistics (\code{nexc}) for the x-axis
+#' @param type string whether to plot pointwise confidence intervals using segments (\code{"ptwise"}) or using dashed lines (\code{"band"})
 #' @param ... additional arguments, currently ignored
 #' @return an invisible list with mean sample exceedances and standard deviation, number of exceedances, threshold
 #' @examples
@@ -232,6 +234,7 @@ tstab.mrl <- function(
   plot = TRUE,
   level = 0.95,
   xlab = c("thresh", "nexc"),
+  type = c("band", "ptwise"),
   ...
 ) {
   # expected conditional exceedances based
@@ -291,23 +294,27 @@ tstab.mrl <- function(
   )
   class(ret) <- "mev_tstab_mrl"
   if (plot) {
-    plot(ret, level = level, xlab = xlab)
+    plot(ret, level = level, xlab = xlab, type = type)
   }
   return(invisible(ret))
 }
 
 #' Mean residual life parameter stability plot
-#' @param xlab string; whether to plot mean residual life plot as a function of threshold value of number of exceedances
-#' @param level level of Wald confidence intervals
+#'
+#' @param xlab [string]; whether to plot mean residual life plot as a function of threshold value of number of exceedances
+#' @param level [numeric] level of Wald confidence intervals
+#' @param type [string] whether to plot pointwise confidence intervals using segments (\code{"ptwise"}) or using dashed lines (\code{"band"})
 #' @param ... additional arguments, currently ignored
 #' @export
 plot.mev_tstab_mrl <- function(
   x,
   xlab = c("thresh", "nexc"),
   level = 0.95,
+  type = c("band", "ptwise"),
   ...
 ) {
   xlab <- match.arg(xlab)
+  type <- match.arg(type)
   os <- isTRUE(xlab == "nexc")
   if (isTRUE(os)) {
     xv <- x$nexc
@@ -316,8 +323,6 @@ plot.mev_tstab_mrl <- function(
     xv <- x$thresh
     xlab <- "threshold"
   }
-  # browser()
-
   stopifnot(
     is.numeric(level),
     length(level) == 1L,
@@ -327,18 +332,33 @@ plot.mev_tstab_mrl <- function(
   alpha <- 1 - level
   lower <- x$mrl + qnorm(alpha / 2) * x$sd / sqrt(x$nexc)
   upper <- x$mrl + qnorm(1 - alpha / 2) * x$sd / sqrt(x$nexc)
-  plot(
-    x = xv,
-    y = x$mrl,
-    ylab = "mean excess value",
-    xlab = xlab,
-    ylim = c(min(lower, na.rm = TRUE), max(upper, na.rm = TRUE)),
-    pch = 20,
-    bty = "l"
-  )
-  segments(
-    x0 = xv,
-    y0 = lower,
-    y1 = upper
-  )
+  if (type == "ptwise") {
+    plot(
+      x = xv,
+      y = x$mrl,
+      ylab = "mean excess value",
+      xlab = xlab,
+      ylim = c(min(lower, na.rm = TRUE), max(upper, na.rm = TRUE)),
+      pch = 20,
+      bty = "l"
+    )
+    segments(
+      x0 = xv,
+      y0 = lower,
+      y1 = upper,
+      lwd = 0.1
+    )
+  } else {
+    matplot(
+      x = xv,
+      y = cbind(x$mrl, lower, upper),
+      ylab = "mean excess value",
+      xlab = xlab,
+      ylim = c(min(lower, na.rm = TRUE), max(upper, na.rm = TRUE)),
+      type = "l",
+      lty = c(1, 2, 2),
+      bty = "l",
+      col = c("black", "grey", "grey")
+    )
+  }
 }

@@ -22,7 +22,6 @@ a plot of shape estimates as a function of the number of exceedances
 Threshold stability plot for Hill estimator
 }
 \examples{
-xdat <-
-tstab.hill(xdat, km
-
+xdat <- rgp(n = 250, loc = 1, scale = 2, shape = 0.5)
+tstab.hill(xdat)
 }

@@ -225,6 +225,11 @@ print.mev_thselect_vmetric <-
     return(invisible(NULL))
   }
 
+
+#' Plots for Varty and al. metric-based threshold selection
+#'
+#' This S3 method produces quantile-quantile plots with confidence and tolerance bands on various scale (uniform, exponential, generalized Pareto), or a plot of the metric as a function of the threshold.
+#'
 #' @export
 #' @param x an object of class \code{mev_thselect_vmetric} produced by a call to \code{thselect.vmetric}
 #' @param type string; a single string indicating the choice of plot

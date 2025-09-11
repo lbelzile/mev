@@ -15,7 +15,7 @@ shape.osz(xdat, k, ...)
 Given a random sample of \code{n} exceedances, the estimator
 returns an estimator of the shape parameter or extreme
 value index using a kernel of order 3, based on
-\code{k} largest exceedances of \code{xdat}. Oorschot et al. (2023) parametrize the model in terms of \eqn{m=n-k}, so that \eqn{m=n} corresponds to using only the three largest observations.
+\code{k} largest exceedances of \code{xdat}. Note that the method does not allow for ties.
 }
 \details{
 The calculations are based on the recursions provided in Lemma 4.3 of Oorschot et al.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/condextr.R
 \name{predict.condex}
 \alias{predict.condex}
-\title{Prediction from exchangeable Heffernan-Tawn model}
+\title{Prediction from Heffernan-Tawn model}
 \usage{
 \method{predict}{condex}(fitted, B = 1e+05, nm = 10000)
 }
@@ -25,5 +25,5 @@ or the relative frequency with which a variable is largest is estimated empirica
 \item{type}{string; should}
 }
 \description{
-Prediction from exchangeable Heffernan-Tawn model
+Prediction from Heffernan-Tawn model
 }

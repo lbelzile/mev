@@ -6,6 +6,7 @@
 #' @param k0 [integer] vector of number of largest order statistics, no greater than \code{k}
 #' @param k [integer] number of order statistics for the threshold
 #' @param sorted [logical] if \code{TRUE}, data are assumed to be sorted in decreasing order
+#' @export
 #' @references Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
 #' @return a scalar with the shape parameter estimate if \code{k0} is a scalar, otherwise a data frame with columns \code{k0} for the number of exceedances and \code{shape} for the tail index.
 #' @examples
@@ -381,6 +382,7 @@ plot.mev_thselect_bab <- function(x, ...) {
   )
 }
 
+#' @export
 print.mev_thselect_bab <- function(
   x,
   digits = min(3, getOption("digits") - 3),

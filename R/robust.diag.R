@@ -13,77 +13,77 @@
 #' }
 #' @references Dupuis, D.J. (1998). Exceedances over High Thresholds: A Guide to Threshold Selection,
 #' \emph{Extremes}, \bold{1}(3), 251--261.
-thselect.dobre <- function(
-  xdat,
-  thresh,
-  nsim = 99L
-) {
-  # Preprocess inputs
-  nu <- length(thresh)
-  thresh <- sort(thresh)
-  nw <- integer(nu)
-  xdat <- sort(xdat[is.finite(xdat)])
-  B <- as.integer(nsim)
-  stopifnot(B >= 19, xdat[length(xdat)] > thresh[nu])
-  pars <- matrix(nrow = nu, ncol = 3L)
-  colnames(pars) <- c("threshold", "scale", "shape")
-  pars[, 1] <- thresh
-  pvals <- list()
-  for (i in seq_along(thresh)) {
-    fit_obre <- fit.gpd(
-      xdat = xdat,
-      threshold = thresh[i],
-      method = "obre",
-      tol = 1e-5
-    )
-    dw <- which(fit_obre$weights < 1)
-    nw[i] <- length(dw)
-    pars[i, -1] <- fit_obre$estimate[1]
-    if (nw[i] >= 1) {
-      upp <- isTRUE(dw[length(dw)] == fit_obre$nat)
-      stats <- matrix(nrow = B, ncol = nw[i])
-      # OBRE weights are decreasing, but
-      for (b in seq_len(B - 1)) {
-        boot_samp <- rgp(
-          n = fit_obre$nat,
-          scale = fit_obre$estimate[1],
-          shape = fit_obre$estimate[2]
-        )
-        boot_gpfit <- fit.gpd(
-          xdat = boot_samp,
-          threshold = 0,
-          method = "obre",
-          tol = 1e-5
-        )
-        # Downweighted observations are in the upper tail
-        if (upp) {
-          stats[b, ] <- cumsum(rev(boot_gpfit$weights)[seq_len(nw[i])])
-        } else {
-          # downweight in lower tail
-          stats[b, ] <- cumsum(boot_gpfit$weights[seq_len(nw[i])])
-        }
-        if (dw[length(dw)] == fit_obre$nat) {
-          stats[B, ] <- cumsum(rev(fit_obre$weights)[seq_len(nw[i])])
-        } else {
-          # downweight in lower tail
-          stats[B, ] <- cumsum(fit_obre$weights[seq_len(nw[i])])
-        }
-      }
-      stats[B, ] <- cumsum(rev(fit_obre$weights)[seq_len(nw[i])])
-      # Small weights are extreme, so is their sum
-      # TODO check whether we get more power from looking at something different than the largest
-      pvals[[i]] <- apply(stats, 2, rank)[B, ] / B
-    } else {
-      pvals[[i]] <- NA
-    }
-  }
-  list(
-    thresh = thresh,
-    coef = pars,
-    pval = pvals,
-    ndw = nw
-  )
-}
+# thselect.dobre <- function(
+#   xdat,
+#   thresh,
+#   nsim = 99L
+# ) {
+#   # Preprocess inputs
+#   nu <- length(thresh)
+#   thresh <- sort(thresh)
+#   nw <- integer(nu)
+#   xdat <- sort(xdat[is.finite(xdat)])
+#   B <- as.integer(nsim)
+#   stopifnot(B >= 19, xdat[length(xdat)] > thresh[nu])
+#   pars <- matrix(nrow = nu, ncol = 3L)
+#   colnames(pars) <- c("threshold", "scale", "shape")
+#   pars[, 1] <- thresh
+#   pvals <- list()
+#   for (i in seq_along(thresh)) {
+#     fit_obre <- fit.gpd(
+#       xdat = xdat,
+#       threshold = thresh[i],
+#       method = "obre",
+#       tol = 1e-5
+#     )
+#     dw <- which(fit_obre$weights < 1)
+#     nw[i] <- length(dw)
+#     pars[i, -1] <- fit_obre$estimate[1]
+#     if (nw[i] >= 1) {
+#       upp <- isTRUE(dw[length(dw)] == fit_obre$nat)
+#       stats <- matrix(nrow = B, ncol = nw[i])
+#       # OBRE weights are decreasing, but
+#       for (b in seq_len(B - 1)) {
+#         boot_samp <- rgp(
+#           n = fit_obre$nat,
+#           scale = fit_obre$estimate[1],
+#           shape = fit_obre$estimate[2]
+#         )
+#         boot_gpfit <- fit.gpd(
+#           xdat = boot_samp,
+#           threshold = 0,
+#           method = "obre",
+#           tol = 1e-5
+#         )
+#         # Downweighted observations are in the upper tail
+#         if (upp) {
+#           stats[b, ] <- cumsum(rev(boot_gpfit$weights)[seq_len(nw[i])])
+#         } else {
+#           # downweight in lower tail
+#           stats[b, ] <- cumsum(boot_gpfit$weights[seq_len(nw[i])])
+#         }
+#         if (dw[length(dw)] == fit_obre$nat) {
+#           stats[B, ] <- cumsum(rev(fit_obre$weights)[seq_len(nw[i])])
+#         } else {
+#           # downweight in lower tail
+#           stats[B, ] <- cumsum(fit_obre$weights[seq_len(nw[i])])
+#         }
+#       }
+#       stats[B, ] <- cumsum(rev(fit_obre$weights)[seq_len(nw[i])])
+#       # Small weights are extreme, so is their sum
+#       # TODO check whether we get more power from looking at something different than the largest
+#       pvals[[i]] <- apply(stats, 2, rank)[B, ] / B
+#     } else {
+#       pvals[[i]] <- NA
+#     }
+#   }
+#   list(
+#     thresh = thresh,
+#     coef = pars,
+#     pval = pvals,
+#     ndw = nw
+#   )
+# }
 
 # Quick simulation study
 #
