@@ -120,7 +120,7 @@ thselect.mdps <- function(xdat) {
     Dk[k] <- max(powS - (n - j) / (k - 1), (n - j + 1) / (k - 1) - powS)
   }
   k0 <- which.min(Dk)
-  list(k0 = k0, shape = 1 / hill[k0], thresh0 = xdat[k0])
+  res <- list(k0 = k0, shape = 1 / hill[k0], thresh0 = xdat[k0])
   class(res) <- "mev_thselect_mdps"
   return(invisible(res))
 }
@@ -182,7 +182,7 @@ thselect.pec <- function(
             2 * (log((k + 1 - 1:k)) - log(k + 1))^2)
       )
   }
-  plot(kseq, predcrit)
+  # plot(kseq, predcrit)
   i0 <- which.min(predcrit)
   res <- list(
     k0 = kseq[i0],
