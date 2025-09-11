@@ -324,7 +324,7 @@ thselect.rbm <- function(xdat, kmax = length(xdat)) {
   ind <- which.min(rbm$risk)
   res <- list(
     k0 = rbm$k[ind],
-    cthresh = rbm$thresh[ind],
+    thresh0 = rbm$thresh[ind],
     shape = rbm$shape[ind]
   )
   class(res) <- "mev_thselect_rbm"
@@ -340,7 +340,7 @@ print.mev_thselect_rbm <- function(
   cat(
     "Threshold selection method: random block maxima of Wager (2014)\n"
   )
-  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
   cat("Number of exceedances:", round(x$k0, digits), "\n")
   cat("Shape estimate:", round(x$shape, digits), "\n")
   return(invisible(NULL))

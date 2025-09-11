@@ -673,7 +673,7 @@ print.mev_thdiag_northropcoleman <-
 #' @param test [string] indicating whether to perform \code{score} test or likelihood ratio (\code{lr}) test. The latter requires fitting the alternative model, and so is more computationally expensive.
 #' @param plot [logical]; if \code{TRUE}, return a plot with the p-value path.
 #' @param level [double] confidence level for confidence interval, defaults to 0.95
-#' @return an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{cthresh}).
+#' @return an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{thresh0}).
 #' @export
 thselect.ncpgp <- function(
   xdat,
@@ -711,9 +711,9 @@ thselect.ncpgp <- function(
     res$stat <- ncdiag$e.test.stats
     res$pval <- ncdiag$e.p.values
   }
-  res$cthresh <- ncdiag$thresh[which.max(which(res$pval > 1 - level))]
-  if (length(res$cthresh) == 0L) {
-    res$cthresh <- tail(ncdiag$thresh, 1)
+  res$thresh0 <- ncdiag$thresh[which.max(which(res$pval > 1 - level))]
+  if (length(res$thresh0) == 0L) {
+    res$thresh0 <- tail(ncdiag$thresh, 1)
   }
   class(res) <- "mev_thselect_ncpgp"
   if (isTRUE(plot)) {
@@ -738,7 +738,7 @@ print.mev_thselect_ncpgp <-
       1 - x$level,
       "\n"
     )
-    cat("Selected threshold:", round(x$cthresh, digits), "\n")
+    cat("Selected threshold:", round(x$thresh0, digits), "\n")
 
     return(invisible(NULL))
   }

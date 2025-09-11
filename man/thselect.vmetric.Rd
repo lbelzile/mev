@@ -36,7 +36,7 @@ thselect.vmetric(
 an invisible list with components
 \itemize{
 \item \code{thresh}: scalar threshold minimizing criterion
-\item \code{cthresh}: vector of candidate thresholds
+\item \code{thresh0}: vector of candidate thresholds
 \item \code{metric}: value of the metric criterion evaluated at each threshold
 \item \code{type}: argument \code{type}
 \item \code{dist}: argument \code{dist}

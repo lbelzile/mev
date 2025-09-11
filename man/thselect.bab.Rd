@@ -6,7 +6,8 @@
 \usage{
 thselect.bab(
   xdat,
-  range = c(floor(0.2 * length(xdat)), length(xdat) - 1L),
+  kmin = floor(0.2 * length(xdat)),
+  kmax = length(xdat) - 1L,
   rho = -1,
   test = FALSE,
   nsim = 999L,
@@ -17,7 +18,9 @@ thselect.bab(
 \arguments{
 \item{xdat}{[vector] positive vector of exceedances}
 
-\item{range}{[integer] vector of length 2 containing the minimum and maximum number of observations for the estimation of the shape parameter.}
+\item{kmin}{[int] minimum number of exceedances}
+
+\item{kmax}{[int] maximum number of exceedances for the estimation of the shape parameter.}
 
 \item{rho}{[double] scalar for the second order regular variation index, a negative number.}
 

@@ -4,10 +4,12 @@
 \alias{gpd.lmom}
 \title{Estimation of generalized Pareto parameters via L-moments}
 \usage{
-gpd.lmom(xdat, sorted = FALSE, Lskew = FALSE)
+gpd.lmom(xdat, thresh, sorted = FALSE, Lskew = FALSE)
 }
 \arguments{
 \item{xdat}{[numeric] vector of observations}
+
+\item{thresh}{[numeric] optional threshold argument}
 
 \item{sorted}{[logical] if \code{TRUE}, observations are sorted in increasing order}
 

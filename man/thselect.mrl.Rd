@@ -22,7 +22,7 @@ and the chosen threshold}
 a list containing
 \itemize{
 \item \code{thresh}: candidate threshold vector
-\item \code{cthresh}: selected threshold
+\item \code{thresh0}: selected threshold
 \item \code{scale}: scale parameter estimate
 \item \code{shape}: shape parameter estimate
 \item \code{mrl}: empirical mean excess values

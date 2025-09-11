@@ -47,8 +47,8 @@
 #' \item \code{k}: final number of thresholds used
 #' \item \code{thresh}: threshold selected by the likelihood ratio procedure
 #' \item \code{qthresh}: quantile level of threshold selected by the likelihood ratio procedure
-#' \item \code{cthresh}: vector of candidate thresholds
-#' \item \code{qcthresh}: quantile level of candidate thresholds
+#' \item \code{thresh0}: vector of candidate thresholds
+#' \item \code{qthresh0}: quantile level of candidate thresholds
 #' \item \code{mle.u}: maximum likelihood estimates for the selected threshold
 #' \item \code{model}: model fitted
 #' }
@@ -381,8 +381,8 @@ W.diag <- function(
       k = as.integer(k),
       thresh = as.numeric(ustar),
       qthresh = qlthresh,
-      cthresh = as.numeric(u),
-      qcthresh = qs,
+      thresh0 = as.numeric(u),
+      qthresh0 = qs,
       mle.u = theta.hat,
       model = "nhpp"
     )
@@ -594,8 +594,8 @@ W.diag <- function(
       k = as.integer(k),
       thresh = as.numeric(ustar),
       qthresh = qlthresh,
-      cthresh = as.numeric(u),
-      qcthresh = qs,
+      thresh0 = as.numeric(u),
+      qthresh0 = qs,
       mle.u = as.numeric(theta.hat),
       model = switch(param, "InvRate" = "invexp", "Rate" = "exp")
     )
@@ -909,7 +909,7 @@ plot.mev_thselect_wadsworth <-
         )
       )
       abline(h = 0, col = 2)
-      abline(v = x$cthresh, col = 4)
+      abline(v = x$thresh0, col = 4)
       mtext(
         text = paste0("p-value: ", round(x$pval, 3)),
         side = 1,
@@ -944,7 +944,7 @@ plot.mev_thselect_wadsworth <-
       )
       lines(xp, WaldCI[, 1], lty = 2)
       lines(xp, WaldCI[, 2], lty = 2)
-      abline(v = x$cthresh, col = 4)
+      abline(v = x$thresh0, col = 4)
     }
     return(invisible(NULL))
   }
@@ -965,7 +965,7 @@ print.mev_thselect_wadsworth <-
       ),
       "\n"
     )
-    cat("Selected threshold:", round(x$cthresh, digits), "\n")
+    cat("Selected threshold:", round(x$thresh0, digits), "\n")
     return(invisible(NULL))
   }
 
@@ -995,7 +995,7 @@ print.mev_thselect_wadsworth <-
 #' @author Jennifer L. Wadsworth, Léo Belzile
 #' @return an object of class invisible list with components
 #' \itemize{
-#' \item \code{cthresh}: threshold selected by the likelihood ratio procedure
+#' \item \code{thresh0}: threshold selected by the likelihood ratio procedure
 #' \item \code{thresh}: vector of candidate thresholds
 #' \item \code{coef}: maximum likelihood estimates from all thresholds
 #' \item \code{vcov}: joint asymptotic covariance matrix for shape \eqn{\xi} or coefficient of tail dependence \eqn{\eta}, or it's reciprocal.
@@ -1089,7 +1089,7 @@ thselect.wseq <- function(
   }
   res <- list(
     thresh = as.numeric(thresh),
-    cthresh = wdiag$thresh,
+    thresh0 = wdiag$thresh,
     quantile = quantile,
     model = mod,
     nsim = nsim,

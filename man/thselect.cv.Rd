@@ -36,11 +36,11 @@ thselect.cv(
 a list with elements
 \itemize{
 \item \code{thresh}: value of threshold returned by the procedure, \code{NA} if the hypothesis is rejected at all thresholds
-\item \code{cthresh}: sorted vector of candidate thresholds
-\item \code{cindex}: index of selected threshold among \code{cthresh} or \code{NA} if none returned
+\item \code{thresh0}: sorted vector of candidate thresholds
+\item \code{cindex}: index of selected threshold among \code{thresh0} or \code{NA} if none returned
 \item \code{pval}: bootstrap p-values, with \code{NA} if \code{lazy} and the p-value exceeds level at lower thresholds
 \item \code{shape}: shape parameter estimates
-\item \code{nexc}: number of exceedances of each threshold \code{cthresh}
+\item \code{nexc}: number of exceedances of each threshold \code{thresh0}
 \item \code{method}: estimation method for the shape parameter
 }
 }

@@ -64,8 +64,8 @@ plots of the requested diagnostics and an invisible list with components
 \item \code{k}: final number of thresholds used
 \item \code{thresh}: threshold selected by the likelihood ratio procedure
 \item \code{qthresh}: quantile level of threshold selected by the likelihood ratio procedure
-\item \code{cthresh}: vector of candidate thresholds
-\item \code{qcthresh}: quantile level of candidate thresholds
+\item \code{thresh0}: vector of candidate thresholds
+\item \code{qthresh0}: quantile level of candidate thresholds
 \item \code{mle.u}: maximum likelihood estimates for the selected threshold
 \item \code{model}: model fitted
 }

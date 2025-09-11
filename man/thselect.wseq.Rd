@@ -38,7 +38,7 @@ thselect.wseq(
 \value{
 an object of class invisible list with components
 \itemize{
-\item \code{cthresh}: threshold selected by the likelihood ratio procedure
+\item \code{thresh0}: threshold selected by the likelihood ratio procedure
 \item \code{thresh}: vector of candidate thresholds
 \item \code{coef}: maximum likelihood estimates from all thresholds
 \item \code{vcov}: joint asymptotic covariance matrix for shape \eqn{\xi} or coefficient of tail dependence \eqn{\eta}, or it's reciprocal.

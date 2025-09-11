@@ -52,7 +52,7 @@ thselect.pickands <- function(
   k0 <- as.integer(m_candidate[which.min(dist)])
   ret <- list(
     k0 = k0,
-    cthresh = xdat[k0],
+    thresh0 = xdat[k0],
     dist = rev(dist),
     thresh = rev(xdat[m_candidate]),
     method = method
@@ -71,7 +71,7 @@ plot.mev_thselect_pickands <- function(x, ...) {
     ylab = "KS distance",
     bty = "l",
     panel.first = {
-      abline(v = x$cthresh, col = "gray", lty = 2)
+      abline(v = x$thresh0, col = "gray", lty = 2)
     }
   )
 }
@@ -95,7 +95,7 @@ print.mev_thselect_pickands <- function(
     ),
     "\n"
   )
-  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
   return(invisible(NULL))
 }
 
@@ -142,7 +142,7 @@ thselect.alrs <- function(xdat, thresh, plot = FALSE) {
   }
   ret <- list()
   ret$thresh <- as.numeric(thresh)
-  ret$cthresh <- as.numeric(thresh[which.min(dist)])
+  ret$thresh0 <- as.numeric(thresh[which.min(dist)])
   ret$lratios <- lratios
   ret$dist <- dist
   class(ret) <- "mev_thselect_lmoment"
@@ -159,7 +159,7 @@ print.mev_thselect_lmoment <-
     cat(
       "Threshold selection method: L-moments\nSilva Lomba and Fraga Alves (2020)\n"
     )
-    cat("Selected threshold:", round(x$cthresh, digits), "\n")
+    cat("Selected threshold:", round(x$thresh0, digits), "\n")
     return(invisible(NULL))
   }
 
@@ -229,11 +229,18 @@ lmoments <- function(xdat, sorted = FALSE) {
 #'
 #' Given a sample of exceedances, compute the first four L-moments and use either the first two to obtain the scale and shape (default), or else use L-skewness and L-scale to compute the scale and shape of the generalized Pareto distribution
 #'
+#' @export
 #' @param xdat [numeric] vector of observations
+#' @param thresh [numeric] optional threshold argument
 #' @param sorted [logical] if \code{TRUE}, observations are sorted in increasing order
 #' @param Lskew [logical]; if \code{TRUE}, shape is obtained from L-skewness rather than first two moments.
 #' @return a vector of length two with the scale and shape estimates
-gpd.lmom <- function(xdat, sorted = FALSE, Lskew = FALSE) {
+gpd.lmom <- function(xdat, thresh, sorted = FALSE, Lskew = FALSE) {
+  if (!missing(thresh)) {
+    stopifnot(is.numeric(thresh), length(thresh) == 1L)
+    xdat <- xdat[xdat > thresh] - thresh
+    stopifnot(length(xdat) > 2L)
+  }
   if (!isTRUE(Lskew)) {
     as <- pwm(xdat, sorted = sorted)
     return(
@@ -315,7 +322,7 @@ thselect.ksmd <- function(
     dist[i] <- mahalanobis(x = xp, center = mus, cov = covs)
   }
   ret <- list(
-    cthresh = as.numeric(thresh[which.min(dist)]),
+    thresh0 = as.numeric(thresh[which.min(dist)]),
     thresh = thresh,
     pval = qchisq(min(dist), df = 2),
     dist = dist,
@@ -341,6 +348,6 @@ print.mev_thselect_mahalanobis <- function(
     round(x$pval, digits = 3),
     "\n"
   )
-  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
   return(invisible(NULL))
 }

@@ -18,7 +18,7 @@ thselect.ncpgp(xdat, thresh, test = "score", plot = FALSE, level = 0.95, ...)
 \item{level}{[double] confidence level for confidence interval, defaults to 0.95}
 }
 \value{
-an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{cthresh}).
+an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{thresh0}).
 }
 \description{
 The model tests the null hypothesis of a generalized Pareto above each threshold in \code{thresh} against the alternative of a piecewise generalized Pareto model with continuity constraints.

@@ -348,7 +348,7 @@ thselect.expgqt <- function(
     k0 = k_cur,
     shape = gamma_cur,
     rho = rho_cur,
-    cthresh = exp(logx[k_cur + 1]),
+    thresh0 = exp(logx[k_cur + 1]),
     # mse = mse,
     # se = se,
     convergence = conv
@@ -367,7 +367,7 @@ print.mev_thselect_expgqt <- function(
     "Threshold selection method: Beirlant, Vynckier and Teugels (1996)\nGeneralized quantile threshold selection\n\n"
   )
   if (isTRUE(x$convergence)) {
-    cat("Selected threshold:", round(x$cthresh, digits), "\n")
+    cat("Selected threshold:", round(x$thresh0, digits), "\n")
     cat("Number of exceedances:", round(x$k0, digits), "\n")
     cat("Shape estimate:", round(x$shape, digits), "\n")
   } else {

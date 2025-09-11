@@ -27,7 +27,7 @@
 #' @return an invisible list with components
 #' \itemize{
 #' \item \code{thresh}: scalar threshold minimizing criterion
-#' \item \code{cthresh}: vector of candidate thresholds
+#' \item \code{thresh0}: vector of candidate thresholds
 #' \item \code{metric}: value of the metric criterion evaluated at each threshold
 #' \item \code{type}: argument \code{type}
 #' \item \code{dist}: argument \code{dist}
@@ -182,7 +182,7 @@ thselect.vmetric <- function(
   cindex <- which.min(metric)
   res <- list(
     thresh = thresh,
-    cthresh = thresh[cindex],
+    thresh0 = thresh[cindex],
     metric = metric,
     type = type,
     dist = dist,
@@ -221,7 +221,7 @@ print.mev_thselect_vmetric <-
         "\n"
       )
     )
-    cat("Selected threshold:", round(x$cthresh, digits), "\n")
+    cat("Selected threshold:", round(x$thresh0, digits), "\n")
     return(invisible(NULL))
   }
 
@@ -277,7 +277,7 @@ plot.mev_thselect_vmetric <-
         )
       )
     } else {
-      thresh <- x$cthresh
+      thresh <- x$thresh0
       thid <- which(x$thresh == thresh)
       if (x$type == "pp") {
         obs_quant_sim <- switch(

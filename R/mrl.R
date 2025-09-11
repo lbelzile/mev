@@ -12,7 +12,7 @@
 #' @return a list containing
 #' \itemize{
 #' \item \code{thresh}: candidate threshold vector
-#' \item \code{cthresh}: selected threshold
+#' \item \code{thresh0}: selected threshold
 #' \item \code{scale}: scale parameter estimate
 #' \item \code{shape}: shape parameter estimate
 #' \item \code{mrl}: empirical mean excess values
@@ -97,12 +97,12 @@ thselect.mrl <- function(
   #      type = "l",
   #      bty = "l")
   index <- which.min(mse)
-  cthresh <- thresh[index]
+  thresh0 <- thresh[index]
   shape <- coefs[index, 2] / (1 + coefs[index, 2])
   scale <- coefs[index, 1] * (1 - shape) + shape * xdat[k + index]
   ret <- list(
     thresh = thresh,
-    cthresh = cthresh,
+    thresh0 = thresh0,
     scale = scale,
     shape = shape,
     mrl = excu,
@@ -131,7 +131,7 @@ plot.mev_thselect_automrl <- function(x, ...) {
   if (isTRUE(x$tmanual)) {
     rug(x$thresh)
   }
-  abline(v = x$cthresh, lty = 2)
+  abline(v = x$thresh0, lty = 2)
   abline(a = x$intercept, b = x$slope)
 }
 
@@ -149,7 +149,7 @@ print.mev_thselect_automrl <- function(
     round(x$slope, digits),
     "\n"
   )
-  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
   return(invisible(NULL))
 }
 

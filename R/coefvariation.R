@@ -22,11 +22,11 @@
 #' @return a list with elements
 #' \itemize{
 #' \item \code{thresh}: value of threshold returned by the procedure, \code{NA} if the hypothesis is rejected at all thresholds
-#' \item \code{cthresh}: sorted vector of candidate thresholds
-#' \item \code{cindex}: index of selected threshold among \code{cthresh} or \code{NA} if none returned
+#' \item \code{thresh0}: sorted vector of candidate thresholds
+#' \item \code{cindex}: index of selected threshold among \code{thresh0} or \code{NA} if none returned
 #' \item \code{pval}: bootstrap p-values, with \code{NA} if \code{lazy} and the p-value exceeds level at lower thresholds
 #' \item \code{shape}: shape parameter estimates
-#' \item \code{nexc}: number of exceedances of each threshold \code{cthresh}
+#' \item \code{nexc}: number of exceedances of each threshold \code{thresh0}
 #' \item \code{method}: estimation method for the shape parameter
 #' }
 #' @export
@@ -192,7 +192,7 @@ thselect.cv <- function(
   }
   ret <- list(
     thresh = rev(as.numeric(thresh)),
-    cthresh = as.numeric(thselect),
+    thresh0 = as.numeric(thselect),
     cindex = cindex,
     pval = as.numeric(boot_pval),
     shape = as.numeric(shape),
@@ -225,7 +225,7 @@ print.mev_thselect_cv <- function(
     x$pval[x$cindex],
     "\n"
   )
-  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
   return(invisible(NULL))
 }
 
@@ -244,7 +244,7 @@ plot.mev_thselect_cv <- function(x, ...) {
       abline(h = x$level, col = "grey")
     }
   )
-  abline(v = x$cthresh, lty = 2)
+  abline(v = x$thresh0, lty = 2)
 }
 
 #' Coefficient of variation threshold stability plot
@@ -471,12 +471,12 @@ plot.mev_tstab_cv <- function(x, level = 0.05, legend = TRUE, ...) {
 #' @param lazy [logical] compute the bootstrap p-value until the test stops rejecting at level \code{level}? Default to \code{FALSE}
 #' @return a list with elements
 #' \itemize{
-#' \item \code{cthresh}: value of threshold returned by the procedure, \code{NA} if the hypothesis is rejected at all thresholds
+#' \item \code{thresh0}: value of threshold returned by the procedure, \code{NA} if the hypothesis is rejected at all thresholds
 #' \item \code{thresh}: sorted vector of candidate thresholds
-#' \item \code{cindex}: index of selected threshold among \code{cthresh} or \code{NA} if none returned
+#' \item \code{cindex}: index of selected threshold among \code{thresh} or \code{NA} if none returned
 #' \item \code{pval}: bootstrap p-values, with \code{NA} if \code{lazy} and the p-value exceeds level at lower thresholds
 #' \item \code{shape}: shape parameter estimates
-#' \item \code{nexc}: number of exceedances of each threshold \code{cthresh}
+#' \item \code{nexc}: number of exceedances of each threshold \code{thresh}
 #' \item \code{method}: estimation method for the shape parameter
 #' }
 #' @export

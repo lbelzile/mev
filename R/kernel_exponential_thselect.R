@@ -72,7 +72,7 @@ thselect.gbw <- function(
   k0 <- k[which.min(gof)]
   res <- list(
     k0 = k0,
-    cthresh = xdat[k0],
+    thresh0 = xdat[k0],
     shape = mean(Z[1:k0]),
     rho = erho[which.min(gof)],
     method = ifelse(is.numeric(rho), "user-supplied", rho),
@@ -98,7 +98,7 @@ print.mev_thselect_gbw <- function(
     "\n"
   )
   cat("Number of exceedances:", x$k0, "\n")
-  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
   cat("Shape estimate:", round(x$shape, digits), "\n")
   return(invisible(NULL))
 }

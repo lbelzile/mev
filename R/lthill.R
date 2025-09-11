@@ -241,7 +241,8 @@ tstab.lthill <- function(
 #'
 #' Given a sample of positive data with Pareto tail, the algorithm computes the optimal number of order statistics that minimizes the variance of the average left truncated tail index estimator, and uses the relationship to the Hill estimator for the Hall class of distributions to derive the optimal number (minimizing the asymptotic mean squared error) of the Hill estimator. The default value for the second order regular variation index is taken to be \eqn{rho=-1}.
 #' @param xdat [vector] positive vector of exceedances
-#' @param range [integer] vector of length 2 containing the minimum and maximum number of observations for the estimation of the shape parameter.
+#' @param kmin [int] minimum number of exceedances
+#' @param kmax [int] maximum number of exceedances for the estimation of the shape parameter.
 #' @param rho [double] scalar for the second order regular variation index, a negative number.
 #' @param test [logical] if \code{TRUE}, computes the goodness-of-fit statistic for the model using Monte Carlo
 #' @param nsim [int] number of replications for Monte Carlo test, used only if \code{test=TRUE}.
@@ -251,7 +252,8 @@ tstab.lthill <- function(
 #' @references Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
 thselect.bab <- function(
   xdat,
-  range = c(floor(0.2 * length(xdat)), length(xdat) - 1L),
+  kmin = floor(0.2 * length(xdat)),
+  kmax = length(xdat) - 1L,
   rho = -1,
   test = FALSE,
   nsim = 999L,
@@ -353,7 +355,7 @@ thselect.bab <- function(
   res <- list(
     k0 = k0,
     k0_lth = k0_lth,
-    cthresh = xdat[k0],
+    thresh0 = xdat[k0],
     shape = mev::shape.hill(xdat, k = k0),
     shape_lth = shape[k0_lth],
     stat = Rst
@@ -391,7 +393,7 @@ print.mev_thselect_bab <- function(
   cat(
     "Threshold selection method: Bladt, Albrecher and Beirlant (2020)\n"
   )
-  cat("Selected threshold:", round(x$cthresh, digits), "\n")
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
   cat("Number of exceedances:", round(x$k0, digits), "\n")
   cat("Shape estimate (Hill):", round(x$shape, digits), "\n\n")
   cat(
