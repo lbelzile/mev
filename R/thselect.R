@@ -117,10 +117,15 @@ thselect.mdps <- function(xdat) {
   for (k in seq_along(Dk)) {
     j <- 1:(k - 1)
     powS <- (xdat[j] / xdat[k])^(-1 / hill[k])
-    Dk[k] <- max(powS - (n - j) / (k - 1), (n - j + 1) / (k - 1) - powS)
+    Dk[k] <- max(powS - (j - 1) / (k - 1), j / (k - 1) - powS)
   }
+  # plot(log(Dk))
   k0 <- which.min(Dk)
-  res <- list(k0 = k0, shape = 1 / hill[k0], thresh0 = xdat[k0])
+  res <- list(
+    k0 = k0,
+    shape = 1 / hill[k0],
+    thresh0 = xdat[k0]
+  )
   class(res) <- "mev_thselect_mdps"
   return(invisible(res))
 }
