@@ -24,14 +24,17 @@ thselect.gbw <- function(
   ...
 ) {
   args <- list(...)
-  kmax <- as.integer(kmax)
+  n <- length(xdat)
+  if (missing(kmax)) {
+    kmax <- n - 1L
+  } else {
+    kmax <- min(as.integer(kmax), n - 1L)
+  }
   k <- args$k <- 10:kmax
   xdat <- sort(
     x = xdat[is.finite(xdat) & xdat > 0],
     decreasing = TRUE
   )
-  n <- length(xdat)
-  stopifnot(kmax <= n)
   logdata <- log(xdat)
   Z <- 1:(kmax - 1) * (logdata[1:(kmax - 1)] - logdata[2:kmax])
   args$xdat <- xdat

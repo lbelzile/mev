@@ -19,4 +19,6 @@ Given a sample of exceedances, compute the moment estimator of the positive shap
 }
 \references{
 de Haan, L. and Peng, L. (1998). \emph{Comparison of tail index estimators}, Statistica Neerlandica 52, 60-70.
+
+de Haan, L. and Peng, L. (1998). Comparison of tail index estimators. \emph{Statistica Neerlandica}, 52: 60-70. \doi{10.1111/1467-9574.00068}
 }

@@ -250,6 +250,7 @@ tstab.lthill <- function(
 #'
 #' @return a list with the number of order statistics for the Hill estimator, \code{k0} and the corresponding shape estimate \code{shape}, the average lower-trimmed Hill estimator \code{shape._lth} and the number of order statistics upon which the latter is based, \code{k0_lth}.
 #' @references Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
+#' @export
 thselect.bab <- function(
   xdat,
   kmin = floor(0.2 * length(xdat)),
@@ -260,12 +261,11 @@ thselect.bab <- function(
   level = 0.95,
   ...
 ) {
-  range <- sort(as.integer(range))
+  range <- as.integer(c(kmin, kmax))
   stopifnot(
-    length(range) == 2L,
     length(rho) == 1L,
     rho < 0,
-    range[1] > 10,
+    range[1] >= 10,
     range[2] < length(xdat)
   )
   xdat <- sort(xdat, decreasing = TRUE, na.last = NA)

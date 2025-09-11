@@ -104,9 +104,8 @@ PickandsXU <- function(xdat, m) {
 #' shape parameter. The shape estimate returned is positive.
 #'
 #' @param xdat vector of positive observations
-#' @param kmin minimum number of upper order statistics (exceedances) for the estimator
-#' @param kmax maximum number of upper order statistics (exceedances) for the estimator
-#' @return a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{kmin} equals \code{kmax}.
+#' @param k vector of order statistics; if missing, a vector going from 10 to sample size minus one.
+#' @return a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{k} is a scalar integer.
 #' @references Hill, B.M. (1975). \emph{A simple general approach to inference about the tail of a distribution.} Annals of Statistics, \bold{3}, 1163-1173.
 #' @export
 #' @examples
@@ -423,6 +422,60 @@ shape.genquant <- function(
   }
 }
 
+#' Generalized jackknife shape estimator
+#' @inheritParams shape.hill
+#' @export
+#' @return a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{k} is a scalar integer.
+#' @references Gomes, I.M., João Martins, M. and Neves, M.  (2000) Alternatives to a Semi-Parametric Estimator of Parameters of Rare Events-The Jackknife Methodology. \emph{Extremes}, 3, 207–229. \doi{10.1023/A:1011470010228}
+shape.genjack <- function(xdat, k) {
+  xdat <- xdat[xdat > 0 & is.finite(xdat)]
+  n <- length(xdat)
+  if (missing(k)) {
+    k <- seq(10, n - 1)
+  }
+
+  k <- as.integer(sort(k))
+  k <- k[k < n]
+  # shape <- 2 *
+  #   shape.vries(xdat = xdat, k = k)$shape -
+  #   shape.hill(xdat = xdat, k = k)$shape
+  # if (length(k) > 1) {
+  #   return(
+  #     data.frame(
+  #       k = k,
+  #       shape = shape
+  #     )
+  #   )
+  # } else {
+  #   return(as.numeric(shape))
+  # }
+
+  logdat <- sort(log(xdat), decreasing = TRUE)
+
+  kmin <- k[1]
+  kmax <- min(k[length(k)], n - 1)
+  cumlogdat <- cumsum(logdat[1:(kmax + 1L)])
+  # Hill estimator for k=2, ..., n
+  gamma_hill <- cumlogdat[k] / k - logdat[k + 1]
+  # Compute square log spacing
+  Mn <- vector(mode = "numeric", length = length(gamma_hill))
+  for (i in seq_along(Mn)) {
+    Mn[i] <- mean((logdat[1:k[i]] - logdat[k[i] + 1])^2)
+  }
+  # Compute de Vries and generalized jackknife estimators
+  gamma_v <- 0.5 * Mn / gamma_hill
+  gamma_gj <- 2 * gamma_v - gamma_hill
+  if (length(k) > 1) {
+    return(
+      data.frame(
+        k = k,
+        shape = gamma_gj
+      )
+    )
+  } else {
+    return(as.numeric(gamma_gj))
+  }
+}
 
 #' Pickand's shape estimator
 #'
@@ -504,27 +557,40 @@ shape.moment <- function(xdat, k) {
 #' @export
 #' @inheritParams shape.pickands
 #' @return a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{k} is a scalar.
+#' @references de Haan, L. and Peng, L. (1998). Comparison of tail index estimators. \emph{Statistica Neerlandica}, 52: 60-70. \doi{10.1111/1467-9574.00068}
 shape.vries <- function(xdat, k) {
-  k <- sort(as.integer(k))
-  xdat <- sort(xdat[is.finite(xdat) & xdat > 0], decreasing = TRUE)
+  xdat <- sort(
+    xdat[is.finite(xdat) & xdat > 0],
+    decreasing = TRUE
+  )
+  n <- length(xdat)
+  if (missing(k)) {
+    k <- seq(10, n - 1)
+  } else {
+    k <- sort(as.integer(k))
+  }
   logdata <- as.numeric(log(xdat))
-  n <- min(k[length(k)] + 1, length(logdata))
   k <- k[k >= 5 & k < n]
+  nm <- min(k[length(k)] + 1, n)
+
   if (length(k) == 0) {
     stop(
       "Invalid number of exceedances: must be five or more, or less than the sample size."
     )
   }
-  cumlogdat <- cumsum(logdata[1:n])
+  cumlogdat <- cumsum(logdata[1:nm])
   M1 <- cumlogdat[k] / k - logdata[k + 1]
   shape <- numeric(length = length(k))
-  for (i in seq_along(k)) {
-    M2 <- mean((logdata[1:k[i]] - logdata[k[i] + 1])^2)
-    shape[i] <- 0.5 * M2 / M1[k[i]]
-  }
+  M2 <- sapply(
+    seq_along(k),
+    function(i) {
+      mean((logdata[1:k[i]] - logdata[k[i] + 1])^2)
+    }
+  )
+  shape <- 0.5 * M2 / M1
   if (length(k) > 1) {
     return(
-      data.frame(k, shape)
+      data.frame(k = k, shape = shape)
     )
   } else {
     return(as.numeric(shape))
@@ -535,7 +601,7 @@ shape.vries <- function(xdat, k) {
 #' Shape parameter estimates
 #'
 #' Wrapper to estimate the tail index or shape parameter of an extreme value distribution. Each function has similar sets of arguments, a vector or scalar number of order statistics \code{k} and
-#' a vector of positive observations \code{xdat}. The \code{method} argument allows users to choose between different indicators, including the Hill estimator (\code{hill}, for positive observations and shape only), the moment estimator of Dekkers and de Haan (\code{mom} or \code{dekkers}), the Beirlant, Vynckier and Teugels generalized quantile estimator (\code{bvt} or \code{genquant}), the Pickands estimator (\code{pickands}), the extreme \eqn{U}-statistics estimator of Oorschot, Segers and Zhou (\code{osz}), or the exponential rgression model of Beirlant et al. (\code{erm}).
+#' a vector of positive observations \code{xdat}. The \code{method} argument allows users to choose between different indicators, including the Hill estimator (\code{hill}, for positive observations and shape only), the moment estimator of Dekkers and de Haan (\code{mom} or \code{dekkers}), the de Vries estimator of de Haan and Peng (\code{vries}), the generalized jackknife estimator of Gomes et al. (\code{genjack}), the Beirlant, Vynckier and Teugels generalized quantile estimator (\code{bvt} or \code{genquant}), the Pickands estimator (\code{pickands}), the extreme \eqn{U}-statistics estimator of Oorschot, Segers and Zhou (\code{osz}), or the exponential rgression model of Beirlant et al. (\code{erm}).
 #' @export
 #' @inheritParams shape.pickands
 #' @param method estimation method.
@@ -549,6 +615,7 @@ fit.shape <- function(
     "rbm",
     "osz",
     "vries",
+    "genjack",
     "mom",
     "dekkers",
     "genquant",
@@ -570,6 +637,8 @@ fit.shape <- function(
     return(shape.pickands(xdat = xdat, k = k))
   } else if (method == "vries") {
     return(shape.vries(xdat = xdat, k = k))
+  } else if (method == "genjack") {
+    return(shape.genjack(xdat = xdat, k = k))
   } else if (method == "rbm") {
     return(shape.rbm(xdat = xdat, kmax = max(k)))
   } else if (method == "erm") {

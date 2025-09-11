@@ -9,12 +9,10 @@ shape.hill(xdat, k)
 \arguments{
 \item{xdat}{vector of positive observations}
 
-\item{kmin}{minimum number of upper order statistics (exceedances) for the estimator}
-
-\item{kmax}{maximum number of upper order statistics (exceedances) for the estimator}
+\item{k}{vector of order statistics; if missing, a vector going from 10 to sample size minus one.}
 }
 \value{
-a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{kmin} equals \code{kmax}.
+a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{k} is a scalar integer.
 }
 \description{
 Given a sample of positive observations, calculate the tail index or
