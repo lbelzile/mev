@@ -13,7 +13,7 @@ shape.erm(xdat, k, method = c("bdgm", "fh"), bounds = NULL)
 
 \item{method}{string; one of \code{bdgm} for the approach of Beirlant, Dierckx, Goegebeur and Matthys (1999)  or \code{fh} for Feuerverger and Hall (1999)}
 
-\item{bounds}{vector of length 2 giving the bounds for \code{\rho}, the second order parameter. Default to \eqn{[-5, -0.5]}}
+\item{bounds}{vector of length 2 giving the bounds for \code{rho}, the second order parameter. Default to \eqn{\rho \in [-5, -0.5]}}
 }
 \value{
 a data frame with columns

@@ -266,7 +266,7 @@ gpd.lmom <- function(xdat, sorted = FALSE, Lskew = FALSE) {
 #' @return a vector of length 2 with the selected threshold and a corresponding \emph{p}-value based on a chi-square approximation to the test statistic
 #' @references Kiran, K. G. and Srivinas, V.V. (2021). \emph{A Mahalanobis distance-based automatic threshold selection method for peaks over threshold model.} Water Resources Research 57. <doi:10.1029/2020WR027534>
 #' @export
-thselect.maha <- function(
+thselect.ksmd <- function(
   xdat,
   thresh,
   approx = c("asymptotic", "mc"),

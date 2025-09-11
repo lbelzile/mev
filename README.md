@@ -72,7 +72,7 @@ Functions for automatic selection of threshold with the peaks over threshold met
 - `thselect.mrl`: Langousis et al. (2016) automatization of mean residual life diagnostics
 - `thselect.pickands`: Pickands (1985) goodness-of-fit threshold selection diagnostic
 - `thselect.alrs`: automatic L-moments ratio selection method of Silva Lomba and Fraga Alves (2020)
-- `thselect.mahadist`: Mahalanobis distance-based selection method based on L-moments of Kiran and Srivinas (2021)
+- `thselect.ksmd`: Mahalanobis distance-based selection method based on L-moments of Kiran and Srivinas (2021)
 
 Some semiparametric methods
 
