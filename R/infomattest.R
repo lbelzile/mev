@@ -208,14 +208,14 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
 #' thselect.sdinfo(
 #'   xdat = rgp(n = 10000),
 #'   quantile = seq(0.1, 0.9, length = 10),
-#'   K = 3)
+#'   kmax = 3)
 #' @export
 thselect.sdinfo <- function(
   xdat,
   thresh,
   quantile,
   plot = FALSE,
-  kmax
+  kmax = 1
 ) {
   ret <- infomat.test(
     xdat = xdat,
@@ -397,6 +397,7 @@ ext.index <- function(
   warn = FALSE
 ) {
   method <- match.arg(method, c("wls", "mle", "intervals"), several.ok = TRUE)
+  q <- quantile
   stopifnot(all(q < 1), all(q > 0))
   q <- sort(q)
   xdat <- as.vector(xdat)

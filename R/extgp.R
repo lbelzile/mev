@@ -32,15 +32,15 @@
 #' @return \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a list with tail probabilities \code{p}, return levels \code{retlev}, thresholds \code{thresh} and model name \code{model}.
 #' @examples
 #' set.seed(123)
-#' xdat <- mev::rgp(1000, loc = 0, scale = 2, shape = 0.5)
+#' xdat <- rgp(1000, loc = 0, scale = 2, shape = 0.5)
 #' par <- fit.egp(xdat, thresh = 0, model = 'gj-beta')$par
 #' p <- c(1/1000, 1/1500, 1/2000)
 #' # With multiple thresholds
 #' th <- c(0, 0.1, 0.2, 1)
-#' opt <- tstab.egp(xdat, th, model = 'gj-beta')
-#' egp.retlev(xdat, opt$thresh, opt$par, 'gj-beta', p = p)
+#' opt <- tstab.egp(xdat, thresh = th, model = 'gj-beta')
+#' egp.retlev(xdat = xdat, thresh = th, model = 'gj-beta', p = p)
 #' opt <- tstab.egp(xdat, th, model = 'pt-power', plots = NA)
-#' egp.retlev(xdat, opt$thresh, opt$par, 'pt-power', p = p)
+#' egp.retlev(xdat = xdat, thresh = th, model = 'pt-power', p = p)
 NULL
 
 #' Fit of extended GP models and parameter stability plots
@@ -189,7 +189,7 @@ egp.retlev <- function(
       stop("Invalid parameter input")
     }
     if (!inherits(par, "matrix")) {
-      par <- matrix(c(par), ncol = 3)
+      par <- matrix(data = as.numeric(par), ncol = 3)
     }
     stopifnot(length(par) == (length(thresh) * 3L))
   }
@@ -767,11 +767,8 @@ tstab.egp <- function(
   if (is.numeric(plots)) {
     plots <- as.integer(plots)
   } else {
-    plots <- switch(
-      param,
-      "kappa" = 1L,
-      "shape" = 3L
-    )
+    plots <- c()
+    plots <- c(1L, 3L)[c("kappa", "shape") %in% param]
   }
   transform <- isTRUE(as.logical(transform)[1])
   # Option for backward compatibility

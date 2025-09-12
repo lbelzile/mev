@@ -94,6 +94,7 @@ fit.wgpd <- function(
 ) {
   xdat <- as.numeric(xdat[is.finite(xdat)])
   ntot <- length(xdat)
+  stopifnot(length(threshold) == 1L, is.numeric(threshold))
   # Extract exceedances
   xdat <- xdat[xdat > threshold] - threshold
   stopifnot(class(weightfun) == "function")
@@ -150,6 +151,9 @@ fit.wgpd <- function(
   )
   if (!inherits(cov, "try-error")) {
     se <- try(sqrt(diag(cov)), silent = TRUE)
+    colnames(cov) <- rownames(cov) <- c("scale", "shape")
+  } else {
+    cov <- NULL
   }
   if (!is.character(se)) {
     if (isTRUE(all(is.finite(se))) & isTRUE(all(se > 0))) {
@@ -160,7 +164,9 @@ fit.wgpd <- function(
     se <- rep(NA, 2)
     cov <- NULL
   }
-  return(list(
+  names(mle) <- names(se) <- c("scale", "shape")
+  colnames(cov) <- rownames(cov) <- c("scale", "shape")
+  res <- list(
     estimate = mle,
     param = mle,
     std.err = se,
@@ -172,6 +178,10 @@ fit.wgpd <- function(
     exceedances = xdat * sc,
     nat = length(xdat),
     pat = length(xdat) / ntot,
-    weights = weights
-  ))
+    weights = weights,
+    method = "weighted",
+    counts = c("function" = opt$nfuneval, "gradient" = NA)
+  )
+  class(res) <- "mev_gpd"
+  return(invisible(res))
 }

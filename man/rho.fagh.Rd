@@ -24,7 +24,7 @@ n <- 1000
 xdat <- mev::rgp(n = n, shape = 0.2)
 kmin <- floor(n^0.995)
 kmax <- ceiling(n^0.999)
-rho_est <- fit.fagh(
+rho_est <- rho.fagh(
    xdat = xdat,
    k = n - kmin:kmax)
 rho_med <- mean(rho_est$rho)

@@ -121,6 +121,7 @@ shape.trimhill <- function(xdat, k, k0, sorted = FALSE) {
 #' @param log [logical] if \code{TRUE} (default), shows the Hill plot on the log-scale
 #' @return an invisible list with lthill, order statistics, the log variance and the log scale.
 #' @references Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
+#' @export
 #' @examples
 #' xdat <- 10/(1 - runif(n = 1000)) - 10
 #' tstab.lthill(xdat = xdat, k = c(50,100,200))

@@ -46,15 +46,15 @@ to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
 
 \examples{
 set.seed(123)
-xdat <- mev::rgp(1000, loc = 0, scale = 2, shape = 0.5)
+xdat <- rgp(1000, loc = 0, scale = 2, shape = 0.5)
 par <- fit.egp(xdat, thresh = 0, model = 'gj-beta')$par
 p <- c(1/1000, 1/1500, 1/2000)
 # With multiple thresholds
 th <- c(0, 0.1, 0.2, 1)
-opt <- tstab.egp(xdat, th, model = 'gj-beta')
-egp.retlev(xdat, opt$thresh, opt$par, 'gj-beta', p = p)
+opt <- tstab.egp(xdat, thresh = th, model = 'gj-beta')
+egp.retlev(xdat = xdat, thresh = th, model = 'gj-beta', p = p)
 opt <- tstab.egp(xdat, th, model = 'pt-power', plots = NA)
-egp.retlev(xdat, opt$thresh, opt$par, 'pt-power', p = p)
+egp.retlev(xdat = xdat, thresh = th, model = 'pt-power', p = p)
 }
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143, <doi:10.1016/j.jspi.2012.07.001>.

@@ -4,7 +4,7 @@
 \alias{thselect.ksmd}
 \title{Mahalanobis distance-based methodology}
 \usage{
-thselect.ksmd(xdat, thresh, approx = c("asymptotic", "mc"), B = 1000L)
+thselect.ksmd(xdat, thresh, approx = c("asymptotic", "mc"), nsim = 1000L)
 }
 \arguments{
 \item{xdat}{[numeric] vector of observations}
@@ -13,10 +13,17 @@ thselect.ksmd(xdat, thresh, approx = c("asymptotic", "mc"), B = 1000L)
 
 \item{approx}{[string] method to use to obtain moments of first L-moment}
 
-\item{B}{[integer] number of replications for Monte Carlo approximation}
+\item{nsim[integer]}{number of replications for Monte Carlo approximation}
 }
 \value{
-a vector of length 2 with the selected threshold and a corresponding \emph{p}-value based on a chi-square approximation to the test statistic
+a list with components
+\itemize{
+\item \code{thresh0} selected threshold returned by the procedure
+\item \code{thresh} vector of candidate thresholds
+\item \code{pval} scalar \emph{p}-value for the chi-square approximation to the test statistic for the selected threshold
+\item \code{dist} vector of Mahalanobis distance
+\item \code{approx} type of approximation
+}
 }
 \description{
 Compute the Mahalanobis distance-based threshold method over a grid of thresholds by

@@ -30,8 +30,8 @@
 #' @export
 #' @examples
 #' # Simulate Pareto data - log(xdat) is exponential with rate 2
-#' xdat <- rgp(n = 10000, loc = 1, scale = 0.5, shape = 0.5)
-#' thselect.expgqt(xdat)
+#' xdat <- rgp(n = 200, loc = 1, scale = 0.5, shape = 0.5)
+#' (thselect.expgqt(xdat))
 thselect.expgqt <- function(
   xdat,
   maxiter = 10L,

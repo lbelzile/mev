@@ -269,16 +269,24 @@ gpd.lmom <- function(xdat, thresh, sorted = FALSE, Lskew = FALSE) {
 #'
 #' @inheritParams thselect.alrs
 #' @param approx [string] method to use to obtain moments of first L-moment
-#' @param B [integer] number of replications for Monte Carlo approximation
-#' @return a vector of length 2 with the selected threshold and a corresponding \emph{p}-value based on a chi-square approximation to the test statistic
+#' @param nsim[integer] number of replications for Monte Carlo approximation
+#' @return a list with components
+#' \itemize{
+#' \item \code{thresh0} selected threshold returned by the procedure
+#' \item \code{thresh} vector of candidate thresholds
+#' \item \code{pval} scalar \emph{p}-value for the chi-square approximation to the test statistic for the selected threshold
+#' \item \code{dist} vector of Mahalanobis distance
+#' \item \code{approx} type of approximation
+#' }
 #' @references Kiran, K. G. and Srivinas, V.V. (2021). \emph{A Mahalanobis distance-based automatic threshold selection method for peaks over threshold model.} Water Resources Research 57. <doi:10.1029/2020WR027534>
 #' @export
 thselect.ksmd <- function(
   xdat,
   thresh,
   approx = c("asymptotic", "mc"),
-  B = 1e3L
+  nsim = 1e3L
 ) {
+  B <- as.integer(nsim)
   approx <- match.arg(approx)
   xdat <- as.numeric(xdat[is.finite(xdat)])
   xdat <- sort(xdat)
