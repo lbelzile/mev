@@ -5,27 +5,43 @@
 #' @references  James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \doi{10.1214/aos/1176343003}
 #' @param xdat [numeric] vector of observations
 #' @param method [string] estimation method, either the quartiles of Pickands (1975), maximum likelihood, probability weighted moments or L-moments
-#' @return a vector with elements \code{k}, the number of order statistics to keep, and \code{thresh}, the numerical value of the latter
-#' @note The quartile esitmator of Pickands is robust, but very inefficient. It is provided for historical reasons.
+#' @param thresh [numeric] vector of candidate thresholds. If missing, defaults to order statistics from the 10th to a quarter of the sample size.
+#' @return a list with components
+#' \itemize{
+#' \item \code{k0}: number of exceedances
+#' \item \code{thresh0}: selected threshold returned by the procedure
+#' \item \code{thresh}: vector of candidate thresholds
+#' \item \code{dist}; vector of Kolmogorov-Smirnoff distance
+#' \item \code{method}; string for the estimation method
+#' \item \code{scale}: estimated scale parameter at the chosen threshold
+#' \item \code{shape}: estimated shape parameter at the chosen threshold
+#' }
+#' @note The quartiles estimator of Pickands is robust, but very inefficient. It is provided for historical reasons.
 #' @export
 thselect.pickands <- function(
   xdat,
+  thresh,
   method = c("mle", "lmom", "quartiles")
 ) {
   method <- match.arg(method)
   xdat <- as.vector(xdat)
   xdat <- sort(xdat[is.finite(xdat)], decreasing = TRUE)
   n <- length(xdat)
-  mmax <- floor(n / 4)
-  mmin <- 10L
-  if (mmin > mmax) {
-    stop("Not enough observations for threshold selection method.")
+  if (missing(thresh)) {
+    mmax <- floor(n / 4)
+    mmin <- 10L
+    m_candidate <- mmax:mmin
+    thresh <- xdat[m_candidate]
+  } else {
+    thresh <- sort(thresh)
+    m_candidate <- sapply(thresh, function(x) {
+      sum(xdat > thresh)
+    })
   }
-  m_candidate <- mmin:mmax
   shape <- scale <- dist <- numeric(length(m_candidate))
   for (i in seq_along(m_candidate)) {
     m <- m_candidate[i]
-    samp <- xdat[seq_len(m - 1)] - xdat[m]
+    samp <- xdat[seq_len(m - 1)] - thresh[i]
     if (method == "quartiles") {
       quants <- as.numeric(quantile(samp, probs = c(0.5, 0.75)))
       shape[i] <- (log(diff(quants)) - log(quants[1])) / log(2)
@@ -49,13 +65,16 @@ thselect.pickands <- function(
         mev::pgp(samp, scale = scale[i], shape = shape[i])
     ))
   }
-  k0 <- as.integer(m_candidate[which.min(dist)])
+  ind <- which.min(dist)
+  k0 <- as.integer(m_candidate[ind])
   ret <- list(
     k0 = k0,
-    thresh0 = xdat[k0],
-    dist = rev(dist),
-    thresh = rev(xdat[m_candidate]),
-    method = method
+    thresh0 = thresh[ind],
+    dist = dist,
+    thresh = thresh,
+    method = method,
+    scale = scale[ind],
+    shape = shape[ind]
   )
   class(ret) <- "mev_thselect_pickands"
   return(invisible(ret))
@@ -68,7 +87,7 @@ plot.mev_thselect_pickands <- function(x, ...) {
     y = x$dist,
     pch = 20,
     xlab = "threshold",
-    ylab = "KS distance",
+    ylab = "Kolmogorov-Smirnoff distance",
     bty = "l",
     panel.first = {
       abline(v = x$thresh0, col = "gray", lty = 2)
@@ -83,7 +102,7 @@ print.mev_thselect_pickands <- function(
   ...
 ) {
   cat(
-    "Threshold selection method:\n Kolmogorov-Smirnoff goodness-of-fit statistic\n Pickands (1975)\n"
+    "Threshold selection method: Pickands (1975)\n Kolmogorov-Smirnoff goodness-of-fit statistic\n"
   )
   cat(
     "Estimation method:",
@@ -96,6 +115,7 @@ print.mev_thselect_pickands <- function(
     "\n"
   )
   cat("Selected threshold:", round(x$thresh0, digits), "\n")
+  cat("Number of exceedances:", round(x$k0, digits), "\n")
   return(invisible(NULL))
 }
 
@@ -272,11 +292,11 @@ gpd.lmom <- function(xdat, thresh, sorted = FALSE, Lskew = FALSE) {
 #' @param nsim[integer] number of replications for Monte Carlo approximation
 #' @return a list with components
 #' \itemize{
-#' \item \code{thresh0} selected threshold returned by the procedure
-#' \item \code{thresh} vector of candidate thresholds
-#' \item \code{pval} scalar \emph{p}-value for the chi-square approximation to the test statistic for the selected threshold
-#' \item \code{dist} vector of Mahalanobis distance
-#' \item \code{approx} type of approximation
+#' \item \code{thresh0}: selected threshold returned by the procedure
+#' \item \code{thresh}: vector of candidate thresholds
+#' \item \code{pval}: scalar \emph{p}-value for the chi-square approximation to the test statistic for the selected threshold
+#' \item \code{dist}: vector of Mahalanobis distance
+#' \item \code{approx}: type of approximation
 #' }
 #' @references Kiran, K. G. and Srivinas, V.V. (2021). \emph{A Mahalanobis distance-based automatic threshold selection method for peaks over threshold model.} Water Resources Research 57. <doi:10.1029/2020WR027534>
 #' @export

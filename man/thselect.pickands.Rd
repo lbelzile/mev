@@ -4,21 +4,32 @@
 \alias{thselect.pickands}
 \title{Pickands' order statistics threshold selection method}
 \usage{
-thselect.pickands(xdat, method = c("mle", "lmom", "quartiles"))
+thselect.pickands(xdat, thresh, method = c("mle", "lmom", "quartiles"))
 }
 \arguments{
 \item{xdat}{[numeric] vector of observations}
 
+\item{thresh}{[numeric] vector of candidate thresholds. If missing, defaults to order statistics from the 10th to a quarter of the sample size.}
+
 \item{method}{[string] estimation method, either the quartiles of Pickands (1975), maximum likelihood, probability weighted moments or L-moments}
 }
 \value{
-a vector with elements \code{k}, the number of order statistics to keep, and \code{thresh}, the numerical value of the latter
+a list with components
+\itemize{
+\item \code{k0}: number of exceedances
+\item \code{thresh0}: selected threshold returned by the procedure
+\item \code{thresh}: vector of candidate thresholds
+\item \code{dist}; vector of Kolmogorov-Smirnoff distance
+\item \code{method}; string for the estimation method
+\item \code{scale}: estimated scale parameter at the chosen threshold
+\item \code{shape}: estimated shape parameter at the chosen threshold
+}
 }
 \description{
 Restricting to the largest fourth of the data, returns the number of exceedances that minimizes the Kolmogorov-Smirnov statistic, i.e., the maximum absolute difference between the estimated generalized Pareto and the empirical distribution of exceedances. Relative to the paper, different estimation methods are proposed.
 }
 \note{
-The quartile esitmator of Pickands is robust, but very inefficient. It is provided for historical reasons.
+The quartiles estimator of Pickands is robust, but very inefficient. It is provided for historical reasons.
 }
 \references{
 James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \doi{10.1214/aos/1176343003}

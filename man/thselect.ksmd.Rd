@@ -18,11 +18,11 @@ thselect.ksmd(xdat, thresh, approx = c("asymptotic", "mc"), nsim = 1000L)
 \value{
 a list with components
 \itemize{
-\item \code{thresh0} selected threshold returned by the procedure
-\item \code{thresh} vector of candidate thresholds
-\item \code{pval} scalar \emph{p}-value for the chi-square approximation to the test statistic for the selected threshold
-\item \code{dist} vector of Mahalanobis distance
-\item \code{approx} type of approximation
+\item \code{thresh0}: selected threshold returned by the procedure
+\item \code{thresh}: vector of candidate thresholds
+\item \code{pval}: scalar \emph{p}-value for the chi-square approximation to the test statistic for the selected threshold
+\item \code{dist}: vector of Mahalanobis distance
+\item \code{approx}: type of approximation
 }
 }
 \description{
