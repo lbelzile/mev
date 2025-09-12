@@ -144,11 +144,7 @@ NULL
 #'
 #' Interview component of survey 'What we eat in
 #' America'. These are extracted from the 2015–2016 National Health and Nutrition Examination Survey (NHANES, \url{https://wwwn.cdc.gov/nchs/nhanes/Default.aspx}) report and consist of the total nutrients for all food and beverage intake ingested over a 24 hours period.
-<<<<<<< HEAD
 #' @source National Center for Health Statistics, now available from the Wayback Machine via \url{https://web.archive.org/web/20201029113801/https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DR1TOT_I.XPT}
-=======
-#' @source National Center for Health Statistics, \url{https://web.archive.org/web/20201020150740/https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DR1TOT_I.XPT}
->>>>>>> f7be225 (Fix CRAN devel)
 #'
 #' @details Note that the sample design oversampled specific population targets and that only respondants are provided. The website contains more information about sampling weights. There are multiple missing records.
 #' @format A data frame with 9544 rows and 38 variables:
@@ -193,11 +189,7 @@ NULL
 #'   \item{\code{sele}}{selenium (in micrograms)}
 #'}
 #' @name nutrients
-<<<<<<< HEAD
 #' @note These data are subject to a data user agreement, available at \url{https://www.cdc.gov/nchs/policy/data-user-agreement.html}
-=======
-#' @note These data are subject to a data user agreement, see \url{https://www.cdc.gov/nchs/policy/data-user-agreement.html}
->>>>>>> f7be225 (Fix CRAN devel)
 "nutrients"
 
 
