@@ -48,7 +48,7 @@ A data frame with 9544 rows and 38 variables:
 }
 }
 \source{
-National Center for Health Statistics, \url{https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DR1TOT_I.XPT}
+National Center for Health Statistics, now available from the Wayback Machine via \url{https://web.archive.org/web/20201029113801/https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DR1TOT_I.XPT}
 }
 \usage{
 nutrients
@@ -61,6 +61,6 @@ America'. These are extracted from the 2015–2016 National Health and Nutrition
 Note that the sample design oversampled specific population targets and that only respondants are provided. The website contains more information about sampling weights. There are multiple missing records.
 }
 \note{
-These data are subject to a data user agreement, available at \url{https://www.cdc.gov/nchs/data_access/restrictions.htm}
+These data are subject to a data user agreement, available at \url{https://www.cdc.gov/nchs/policy/data-user-agreement.html}
 }
 \keyword{datasets}
