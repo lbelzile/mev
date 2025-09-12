@@ -21,5 +21,5 @@ Restricting to the largest fourth of the data, returns the number of exceedances
 The quartile esitmator of Pickands is robust, but very inefficient. It is provided for historical reasons.
 }
 \references{
-James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \url{https://doi.org/10.1214/aos/1176343003}
+James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \doi{10.1214/aos/1176343003}
 }

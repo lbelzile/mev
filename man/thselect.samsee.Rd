@@ -23,5 +23,5 @@ of Schneider et al. (2021) for threshold selection.
 The implementation uses a second-order regular variation index of -1
 }
 \references{
-Schneider, L.F., Krajina, A. & Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881–913 \url{https://doi.org/10.1007/s10687-021-00405-7}
+Schneider, L.F., Krajina, A. & Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881–913 \doi{10.1007/s10687-021-00405-7}
 }

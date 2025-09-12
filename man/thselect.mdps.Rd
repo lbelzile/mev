@@ -21,5 +21,5 @@ a list with components
 Minimum distance threshold selection procedure
 }
 \references{
-Clauset, A., Shalizi, C.R. and Newman, M.E.J. (2009). \emph{Power-Law Distributions in Empirical Data}. SIAM Review. Society for Industrial and Applied Mathematics, \bold{51}, 661-703, \url{https://doi.org/10.1137/070710111}
+Clauset, A., Shalizi, C.R. and Newman, M.E.J. (2009). \emph{Power-Law Distributions in Empirical Data}. SIAM Review. Society for Industrial and Applied Mathematics, \bold{51}, 661-703, \doi{10.1137/070710111}
 }

@@ -25,5 +25,5 @@ theoretical L-skewness and L-kurtosis of the generalized Pareto distribution,
 The function returns the threshold with the minimum distance.
 }
 \references{
-Silva Lomba, J., Fraga Alves, M.I. (2020). \emph{L-moments for automatic threshold selection in extreme value analysis}. Stoch Environ Res Risk Assess, 34, 465–491. \url{https://doi.org/10.1007/s00477-020-01789-x}
+Silva Lomba, J., Fraga Alves, M.I. (2020). \emph{L-moments for automatic threshold selection in extreme value analysis}. Stoch Environ Res Risk Assess, 34, 465–491. \doi{10.1007/s00477-020-01789-x}
 }

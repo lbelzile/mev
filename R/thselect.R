@@ -4,7 +4,7 @@
 #' of Schneider et al. (2021) for threshold selection.
 #' The implementation uses a second-order regular variation index of -1
 #'
-#' @references Schneider, L.F., Krajina, A. & Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881–913 \url{https://doi.org/10.1007/s10687-021-00405-7}
+#' @references Schneider, L.F., Krajina, A. & Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881–913 \doi{10.1007/s10687-021-00405-7}
 #' @param xdat vector of positive exceedances
 #' @return a list with elements
 #' \describe{
@@ -95,7 +95,7 @@ print.mev_thselect_samsee <- function(
 #' Minimum distance threshold selection procedure
 #'
 #'
-#' @references Clauset, A., Shalizi, C.R. and Newman, M.E.J. (2009). \emph{Power-Law Distributions in Empirical Data}. SIAM Review. Society for Industrial and Applied Mathematics, \bold{51}, 661-703, \url{https://doi.org/10.1137/070710111}
+#' @references Clauset, A., Shalizi, C.R. and Newman, M.E.J. (2009). \emph{Power-Law Distributions in Empirical Data}. SIAM Review. Society for Industrial and Applied Mathematics, \bold{51}, 661-703, \doi{10.1137/070710111}
 #' @param xdat vector of positive exceedances
 #' @return a list with components
 #' \describe{

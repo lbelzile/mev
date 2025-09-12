@@ -2,7 +2,7 @@
 #'
 #' Restricting to the largest fourth of the data, returns the number of exceedances that minimizes the Kolmogorov-Smirnov statistic, i.e., the maximum absolute difference between the estimated generalized Pareto and the empirical distribution of exceedances. Relative to the paper, different estimation methods are proposed.
 #'
-#' @references  James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \url{https://doi.org/10.1214/aos/1176343003}
+#' @references  James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \doi{10.1214/aos/1176343003}
 #' @param xdat [numeric] vector of observations
 #' @param method [string] estimation method, either the quartiles of Pickands (1975), maximum likelihood, probability weighted moments or L-moments
 #' @return a vector with elements \code{k}, the number of order statistics to keep, and \code{thresh}, the numerical value of the latter
@@ -113,7 +113,7 @@ print.mev_thselect_pickands <- function(
 #' @param thresh [numeric] vector of candidate thresholds. If missing, 20 sample quantiles starting at the 0.25 quantile in increments of 3.75 percent.
 #' @param plot [logical] if \code{TRUE}, return a plot of the sample L-kurtosis against the L-skewness, along with the theoretical generalized Pareto curve.
 #' @return scalar for the chosen numeric threshold
-#' @references Silva Lomba, J., Fraga Alves, M.I. (2020). \emph{L-moments for automatic threshold selection in extreme value analysis}. Stoch Environ Res Risk Assess, 34, 465–491. \url{https://doi.org/10.1007/s00477-020-01789-x}
+#' @references Silva Lomba, J., Fraga Alves, M.I. (2020). \emph{L-moments for automatic threshold selection in extreme value analysis}. Stoch Environ Res Risk Assess, 34, 465–491. \doi{10.1007/s00477-020-01789-x}
 #' @export
 thselect.alrs <- function(xdat, thresh, plot = FALSE) {
   xdat <- as.numeric(xdat[is.finite(xdat)])
