@@ -25,6 +25,8 @@ egp.pll(
 
 \item{param}{string; parameter to profile}
 
+\item{mle}{object returned by \code{fit.egp}. If \code{NULL} (default), the maximum likelihood estimates are calculated within the function call.}
+
 \item{xdat}{vector of observations}
 
 \item{thresh}{vector of positive thresholds. If \code{NULL}, defaults to zero.}

@@ -8,7 +8,7 @@ fit.shape(
   xdat,
   k,
   method = c("hill", "rbm", "osz", "vries", "genjack", "mom", "dekkers", "genquant",
-    "pickands", "erm", ),
+    "pickands", "erm"),
   ...
 )
 }

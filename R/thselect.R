@@ -49,7 +49,7 @@ thselect.samsee <- function(xdat) {
     )
   }
   # Compute average 'derivative' of AD around K
-  #  via finite differences (vectorized)
+  # via finite differences (vectorized)
   i <- 3:(length(AD) - 2)
   D_AD <- abs(AD[i + 2] - AD[i]) /
     2 +
@@ -149,11 +149,13 @@ print.mev_thselect_mdps <- function(
 
 #' Prediction error C-criterion threshold selection method
 #'
-#' This function computes the non-robust Pareto prediction error of Dupuis and Victoria-Feser (2003), termed C-criterion, for the Hill estimator of the shape. The threshold returned is the value of the threshold, taken from order statistics, that minimizes the average prediction error.
-#' @references Dupuis, D.J. and M.-P. Victoria-Feser (2003). A Prediction Error Criterion for Choosing the Lower Quantile in Pareto Index Estimation. Technical report \href{https://archive-ouverte.unige.ch/unige:5789}
+#' This function computes the non-robust Pareto prediction error of Dupuis and Victoria-Feser (2003), termed C-criterion, for the Hill estimator of the shape parameter. The threshold returned is the value of the threshold, taken from order statistics, that minimizes the average prediction error.
+#'
+#' @references Dupuis, D.J. and M.-P. Victoria-Feser (2003). A Prediction Error Criterion for Choosing the Lower Quantile in Pareto Index Estimation, University of Geneva, technical report, \url{https://archive-ouverte.unige.ch/unige:5789}.
+#'
 #' @param xdat vector of observations
-#' @param kmax maximum number of order statistics to consider. Default to sample size if left unspecified
-#' @return a list with the number of exceedances \code{k}, the chosen threshold \code{thresh} and the corresponding Hill estimator shape estimate \code{shape}.
+#' @param kmax maximum number of order statistics to consider. Default to sample size if left unspecified.
+#' @return a list with the number of exceedances \code{k}, the chosen threshold \code{thresh0} and the corresponding Hill estimator shape estimate \code{shape}.
 #' @export
 thselect.pec <- function(
   xdat,

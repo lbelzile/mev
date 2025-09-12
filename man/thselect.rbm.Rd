@@ -8,6 +8,8 @@ thselect.rbm(xdat, kmax = length(xdat))
 }
 \arguments{
 \item{xdat}{[vector] sample exceedances}
+
+\item{kmax}{maximum number of exceedances to consider.}
 }
 \value{
 a list with elements

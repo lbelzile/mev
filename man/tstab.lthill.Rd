@@ -14,6 +14,8 @@ tstab.lthill(xdat, k, which = c("lthill", "var", "slope"), log = TRUE, ...)
 \item{which}{[string] the type of plot, showing the left-truncated Hill plot on the log, the log of the variance of the estimator, or the log slope}
 
 \item{log}{[logical] if \code{TRUE} (default), shows the Hill plot on the log-scale}
+
+\item{...}{additional parameters for color, etc. to be passed to plot}
 }
 \value{
 an invisible list with lthill, order statistics, the log variance and the log scale.

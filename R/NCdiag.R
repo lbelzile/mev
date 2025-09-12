@@ -673,6 +673,7 @@ print.mev_thdiag_northropcoleman <-
 #' @param test [string] indicating whether to perform \code{score} test or likelihood ratio (\code{lr}) test. The latter requires fitting the alternative model, and so is more computationally expensive.
 #' @param plot [logical]; if \code{TRUE}, return a plot with the p-value path.
 #' @param level [double] confidence level for confidence interval, defaults to 0.95
+#' @param ... additional arguments, for backward compatibility purposes
 #' @return an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{thresh0}).
 #' @export
 thselect.ncpgp <- function(

@@ -41,6 +41,8 @@ gpd.tem(
 \item{plot}{logical indicating whether \code{plot.fr} should be called upon exit}
 
 \item{correction}{logical indicating whether \link{spline.corr} should be called.}
+
+\item{...}{additional arguments, for backward compatibility}
 }
 \value{
 an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements

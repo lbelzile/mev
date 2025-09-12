@@ -251,6 +251,7 @@ plot.mev_thselect_cv <- function(x, ...) {
 #'
 #' This function calculates parametric estimates of the coefficient of variation with pointwise Wald confidence intervals along with empirical estimates and returns a threshold stability plot.
 #' @inheritParams thselect.cv
+#' @param ... additional parameters, notably for package \code{boot}, for the \code{type} of confidence intervals.
 #' @export
 #' @examples
 #' tstab.cv(
@@ -276,7 +277,7 @@ tstab.cv <- function(
   if (method == "empirical") {
     if (!is.null(args$type)) {
       type <- match.arg(
-        arg = arg$type,
+        arg = args$type,
         choices = c("norm", "basic", "stud", "perc", "bca"),
         several.ok = FALSE
       )

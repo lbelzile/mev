@@ -286,11 +286,17 @@ angmeas <- function(
     ang <- as.matrix(ang[above, ])
     R <- as.vector(R[above])
   } else {
-    ang <- x
+    ang <- xdat
     R <- NULL
   }
   rownames(ang) <- NULL #remove names for time series
-  .returnAng(ang = ang, R = R, Rnorm = Rnorm, wgt = wgt, region = region)
+  .returnAng(
+    ang = ang,
+    R = R,
+    Rnorm = Rnorm,
+    wgt = wgt,
+    region = region
+  )
 }
 
 #' Weighted empirical distribution function

@@ -4,6 +4,7 @@
 #' @param kmax [int] maximum number of exceedances considered
 #' @param kernel [string] kernel choice, one of \code{Jackson} or \code{Lewis}
 #' @param rho string for the estimator of the second order regular variation. Can also be a negative scalar
+#' @param ... additional arguments, for backward compatibility purposes
 #' @return a list with elements
 #' \itemize{
 #' \item{\code{k0}:} number of exceedances

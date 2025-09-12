@@ -39,8 +39,11 @@ vignettes/mev-vignette-back.pdf
 cran-comments.md
 R/mgp.R
 R/taildep2.R
+R/regression.R
+R/condextr.R
 ^revdep$
 ^CRAN-SUBMISSION$
 ^doc$
 ^Meta$
 TODO.txt
+

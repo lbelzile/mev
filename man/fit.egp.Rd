@@ -2,7 +2,6 @@
 % Please edit documentation in R/extgp.R
 \name{fit.egp}
 \alias{fit.egp}
-\alias{tstab.egp}
 \title{Parameter stability plot and maximum likelihood routine for extended GP models}
 \usage{
 fit.egp(
@@ -16,19 +15,6 @@ fit.egp(
   show = FALSE,
   ...
 )
-
-tstab.egp(
-  xdat,
-  thresh,
-  model = c("pt-beta", "pt-gamma", "pt-power", "gj-tnorm", "gj-beta", "exptilt",
-    "logist"),
-  param = c("shape", "kappa"),
-  type = c("wald", "profile"),
-  transform = FALSE,
-  level = 0.95,
-  plot = TRUE,
-  ...
-)
 }
 \arguments{
 \item{xdat}{vector of observations, greater than the threshold}
@@ -39,15 +25,11 @@ tstab.egp(
 
 \item{start}{optional named list of initial values, with \eqn{\kappa}{\kappa}, \eqn{sigma}{\sigma} or \eqn{xi}{\xi}.}
 
+\item{method}{the method to be used. See \bold{Details}. Can be abbreviated.}
+
+\item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
+
 \item{show}{logical; if \code{TRUE}, print the results of the optimization}
-
-\item{...}{additional arguments for the plot function, currently ignored}
-
-\item{transform}{logical; if \code{TRUE} and \code{type="wald"}, intervals for \code{kappa} are computed on the log-scale and back-transformed.}
-
-\item{plot}{logical; if \code{TRUE}, a plot of the return levels}
-
-\item{plots}{vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots}
 }
 \value{
 \code{fit.egp} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
@@ -96,14 +78,6 @@ fit.egp(
  fpar = list(kappa = 1),
  method = "Nelder"
 )
-xdat <- rgp(n = 1000)
-tstab.egp(
- xdat = xdat,
- thresh = c(0, quantile(xdat, 0.5)),
- model = "gj-tnorm",
- param = "kappa",
- transform = TRUE)
-
 }
 \references{
 Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143.

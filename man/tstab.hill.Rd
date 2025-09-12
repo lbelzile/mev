@@ -13,6 +13,8 @@ tstab.hill(xdat, kmax, method = "hill", ..., log = TRUE)
 
 \item{method}{[string] name of estimator for shape parameter. Default to \code{hill}.}
 
+\item{...}{additional arguments passed to \code{fit.shape} for certain methods.}
+
 \item{log}{[logical] should the x-axis for the number of order statistics used for estimation be displayed on the log scale? Default to \code{TRUE}}
 }
 \value{

@@ -20,6 +20,8 @@ shape.genquant(
 \item{type}{string indicating the estimator choice, one of \code{genmean}, \code{genmed} and \code{trimmean}.}
 
 \item{weight}{weight a kernel function on \eqn{[0,1]}}
+
+\item{p}{number between zero and one giving the proportion of order statistics for the second threshold}
 }
 \description{
 This estimator estimates the real shape parameter based on generalized quantile plots based on mean excess functions, generalized median excesses or trimmed mean excesses.

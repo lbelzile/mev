@@ -316,8 +316,9 @@ plot.mev_egp_retlev <- function(x, ...) {
 #' The function returns an invisible list with parameter estimates and standard errors, and p-values for the Wald test that \eqn{\kappa=1}.
 #'  The plot is for the modified scale (as in the generalised Pareto model) and as such it is possible that the modified scale be negative.
 #' \code{tstab.egp} can also be used to fit the model to multiple thresholds.
-#' @param plots vector of integers specifying which parameter stability to plot (if any); passing \code{NA} results in no plots
 #' @inheritParams egp
+#' @inheritParams fit.gpd
+#' @param ... additional parameters, for backward compatibility purposes
 #' @return \code{tstab.egp} returns a plot(s) of the parameters fit over the range of provided thresholds, with pointwise normal confidence intervals; the function also returns an invisible list containing notably the matrix of point estimates (\code{par}) and standard errors (\code{se}).
 #' @importFrom graphics arrows points polygon title
 #' @export
@@ -700,10 +701,14 @@ egp.fitrange <-
     )
   }
 
-#' @inheritParams egp
+#' Threshold stability plots for extended generalized Pareto models
+#' @inheritParams fit.egp
 #' @param transform logical; if \code{TRUE} and \code{type="wald"}, intervals for \code{kappa} are computed on the log-scale and back-transformed.
-#' @param ... additional arguments for the plot function, currently ignored
-#' @rdname fit.egp
+#' @param ... additional arguments for the plot function, currently ignored.
+#' @param level [double] confidence interval level, default to 0.95.
+#' @param type [string] confidence interval type, either \code{wald} or \code{profile}.
+#' @param param [string] parameter, either \code{shape} or additional parameter \code{kappa}
+#' @param plot [logical] if \code{TRUE} (default), return a threshold stability plot
 #' @export
 #' @examples
 #' xdat <- rgp(n = 1000)
@@ -1501,11 +1506,13 @@ regp <- function(
 #' Profile log likelihood for extended generalized Pareto models
 #'
 #' Computes the profile log likelihood over a grid of values of \eqn{\psi} for various parameters, including return levels.
+#'
 #' @export
+#'
 #' @param psi grid of values for the parameter to profile
 #' @param model string; choice of extended eneralized Pareto model.
 #' @param param string; parameter to profile
-#' @param mle; a vector or matrix with maximum likelihood estimates of \code{kappa}, \code{scale}, \code{shape}. This can be a matrix if there are multiple threshold
+#' @param mle a vector or matrix with maximum likelihood estimates of \code{kappa}, \code{scale}, \code{shape}. This can be a matrix if there are multiple threshold
 #' @param xdat vector of observations
 #' @param thresh vector of positive thresholds. If \code{NULL}, defaults to zero.
 #' @param method string giving the optimization method for the outer optimization in the augmented Lagrangian routine; one of \code{nlminb} or \code{BFGS}

@@ -20,6 +20,8 @@
 \item{B}{number of simulations for variability of estimation}
 
 \item{probs}{quantile levels for intervals.}
+
+\item{...}{additional arguments, currently ignored}
 }
 \value{
 NULL; the function is used to produce a plot

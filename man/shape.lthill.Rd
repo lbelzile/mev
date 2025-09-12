@@ -13,7 +13,9 @@ shape.lthill(xdat, k, k0 = k, sorted = FALSE, ...)
 
 \item{k0}{[integer] vector of number of largest order statistics, no greater than \code{k}}
 
-\item{sorted}{[logical] if \code{TRUE}, data are assumed to be sorted in decreasing order}
+\item{sorted}{[logical] if \code{TRUE}, data are assumed to be sorted in decreasing order.}
+
+\item{...}{additional arguments for other routines (notably \code{vectorize})}
 }
 \value{
 a scalar with the shape parameter estimate if \code{k0} is a scalar, otherwise a data frame with columns \code{k0} for the number of exceedances and \code{shape} for the tail index.

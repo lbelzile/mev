@@ -20,6 +20,8 @@ thselect.gbw(
 \item{kernel}{[string] kernel choice, one of \code{Jackson} or \code{Lewis}}
 
 \item{rho}{string for the estimator of the second order regular variation. Can also be a negative scalar}
+
+\item{...}{additional arguments, for backward compatibility purposes}
 }
 \value{
 a list with elements

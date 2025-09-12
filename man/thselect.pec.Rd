@@ -9,14 +9,14 @@ thselect.pec(xdat, kmax)
 \arguments{
 \item{xdat}{vector of observations}
 
-\item{kmax}{maximum number of order statistics to consider. Default to sample size if left unspecified}
+\item{kmax}{maximum number of order statistics to consider. Default to sample size if left unspecified.}
 }
 \value{
-a list with the number of exceedances \code{k}, the chosen threshold \code{thresh} and the corresponding Hill estimator shape estimate \code{shape}.
+a list with the number of exceedances \code{k}, the chosen threshold \code{thresh0} and the corresponding Hill estimator shape estimate \code{shape}.
 }
 \description{
-This function computes the non-robust Pareto prediction error of Dupuis and Victoria-Feser (2003), termed C-criterion, for the Hill estimator of the shape. The threshold returned is the value of the threshold, taken from order statistics, that minimizes the average prediction error.
+This function computes the non-robust Pareto prediction error of Dupuis and Victoria-Feser (2003), termed C-criterion, for the Hill estimator of the shape parameter. The threshold returned is the value of the threshold, taken from order statistics, that minimizes the average prediction error.
 }
 \references{
-Dupuis, D.J. and M.-P. Victoria-Feser (2003). A Prediction Error Criterion for Choosing the Lower Quantile in Pareto Index Estimation. Technical report \href{https://archive-ouverte.unige.ch/unige:5789}
+Dupuis, D.J. and M.-P. Victoria-Feser (2003). A Prediction Error Criterion for Choosing the Lower Quantile in Pareto Index Estimation, University of Geneva, technical report, \url{https://archive-ouverte.unige.ch/unige:5789}.
 }

@@ -8,6 +8,7 @@
 #' The calculations are based on the recursions provided in Lemma 4.3 of Oorschot et al.
 #' @param xdat vector of observations of length \eqn{n}
 #' @param k number of largest order statistics \eqn{3 \leq k < n}.
+#' @param ... additional arguments for backward compatibility
 #' @references Oorschot, J, J. Segers and C. Zhou (2023), Tail inference using extreme U-statistics,  Electronic Journal of Statistics 17(1): 1113-1159. \doi{10.1214/23-EJS2129}
 #' @export
 #' @examples
@@ -143,13 +144,20 @@ shape.hill <- function(xdat, k) {
 #' @param xdat [vector] sample exceedances
 #' @param kmax [int] maximum number of order statistics
 #' @param method [string] name of estimator for shape parameter. Default to \code{hill}.
+#' @param ... additional arguments passed to \code{fit.shape} for certain methods.
 #' @param log [logical] should the x-axis for the number of order statistics used for estimation be displayed on the log scale? Default to \code{TRUE}
 #' @return a plot of shape estimates as a function of the number of exceedances
 #' @examples
 #' xdat <- rgp(n = 250, loc = 1, scale = 2, shape = 0.5)
 #' tstab.hill(xdat)
 #' @export
-tstab.hill <- function(xdat, kmax, method = "hill", ..., log = TRUE) {
+tstab.hill <- function(
+  xdat,
+  kmax,
+  method = "hill",
+  ...,
+  log = TRUE
+) {
   xdat <- xdat[is.finite(xdat) & xdat > 0]
   if (missing(kmax)) {
     kmax <- length(xdat)
@@ -258,6 +266,7 @@ shape.rbm = function(xdat, k = 10:floor(length(xdat) / 2), ...) {
 #' @param x object of class \code{mev_shape_rbm} returned by \code{shape.rbm}
 #' @param type [string] type of plot, either \code{"shape"} for the tail index or \code{"risk"} for the empirical Bayes risk
 #' @param log [logical] if \code{TRUE} (default), the x-axis for the number of exceedances is displayed on the log scale.
+#' @param ... additional arguments, currently ignored
 #' @return one or more plots
 #' @export
 plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
@@ -315,6 +324,7 @@ plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
 
 #' Threshold selection for the random block maxima method
 #' @inheritParams shape.rbm
+#' @param kmax maximum number of exceedances to consider.
 #' @return a list with elements
 #' @export
 thselect.rbm <- function(xdat, kmax = length(xdat)) {
@@ -354,6 +364,7 @@ print.mev_thselect_rbm <- function(
 #' @export
 #' @param xdat \code{n} vector of observations
 #' @param k number of upper order statistics
+#' @param p number between zero and one giving the proportion of order statistics for the second threshold
 #' @param type string indicating the estimator choice, one of \code{genmean}, \code{genmed} and \code{trimmean}.
 #' @param weight weight a kernel function on \eqn{[0,1]}
 shape.genquant <- function(
@@ -620,7 +631,7 @@ fit.shape <- function(
     "dekkers",
     "genquant",
     "pickands",
-    "erm",
+    "erm"
   ),
   ...
 ) {
@@ -628,7 +639,7 @@ fit.shape <- function(
   if (method == "hill") {
     return(shape.hill(xdat = xdat, k = k))
   } else if (method %in% c("pickandsxu", "osz")) {
-    return(shape.pickandsxu(xdat = xdat, k = k))
+    return(shape.osz(xdat = xdat, k = k))
   } else if (method %in% c("mom", "dekkers")) {
     return(shape.moment(xdat = xdat, k = k))
   } else if (method %in% c("beirlant", "genquant")) {
@@ -691,7 +702,7 @@ fit.rho <- function(
 #'
 #' Estimator of the second order regular variation parameter \eqn{\rho \leq 0} parameter for heavy-tailed data proposed by Drees and Kaufmann (1998)
 #'
-#' @references Drees, H. and E. Kaufmann (1998). Selecting the optimal sample fraction in univariate extreme value estimation}, \emph{Stochastic Processes and their Applications}, 75(\bold{2}), 149-172, <doi:10.1016/S0304-4149(98)00017-9>.
+#' @references Drees, H. and E. Kaufmann (1998). Selecting the optimal sample fraction in univariate extreme value estimation, \emph{Stochastic Processes and their Applications}, 75(\bold{2}), 149-172, <doi:10.1016/S0304-4149(98)00017-9>.
 #' @param xdat vector of positive observations
 #' @param k number of highest order statistics to use for estimation
 #' @param tau tuning parameter \eqn{\tau \in (0,1)}
@@ -726,7 +737,6 @@ rho.dk <- function(xdat, k, tau = 0.5) {
 #' @references Fraga Alves, M.I., Gomes, M. Ivette, and de Haan, Laurens (2003). A new class of semi-parametric estimators of the second order parameter. \emph{Portugaliae Mathematica}. Nova Serie 60(\bold{2}), 193-213. <http://eudml.org/doc/50867>.
 #' @param xdat vector of positive observations
 #' @param k number of highest order statistics to use for estimation
-#' @param method string; only the estimator of Fraga Alves et al. \code{fagh} is currently supported
 #' @param tau scalar real tuning parameter. Default values is 0, which is typically chosen whenever \eqn{\rho \ge -1}. The choice \eqn{\tau=1} otherwise.
 #' @export
 #' @examples

@@ -16,6 +16,8 @@ thselect.ncpgp(xdat, thresh, test = "score", plot = FALSE, level = 0.95, ...)
 \item{plot}{[logical]; if \code{TRUE}, return a plot with the p-value path.}
 
 \item{level}{[double] confidence level for confidence interval, defaults to 0.95}
+
+\item{...}{additional arguments, for backward compatibility purposes}
 }
 \value{
 an object of class \code{mev_thselect_ncpgp} containing the test statistic (\code{stat}), the p-values (\code{pval}), the threshold candidates (\code{thresh}) and the selected threshold (\code{thresh0}).

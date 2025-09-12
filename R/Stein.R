@@ -70,6 +70,7 @@ Stein_weights <- function(n, gamma = 1) {
 #' @param threshold numeric, value of the threshold
 #' @param weightfun function whose first argument is the length of the weight vector
 #' @param start optional vector of scale and shape parameters for the optimization routine, defaults to \code{NULL}
+#' @param ... additional arguments passed to the weighting function \code{weightfun}
 #' @return a list with components
 #' \itemize{
 #' \item \code{estimate} a vector containing the \code{scale} and \code{shape} parameters (optimized and fixed).
@@ -122,7 +123,7 @@ fit.wgpd <- function(
   if (is.null(start)) {
     start <- c(1, 0.1)
   } else {
-    stopfinot(length(start == 2L))
+    stopifnot(length(start == 2L))
   }
   opt <- Rsolnp::solnp(
     pars = start,

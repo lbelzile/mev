@@ -10,6 +10,8 @@ shape.osz(xdat, k, ...)
 \item{xdat}{vector of observations of length \eqn{n}}
 
 \item{k}{number of largest order statistics \eqn{3 \leq k < n}.}
+
+\item{...}{additional arguments for backward compatibility}
 }
 \description{
 Given a random sample of \code{n} exceedances, the estimator

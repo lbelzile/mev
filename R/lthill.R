@@ -5,7 +5,8 @@
 #' @param xdat [numeric] vector of positive observations
 #' @param k0 [integer] vector of number of largest order statistics, no greater than \code{k}
 #' @param k [integer] number of order statistics for the threshold
-#' @param sorted [logical] if \code{TRUE}, data are assumed to be sorted in decreasing order
+#' @param sorted [logical] if \code{TRUE}, data are assumed to be sorted in decreasing order.
+#' @param ... additional arguments for other routines (notably \code{vectorize})
 #' @export
 #' @references Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
 #' @return a scalar with the shape parameter estimate if \code{k0} is a scalar, otherwise a data frame with columns \code{k0} for the number of exceedances and \code{shape} for the tail index.
@@ -14,6 +15,7 @@
 #' n <- 200
 #' xdat <- 10/(1 - runif(n)) - 10
 #' shape.lthill(xdat = xdat, k = 100, k0 = 5:100)
+#' @importFrom grDevices grey.colors
 shape.lthill <- function(
   xdat,
   k,
@@ -115,6 +117,7 @@ shape.trimhill <- function(xdat, k, k0, sorted = FALSE) {
 #' Given a vector of exceedances and some potential choices of \eqn{k} for the threshold, compute the left-truncated Hill estimators for each value of \code{k} and use these to compute the variance and slope of the estimator
 #' @inheritParams shape.lthill
 #' @param which [string] the type of plot, showing the left-truncated Hill plot on the log, the log of the variance of the estimator, or the log slope
+#' @param ... additional parameters for color, etc. to be passed to plot
 #' @param log [logical] if \code{TRUE} (default), shows the Hill plot on the log-scale
 #' @return an invisible list with lthill, order statistics, the log variance and the log scale.
 #' @references Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
@@ -246,7 +249,7 @@ tstab.lthill <- function(
 #' @param rho [double] scalar for the second order regular variation index, a negative number.
 #' @param test [logical] if \code{TRUE}, computes the goodness-of-fit statistic for the model using Monte Carlo
 #' @param nsim [int] number of replications for Monte Carlo test, used only if \code{test=TRUE}.
-#' @param ... additional arguments, currently ignored
+#' @param level [double] confidence level for test
 #'
 #' @return a list with the number of order statistics for the Hill estimator, \code{k0} and the corresponding shape estimate \code{shape}, the average lower-trimmed Hill estimator \code{shape._lth} and the number of order statistics upon which the latter is based, \code{k0_lth}.
 #' @references Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}
@@ -258,8 +261,7 @@ thselect.bab <- function(
   rho = -1,
   test = FALSE,
   nsim = 999L,
-  level = 0.95,
-  ...
+  level = 0.95
 ) {
   range <- as.integer(c(kmin, kmax))
   stopifnot(

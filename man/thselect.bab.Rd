@@ -11,8 +11,7 @@ thselect.bab(
   rho = -1,
   test = FALSE,
   nsim = 999L,
-  level = 0.95,
-  ...
+  level = 0.95
 )
 }
 \arguments{
@@ -28,7 +27,7 @@ thselect.bab(
 
 \item{nsim}{[int] number of replications for Monte Carlo test, used only if \code{test=TRUE}.}
 
-\item{...}{additional arguments, currently ignored}
+\item{level}{[double] confidence level for test}
 }
 \value{
 a list with the number of order statistics for the Hill estimator, \code{k0} and the corresponding shape estimate \code{shape}, the average lower-trimmed Hill estimator \code{shape._lth} and the number of order statistics upon which the latter is based, \code{k0_lth}.

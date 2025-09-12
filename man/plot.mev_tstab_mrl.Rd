@@ -13,6 +13,8 @@
 )
 }
 \arguments{
+\item{x}{object resulting from a call to \code{tstab.mrl}}
+
 \item{xlab}{[string]; whether to plot mean residual life plot as a function of threshold value of number of exceedances}
 
 \item{level}{[numeric] level of Wald confidence intervals}

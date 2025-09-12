@@ -26,6 +26,8 @@ test.maxstab(
 \item{ties.method}{string indicating the method for \code{\link[base]{rank}}. Default to \code{"random"}.}
 
 \item{plot}{logical indicating whether a graph should be produced (default to \code{TRUE}).}
+
+\item{...}{additional arguments for backward compatibility}
 }
 \value{
 a Tukey probability-probability plot with 95% confidence intervals obtained using a nonparametric bootstrap

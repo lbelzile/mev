@@ -13,8 +13,6 @@ rho.fagh(xdat, k, tau = 0)
 \item{k}{number of highest order statistics to use for estimation}
 
 \item{tau}{scalar real tuning parameter. Default values is 0, which is typically chosen whenever \eqn{\rho \ge -1}. The choice \eqn{\tau=1} otherwise.}
-
-\item{method}{string; only the estimator of Fraga Alves et al. \code{fagh} is currently supported}
 }
 \description{
 Second order tail index estimator of Fraga Alves et al.

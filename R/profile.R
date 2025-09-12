@@ -4299,6 +4299,7 @@ gev.tem <-
 #' @param n.psi number of values of \code{psi} at which the likelihood is computed, if \code{psi} is not supplied (\code{NULL}). Odd values are more prone to give rise to numerical instabilities near the MLE
 #' @param plot logical indicating whether \code{plot.fr} should be called upon exit
 #' @param correction logical indicating whether \link{spline.corr} should be called.
+#' @param ... additional arguments, for backward compatibility
 #' @author Leo Belzile
 #' @return an invisible object of class \code{fr} (see \code{tem} in package \code{hoa}) with elements
 #' \itemize{

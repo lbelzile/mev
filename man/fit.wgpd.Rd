@@ -14,6 +14,8 @@ fit.wgpd(xdat, threshold = 0, weightfun = Stein_weights, start = NULL, ...)
 \item{weightfun}{function whose first argument is the length of the weight vector}
 
 \item{start}{optional vector of scale and shape parameters for the optimization routine, defaults to \code{NULL}}
+
+\item{...}{additional arguments passed to the weighting function \code{weightfun}}
 }
 \value{
 a list with components

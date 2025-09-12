@@ -29,6 +29,8 @@ tstab.cv(
 \item{plot}{[logical] if \code{TRUE}, returns a plot of the p-value path}
 
 \item{level}{[numeric] probability level for sequential testing procedure}
+
+\item{...}{additional parameters, notably for package \code{boot}, for the \code{type} of confidence intervals.}
 }
 \description{
 This function calculates parametric estimates of the coefficient of variation with pointwise Wald confidence intervals along with empirical estimates and returns a threshold stability plot.

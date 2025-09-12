@@ -235,6 +235,7 @@ print.mev_thselect_vmetric <-
 #' @param type string; a single string indicating the choice of plot
 #' @param B number of simulations for variability of estimation
 #' @param probs quantile levels for intervals.
+#' @param ... additional arguments, currently ignored
 #' @return NULL; the function is used to produce a plot
 plot.mev_thselect_vmetric <-
   function(

@@ -192,8 +192,8 @@ automrl <- function(
   plot = TRUE,
   ...
 ) {
-  .Deprecated(new = "thselect.automrl", package = "mev")
-  thselect.automrl(
+  .Deprecated(new = "thselect.mrl", package = "mev")
+  thselect.mrl(
     xdat = xdat,
     thresh = thresh,
     kmax = kmax,
@@ -304,6 +304,7 @@ tstab.mrl <- function(
 #' @param xlab [string]; whether to plot mean residual life plot as a function of threshold value of number of exceedances
 #' @param level [numeric] level of Wald confidence intervals
 #' @param type [string] whether to plot pointwise confidence intervals using segments (\code{"ptwise"}) or using dashed lines (\code{"band"})
+#' @param x object resulting from a call to \code{tstab.mrl}
 #' @param ... additional arguments, currently ignored
 #' @export
 plot.mev_tstab_mrl <- function(

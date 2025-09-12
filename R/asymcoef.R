@@ -43,275 +43,301 @@
 #' xasym(samp, method = "emplik")
 #' }
 #' @export
-xasym <- function (data,
-                      u = NULL,
-                      nq = 40,
-                      qlim = c(0.8, 0.99),
-                      method = c("empirical","emplik"),
-                      confint = c("none", "wald", "bootstrap"),
-                      level = 0.95,
-                      B = 999L,
-                      # trunc = TRUE,
-                      ties.method = "random",
-                      plot = TRUE, ...) {
-  if(inherits(data, "data.frame")){
-  data <- as.matrix(data)
+xasym <- function(
+  data,
+  u = NULL,
+  nq = 40,
+  qlim = c(0.8, 0.99),
+  method = c("empirical", "emplik"),
+  confint = c("none", "wald", "bootstrap"),
+  level = 0.95,
+  B = 999L,
+  # trunc = TRUE,
+  ties.method = "random",
+  plot = TRUE,
+  ...
+) {
+  if (inherits(data, "data.frame")) {
+    data <- as.matrix(data)
   }
-  if(!inherits(data, "matrix")){
+  if (!inherits(data, "matrix")) {
     stop("\"data\" must be a matrix.")
   }
-  if(ncol(data) != 2L){
+  if (ncol(data) != 2L) {
     stop("\"xdat\" must be a matrix with two columns.")
   }
   n <- nrow(data)
   method <- match.arg(method)
   confint <- match.arg(confint)
-  if(length(qlim) != 2L){
+  if (length(qlim) != 2L) {
     stop("\"qlim\" must be a bivariate numeric vector.")
   }
-  if(qlim[1] < 0 || qlim[2] >= 1){
+  if (qlim[1] < 0 || qlim[2] >= 1) {
     stop("\"qlim\" must contain probabilities.")
   }
-  ties.method <- match.arg(ties.method,
-                         choices = c("average", "first", "last", "random", "max", "min"),
-                         several.ok = FALSE)
-  if(isTRUE(any(c(level < 0, level > 1)))){
+  ties.method <- match.arg(
+    ties.method,
+    choices = c("average", "first", "last", "random", "max", "min"),
+    several.ok = FALSE
+  )
+  if (isTRUE(any(c(level < 0, level > 1)))) {
     stop("Invalid \"level\" argument: argument must be in the unit interval.")
   }
-  if(length(level) == 2L){
+  if (length(level) == 2L) {
     qulevels <- sort(level)
-  } else if(length(level) == 1L){
-    qulevels <- c((1 - level[1])/2,
-                  1-(1 - level[1])/2)
-  } else{
+  } else if (length(level) == 1L) {
+    qulevels <- c((1 - level[1]) / 2, 1 - (1 - level[1]) / 2)
+  } else {
     stop("Invalid \"level argument: must be a vector of length 1 or 2.")
   }
-datarank <- apply(X = data,
-                  MARGIN = 2,
-                  FUN = rank,
-                  ties.method = ties.method)
-rowmin <- apply(datarank, 1, min)
-# Sort data by decreasing minimum
-# (this will simplify computational burden)
-# as we only need to keep track
-# of indices of exceedances above the
-# smallest threshold
-od <- order(rowmin, decreasing = TRUE)
-pos_fn <- function(vector, scalar){
-  which.max(vector <= scalar) - 1L
-}
-datarank <- datarank[od,]
-rowmin <- rowmin[od]
-# Pick quantiles
-eps <- .Machine$double.eps^0.5
-qlim2 <- c(min(apply(datarank, 1, max)) / (n + 1) + eps,
-           rowmin[1] / (n + 1) - eps)
-if(is.null(u)){
-  if (!is.null(qlim)) {
-    if (qlim[1] < qlim2[1]){
-      stop("lower quantile limit is too low")
-    }
-    if (qlim[2] > qlim2[2]) {
-      stop("upper quantile limit is too high")
-    }
-    if (qlim[1] > qlim[2]) {
-      stop("lower quantile limit is less than upper quantile limit")
-    }
-  }  else{ qlim <- qlim2
+  datarank <- apply(X = data, MARGIN = 2, FUN = rank, ties.method = ties.method)
+  rowmin <- apply(datarank, 1, min)
+  # Sort data by decreasing minimum
+  # (this will simplify computational burden)
+  # as we only need to keep track
+  # of indices of exceedances above the
+  # smallest threshold
+  od <- order(rowmin, decreasing = TRUE)
+  pos_fn <- function(vector, scalar) {
+    which.max(vector <= scalar) - 1L
   }
-  u <- seq(qlim[1], qlim[2], length = nq)
-} else{
-  u <- sort(u)
-}
+  datarank <- datarank[od, ]
+  rowmin <- rowmin[od]
+  # Pick quantiles
+  eps <- .Machine$double.eps^0.5
+  qlim2 <- c(
+    min(apply(datarank, 1, max)) / (n + 1) + eps,
+    rowmin[1] / (n + 1) - eps
+  )
+  if (is.null(u)) {
+    if (!is.null(qlim)) {
+      if (qlim[1] < qlim2[1]) {
+        stop("lower quantile limit is too low")
+      }
+      if (qlim[2] > qlim2[2]) {
+        stop("upper quantile limit is too high")
+      }
+      if (qlim[1] > qlim[2]) {
+        stop("lower quantile limit is less than upper quantile limit")
+      }
+    } else {
+      qlim <- qlim2
+    }
+    u <- seq(qlim[1], qlim[2], length = nq)
+  } else {
+    u <- sort(u)
+  }
   nq <- length(u)
-  if(min(u) < qlim2[1] || max(u) >  qlim2[2]){
-    warning("Upper quantile limit is too high or lower quantile limit is too low")
+  if (min(u) < qlim2[1] || max(u) > qlim2[2]) {
+    warning(
+      "Upper quantile limit is too high or lower quantile limit is too low"
+    )
   }
 
-# Compute empirical coefficient
-if(method == "empirical"){
-  empirical_coef <- function(u,
-                             rkdata,
-                             rowMin = NULL,
-                             ordered = TRUE,
-                             retList = FALSE){
-    asym_coef_v <- vector(mode = "numeric",
-                          length = nq)
-    nk_v <- psiplus_v <- vector(mode = "integer",
-                                length = nq)
-    th <- u * (nrow(rkdata) + 1L)
-    if(is.null(rowMin)){
-      rowMin <- apply(rkdata, 1, min)
-      ordered <- FALSE
+  # Compute empirical coefficient
+  if (method == "empirical") {
+    empirical_coef <- function(
+      u,
+      rkdata,
+      rowMin = NULL,
+      ordered = TRUE,
+      retList = FALSE
+    ) {
+      asym_coef_v <- vector(mode = "numeric", length = nq)
+      nk_v <- psiplus_v <- vector(mode = "integer", length = nq)
+      th <- u * (nrow(rkdata) + 1L)
+      if (is.null(rowMin)) {
+        rowMin <- apply(rkdata, 1, min)
+        ordered <- FALSE
+      }
+      if (!ordered) {
+        od <- order(rowMin, decreasing = TRUE)
+        rowMin <- rowMin[od]
+        rkdata <- rkdata[od, ]
+      }
+      for (i in seq_along(th)) {
+        mind <- pos_fn(rowMin, th[i])
+        # Perhaps superfluous, but can have ties
+        psiplus <- sum(rkdata[seq_len(mind), 1] < rkdata[seq_len(mind), 2])
+        psiminus <- sum(rkdata[seq_len(mind), 2] < rkdata[seq_len(mind), 1])
+        nk_v[i] <- sum(psiplus + psiminus)
+        psiplus_v[i] <- psiplus
+        asym_coef_v[i] <- (psiplus - psiminus) / nk_v[i]
+      }
+      if (retList) {
+        list(m = nk_v, psiplus = psiplus_v, coef = asym_coef_v)
+      } else {
+        return(asym_coef_v)
+      }
     }
-    if(!ordered){
-      od <- order(rowMin, decreasing = TRUE)
-      rowMin <- rowMin[od]
-      rkdata <- rkdata[od,]
+    xasym_res <- empirical_coef(
+      u = u,
+      rkdata = datarank,
+      rowMin = rowmin,
+      ordered = TRUE,
+      retList = TRUE
+    )
+    est <- xasym_res$coef
+    if (confint == "bootstrap") {
+      boot_xasym <- matrix(0, ncol = nq, nrow = B + 1L)
+      boot_xasym[1, ] <- est
+      for (b in seq_len(B)) {
+        boot_xasym[b + 1L, ] <-
+          empirical_coef(
+            u = u,
+            rkdata = apply(
+              data[sample.int(n, size = n, replace = TRUE), ],
+              2,
+              rank,
+              ties.method = ties.method
+            ),
+            ordered = FALSE
+          )
+      }
+      conf_int <- t(apply(
+        boot_xasym,
+        2,
+        quantile,
+        probs = qulevels,
+        na.rm = TRUE
+      ))
+    } else if (confint == "wald") {
+      variance <- with(xasym_res, 4 * psiplus / m * (1 - psiplus / m) / m)
+      conf_int <- cbind(
+        est + qnorm(qulevels[1]) * sqrt(variance),
+        est + qnorm(qulevels[2]) * sqrt(variance)
+      )
     }
-    for(i in seq_along(th)){
-      mind <- pos_fn(rowMin, th[i])
-      # Perhaps superfluous, but can have ties
-      psiplus <- sum(rkdata[seq_len(mind), 1] < rkdata[seq_len(mind), 2])
-      psiminus <- sum(rkdata[seq_len(mind), 2] < rkdata[seq_len(mind), 1])
-      nk_v[i] <- sum(psiplus + psiminus)
-      psiplus_v[i] <- psiplus
-      asym_coef_v[i] <- (psiplus - psiminus)/nk_v[i]
+  } else if (method == "emplik") {
+    # Function to compute empirical likelihood-based estimator
+    xcoef_fun_emplik <- function(angles, weights) {
+      (sum(weights * (angles < 0.5)) - 0.5) /
+        (0.5 - sum(weights * (1 - 2 * angles) * (angles < 0.5)))
     }
-    if(retList){
-      list(m = nk_v,
-           psiplus = psiplus_v,
-           coef = asym_coef_v)
-    } else{
-    return(asym_coef_v)
-    }
-  }
-  xasym_res <- empirical_coef(u = u,
-                 rkdata = datarank,
-                 rowMin = rowmin,
-                 ordered = TRUE,
-                 retList = TRUE)
-  est <- xasym_res$coef
-  if(confint == "bootstrap"){
-    boot_xasym <- matrix(0, ncol = nq, nrow = B+1L)
-    boot_xasym[1,] <- est
-    for(b in seq_len(B)){
-      boot_xasym[b+1L, ] <-
-        empirical_coef(
-          u = u,
-          rkdata = apply(data[sample.int(n, size = n,
-                                         replace = TRUE),],
-                         2,
-                         rank,
-                         ties.method = ties.method),
-                               ordered = FALSE)
-    }
-    conf_int <- t(apply(boot_xasym, 2,
-                     quantile,
-                     probs = qulevels,
-                     na.rm = TRUE))
-  } else if(confint == "wald"){
-    variance <- with(xasym_res,
-                     4*psiplus/m*(1-psiplus/m)/m)
-    conf_int <- cbind(est + qnorm(qulevels[1])*sqrt(variance),
-                      est + qnorm(qulevels[2])*sqrt(variance))
-  }
-} else if(method == "emplik"){
 
-  # Function to compute empirical likelihood-based estimator
-  xcoef_fun_emplik <- function(angles, weights){
-    (sum(weights*(angles < 0.5)) - 0.5) /
-      (0.5 -sum(weights*(1-2*angles)*(angles < 0.5)))
-  }
+    if (confint == "wald") {
+      warning(
+        "Method not implemented for\n the empirical likelihood-based estimator."
+      )
+      confint <- 'none'
+    }
 
-  if(confint == "wald"){
-    warning("Method not implemented for\n the empirical likelihood-based estimator.")
-  confint <- 'none'
-  }
-
-  # Execute calculations inside loop
-  emplik_coef <- function(u,
-                          rkdata,
-                          rowMin = NULL,
-                          ordered = TRUE){
-    if(is.null(rowMin)){
-      rowMin <- apply(rkdata, 1, min)
-      ordered <- FALSE
+    # Execute calculations inside loop
+    emplik_coef <- function(u, rkdata, rowMin = NULL, ordered = TRUE) {
+      if (is.null(rowMin)) {
+        rowMin <- apply(rkdata, 1, min)
+        ordered <- FALSE
+      }
+      if (!ordered) {
+        od <- order(rowMin, decreasing = TRUE)
+        rowMin <- rowMin[od]
+        rkdata <- rkdata[od, ]
+      }
+      # Use ordering to speed up calculations
+      th_ind <- sapply(u * (nrow(rkdata) + 1), function(ui) {
+        pos_fn(rowMin, ui)
+      })
+      # Only transform exceedances above smallest threshold
+      frechet <- -1 / (log(rkdata[1:th_ind[1], ]) - log(nrow(rkdata) + 1))
+      angs <- frechet[, 1, drop = FALSE] / rowSums(frechet)
+      est <- vector("numeric", length = length(u))
+      for (i in seq_along(u)) {
+        emplik_sol <- try(
+          suppressWarnings(
+            angmeas(
+              xdat = angs[1:th_ind[i], , drop = FALSE],
+              thresh = 0,
+              wgt = "Empirical",
+              is.angle = TRUE
+            )
+          )
+        )
+        if (!inherits(emplik_sol, what = "try-error")) {
+          est[i] <- xcoef_fun_emplik(
+            angles = as.vector(emplik_sol$ang),
+            weights = emplik_sol$wts
+          )
+        } else {
+          est[i] <- NA
+        }
+      }
+      return(est)
     }
-    if(!ordered){
-      od <- order(rowMin, decreasing = TRUE)
-      rowMin <- rowMin[od]
-      rkdata <- rkdata[od,]
-    }
-    # Use ordering to speed up calculations
-    th_ind <- sapply(u*(nrow(rkdata)+1),
-                     function(ui){pos_fn(rowMin, ui)})
-    # Only transform exceedances above smallest threshold
-    frechet <- -1/(log(rkdata[1:th_ind[1],])-log(nrow(rkdata)+1))
-    angs <- frechet[,1, drop = FALSE]/rowSums(frechet)
-  est <- vector("numeric", length = length(u))
-  for(i in seq_along(u)){
-    emplik_sol <- try(
-      suppressWarnings(
-      angmeas(x = angs[1:th_ind[i],, drop = FALSE],
-                          th = 0,
-                          wgt = "Empirical",
-                          is.angle = TRUE)))
-    if(!inherits(emplik_sol, what = "try-error")){
- est[i] <- xcoef_fun_emplik(angles = as.vector(emplik_sol$ang),
-                            weights = emplik_sol$wts)
-    } else{
-      est[i] <- NA
+    est <- emplik_coef(
+      u = u,
+      rkdata = datarank,
+      rowMin = rowmin,
+      ordered = TRUE
+    )
+    if (confint == "bootstrap") {
+      boot_xasym <- matrix(0, ncol = nq, nrow = B + 1L)
+      boot_xasym[1, ] <- est
+      for (b in seq_len(B)) {
+        boot_xasym[b + 1L, ] <-
+          emplik_coef(
+            u = u,
+            rkdata = apply(
+              data[sample.int(n, size = n, replace = TRUE), ],
+              2,
+              rank,
+              ties.method = ties.method
+            ),
+            ordered = FALSE
+          )
+      }
+      conf_int <- t(apply(
+        boot_xasym,
+        2,
+        quantile,
+        probs = qulevels,
+        na.rm = TRUE
+      ))
     }
   }
-  return(est)
-  }
-  est <- emplik_coef(u = u,
-                     rkdata = datarank,
-                     rowMin = rowmin,
-                     ordered = TRUE)
-  if(confint == "bootstrap"){
-    boot_xasym <- matrix(0, ncol = nq, nrow = B+1L)
-    boot_xasym[1,] <- est
-    for(b in seq_len(B)){
-      boot_xasym[b+1L, ] <-
-        emplik_coef(
-          u = u,
-          rkdata = apply(data[sample.int(n,
-                                         size = n,
-                                         replace = TRUE),],
-                         2,
-                         rank,
-                         ties.method = ties.method),
-          ordered = FALSE)
+  if (plot) {
+    ellips <- list(...)
+    if (is.null(ellips$bty)) {
+      ellips$bty <- 'l'
     }
-    conf_int <- t(apply(boot_xasym, 2,
-                        quantile,
-                        probs = qulevels,
-                        na.rm = TRUE))
-  }
-}
-   if(plot){
-     ellips <- list(...)
-     if(is.null(ellips$bty)){
-       ellips$bty <- 'l'
-     }
-      if(is.null(ellips$xlab)){
-       ellips$xlab <- "probability level"
-     }
-     if(is.null(ellips$ylab)){
-       ellips$ylab = "extremal asymmetry"
-     }
-     if(is.null(ellips$pch)){
-       ellips$pch <- 20
-     }
-     if(is.null(ellips$ylim)){
-       ellips$ylim <- c(-1,1)
-     }
-     if(is.null(ellips$xlim)){
-       ellips$ylim <- range(u)
-       ellips$ylim <- pmin(ellips$ylim, 1)
-     }
-     if(is.null(ellips$yaxs)){
-       ellips$yaxs <- "i"
-     }
-     ellips$x <- u
-     ellips$y <- est
+    if (is.null(ellips$xlab)) {
+      ellips$xlab <- "probability level"
+    }
+    if (is.null(ellips$ylab)) {
+      ellips$ylab = "extremal asymmetry"
+    }
+    if (is.null(ellips$pch)) {
+      ellips$pch <- 20
+    }
+    if (is.null(ellips$ylim)) {
+      ellips$ylim <- c(-1, 1)
+    }
+    if (is.null(ellips$xlim)) {
+      ellips$ylim <- range(u)
+      ellips$ylim <- pmin(ellips$ylim, 1)
+    }
+    if (is.null(ellips$yaxs)) {
+      ellips$yaxs <- "i"
+    }
+    ellips$x <- u
+    ellips$y <- est
     do.call("plot", ellips)
-     if(confint != "none"){
-       lines(u, conf_int[,1], lty = 2)
-       lines(u, conf_int[,2], lty = 2)
-     }
-   }
-  if(confint == "none"){
-  return(invisible(
-    data.frame(threshold = u,
-               coef = est)))
-  } else{
+    if (confint != "none") {
+      lines(u, conf_int[, 1], lty = 2)
+      lines(u, conf_int[, 2], lty = 2)
+    }
+  }
+  if (confint == "none") {
     return(invisible(
-      data.frame(threshold = u,
-                 coef = est,
-                 lower = pmax(-1, conf_int[,1]),
-                 upper = pmin(1, conf_int[,2]))))
+      data.frame(threshold = u, coef = est)
+    ))
+  } else {
+    return(invisible(
+      data.frame(
+        threshold = u,
+        coef = est,
+        lower = pmax(-1, conf_int[, 1]),
+        upper = pmin(1, conf_int[, 2])
+      )
+    ))
   }
 }

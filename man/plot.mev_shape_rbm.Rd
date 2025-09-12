@@ -12,6 +12,8 @@
 \item{type}{[string] type of plot, either \code{"shape"} for the tail index or \code{"risk"} for the empirical Bayes risk}
 
 \item{log}{[logical] if \code{TRUE} (default), the x-axis for the number of exceedances is displayed on the log scale.}
+
+\item{...}{additional arguments, currently ignored}
 }
 \value{
 one or more plots
