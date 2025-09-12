@@ -12,8 +12,8 @@ rho.gbw(xdat, k)
 \item{k}{number of highest order statistics to use for estimation}
 }
 \description{
-Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data based on ratio of kernel goodness-of-fit statistics.
+Estimator of the second order regular variation parameter \eqn{\rho \leq 0} parameter for heavy-tailed data based on ratio of kernel goodness-of-fit statistics.
 }
 \references{
-Goegebeur, Y., J. Beirlant and T. de Wet (2008). \emph{Linking Pareto-tail kernel goodness-of-fit statistics with tail index at optimal threshold and second order estimation}.  REVSTAT-Statistical Journal, 6(1), 51-69. <doi:10.57805/revstat.v6i1.57>
+Goegebeur, Y., J. Beirlant and T. de Wet (2008). Linking Pareto-tail kernel goodness-of-fit statistics with tail index at optimal threshold and second order estimation.  \emph{REVSTAT-Statistical Journal}, 6(\bold{1}), 51-69. <doi:10.57805/revstat.v6i1.57>
 }

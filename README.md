@@ -52,13 +52,21 @@ The routine `fit.shape`, or alternatively one of subroutines for real or positiv
 - `shape.osz`: Pickands extreme U-statistic of Oorschot, Segers and Zhou
 - `shape.moment`: moment estimator of Dekkers and de Haan.
 - `shape.pickands`: Pickands estimator (poor performance)
-- `shape.vries`*: de Vries estimator
+- `shape.vries`*: de Vries estimator of de Haan and Peng.
+- `shape.genjack`*: generalized jacknnife shape estimator of Gomes et al. 
 - `shape.rbm`*: Wager's random block maxima estimator 
 - `shape.genquant`*: generalized quantile
 - `shape.trimhill`*: trimmed Hill estimator
 - `shape.lthill`*: left-truncated Hill estimator
 
 Note that both of the trimmed and truncated Hill estimators are not vectorized.
+
+Second-order regular variation estimators
+
+- `rho.dk`: estimator of Drees and Kaufmann (1998)
+- `rho.gbw`: estimator of Goegebeur, Beirland and de Wet (2008)
+- `rho.fagh`: estimator of Fraga Alves, Gomes and de Haan (2003)
+- `rho.ghp`: estimator of Gomes, de Haan and Peng (2002)
 
 ## Threshold selection diagnostics
 
@@ -80,7 +88,9 @@ Some semiparametric methods
 - `thselect.expgqt` Exponential generalized quantile threshold selection of Beirlant, Vynckier and Teugels (1996)
 - `thselect.gbw`: Kernel-based threshold selection of Goegebeur, Beirlant and de Wet (2008)
 - `thselect.rbm`: Random block maximum estimator of Wager (2014), with empirical Bayes risk minimization
-
+- `thselect.pec`: prediction error C-criterion with non-robust estimator of Dupuis and Victoria-Feser (2003)
+- `thselect.mdps`: minimum distance threshold selection procedure of Clauset, Shalizi and Newman (2009)
+- `thselect.samsee`: smooth asymptotic mean squared error estimator of Schneider, Krajina, and Krivobokova (2021)
 
 ## Threshold stability plots
 

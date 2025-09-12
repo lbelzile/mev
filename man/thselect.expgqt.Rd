@@ -54,3 +54,6 @@ the estimated value of \eqn{\rho} is nonpositive.
 xdat <- rgp(n = 10000, loc = 1, scale = 0.5, shape = 0.5)
 thselect.expgqt(xdat)
 }
+\references{
+Beirlant, J., Vynckier, P., & Teugels, J. L. (1996). Excess Functions and Estimation of the Extreme-Value Index. \emph{Bernoulli}, 2(\bold{4}), 293–318. \doi{10.2307/3318416}
+}

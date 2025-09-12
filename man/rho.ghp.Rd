@@ -14,8 +14,8 @@ rho.ghp(xdat, k, alpha = 2)
 \item{alpha}{positive scalar tuning parameter}
 }
 \description{
-Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Gomes et al. (2003)
+Estimator of the second order regular variation parameter \eqn{\rho \leq 0} parameter for heavy-tailed data proposed by Gomes et al. (2003)
 }
 \references{
-Gomes, M.I., Haan, L.d. & Peng, L. (2002). \emph{Semi-parametric Estimation of the Second Order Parameter in Statistics of Extremes}. Extremes 5, 387–414. <doi:10.1023/A:1025128326588>
+Gomes, M.I., de Haan, L. & Peng, L. (2002). Semi-parametric Estimation of the Second Order Parameter in Statistics of Extremes. \emph{Extremes} 5, 387–414. <doi:10.1023/A:1025128326588>
 }

@@ -4,7 +4,7 @@
 \alias{fit.rho}
 \title{Estimator of the second order tail index parameter}
 \usage{
-fit.rho(xdat, k, method = c("fagh", "dk", "ghp"), ...)
+fit.rho(xdat, k, method = c("fagh", "dk", "ghp", "gbw"), ...)
 }
 \arguments{
 \item{xdat}{vector of positive observations}

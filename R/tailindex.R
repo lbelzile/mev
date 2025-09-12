@@ -670,7 +670,12 @@ fit.shape <- function(
 #'    xdat = xdat,
 #'    k = n - kmin:kmax)
 #' rho_med <- mean(rho_est$rho)
-fit.rho <- function(xdat, k, method = c("fagh", "dk", "ghp"), ...) {
+fit.rho <- function(
+  xdat,
+  k,
+  method = c("fagh", "dk", "ghp", "gbw"),
+  ...
+) {
   method <- match.arg(method)
   if (method == "fagh") {
     rho.fagh(xdat = xdat, k = k, ...)
@@ -678,13 +683,15 @@ fit.rho <- function(xdat, k, method = c("fagh", "dk", "ghp"), ...) {
     rho.dk(xdat = xdat, k = k, ...)
   } else if (method == "ghp") {
     rho.ghp(xdat = xdat, k = k, ...)
+  } else if (method == "gbw") {
+    rho.gbw(xdat = xdat, k = k, ...)
   }
 }
 #' Second order tail index estimator of Drees and Kaufmann
 #'
-#' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Drees and Kaufmann (1998)
+#' Estimator of the second order regular variation parameter \eqn{\rho \leq 0} parameter for heavy-tailed data proposed by Drees and Kaufmann (1998)
 #'
-#' @references Drees, H. and E. Kaufmann (1998). \emph{Selecting the optimal sample fraction in univariate extreme value estimation}, Stochastic Processes and their Applications, 75(\bold{2}), 149-172, <doi:10.1016/S0304-4149(98)00017-9>.
+#' @references Drees, H. and E. Kaufmann (1998). Selecting the optimal sample fraction in univariate extreme value estimation}, \emph{Stochastic Processes and their Applications}, 75(\bold{2}), 149-172, <doi:10.1016/S0304-4149(98)00017-9>.
 #' @param xdat vector of positive observations
 #' @param k number of highest order statistics to use for estimation
 #' @param tau tuning parameter \eqn{\tau \in (0,1)}
@@ -714,9 +721,9 @@ rho.dk <- function(xdat, k, tau = 0.5) {
 
 #' Second order tail index estimator of Fraga Alves et al.
 #
-#' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Fraga Alves et al. (2003)
+#' Estimator of the second order regular variation parameter \eqn{\rho \leq 0} parameter for heavy-tailed data proposed by Fraga Alves et al. (2003)
 #'
-#' @references Fraga Alves, M.I., Gomes, M. Ivette, and de Haan, Laurens (2003). \emph{A new class of semi-parametric estimators of the second order parameter.} Portugaliae Mathematica. Nova Serie 60(\bold{2}), 193-213. <http://eudml.org/doc/50867>.
+#' @references Fraga Alves, M.I., Gomes, M. Ivette, and de Haan, Laurens (2003). A new class of semi-parametric estimators of the second order parameter. \emph{Portugaliae Mathematica}. Nova Serie 60(\bold{2}), 193-213. <http://eudml.org/doc/50867>.
 #' @param xdat vector of positive observations
 #' @param k number of highest order statistics to use for estimation
 #' @param method string; only the estimator of Fraga Alves et al. \code{fagh} is currently supported
@@ -763,9 +770,9 @@ rho.fagh <- function(xdat, k, tau = 0) {
 
 #' Second order tail index estimator of Gomes et al.
 #'
-#' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Gomes et al. (2003)
+#' Estimator of the second order regular variation parameter \eqn{\rho \leq 0} parameter for heavy-tailed data proposed by Gomes et al. (2003)
 #'
-#' @references Gomes, M.I., Haan, L.d. & Peng, L. (2002). \emph{Semi-parametric Estimation of the Second Order Parameter in Statistics of Extremes}. Extremes 5, 387–414. <doi:10.1023/A:1025128326588>
+#' @references Gomes, M.I., de Haan, L. & Peng, L. (2002). Semi-parametric Estimation of the Second Order Parameter in Statistics of Extremes. \emph{Extremes} 5, 387–414. <doi:10.1023/A:1025128326588>
 #'@param xdat vector of positive observations
 #'@param k number of highest order statistics to use for estimation
 #'@param alpha positive scalar tuning parameter
@@ -848,9 +855,9 @@ rho.ghp <- function(xdat, k, alpha = 2) {
 
 #' Second order tail index estimator of Goegebeur et al. (2008)
 #'
-#' Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data based on ratio of kernel goodness-of-fit statistics.
+#' Estimator of the second order regular variation parameter \eqn{\rho \leq 0} parameter for heavy-tailed data based on ratio of kernel goodness-of-fit statistics.
 #'
-#' @references Goegebeur, Y., J. Beirlant and T. de Wet (2008). \emph{Linking Pareto-tail kernel goodness-of-fit statistics with tail index at optimal threshold and second order estimation}.  REVSTAT-Statistical Journal, 6(1), 51-69. <doi:10.57805/revstat.v6i1.57>
+#' @references Goegebeur, Y., J. Beirlant and T. de Wet (2008). Linking Pareto-tail kernel goodness-of-fit statistics with tail index at optimal threshold and second order estimation.  \emph{REVSTAT-Statistical Journal}, 6(\bold{1}), 51-69. <doi:10.57805/revstat.v6i1.57>
 #'@param xdat vector of positive observations
 #'@param k number of highest order statistics to use for estimation
 #'@export

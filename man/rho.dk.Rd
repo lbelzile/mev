@@ -14,8 +14,8 @@ rho.dk(xdat, k, tau = 0.5)
 \item{tau}{tuning parameter \eqn{\tau \in (0,1)}}
 }
 \description{
-Estimator of the second order regular variation parameter \eqn{rho \leq 0} parameter for heavy-tailed data proposed by Drees and Kaufmann (1998)
+Estimator of the second order regular variation parameter \eqn{\rho \leq 0} parameter for heavy-tailed data proposed by Drees and Kaufmann (1998)
 }
 \references{
-Drees, H. and E. Kaufmann (1998). \emph{Selecting the optimal sample fraction in univariate extreme value estimation}, Stochastic Processes and their Applications, 75(\bold{2}), 149-172, <doi:10.1016/S0304-4149(98)00017-9>.
+
 }

@@ -11,6 +11,7 @@
 #' Since the weights can become negative, there is no guarantee that the mean squared error estimate is positive, nor that
 #' the estimated value of \eqn{\rho} is nonpositive.
 #'
+#' @references Beirlant, J., Vynckier, P., & Teugels, J. L. (1996). Excess Functions and Estimation of the Extreme-Value Index. \emph{Bernoulli}, 2(\bold{4}), 293–318. \doi{10.2307/3318416}
 #' @param xdat [vector] sample of exceedances
 #' @param maxiter [int] maximum number of iteration
 #' @param tol [double] tolerance for difference in value of \eqn{k} for the fixed point
