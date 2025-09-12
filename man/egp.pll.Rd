@@ -25,7 +25,7 @@ egp.pll(
 
 \item{param}{string; parameter to profile}
 
-\item{mle}{object returned by \code{fit.egp}. If \code{NULL} (default), the maximum likelihood estimates are calculated within the function call.}
+\item{mle}{a vector or matrix with maximum likelihood estimates of \code{kappa}, \code{scale}, \code{shape}. This can be a matrix if there are multiple threshold}
 
 \item{xdat}{vector of observations}
 
@@ -38,8 +38,6 @@ egp.pll(
 \item{p}{tail probability for return level if \code{param="retlev"}.}
 
 \item{...}{additional arguments, currently ignored}
-
-\item{mle;}{a vector or matrix with maximum likelihood estimates of \code{kappa}, \code{scale}, \code{shape}. This can be a matrix if there are multiple threshold}
 }
 \value{
 an object of class \code{eprof}

@@ -30,6 +30,8 @@ fit.egp(
 \item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
 
 \item{show}{logical; if \code{TRUE}, print the results of the optimization}
+
+\item{...}{additional parameters, for backward compatibility purposes}
 }
 \value{
 \code{fit.egp} outputs the list returned by \link[stats]{optim}, which contains the parameter values, the hessian and in addition the standard errors
