@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.10006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.10007</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,7 +64,7 @@
                         <h4 data-toc-skip class="author">Léo
 Belzile</h4>
             
-            <h4 data-toc-skip class="date">2025-09-16</h4>
+            <h4 data-toc-skip class="date">2025-09-30</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/lbelzile/mev/blob/HEAD/vignettes/04-simulation.Rmd" class="external-link"><code>vignettes/04-simulation.Rmd</code></a></small>
       <div class="d-none name"><code>04-simulation.Rmd</code></div>
@@ -312,7 +312,7 @@ function <code>test.maxstab</code> implements this for the special case
 <span><span class="co"># Test of max-stability</span></span>
 <span><span class="fu"><a href="../reference/test.maxstab.html">test.maxstab</a></span><span class="op">(</span>xdat <span class="op">=</span> <span class="va">samp</span><span class="op">)</span></span>
 <span><span class="co"># Probability-probability plot</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fgev</span>, which <span class="op">=</span> <span class="fl">1</span>, main <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fgev</span>, which <span class="op">=</span> <span class="st">"pp"</span>, main <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span></code></pre></div>
 <p><img src="04-simulation_files/figure-html/maxstabtest-1.png" width="90%" style="display: block; margin: auto;"></p>
 <p>The likelihood of max-stable processes is untractable, so inference
 is typically performed using composite likelihood. The package
@@ -675,8 +675,9 @@ for the Brown–Resnick model with power variogram function
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>4</mn><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\{1,2,\ldots, 4\}^2</annotation></semantics></math>
 using <code>rparp</code> and <code>rparpcs</code>. Benchmark the two
 methods: which is fastest and what is the acceptance rate of the
-accept-reject? Partial sample code for doing this is given below:</li>
+accept-reject?</li>
 </ol>
+<p>Partial sample code for doing this is given below:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">depmat</span> <span class="op">&lt;-</span></span>

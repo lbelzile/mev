@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.10006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.10007</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,11 +135,12 @@
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Let <code>U</code>, <code>V</code> be uniform random variables and define the partial extremal dependence coefficients
-\(\varphi_{+}(u) = \Pr(V &gt; U | U &gt; u, V &gt; u)\),
-\(\varphi_{-}(u) = \Pr(V &lt; U | U &gt; u, V &gt; u)\) and
-\(\varphi_0(u) = \Pr(V = U | U &gt; u, V &gt; u)\)
+$$\varphi_{+}(u) = \Pr(V &gt; U | U &gt; u, V &gt; u),$$,
+$$\varphi_{-}(u) = \Pr(V &lt; U | U &gt; u, V &gt; u),$$
+$$\varphi_0(u) = \Pr(V = U | U &gt; u, V &gt; u).$$
 Define
-$$ \varphi(u) = \frac{\varphi_{+} - \varphi_{-}}{\varphi_{+} + \varphi_{-}}$$</p>
+$$ \varphi(u) = \frac{\varphi_{+} - \varphi_{-}}{\varphi_{+} + \varphi_{-}}$$
+and the coefficient of extremal asymmetry as \(\varphi = \lim_{u \to 1} \varphi(u)\).</p>
 <p>The empirical likelihood estimator, derived for max-stable vectors with unit Frechet margins, is
 $$\frac{\sum_i p_i I(w_i \leq 0.5) - 0.5}{0.5 - 2\sum_i p_i(0.5-w_i) I(w_i \leq 0.5)}$$
 where \(p_i\) is the empirical likelihood weight for observation \(i\) and \(w_i\) is the pseudo-angle associated to the first coordinate.</p>
