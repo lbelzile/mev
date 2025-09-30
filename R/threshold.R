@@ -2,7 +2,7 @@
 #'
 #' This function computes the maximum likelihood estimate
 #' at each provided threshold and plots the estimates (pointwise),
-#' along with 95% confidence/credible intervals obtained using Wald or profile confidence intervals,
+#' along with 95\% confidence/credible intervals obtained using Wald or profile confidence intervals,
 #' or else from 1000 independent draws from the posterior distribution under
 #' vague independent normal prior on the log-scale and shape.
 #' The latter two methods better reflect the asymmetry of the estimates than the Wald confidence intervals.

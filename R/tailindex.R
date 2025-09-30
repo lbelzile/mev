@@ -261,7 +261,7 @@ shape.rbm = function(xdat, k = 10:floor(length(xdat) / 2), ...) {
 
 #' Plots for random block maximum estimator
 #'
-#' The function returns plot of the shape estimator along with the value (and 95% Wald-based confidence interval) at the selected threshold, or a plot of the empirical Bayes risk.
+#' The function returns plot of the shape estimator along with the value (and 95\% Wald-based confidence interval) at the selected threshold, or a plot of the empirical Bayes risk.
 #'
 #' @param x object of class \code{mev_shape_rbm} returned by \code{shape.rbm}
 #' @param type [string] type of plot, either \code{"shape"} for the tail index or \code{"risk"} for the empirical Bayes risk

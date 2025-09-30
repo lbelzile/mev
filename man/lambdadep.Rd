@@ -4,7 +4,14 @@
 \alias{lambdadep}
 \title{Estimation of the bivariate angular dependence function of Wadsworth and Tawn (2013)}
 \usage{
-lambdadep(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot = TRUE)
+lambdadep(
+  dat,
+  qu = 0.95,
+  method = c("hill", "mle", "bayes"),
+  plot = TRUE,
+  level = 0.95,
+  ...
+)
 }
 \arguments{
 \item{dat}{an \eqn{n} by \eqn{2} matrix of multivariate observations}
@@ -13,8 +20,11 @@ lambdadep(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot = TRUE)
 
 \item{method}{string indicating the estimation method}
 
-\item{plot}{logical indicating whether to return the graph of \code{lambda}
+\item{plot}{logical indicating whether to return the graph of \code{lambda}}
 
+\item{level}{level for confidence intervals, default to 0.95}
+
+\item{...}{additional arguments, used for backward compatibility
 
 The confidence intervals are based on normal quantiles. The standard errors for the \code{hill}
 are based on the asymptotic covariance and that of the \code{mle} derived using the delta-method.
@@ -27,8 +37,8 @@ a plot of the lambda function if \code{plot=TRUE}, plus an invisible list with c
 \itemize{
 \item \code{w} the sequence of angles in (0,1) at which the \code{lambda} values are evaluated
 \item \code{lambda} point estimates of lambda
-\item \code{lower.confint} 95% confidence interval for lambda (lower bound)
-\item \code{upper.confint} 95% confidence interval for lambda (upper bound)
+\item \code{lower.confint} \code{level}\% confidence interval for lambda (lower bound)
+\item \code{upper.confint} \code{level}\% confidence interval for lambda (upper bound)
 }
 }
 \description{

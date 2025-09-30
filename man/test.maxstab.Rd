@@ -30,7 +30,7 @@ test.maxstab(
 \item{...}{additional arguments for backward compatibility}
 }
 \value{
-a Tukey probability-probability plot with 95% confidence intervals obtained using a nonparametric bootstrap
+a Tukey probability-probability plot with 95\% confidence intervals obtained using a nonparametric bootstrap
 }
 \description{
 The diagnostic, proposed by Gabda, Towe, Wadsworth and Tawn,

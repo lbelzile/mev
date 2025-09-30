@@ -243,7 +243,7 @@ tstab.lthill <- function(
 
 #' Lower truncated Hill threshold selection
 #'
-#' Given a sample of positive data with Pareto tail, the algorithm computes the optimal number of order statistics that minimizes the variance of the average left truncated tail index estimator, and uses the relationship to the Hill estimator for the Hall class of distributions to derive the optimal number (minimizing the asymptotic mean squared error) of the Hill estimator. The default value for the second order regular variation index is taken to be \eqn{rho=-1}.
+#' Given a sample of positive data with Pareto tail, the algorithm computes the optimal number of order statistics that minimizes the variance of the average left truncated tail index estimator, and uses the relationship to the Hill estimator for the Hall class of distributions to derive the optimal number (minimizing the asymptotic mean squared error) of the Hill estimator. The default value for the second order regular variation index is taken to be \eqn{\rho=-1}.
 #' @param xdat [vector] positive vector of exceedances
 #' @param kmin [int] minimum number of exceedances
 #' @param kmax [int] maximum number of exceedances for the estimation of the shape parameter.

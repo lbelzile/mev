@@ -39,7 +39,7 @@ tstab.mrl(
 an invisible list with mean sample exceedances and standard deviation, number of exceedances, threshold
 }
 \description{
-Computes mean of sample exceedances over a range of thresholds or for a prespecified number of largest order statistics, and returns a plot with 95% Wald-based confidence intervals as a function of either the threshold or the number of exceedances. The main purpose is the plotting method, which generates the so-called mean residual life plot. The latter should be approximately linear over the threshold for a generalized Pareto distribution
+Computes mean of sample exceedances over a range of thresholds or for a pre-specified number of largest order statistics, and returns a plot with 95\% Wald-based confidence intervals as a function of either the threshold or the number of exceedances. The main purpose is the plotting method, which generates the so-called mean residual life plot. The latter should be approximately linear over the threshold for a generalized Pareto distribution
 }
 \examples{
 tstab.mrl(

@@ -33,7 +33,7 @@ thselect.bab(
 a list with the number of order statistics for the Hill estimator, \code{k0} and the corresponding shape estimate \code{shape}, the average lower-trimmed Hill estimator \code{shape._lth} and the number of order statistics upon which the latter is based, \code{k0_lth}.
 }
 \description{
-Given a sample of positive data with Pareto tail, the algorithm computes the optimal number of order statistics that minimizes the variance of the average left truncated tail index estimator, and uses the relationship to the Hill estimator for the Hall class of distributions to derive the optimal number (minimizing the asymptotic mean squared error) of the Hill estimator. The default value for the second order regular variation index is taken to be \eqn{rho=-1}.
+Given a sample of positive data with Pareto tail, the algorithm computes the optimal number of order statistics that minimizes the variance of the average left truncated tail index estimator, and uses the relationship to the Hill estimator for the Hall class of distributions to derive the optimal number (minimizing the asymptotic mean squared error) of the Hill estimator. The default value for the second order regular variation index is taken to be \eqn{\rho=-1}.
 }
 \references{
 Bladt, M., Albrecher, H. & Beirlant, J. (2020) \emph{Threshold selection and trimming in extremes}. Extremes, 23, 629-665 . \doi{10.1007/s10687-020-00385-0}

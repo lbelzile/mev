@@ -1003,7 +1003,7 @@ fit.rlarg <- function(
 #' @export
 plot.mev_gpd <- function(
   x,
-  which = 1:2,
+  which = c("pp", "qq"),
   main,
   xlab = "Theoretical quantiles",
   ylab = "Sample quantiles",
@@ -1015,12 +1015,17 @@ plot.mev_gpd <- function(
       "Object \"x\" does not contain \"exceedances\", or else the latter is not a vector"
     )
   }
-  if (!is.numeric(which) || any(which < 1) || any(which > 2)) {
-    stop("\"which\" must be in 1:2")
-  }
   show <- rep(FALSE, 2)
-  show[which] <- TRUE
-  if (!add) {
+  if (!is.numeric(which)) {
+    which <- match.arg(which)
+    show <- c("pp", "qq") %in% which
+  } else {
+    if (!isTRUE(all(which %in% 1:2))) {
+      stop("\"which\" must be in 1:2 if not a string")
+    }
+    show[which] <- TRUE
+  }
+  if (!isTRUE(add)) {
     old.par <- par(no.readonly = TRUE)
     if (sum(show) == 2) {
       par(mfrow = c(1, 2), mar = c(5, 5, 4, 1))
@@ -1113,7 +1118,7 @@ plot.mev_gpd <- function(
 #' @export
 plot.mev_gpdbayes <- function(
   x,
-  which = 1:2,
+  which = c("pp", "qq"),
   main,
   xlab = "Theoretical quantiles",
   ylab = "Sample quantiles",
@@ -1125,12 +1130,17 @@ plot.mev_gpdbayes <- function(
       "Object \"x\" does not contain \"exceedances\", or else the latter is not a vector"
     )
   }
-  if (!is.numeric(which) || any(which < 1) || any(which > 2)) {
-    stop("\"which\" must be in 1:2")
-  }
   show <- rep(FALSE, 2)
-  show[which] <- TRUE
-  if (!add) {
+  if (!is.numeric(which)) {
+    which <- match.arg(which)
+    show <- c("pp", "qq") %in% which
+  } else {
+    if (!isTRUE(all(which %in% 1:2))) {
+      stop("\"which\" must be in 1:2 if not a string")
+    }
+    show[which] <- TRUE
+  }
+  if (!isTRUE(add)) {
     old.par <- par(no.readonly = TRUE)
     if (sum(show) == 2) {
       par(mfrow = c(1, 2), mar = c(5, 5, 4, 1))
@@ -1229,10 +1239,11 @@ plot.mev_gpdbayes <- function(
 #' @export
 plot.mev_gev <- function(
   x,
-  which = 1:2,
+  which = c("pp", "qq"),
   main,
   xlab = "Theoretical quantiles",
   ylab = "Sample quantiles",
+  add = TRUE,
   ...
 ) {
   if (!is.vector(x$xdat)) {
@@ -1240,16 +1251,23 @@ plot.mev_gev <- function(
       "Object \"x\" does not contain \"exceedances\", or else the latter is not a vector"
     )
   }
-  if (!is.numeric(which) || any(which < 1) || any(which > 2)) {
-    stop("\"which\" must be in 1:2")
-  }
   show <- rep(FALSE, 2)
-  show[which] <- TRUE
-  old.par <- par(no.readonly = TRUE)
-  if (sum(show) == 2) {
-    par(mfrow = c(1, 2), mar = c(5, 5, 4, 1))
+  if (!is.numeric(which)) {
+    which <- match.arg(which)
+    show <- c("pp", "qq") %in% which
+  } else {
+    if (!isTRUE(all(which %in% 1:2))) {
+      stop("\"which\" must be in 1:2 if not a string")
+    }
+    show[which] <- TRUE
   }
-  on.exit(par(old.par))
+  if (!isTRUE(add)) {
+    old.par <- par(no.readonly = TRUE)
+    if (sum(show) == 2) {
+      par(mfrow = c(1, 2), mar = c(5, 5, 4, 1))
+    }
+    on.exit(par(old.par))
+  }
   if (missing(main)) {
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else {
@@ -1329,10 +1347,11 @@ plot.mev_gev <- function(
 #' @export
 plot.mev_rlarg <- function(
   x,
-  which = 1:2,
+  which = c("pp", "qq"),
   main,
   xlab = "Theoretical quantiles",
   ylab = "Sample quantiles",
+  add = TRUE,
   ...
 ) {
   if (!isTRUE(all.equal(x$param[3], 0, check.attributes = FALSE))) {
@@ -1348,16 +1367,24 @@ plot.mev_rlarg <- function(
     dat <- sort(as.vector(c(ppdat[, 1], apply(ppdat, 1, diff))))
   }
   n <- length(dat)
-  if (!is.numeric(which) || any(which < 1) || any(which > 2)) {
-    stop("\"which\" must be in 1:2")
-  }
   show <- rep(FALSE, 2)
-  show[which] <- TRUE
-  old.par <- par(no.readonly = TRUE)
-  if (sum(show) == 2) {
-    par(mfrow = c(1, 2), mar = c(5, 5, 4, 1))
+  if (!is.numeric(which)) {
+    which <- match.arg(which)
+    show <- c("pp", "qq") %in% which
+  } else {
+    if (!isTRUE(all(which %in% 1:2))) {
+      stop("\"which\" must be in 1:2 if not a string")
+    }
+    show[which] <- TRUE
   }
-  on.exit(par(old.par))
+  show[which] <- TRUE
+  if (!isTRUE(add)) {
+    old.par <- par(no.readonly = TRUE)
+    if (sum(show) == 2) {
+      par(mfrow = c(1, 2), mar = c(5, 5, 4, 1))
+    }
+    on.exit(par(old.par))
+  }
   if (missing(main)) {
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else {
@@ -1432,10 +1459,11 @@ plot.mev_rlarg <- function(
 #' @export
 plot.mev_pp <- function(
   x,
-  which = 1:2,
+  which = c("pp", "qq"),
   main = "Quantile-quantile plot",
   xlab = "Theoretical quantiles",
   ylab = "Sample quantiles",
+  add = TRUE,
   ...
 ) {
   if (!is.vector(x$exceedances)) {
@@ -1443,16 +1471,23 @@ plot.mev_pp <- function(
       "Object \"x\" does not contain \"exceedances\", or else the latter is not a vector"
     )
   }
-  if (!is.numeric(which) || any(which < 1) || any(which > 2)) {
-    stop("\"which\" must be in 1:2")
-  }
   show <- rep(FALSE, 2)
-  show[which] <- TRUE
-  old.par <- par(no.readonly = TRUE)
-  if (sum(show) == 2) {
-    par(mfrow = c(1, 2), mar = c(5, 5, 4, 1))
+  if (!is.numeric(which)) {
+    which <- match.arg(which)
+    show <- c("pp", "qq") %in% which
+  } else {
+    if (!isTRUE(all(which %in% 1:2))) {
+      stop("\"which\" must be in 1:2 if not a string")
+    }
+    show[which] <- TRUE
   }
-  on.exit(par(old.par))
+  if (!isTRUE(add)) {
+    old.par <- par(no.readonly = TRUE)
+    if (sum(show) == 2) {
+      par(mfrow = c(1, 2), mar = c(5, 5, 4, 1))
+    }
+    on.exit(par(old.par))
+  }
   if (missing(main)) {
     main <- c("Probability-probability plot", "Quantile-quantile plot")
   } else {

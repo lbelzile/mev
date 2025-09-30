@@ -57,11 +57,12 @@ This function implements estimators of the bivariate
 }
 \details{
 Let \code{U}, \code{V} be uniform random variables and define the partial extremal dependence coefficients
-\eqn{\varphi_{+}(u) = \Pr(V > U | U > u, V > u)},
-\eqn{\varphi_{-}(u) = \Pr(V < U | U > u, V > u)} and
-\eqn{\varphi_0(u) = \Pr(V = U | U > u, V > u)}
+\deqn{\varphi_{+}(u) = \Pr(V > U | U > u, V > u),},
+\deqn{\varphi_{-}(u) = \Pr(V < U | U > u, V > u),}
+\deqn{\varphi_0(u) = \Pr(V = U | U > u, V > u).}
 Define
 \deqn{ \varphi(u) = \frac{\varphi_{+} - \varphi_{-}}{\varphi_{+} + \varphi_{-}}}
+and the coefficient of extremal asymmetry as \eqn{\varphi = \lim_{u \to 1} \varphi(u)}.
 
 The empirical likelihood estimator, derived for max-stable vectors with unit Frechet margins, is
 \deqn{\frac{\sum_i p_i I(w_i \leq 0.5) - 0.5}{0.5 - 2\sum_i p_i(0.5-w_i) I(w_i \leq 0.5)}}

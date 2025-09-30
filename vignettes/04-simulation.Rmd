@@ -68,7 +68,7 @@ This approach is only available for Brown--Resnick and extremal Student processe
 
 Let's start by simulating from a simple max-stable random vector from the negative logistic model. The margins are unit Frechet, and we can verify this by pooling the observations and fitting a generalized extreme value distribution to the sample. The parameter estimates are correct, and a probability-probability plot shows that the .
 
- If $\boldsymbol{Z}$ is a max-stable vector of size $D$ with standard Gumbel margins, with distribution function $G(\boldsymbol{z}) = \exp[-V\{\exp(\boldsymbol{z})\}]$, then for any subset of size $J \subseteq\{1, \ldots, D\}$, the variable $Z_J=\max_{j \in J} Z(\boldsymbol{s}_j)$ has distribution function $H_J(z) = \exp\{-\exp(z-\mu_{J})\}$, where $\mu_J=\log\{V_J(\boldsymbol{1})_{|J|})\}$ and $0 \leq \mu_J \leq \log(|J|)$. This follows from the homogeneity of the exponent measure. @Gabda:2012 propose a probability-probability plot based on fitting $\mu_J$ through maximum likelihood with the parameter  constraints for each set of $|J|$ stations. The data are obtained by pooling replications of the max-stable field and selecting all subsets of size $|J|$ if $\binom{D}{|J|}$ is small, or else a limited number of stations among those that display the higher dependence so as to maximize the power of the test (independence being a special case of max-stability). Uncertainty quantification is performed using a nonparametric bootstrap. The function `maxstabtest` implements this for the special case $J=D$.
+ If $\boldsymbol{Z}$ is a max-stable vector of size $D$ with standard Gumbel margins, with distribution function $G(\boldsymbol{z}) = \exp[-V\{\exp(\boldsymbol{z})\}]$, then for any subset of size $J \subseteq\{1, \ldots, D\}$, the variable $Z_J=\max_{j \in J} Z(\boldsymbol{s}_j)$ has distribution function $H_J(z) = \exp\{-\exp(z-\mu_{J})\}$, where $\mu_J=\log\{V_J(\boldsymbol{1})_{|J|})\}$ and $0 \leq \mu_J \leq \log(|J|)$. This follows from the homogeneity of the exponent measure. @Gabda:2012 propose a probability-probability plot based on fitting $\mu_J$ through maximum likelihood with the parameter  constraints for each set of $|J|$ stations. The data are obtained by pooling replications of the max-stable field and selecting all subsets of size $|J|$ if $\binom{D}{|J|}$ is small, or else a limited number of stations among those that display the higher dependence so as to maximize the power of the test (independence being a special case of max-stability). Uncertainty quantification is performed using a nonparametric bootstrap. The function `test.maxstab` implements this for the special case $J=D$.
 
 ```{r maxstabtest, cache = TRUE, fig.width = 10, fig.height = 6, out.width = '90%', fig.align = "center"}
 library(mev)
@@ -83,9 +83,9 @@ fgev <- fit.gev(c(samp), show = FALSE)
 fgev$estimate
 par(mfrow = c(1, 2))
 # Test of max-stability
-maxstabtest(dat = samp)
+test.maxstab(xdat = samp)
 # Probability-probability plot
-plot(fgev, which = 1, main = "")
+plot(fgev, which = "pp", main = "")
 ```
 
 The likelihood of max-stable processes is untractable, so inference is typically performed using composite likelihood. The package `evd` includes routines for doing this in the bivariate setting (see `fbvpot`).
@@ -346,6 +346,7 @@ lines(
 
 1. Simulate Gaussian random vector (using, e.g., the function `mvrnorm` or through the package `RandomFields`) with independent observations and vectors with covariance matrix $\alpha \boldsymbol{1}_D\boldsymbol{1}_D^\top + (1-\alpha)\mathrm{diag}(\boldsymbol{1}_D)$ for $\alpha \in \{0,0.25,0.5,0.75\}$. Use `maxstabtest` on your simulated data and comment on the diagnostic plots.
 2. Simulate 100 realizaions from a $\mathcal{R}$-Pareto process with risk function $\max$ and $\min$ for the Brown--Resnick model with power variogram function `power.vario` with shape `alpha = 1` and `scale = 2` on a grid $\{1,2,\ldots, 4\}^2$ using `rparp` and `rparpcs`. Benchmark the two methods: which is fastest and what is the acceptance rate of the accept-reject?
+
  Partial sample code for doing this is given below:
 ```{r snippetsimurparp, eval = FALSE}
 grid <- as.matrix(expand.grid(1:5, 1:5))

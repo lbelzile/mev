@@ -4,7 +4,15 @@
 \alias{smith.penult}
 \title{Smith's penultimate approximations}
 \usage{
-smith.penult(family, method = c("bm", "pot"), u, qu, m, returnList = TRUE, ...)
+smith.penult(
+  family,
+  method = c("bm", "pot"),
+  u = NULL,
+  qu = NULL,
+  m = NULL,
+  returnList = TRUE,
+  ...
+)
 }
 \arguments{
 \item{family}{the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}}
@@ -76,3 +84,4 @@ Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical repo
 \author{
 Leo Belzile
 }
+\keyword{internal}

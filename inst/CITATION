@@ -1,6 +1,6 @@
 bibentry("Manual",
          author = person("Leo R Belzile"),
-         year = 2023,
-         title = "{mev}: Modelling of
-  Extreme Values",
-        url = "https://lbelzile.github.io/mev/")
+         year = 2025,
+         title = "{mev}: Modelling of Extreme Values",
+        url = "https://lbelzile.github.io/mev/",
+        doi = "10.32614/CRAN.package.mev")

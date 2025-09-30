@@ -5,67 +5,52 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="mev">
 <title>Likelihood based inference for univariate extremes • mev</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Likelihood based inference for univariate extremes">
-<meta property="og:description" content="mev">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Likelihood based inference for univariate extremes">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
-    
+
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+
     <a class="navbar-brand me-2" href="../index.html">mev</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.10006</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/01-univariate.html">Likelihood based inference for univariate extremes</a>
-    <a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection</a>
-    <a class="dropdown-item" href="../articles/03-penultimate.html">Penultimate approximations</a>
-    <a class="dropdown-item" href="../articles/04-simulation.html">Simulation of multivariate extreme value distributions and processes</a>
-  </div>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/01-univariate.html">Likelihood based inference for univariate extremes</a></li>
+    <li><a class="dropdown-item" href="../articles/02-threshold.html">Threshold selection</a></li>
+    <li><a class="dropdown-item" href="../articles/03-penultimate.html">Penultimate approximations</a></li>
+    <li><a class="dropdown-item" href="../articles/04-simulation.html">Simulation of multivariate extreme value distributions and processes</a></li>
+    <li><a class="dropdown-item" href="../articles/mev-vignette.html">Exact unconditional sampling from max-stable random vectors</a></li>
+  </ul>
 </li>
-<li class="nav-item">
-  <a class="nav-link" href="../news/index.html">Changelog</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
-<form class="form-inline my-2 my-lg-0" role="search">
-        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
-</form>
-
-      <ul class="navbar-nav">
-<li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/lbelzile/mev/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/lbelzile/mev/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-article">
 
@@ -74,11 +59,12 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>Likelihood based inference for univariate extremes</h1>
+
+      <h1>Likelihood based inference for univariate extremes</h1>
                         <h4 data-toc-skip class="author">Léo
 Belzile</h4>
             
-            <h4 data-toc-skip class="date">2023-04-18</h4>
+            <h4 data-toc-skip class="date">2025-09-16</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/lbelzile/mev/blob/HEAD/vignettes/01-univariate.Rmd" class="external-link"><code>vignettes/01-univariate.Rmd</code></a></small>
       <div class="d-none name"><code>01-univariate.Rmd</code></div>
@@ -90,31 +76,41 @@ Belzile</h4>
 routines for fitting univariate extreme value models, either block
 maxima or threshold exceedances, using one of four likelihoods: that of
 the generalized extreme value distribution, the generalized Pareto
-distribution, and the inhomogeneous Poisson point process and the <span class="math inline">\(r\)</span>-largest order statistics.</p>
+distribution, and the inhomogeneous Poisson point process and the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>-largest
+order statistics.</p>
 <p>Relative to other packages such as <code>evd</code> or
 <code>ismev</code>, the package functions include analytic expressions
 for the score and observed informations, with careful interpolation when
-<span class="math inline">\(\xi \approx 0\)</span>. However,
-<code>mev</code> does not handle generalized linear or generalized
-additive models for the parameters, to avoid having as many inequality
-constraints in the optimization as there are observations times the
-number of covariates.</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>≈</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\xi \approx 0</annotation></semantics></math>.
+However, <code>mev</code> does not handle generalized linear or
+generalized additive models for the parameters, to avoid having as many
+inequality constraints in the optimization as there are observations
+times the number of covariates.</p>
 <div class="section level2">
 <h2 id="basic-theory">Basic theory<a class="anchor" aria-label="anchor" href="#basic-theory"></a>
 </h2>
-<p>Let <span class="math inline">\(\ell(\boldsymbol{y};
-\boldsymbol{\theta})\)</span> denotes the log-likelihood of an <span class="math inline">\(n\)</span> sample with a <span class="math inline">\(p\)</span>-dimensional parameter <span class="math inline">\(\boldsymbol{\theta}\)</span>. The score vector is
-<span class="math inline">\(U(\boldsymbol{\theta})=\partial \ell /
-\partial \boldsymbol{\theta}\)</span>, while the Fisher information is
-<span class="math inline">\(i(\boldsymbol{\theta})=\mathrm{E}\{U(\boldsymbol{\theta})U(\boldsymbol{\theta})^\top\}\)</span>.
-Under regularity conditions, we also have <span class="math inline">\(i(\boldsymbol{\theta}) = - \mathrm{E}(\partial^2
-\ell / \partial \boldsymbol{\theta}\partial
-\boldsymbol{\theta}^\top)\)</span>. The observed information is the
-negative Hessian <span class="math inline">\(-\partial^2 \ell / \partial
-\boldsymbol{\theta}\partial \boldsymbol{\theta}^\top\)</span>, evaluated
-at the maximum likelihood estimator <span class="math inline">\(\hat{\boldsymbol{\theta}}\)</span>.</p>
+<p>Let
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐲</mi><mo>;</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\ell(\boldsymbol{y}; \boldsymbol{\theta})</annotation></semantics></math>
+denotes the log-likelihood of an
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+sample with a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-dimensional
+parameter
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝛉</mi><annotation encoding="application/x-tex">\boldsymbol{\theta}</annotation></semantics></math>.
+The score vector is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>U</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>∂</mi><mo>ℓ</mo><mi>/</mi><mi>∂</mi><mi>𝛉</mi></mrow><annotation encoding="application/x-tex">U(\boldsymbol{\theta})=\partial \ell / \partial \boldsymbol{\theta}</annotation></semantics></math>,
+while the Fisher information is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi mathvariant="normal">E</mi><mo stretchy="false" form="prefix">{</mo><mi>U</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>U</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>⊤</mi></msup><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">i(\boldsymbol{\theta})=\mathrm{E}\{U(\boldsymbol{\theta})U(\boldsymbol{\theta})^\top\}</annotation></semantics></math>.
+Under regularity conditions, we also have
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>−</mi><mi mathvariant="normal">E</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>∂</mi><mn>2</mn></msup><mo>ℓ</mo><mi>/</mi><mi>∂</mi><mi>𝛉</mi><mi>∂</mi><msup><mi>𝛉</mi><mi>⊤</mi></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">i(\boldsymbol{\theta}) = - \mathrm{E}(\partial^2 \ell / \partial \boldsymbol{\theta}\partial \boldsymbol{\theta}^\top)</annotation></semantics></math>.
+The observed information is the negative Hessian
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><msup><mi>∂</mi><mn>2</mn></msup><mo>ℓ</mo><mi>/</mi><mi>∂</mi><mi>𝛉</mi><mi>∂</mi><msup><mi>𝛉</mi><mi>⊤</mi></msup></mrow><annotation encoding="application/x-tex">-\partial^2 \ell / \partial \boldsymbol{\theta}\partial \boldsymbol{\theta}^\top</annotation></semantics></math>,
+evaluated at the maximum likelihood estimator
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\boldsymbol{\theta}}</annotation></semantics></math>.</p>
 <p>By definition, the maximum likelihood estimator solves the score
-equation, i.e. <span class="math inline">\(U(\hat{\boldsymbol{\theta}})=\boldsymbol{0}_p\)</span>.
+equation,
+i.e. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>U</mi><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mn>𝟎</mn><mi>p</mi></msub></mrow><annotation encoding="application/x-tex">U(\hat{\boldsymbol{\theta}})=\boldsymbol{0}_p</annotation></semantics></math>.
 If the maximum likelihood estimator is not available in closed-form, its
 solution is found numerically and this property can be used to verify
 that the optimization routine has converged or for gradient-based
@@ -126,32 +122,42 @@ maximization algorithms.</p>
 likelihood of the generalized extreme value (GEV) distribution for block
 maxima, the likelihood for the generalized Pareto distribution and that
 of the non-homogeneous Poisson process (NHPP) for exceedances above a
-threshold <span class="math inline">\(u\)</span> and lastly the
-likelihood of the <span class="math inline">\(r\)</span>-largest
+threshold
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>u</mi><annotation encoding="application/x-tex">u</annotation></semantics></math>
+and lastly the likelihood of the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>-largest
 observations.</p>
 </div>
 <div class="section level3">
 <h3 id="generalized-extreme-value-distribution">Generalized extreme value distribution<a class="anchor" aria-label="anchor" href="#generalized-extreme-value-distribution"></a>
 </h3>
 <p>The generalized extreme value (GEV) distribution with location
-parameter <span class="math inline">\(\mu \in \mathbb{R}\)</span>, scale
-parameter <span class="math inline">\(\sigma \in \mathbb{R}_{+}\)</span>
-and shape parameter <span class="math inline">\(\xi \in
-\mathbb{R}\)</span> is <span class="math display">\[\begin{align*}
-  G(x)  =
+parameter
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>∈</mo><mi>ℝ</mi></mrow><annotation encoding="application/x-tex">\mu \in \mathbb{R}</annotation></semantics></math>,
+scale parameter
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi><mo>∈</mo><msub><mi>ℝ</mi><mo>+</mo></msub></mrow><annotation encoding="application/x-tex">\sigma \in \mathbb{R}_{+}</annotation></semantics></math>
+and shape parameter
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>∈</mo><mi>ℝ</mi></mrow><annotation encoding="application/x-tex">\xi \in \mathbb{R}</annotation></semantics></math>
+is
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>G</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><mo>exp</mo><mrow><mo stretchy="true" form="prefix">{</mo><mi>−</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>ξ</mi><mfrac><mrow><mi>x</mi><mo>−</mo><mi>μ</mi></mrow><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mi>−</mi><mn>1</mn><mi>/</mi><mi>ξ</mi></mrow></msup><mo stretchy="true" form="postfix">}</mo></mrow><mo>,</mo></mtd><mtd columnalign="left" style="text-align: left"><mi>ξ</mi><mo>≠</mo><mn>0</mn><mo>,</mo></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><mo>exp</mo><mrow><mo stretchy="true" form="prefix">{</mo><mi>−</mi><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>−</mi><mfrac><mrow><mi>x</mi><mo>−</mo><mi>μ</mi></mrow><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mo>,</mo></mtd><mtd columnalign="left" style="text-align: left"><mi>ξ</mi><mo>=</mo><mn>0</mn><mo>,</mo></mtd></mtr></mtable></mrow></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align*}
+  G(x)  = 
 \begin{cases}
-\exp\left\{-\left(1+\xi \frac{x-\mu}{\sigma}\right)^{-1/\xi}\right\},
-&amp;  \xi \neq 0,\\
-\exp \left\{ -\exp \left(-\frac{x-\mu}{\sigma}\right)\right\},&amp;  \xi
-= 0,
-\end{cases}
-\end{align*}\]</span> defined on <span class="math inline">\(\{x \in
-\mathbb{R}: \xi(x-\mu)/\sigma &gt; -1\}\)</span> where <span class="math inline">\(x_{+} = \max\{0, x\}\)</span>. The case <span class="math inline">\(\xi=0\)</span> is commonly known as the Gumbel
-distribution. We denote the distribution by <span class="math inline">\(\mathsf{GEV}(\mu, \sigma, \xi)\)</span>. This
-distribution is suitable for maximum of a large number of observations:
-the larger the block size, the closer the approximation will be. The
-<code>fit.gev</code> function includes two optimization routines: either
-use the PORT methods from <code>nlminb</code>, or
+\exp\left\{-\left(1+\xi \frac{x-\mu}{\sigma}\right)^{-1/\xi}\right\}, &amp;  \xi \neq 0,\\
+\exp \left\{ -\exp \left(-\frac{x-\mu}{\sigma}\right)\right\},&amp;  \xi = 0,
+\end{cases} 
+ \end{align*}</annotation></semantics></math> defined on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><mi>x</mi><mo>∈</mo><mi>ℝ</mi><mo>:</mo><mi>ξ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>σ</mi><mo>&gt;</mo><mi>−</mi><mn>1</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\{x \in \mathbb{R}: \xi(x-\mu)/\sigma &gt; -1\}</annotation></semantics></math>
+where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mo>+</mo></msub><mo>=</mo><mo>max</mo><mo stretchy="false" form="prefix">{</mo><mn>0</mn><mo>,</mo><mi>x</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">x_{+} = \max\{0, x\}</annotation></semantics></math>.
+The case
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\xi=0</annotation></semantics></math>
+is commonly known as the Gumbel distribution. We denote the distribution
+by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi>𝖦</mi><mi>𝖤</mi><mi>𝖵</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>μ</mi><mo>,</mo><mi>σ</mi><mo>,</mo><mi>ξ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathsf{GEV}(\mu, \sigma, \xi)</annotation></semantics></math>.
+This distribution is suitable for maximum of a large number of
+observations: the larger the block size, the closer the approximation
+will be. The <code>fit.gev</code> function includes two optimization
+routines: either use the PORT methods from <code>nlminb</code>, or
 Broyden-Fletcher-Goldfarb-Shanno algorithm (<code>BFGS</code>) inside a
 constrained optimization algorithm (augmented Lagrangian). The default
 option is <code>nlminb</code>, which sometimes returns diagnostics
@@ -185,14 +191,14 @@ the Maiquetia disaster was.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Confidence intervals</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">prof</span>, print <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Point estimate for the parameter of interest psi:</span></span>
+<pre><code><span><span class="co">## Point estimate for Nmean:</span></span>
 <span><span class="co">## Maximum likelihood          : 174.641 </span></span>
 <span><span class="co">## Tangent exponential model   : 178.219 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Confidence intervals, levels : 0.025 0.975 </span></span>
 <span><span class="co">## Wald intervals               : 84.418 264.864 </span></span>
-<span><span class="co">## Profile likelihood           : 120.622 528.676 </span></span>
-<span><span class="co">## Tangent exponential model    : 122.422 533.947</span></span></code></pre>
+<span><span class="co">## Profile likelihood           : 119.925 529.128 </span></span>
+<span><span class="co">## Tangent exponential model    : 122.413 534.464</span></span></code></pre>
 <p>The Maiquetia rainfall data (<code>maiquetia</code>) contains daily
 cumulated rainfall measures (in mm) from the Simon Bolivar airport in
 the state of Vargas, Venezuela, which was hit by torrential floods in
@@ -209,33 +215,50 @@ candidate values for the profiling.</p>
 <div class="section level3">
 <h3 id="generalized-pareto-distribution">Generalized Pareto distribution<a class="anchor" aria-label="anchor" href="#generalized-pareto-distribution"></a>
 </h3>
-<p>The generalized Pareto (GP) distribution with scale <span class="math inline">\(\sigma \in \mathbb{R}_{+}\)</span> and shape <span class="math inline">\(\xi \in \mathbb{R}\)</span> is <span class="math display">\[\begin{align*}
-  G(x)  =
+<p>The generalized Pareto (GP) distribution with scale
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi><mo>∈</mo><msub><mi>ℝ</mi><mo>+</mo></msub></mrow><annotation encoding="application/x-tex">\sigma \in \mathbb{R}_{+}</annotation></semantics></math>
+and shape
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>∈</mo><mi>ℝ</mi></mrow><annotation encoding="application/x-tex">\xi \in \mathbb{R}</annotation></semantics></math>
+is
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>G</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><mn>1</mn><mo>−</mo><msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>ξ</mi><mfrac><mi>x</mi><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mrow><mi>−</mi><mn>1</mn><mi>/</mi><mi>ξ</mi></mrow></msubsup><mo>,</mo></mtd><mtd columnalign="left" style="text-align: left"><mi>ξ</mi><mo>≠</mo><mn>0</mn><mo>,</mo></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><mn>1</mn><mo>−</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>−</mi><mfrac><mi>x</mi><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mtd><mtd columnalign="left" style="text-align: left"><mi>ξ</mi><mo>=</mo><mn>0</mn><mi>.</mi></mtd></mtr></mtable></mrow></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align*}
+  G(x)  = 
 \begin{cases}
-1-\left(1+\xi \frac{x}{\sigma}\right)_{+}^{-1/\xi}, &amp;  \xi \neq 0,\\
-1-
+1-\left(1+\xi \frac{x}{\sigma}\right)_{+}^{-1/\xi}, &amp;  \xi \neq 0,\\ 1-
 \exp \left(-\frac{x}{\sigma}\right),&amp;  \xi = 0.
 \end{cases}
-\end{align*}\]</span> The range of the generalized Pareto distribution
-is <span class="math inline">\([0, -\sigma/\xi)\)</span> if <span class="math inline">\(\xi &lt; 0\)</span> and is <span class="math inline">\(\mathbb{R}_{+}\)</span> otherwise. We denote the
-distribution by <span class="math inline">\(\mathsf{GP}(\sigma,
-\xi)\)</span>. The default optimization algorithm for this model is that
-of <span class="citation">Grimshaw (1993)</span>, which reduces the
-dimension of the optimization through profiling. The exponential
-distribution and the case <span class="math inline">\(\xi=-1\)</span>
+ \end{align*}</annotation></semantics></math> The range of the
+generalized Pareto distribution is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">[</mo><mn>0</mn><mo>,</mo><mi>−</mi><mi>σ</mi><mi>/</mi><mi>ξ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">[0, -\sigma/\xi)</annotation></semantics></math>
+if
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>&lt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\xi &lt; 0</annotation></semantics></math>
+and is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ℝ</mi><mo>+</mo></msub><annotation encoding="application/x-tex">\mathbb{R}_{+}</annotation></semantics></math>
+otherwise. We denote the distribution by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi>𝖦</mi><mi>𝖯</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>σ</mi><mo>,</mo><mi>ξ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathsf{GP}(\sigma, \xi)</annotation></semantics></math>.
+The default optimization algorithm for this model is that of <span class="citation">Grimshaw (1993)</span>, which reduces the dimension of
+the optimization through profiling. The exponential distribution and the
+case
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>=</mo><mi>−</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">\xi=-1</annotation></semantics></math>
 are handled separately. If the sample coefficient of variation is less
 than one, the global maximum lies on the boundary of the parameter space
-since there exists for any <span class="math inline">\(\xi&lt;-1\)</span> a value <span class="math inline">\(\sigma^*\)</span> such that <span class="math inline">\(\ell(\sigma^*, \xi) \to \infty\)</span>: the
-search is thus restricted to <span class="math inline">\(\xi \geq
--1\)</span>. These cases are more frequent in small samples due to the
-negative bias of the maximum likelihood estimator of the shape.</p>
+since there exists for any
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>&lt;</mo><mi>−</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">\xi&lt;-1</annotation></semantics></math>
+a value
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mo>*</mo></msup><annotation encoding="application/x-tex">\sigma^*</annotation></semantics></math>
+such that
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>σ</mi><mo>*</mo></msup><mo>,</mo><mi>ξ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>→</mo><mi>∞</mi></mrow><annotation encoding="application/x-tex">\ell(\sigma^*, \xi) \to \infty</annotation></semantics></math>:
+the search is thus restricted to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>≥</mo><mi>−</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">\xi \geq -1</annotation></semantics></math>.
+These cases are more frequent in small samples due to the negative bias
+of the maximum likelihood estimator of the shape.</p>
 <p>Except for this boundary case, the maximum likelihood estimator
-solves the score equation <span class="math inline">\(\partial
-\ell(\boldsymbol{\theta}) / \partial \boldsymbol{\theta} =
-\boldsymbol{0}_2\)</span>. We can thus check convergence by verifying
-that the score vanishes at the maximum likelihood estimate.</p>
-<p>If <span class="math inline">\(\widehat{\xi} &lt; -0.5\)</span>, the
-asymptotic regime is nonstandard <span class="citation">(Smith
+solves the score equation
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>∂</mi><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>∂</mi><mi>𝛉</mi><mo>=</mo><msub><mn>𝟎</mn><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\partial \ell(\boldsymbol{\theta}) / \partial \boldsymbol{\theta} = \boldsymbol{0}_2</annotation></semantics></math>.
+We can thus check convergence by verifying that the score vanishes at
+the maximum likelihood estimate.</p>
+<p>If
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>ξ</mi><mo accent="true">̂</mo></mover><mo>&lt;</mo><mi>−</mi><mn>0.5</mn></mrow><annotation encoding="application/x-tex">\widehat{\xi} &lt; -0.5</annotation></semantics></math>,
+the asymptotic regime is nonstandard <span class="citation">(Smith
 1985)</span> and the standard errors obtained from the inverse
 information matrix are unreliable; as such, <code>mev</code> does not
 report them and prints an optional warning.</p>
@@ -245,7 +268,7 @@ report them and prints an optional warning.</p>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">evd</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/evd/man/gpd.html" class="external-link">rgpd</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span>, shape <span class="op">=</span> <span class="op">-</span><span class="fl">0.8</span><span class="op">)</span></span>
 <span><span class="va">fitted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit.gpd.html">fit.gpd</a></span><span class="op">(</span><span class="va">dat</span>, threshold <span class="op">=</span> <span class="fl">0</span>, show <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Method: Grimshaw </span></span>
-<span><span class="co">## Log-likelihood: NaN </span></span>
+<span><span class="co">## Log-likelihood: -1.987 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Threshold: 0 </span></span>
 <span><span class="co">## Number Above: 10 </span></span>
@@ -267,9 +290,12 @@ report them and prints an optional warning.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 0.6094863</span></span></code></pre>
 <p><img src="01-univariate_files/figure-html/gpprofile-1.png" width="768" style="display: block; margin: auto;"></p>
-<p>The figure shows the profile likelihood for <span class="math inline">\(\eta = -\xi/\sigma\)</span> for two datasets, one
-of which (leftmost) achieves its maximum at <span class="math inline">\(\widehat{\xi} = -1\)</span> and <span class="math inline">\(\widehat{\eta} =
-1/\max(\boldsymbol{y})\)</span>.</p>
+<p>The figure shows the profile likelihood for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mi>−</mi><mi>ξ</mi><mi>/</mi><mi>σ</mi></mrow><annotation encoding="application/x-tex">\eta = -\xi/\sigma</annotation></semantics></math>
+for two datasets, one of which (leftmost) achieves its maximum at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>ξ</mi><mo accent="true">̂</mo></mover><mo>=</mo><mi>−</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">\widehat{\xi} = -1</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>η</mi><mo accent="true">̂</mo></mover><mo>=</mo><mn>1</mn><mi>/</mi><mo>max</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐲</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\widehat{\eta} = 1/\max(\boldsymbol{y})</annotation></semantics></math>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Another example where the solution lies inside the parameter space</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">evd</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/evd/man/gpd.html" class="external-link">rgpd</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">25</span>, shape <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
@@ -370,12 +396,12 @@ using running mean and variance estimators.</p>
 <span><span class="co">## Proportion Above: 1 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Estimates</span></span>
-<span><span class="co">##   scale    shape  </span></span>
-<span><span class="co">##  1.3525  -0.4338  </span></span>
+<span><span class="co">##  scale   shape  </span></span>
+<span><span class="co">##  1.352  -0.434  </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Standard Errors</span></span>
-<span><span class="co">##  scale   shape  </span></span>
-<span><span class="co">## 0.3531  0.2775  </span></span>
+<span><span class="co">## scale  shape  </span></span>
+<span><span class="co">## 0.353  0.277  </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Optimization Information</span></span>
 <span><span class="co">##   Convergence: Solution not feasible; algorithm aborted. </span></span>
@@ -397,69 +423,96 @@ using running mean and variance estimators.</p>
 <div class="section level3">
 <h3 id="inhomogeneous-poisson-process">Inhomogeneous Poisson process<a class="anchor" aria-label="anchor" href="#inhomogeneous-poisson-process"></a>
 </h3>
-<p>Let <span class="math inline">\(Y_{(1)} \geq \cdots \geq
-Y_{(r)}\)</span> denote the <span class="math inline">\(r\)</span>
+<p>Let
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msub><mo>≥</mo><mi>⋯</mi><mo>≥</mo><msub><mi>Y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>r</mi><mo stretchy="true" form="postfix">)</mo></mrow></msub></mrow><annotation encoding="application/x-tex">Y_{(1)}  \geq \cdots \geq  Y_{(r)}</annotation></semantics></math>
+denote the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>
 largest observations from a sample. The likelihood of the limiting
-distribution of the point process for the <span class="math inline">\(r\)</span>-largest observations is, for <span class="math inline">\(\mu,\xi\in\mathbb{R}, \sigma&gt;0\)</span>, <span class="math display">\[
-\ell(\mu,\sigma,\xi; \boldsymbol{y}) \equiv  -r\log(\sigma) -
-\left(1+\frac{1}{\xi}\right)\sum_{j=1}^r \log\left(1 +
-\xi\frac{y_{(j)}-\mu}{\sigma}\right)_{+} - \left(1 +
-\xi\frac{y_{(r)}-\mu}{\sigma}\right)^{-1/\xi}_+.
-\]</span> This likelihood can be used to model the <span class="math inline">\(r\)</span>-largest observations per block or
-threshold exceedances where the threshold is the <span class="math inline">\(r\)</span>th order statistic</p>
-<p>Consider a sample of <span class="math inline">\(N\)</span>
-observations, of which <span class="math inline">\(n_u\)</span> exceed
-<span class="math inline">\(u\)</span> and which we denote by <span class="math inline">\(y_1, \ldots, y_{n_u}\)</span>. The likelihood
-associated to the limiting distribution of threshold exceedances is, for
-<span class="math inline">\(\mu, \xi \in \mathbb{R}, \sigma
-&gt;0\)</span>, <span class="math display">\[\begin{align}
-L(\mu, \sigma, \xi; \boldsymbol{y}) = \exp \left[ - c \left\{1+ \xi
-\left( \frac{u-\mu}{\sigma}\right)\right\}^{-1/\xi}_{+}\right]
-(c\sigma)^{-n_u}\prod_{i=1}^{n_u} \left\{1+\xi\left(
-\frac{y_i-\mu}{\sigma}\right)\right\}^{-1/\xi-1}_{+},\label{eq:ppp_lik}
-\end{align}\]</span> where <span class="math inline">\((\cdot)_{+} =
-\max\{0, \cdot\}\)</span>. The quantity <span class="math inline">\(c\)</span> is a tuning parameter whose role is
-described in 7.5 of <span class="citation">Coles (2001)</span>. If we
-take <span class="math inline">\(c=N/m\)</span>, the parameters of the
-point process likelihood correspond to those of the generalized extreme
-value distribution fitted to blocks of size <span class="math inline">\(m\)</span>. The NHPP likelihood includes a
-contribution for the fraction of points that exceeds the threshold,
-whereas the generalized Pareto is a conditional distribution, whose
-third parameter is the normalizing constant <span class="math inline">\(\zeta_u=\Pr(Y&gt;u)\)</span>. Since the latter has
-a Bernoulli and <span class="math inline">\(\zeta_u\)</span> is
-orthogonal to the pair <span class="math inline">\((\sigma,
-\xi)\)</span>, it is often omitted from further analyses and estimated
-as the proportion of samples above the threshold.</p>
+distribution of the point process for the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>-largest
+observations is, for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>,</mo><mi>ξ</mi><mo>∈</mo><mi>ℝ</mi><mo>,</mo><mi>σ</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\mu,\xi\in\mathbb{R}, \sigma&gt;0</annotation></semantics></math>,
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>μ</mi><mo>,</mo><mi>σ</mi><mo>,</mo><mi>ξ</mi><mo>;</mo><mi>𝐲</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≡</mo><mi>−</mi><mi>r</mi><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>σ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mfrac><mn>1</mn><mi>ξ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>r</mi></munderover><mo>log</mo><msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>ξ</mi><mfrac><mrow><msub><mi>y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>j</mi><mo stretchy="true" form="postfix">)</mo></mrow></msub><mo>−</mo><mi>μ</mi></mrow><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo></msub><mo>−</mo><msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>ξ</mi><mfrac><mrow><msub><mi>y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>r</mi><mo stretchy="true" form="postfix">)</mo></mrow></msub><mo>−</mo><mi>μ</mi></mrow><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mrow><mi>−</mi><mn>1</mn><mi>/</mi><mi>ξ</mi></mrow></msubsup><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\ell(\mu,\sigma,\xi; \boldsymbol{y}) \equiv  -r\log(\sigma) - \left(1+\frac{1}{\xi}\right)\sum_{j=1}^r \log\left(1 + \xi\frac{y_{(j)}-\mu}{\sigma}\right)_{+} - \left(1 + \xi\frac{y_{(r)}-\mu}{\sigma}\right)^{-1/\xi}_+.
+</annotation></semantics></math> This likelihood can be used to model
+the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>-largest
+observations per block or threshold exceedances where the threshold is
+the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>th
+order statistic</p>
+<p>Consider a sample of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
+observations, of which
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>u</mi></msub><annotation encoding="application/x-tex">n_u</annotation></semantics></math>
+exceed
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>u</mi><annotation encoding="application/x-tex">u</annotation></semantics></math>
+and which we denote by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>y</mi><msub><mi>n</mi><mi>u</mi></msub></msub></mrow><annotation encoding="application/x-tex">y_1, \ldots, y_{n_u}</annotation></semantics></math>.
+The likelihood associated to the limiting distribution of threshold
+exceedances is, for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>,</mo><mi>ξ</mi><mo>∈</mo><mi>ℝ</mi><mo>,</mo><mi>σ</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\mu, \xi \in \mathbb{R}, \sigma &gt;0</annotation></semantics></math>,
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>L</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>μ</mi><mo>,</mo><mi>σ</mi><mo>,</mo><mi>ξ</mi><mo>;</mo><mi>𝐲</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">[</mo><mi>−</mi><mi>c</mi><msubsup><mrow><mo stretchy="true" form="prefix">{</mo><mn>1</mn><mo>+</mo><mi>ξ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mrow><mi>u</mi><mo>−</mo><mi>μ</mi></mrow><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mo>+</mo><mrow><mi>−</mi><mn>1</mn><mi>/</mi><mi>ξ</mi></mrow></msubsup><mo stretchy="true" form="postfix">]</mo></mrow><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>c</mi><mi>σ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mi>−</mi><msub><mi>n</mi><mi>u</mi></msub></mrow></msup><munderover><mo>∏</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><msub><mi>n</mi><mi>u</mi></msub></munderover><msubsup><mrow><mo stretchy="true" form="prefix">{</mo><mn>1</mn><mo>+</mo><mi>ξ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><mi>μ</mi></mrow><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mo>+</mo><mrow><mi>−</mi><mn>1</mn><mi>/</mi><mi>ξ</mi><mo>−</mo><mn>1</mn></mrow></msubsup><mo>,</mo></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align}
+L(\mu, \sigma, \xi; \boldsymbol{y}) = \exp \left[ - c \left\{1+ \xi \left( \frac{u-\mu}{\sigma}\right)\right\}^{-1/\xi}_{+}\right] (c\sigma)^{-n_u}\prod_{i=1}^{n_u} \left\{1+\xi\left( \frac{y_i-\mu}{\sigma}\right)\right\}^{-1/\xi-1}_{+},\label{eq:ppp_lik}
+\end{align}</annotation></semantics></math> where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>⋅</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo></msub><mo>=</mo><mo>max</mo><mo stretchy="false" form="prefix">{</mo><mn>0</mn><mo>,</mo><mi>⋅</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">(\cdot)_{+} = \max\{0, \cdot\}</annotation></semantics></math>.
+The quantity
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
+is a tuning parameter whose role is described in 7.5 of <span class="citation">Coles (2001)</span>. If we take
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi><mo>=</mo><mi>N</mi><mi>/</mi><mi>m</mi></mrow><annotation encoding="application/x-tex">c=N/m</annotation></semantics></math>,
+the parameters of the point process likelihood correspond to those of
+the generalized extreme value distribution fitted to blocks of size
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math>.
+The NHPP likelihood includes a contribution for the fraction of points
+that exceeds the threshold, whereas the generalized Pareto is a
+conditional distribution, whose third parameter is the normalizing
+constant
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ζ</mi><mi>u</mi></msub><mo>=</mo><mo>Pr</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>Y</mi><mo>&gt;</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\zeta_u=\Pr(Y&gt;u)</annotation></semantics></math>.
+Since the latter has a Bernoulli and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ζ</mi><mi>u</mi></msub><annotation encoding="application/x-tex">\zeta_u</annotation></semantics></math>
+is orthogonal to the pair
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mi>σ</mi><mo>,</mo><mi>ξ</mi><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(\sigma, \xi)</annotation></semantics></math>,
+it is often omitted from further analyses and estimated as the
+proportion of samples above the threshold.</p>
 <p>The model includes additional arguments, <code>np</code> and
 <code>npp</code> (number of observations per period). If data are
 recorded on a daily basis, using a value of <code>npp = 365.25</code>
 yields location and scale parameters that correspond to those of the
 generalized extreme value distribution fitted to block maxima.
 Alternatively, one can specify instead the number of periods
-<code>np</code>, akin to <span class="math inline">\(n_y\)</span> in Eq.
-7.8 of <span class="citation">Coles (2001)</span> — only the latter is
-used by the function, with <code>npp*np</code> theoretically equal to
-the number of exceedances.</p>
+<code>np</code>, akin to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>y</mi></msub><annotation encoding="application/x-tex">n_y</annotation></semantics></math>
+in Eq. 7.8 of <span class="citation">Coles (2001)</span> — only the
+latter is used by the function, with <code>npp*np</code> theoretically
+equal to the number of exceedances.</p>
 <p>The tuning parameters impact the convergence of the estimation since
 the dependence between parameters becomes very strong: <span class="citation">Sharkey and Tawn (2017)</span> suggest to pick a value
 of <code>np</code> that near-orthogonalize the parameters.
 Wadsworth:2011 recommended picking this to be the number of observations
 (so <code>npp=1</code>). Another option is to fit the generalized Pareto
-model: if the probability of exceeding threshold <span class="math inline">\(u\)</span> is small, the Poisson approximation to
-binomial distribution implies <span class="math display">\[c \left\{1+
-\xi \left( \frac{u-\mu}{\sigma}\right)\right\}^{-1/\xi} \approx n_u,
-\]</span> where <span class="math inline">\(n_u\)</span> is the number
-of threshold exceedances above <span class="math inline">\(u\)</span>
-and <span class="math inline">\(c\)</span> is the tuning parameter
-<code>np</code>. With the point estimates of the generalized Pareto
-model, say <span class="math inline">\((\widehat{\sigma}_u,
-\widehat{\xi})\)</span>, we thus use <span class="math display">\[\begin{align*}
+model: if the probability of exceeding threshold
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>u</mi><annotation encoding="application/x-tex">u</annotation></semantics></math>
+is small, the Poisson approximation to binomial distribution implies
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi><msup><mrow><mo stretchy="true" form="prefix">{</mo><mn>1</mn><mo>+</mo><mi>ξ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mrow><mi>u</mi><mo>−</mo><mi>μ</mi></mrow><mi>σ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mrow><mi>−</mi><mn>1</mn><mi>/</mi><mi>ξ</mi></mrow></msup><mo>≈</mo><msub><mi>n</mi><mi>u</mi></msub><mo>,</mo></mrow><annotation encoding="application/x-tex">c \left\{1+ \xi \left( \frac{u-\mu}{\sigma}\right)\right\}^{-1/\xi} \approx n_u, </annotation></semantics></math>
+where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>u</mi></msub><annotation encoding="application/x-tex">n_u</annotation></semantics></math>
+is the number of threshold exceedances above
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>u</mi><annotation encoding="application/x-tex">u</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
+is the tuning parameter <code>np</code>. With the point estimates of the
+generalized Pareto model, say
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>σ</mi><mo accent="true">̂</mo></mover><mi>u</mi></msub><mo>,</mo><mover><mi>ξ</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(\widehat{\sigma}_u, \widehat{\xi})</annotation></semantics></math>,
+we thus use
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>μ</mi><mn>0</mn></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><mi>u</mi><mo>−</mo><msub><mi>σ</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>n</mi><mi>u</mi></msub><mi>/</mi><mi>c</mi><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mi>−</mi><mover><mi>ξ</mi><mo accent="true">̂</mo></mover></mrow></msup><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">}</mo><mi>/</mi><mover><mi>ξ</mi><mo accent="true">̂</mo></mover><mo>,</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>σ</mi><mn>0</mn></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msub><mover><mi>σ</mi><mo accent="true">̂</mo></mover><mi>u</mi></msub><mo>×</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>n</mi><mi>u</mi></msub><mi>/</mi><mi>c</mi><mo stretchy="true" form="postfix">)</mo></mrow><mover><mi>ξ</mi><mo accent="true">̂</mo></mover></msup><mo>,</mo></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align*}
 \mu_0 &amp;= u - \sigma_0\{(n_u/c)^{-\widehat{\xi}}-1\}/\widehat{\xi},\\
 \sigma_0 &amp;= \widehat{\sigma}_u\times (n_u/c)^{\widehat{\xi}},
-\end{align*}\]</span> and <span class="math inline">\(\xi_0=\widehat{\xi}\)</span> as starting values.
-Most of the time, these values are so close to the solution of the score
-equation that numerical convergence of the optimization routine is all
-but guaranteed in a few likelihood evaluations.</p>
+\end{align*}</annotation></semantics></math> and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ξ</mi><mn>0</mn></msub><mo>=</mo><mover><mi>ξ</mi><mo accent="true">̂</mo></mover></mrow><annotation encoding="application/x-tex">\xi_0=\widehat{\xi}</annotation></semantics></math>
+as starting values. Most of the time, these values are so close to the
+solution of the score equation that numerical convergence of the
+optimization routine is all but guaranteed in a few likelihood
+evaluations.</p>
 <p>Due to the support constraints, the objective function can be
 multimodal, as evidenced by the following figure: the gray area
 indicates feasible parameters and showcase other instances where local
@@ -486,104 +539,176 @@ as confidence intervals for parameters and common functionals, based on
 the profile likelihood.</p>
 <p>The three main type of test statistics for likelihood-based inference
 are the Wald, score and likelihood ratio tests. The three main classes
-of statistics for testing a simple null hypothesis <span class="math inline">\(\mathscr{H}_0:
-\boldsymbol{\theta}=\boldsymbol{\theta}_0\)</span> against the
-alternative <span class="math inline">\(\mathscr{H}_a:
-\boldsymbol{\theta} \neq \boldsymbol{\theta}_0\)</span> are the
+of statistics for testing a simple null hypothesis
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ℋ</mi><mn>0</mn></msub><mo>:</mo><mi>𝛉</mi><mo>=</mo><msub><mi>𝛉</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\mathscr{H}_0:
+\boldsymbol{\theta}=\boldsymbol{\theta}_0</annotation></semantics></math>
+against the alternative
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ℋ</mi><mi>a</mi></msub><mo>:</mo><mi>𝛉</mi><mo>≠</mo><msub><mi>𝛉</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\mathscr{H}_a: \boldsymbol{\theta}
+\neq \boldsymbol{\theta}_0</annotation></semantics></math> are the
 likelihood ratio, the score and the Wald statistics, defined
-respectively as <span class="math display">\[\begin{align*}
-w &amp;= 2 \left\{
-\ell(\hat{\boldsymbol{\theta}})-\ell(\boldsymbol{\theta}_0)\right\},\qquad
-\\w_{\mathsf{score}} &amp;=
-U^\top(\boldsymbol{\theta}_0)i^{-1}(\boldsymbol{\theta}_0)U(\boldsymbol{\theta}_0),\qquad
-\\ w_{\mathsf{wald}} &amp;=
-(\hat{\boldsymbol{\theta}}-\boldsymbol{\theta}_0)^\top
-i(\boldsymbol{\theta}_0)(\hat{\boldsymbol{\theta}}-\boldsymbol{\theta}_0),
-\end{align*}\]</span> where <span class="math inline">\(\hat{\boldsymbol{\theta}}\)</span> is the maximum
-likelihood estimate under the alternative and <span class="math inline">\(\boldsymbol{\theta}_0\)</span> is the null value
-of the parameter vector. The statistics <span class="math inline">\(w,
-w_{\mathsf{score}}, w_{\mathsf{wald}}\)</span> are all first order
-equivalent and asymptotically follow a <span class="math inline">\(\chi^2_p\)</span> distribution, where <span class="math inline">\(q\)</span> is the difference between <span class="math inline">\(p\)</span> and the number of parameters under the
-null hypothesis. Under the conditions of the Neyman–Pearson theorem, the
-likelihood ratio test is most powerful test of the lot. The score
-statistic <span class="math inline">\(w_{\mathsf{score}}\)</span> only
-requires calculation of the score and information under <span class="math inline">\(\mathscr{H}_0\)</span>, which can be useful in
-problems where calculations under the alternative are difficult to
-obtain. The Wald statistic <span class="math inline">\(w_{\mathsf{wald}}\)</span> is not
-parametrization-invariant and typically has poor coverage
+respectively as
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>w</mi></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><mn>2</mn><mrow><mo stretchy="true" form="prefix">{</mo><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>𝛉</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mo>,</mo><mspace width="2.0em"></mspace></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>w</mi><mrow><mi>𝗌</mi><mi>𝖼</mi><mi>𝗈</mi><mi>𝗋</mi><mi>𝖾</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msup><mi>U</mi><mi>⊤</mi></msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>𝛉</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><msup><mi>i</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>𝛉</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>U</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>𝛉</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="2.0em"></mspace></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>w</mi><mrow><mi>𝗐</mi><mi>𝖺</mi><mi>𝗅</mi><mi>𝖽</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><mo>−</mo><msub><mi>𝛉</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>⊤</mi></msup><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>𝛉</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><mo>−</mo><msub><mi>𝛉</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align*}
+ w &amp;= 2 \left\{ \ell(\hat{\boldsymbol{\theta}})-\ell(\boldsymbol{\theta}_0)\right\},\qquad 
+ \\w_{\mathsf{score}} &amp;= U^\top(\boldsymbol{\theta}_0)i^{-1}(\boldsymbol{\theta}_0)U(\boldsymbol{\theta}_0),\qquad
+ \\ w_{\mathsf{wald}} &amp;= (\hat{\boldsymbol{\theta}}-\boldsymbol{\theta}_0)^\top i(\boldsymbol{\theta}_0)(\hat{\boldsymbol{\theta}}-\boldsymbol{\theta}_0),
+\end{align*}</annotation></semantics></math> where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\boldsymbol{\theta}}</annotation></semantics></math>
+is the maximum likelihood estimate under the alternative and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝛉</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\boldsymbol{\theta}_0</annotation></semantics></math>
+is the null value of the parameter vector. The statistics
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>w</mi><mo>,</mo><msub><mi>w</mi><mrow><mi>𝗌</mi><mi>𝖼</mi><mi>𝗈</mi><mi>𝗋</mi><mi>𝖾</mi></mrow></msub><mo>,</mo><msub><mi>w</mi><mrow><mi>𝗐</mi><mi>𝖺</mi><mi>𝗅</mi><mi>𝖽</mi></mrow></msub></mrow><annotation encoding="application/x-tex">w, w_{\mathsf{score}}, w_{\mathsf{wald}}</annotation></semantics></math>
+are all first order equivalent and asymptotically follow a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>χ</mi><mi>p</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\chi^2_p</annotation></semantics></math>
+distribution, where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>
+is the difference between
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
+and the number of parameters under the null hypothesis. Under the
+conditions of the Neyman–Pearson theorem, the likelihood ratio test is
+most powerful test of the lot. The score statistic
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mrow><mi>𝗌</mi><mi>𝖼</mi><mi>𝗈</mi><mi>𝗋</mi><mi>𝖾</mi></mrow></msub><annotation encoding="application/x-tex">w_{\mathsf{score}}</annotation></semantics></math>
+only requires calculation of the score and information under
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ℋ</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\mathscr{H}_0</annotation></semantics></math>,
+which can be useful in problems where calculations under the alternative
+are difficult to obtain. The Wald statistic
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mrow><mi>𝗐</mi><mi>𝖺</mi><mi>𝗅</mi><mi>𝖽</mi></mrow></msub><annotation encoding="application/x-tex">w_{\mathsf{wald}}</annotation></semantics></math>
+is not parametrization-invariant and typically has poor coverage
 properties.</p>
 <p>Oftentimes, we are interested in a functional of the parameter vector
-<span class="math inline">\(\boldsymbol{\theta}\)</span>. The profile
-likelihood <span class="math inline">\(\ell_\mathsf{p}\)</span>, a
-function of <span class="math inline">\(\boldsymbol{\psi}\)</span>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝛉</mi><annotation encoding="application/x-tex">\boldsymbol{\theta}</annotation></semantics></math>.
+The profile likelihood
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mo>ℓ</mo><mi>𝗉</mi></msub><annotation encoding="application/x-tex">\ell_\mathsf{p}</annotation></semantics></math>,
+a function of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝛙</mi><annotation encoding="application/x-tex">\boldsymbol{\psi}</annotation></semantics></math>
 alone, is obtained by maximizing the likelihood pointwise at each fixed
-value <span class="math inline">\(\boldsymbol{\psi}=\boldsymbol{\psi}_0\)</span>
-over the nuisance vector <span class="math inline">\(\boldsymbol{\lambda}_{\psi_0}\)</span>, <span class="math display">\[\begin{align*}
-   \ell_\mathsf{p}(\boldsymbol{\psi})=\max_{\boldsymbol{\lambda}}\ell(\boldsymbol{\psi},
-\boldsymbol{\lambda})=\ell(\boldsymbol{\psi},
-\hat{\boldsymbol{\lambda}}_{\boldsymbol{\psi}}).
-\end{align*}\]</span> We denote the restricted maximum likelihood
-estimator <span class="math inline">\(\hat{\boldsymbol{\theta}}_\psi=
-(\psi, \hat{\lambda}_{\psi})\)</span>.</p>
+value
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝛙</mi><mo>=</mo><msub><mi>𝛙</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\boldsymbol{\psi}=\boldsymbol{\psi}_0</annotation></semantics></math>
+over the nuisance vector
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝛌</mi><msub><mi>ψ</mi><mn>0</mn></msub></msub><annotation encoding="application/x-tex">\boldsymbol{\lambda}_{\psi_0}</annotation></semantics></math>,
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mo>ℓ</mo><mi>𝗉</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛙</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><munder><mo>max</mo><mi>𝛌</mi></munder><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛙</mi><mo>,</mo><mi>𝛌</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛙</mi><mo>,</mo><msub><mover><mi>𝛌</mi><mo accent="true">̂</mo></mover><mi>𝛙</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align*}
+   \ell_\mathsf{p}(\boldsymbol{\psi})=\max_{\boldsymbol{\lambda}}\ell(\boldsymbol{\psi}, \boldsymbol{\lambda})=\ell(\boldsymbol{\psi}, \hat{\boldsymbol{\lambda}}_{\boldsymbol{\psi}}).
+\end{align*}</annotation></semantics></math> We denote the restricted
+maximum likelihood estimator
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><mi>ψ</mi></msub><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>ψ</mi><mo>,</mo><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>ψ</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\hat{\boldsymbol{\theta}}_\psi= (\psi, \hat{\lambda}_{\psi})</annotation></semantics></math>.</p>
 <p>We can define score and information in the usual fashion: for
-example, the observed profile information function is <span class="math display">\[j_\mathsf{p}(\boldsymbol{\psi})
-=-\frac{\partial \ell_\mathsf{p}(\boldsymbol{\psi})}{\partial
-\boldsymbol{\psi}\partial \boldsymbol{\psi}^\top}
-= \left\{j^{\boldsymbol{\psi\psi}}(\boldsymbol{\psi},
-\hat{\boldsymbol{\lambda}}_{\boldsymbol{\psi}})\right\}^{-1}.
-\]</span> The profile likelihood is not a genuine likelihood in the
-sense that it is not based on the density of a random variable.</p>
+example, the observed profile information function is
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>j</mi><mi>𝗉</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛙</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>−</mi><mfrac><mrow><mi>∂</mi><msub><mo>ℓ</mo><mi>𝗉</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛙</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>𝛙</mi><mi>∂</mi><msup><mi>𝛙</mi><mi>⊤</mi></msup></mrow></mfrac><mo>=</mo><msup><mrow><mo stretchy="true" form="prefix">{</mo><msup><mi>j</mi><mrow><mi>𝛙</mi><mi>𝛙</mi></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛙</mi><mo>,</mo><msub><mover><mi>𝛌</mi><mo accent="true">̂</mo></mover><mi>𝛙</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mrow><mi>−</mi><mn>1</mn></mrow></msup><mi>.</mi></mrow><annotation encoding="application/x-tex">j_\mathsf{p}(\boldsymbol{\psi})
+=-\frac{\partial \ell_\mathsf{p}(\boldsymbol{\psi})}{\partial \boldsymbol{\psi}\partial \boldsymbol{\psi}^\top} 
+= \left\{j^{\boldsymbol{\psi\psi}}(\boldsymbol{\psi}, \hat{\boldsymbol{\lambda}}_{\boldsymbol{\psi}})\right\}^{-1}.
+</annotation></semantics></math> The profile likelihood is not a genuine
+likelihood in the sense that it is not based on the density of a random
+variable.</p>
 <p>We can turn tests and their asymptotic distribution into confidence
-intervals. For the hypothesis <span class="math inline">\(\psi =
-\psi_0\)</span>, a <span class="math inline">\((1-\alpha)\)</span>
-confidence interval based on the profile likelihood ratio test is <span class="math inline">\(\{ \psi: 2\{\ell(\hat{\theta}) -
-\ell(\hat{\theta}_{\psi})\} \leq \chi^2_1(0.95)\}\)</span>.</p>
+intervals. For the hypothesis
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ψ</mi><mo>=</mo><msub><mi>ψ</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\psi = \psi_0</annotation></semantics></math>,
+a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(1-\alpha)</annotation></semantics></math>
+confidence interval based on the profile likelihood ratio test is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><mi>ψ</mi><mo>:</mo><mn>2</mn><mo stretchy="false" form="prefix">{</mo><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>θ</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>θ</mi><mo accent="true">̂</mo></mover><mi>ψ</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo><mo>≤</mo><msubsup><mi>χ</mi><mn>1</mn><mn>2</mn></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mn>0.95</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\{ \psi: 2\{\ell(\hat{\theta}) - \ell(\hat{\theta}_{\psi})\} \leq  \chi^2_1(0.95)\}</annotation></semantics></math>.</p>
 <p>Two typical questions in extreme values are: given the intensity of
 an extreme event, what is its recurrence period? and what is a typical
 worst-case scenario over a given period of time? For the latter, suppose
 for simplicity that the daily observations are blocked into years, so
-that inference is based on <span class="math inline">\(N\)</span> points
-for the <span class="math inline">\(N\)</span> years during which the
-data were recorded. The <em>return level</em> is a quantile of the
-underlying distribution corresponding to an event of probability <span class="math inline">\(p=1-1/T\)</span> for an annual maximum, which is
-interpreted as ``the level exceeded by an annual maximum on average
-every <span class="math inline">\(T\)</span> years’’. If observations
-are independent and identically distributed, then we can approximate the
-probability that a return level is exceeded <span class="math inline">\(l\)</span> times over a <span class="math inline">\(T\)</span> year period using a binomial
-distribution with probability of success <span class="math inline">\(1-1/T\)</span> and <span class="math inline">\(T\)</span> trials. For <span class="math inline">\(T\)</span> large, the return level is exceeded
-<span class="math inline">\(l=0, 1, 2, 3, 4\)</span> times within any
-<span class="math inline">\(T\)</span>-years period with approximate
-probabilities 36.8%, 36.8%, 18.4%, 6.1% and 1.5%. The probability that
-the maximum observation over <span class="math inline">\(T\)</span>
+that inference is based on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
+points for the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
+years during which the data were recorded. The <em>return level</em> is
+a quantile of the underlying distribution corresponding to an event of
+probability
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>1</mn><mo>−</mo><mn>1</mn><mi>/</mi><mi>T</mi></mrow><annotation encoding="application/x-tex">p=1-1/T</annotation></semantics></math>
+for an annual maximum, which is interpreted as ``the level exceeded by
+an annual maximum on average every
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
+years’’. If observations are independent and identically distributed,
+then we can approximate the probability that a return level is exceeded
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>l</mi><annotation encoding="application/x-tex">l</annotation></semantics></math>
+times over a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
+year period using a binomial distribution with probability of success
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mn>1</mn><mi>/</mi><mi>T</mi></mrow><annotation encoding="application/x-tex">1-1/T</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
+trials. For
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
+large, the return level is exceeded
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mo>=</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn><mo>,</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">l=0, 1, 2, 3, 4</annotation></semantics></math>
+times within any
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>-years
+period with approximate probabilities 36.8%, 36.8%, 18.4%, 6.1% and
+1.5%. The probability that the maximum observation over
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
 years is exceeded with a given probability is readily obtained from the
-distribution of the <span class="math inline">\(T\)</span>-year maximum,
-leading <span class="citation">(Cox, Isham, and Northrop 2002,
+distribution of the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>-year
+maximum, leading <span class="citation">(Cox, Isham, and Northrop 2002,
 3(b))</span> to advocate its use over return levels, among other
-quantities of interest such as the number of times a threshold <span class="math inline">\(u\)</span> will be exceeded in <span class="math inline">\(T\)</span> years or the average number of years
-before a threshold <span class="math inline">\(u\)</span> is
-exceeded.</p>
-<p><strong>Quantiles, mean and return levels of <span class="math inline">\(T\)</span>-maxima</strong>: consider the
-distribution <span class="math inline">\(H(x) = G^T(x)\)</span> of the
-maximum of <span class="math inline">\(T\)</span> independent and
-identically distributed generalized extreme value variates with
-parameters <span class="math inline">\((\mu, \sigma, \xi)\)</span> and
-distribution function <span class="math inline">\(G\)</span>. By
-max-stability, the parameters of <span class="math inline">\(H(x)\)</span> are <span class="math inline">\(\mu_T=\mu-\sigma(1-T^\xi)/\xi\)</span> and <span class="math inline">\(\sigma_T=\sigma T^\xi\)</span> when <span class="math inline">\(\xi \neq 0\)</span>. We denote the expectation of
-the <span class="math inline">\(T\)</span>-observation maximum by <span class="math inline">\(\mathfrak{e}_T\)</span>, the <span class="math inline">\(p\)</span> quantile of the <span class="math inline">\(T\)</span>-observation maximum by <span class="math inline">\(\mathfrak{q}_p = H^{-1}(p)\)</span> and the
-associated return level by <span class="math inline">\(z_{1/T} =
-G^{-1}(1-1/T)\)</span>. Then, any of these three quantities can be
-written as <span class="math display">\[\begin{align*}
-\begin{cases}
-\mu-\frac{\sigma}{\xi}\left\{1-\kappa_{\xi}\right\}, &amp;  \xi &lt;1,
-\xi \neq 0, \\
-\mu+\sigma\kappa_0, &amp;  \xi =0,
+quantities of interest such as the number of times a threshold
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>u</mi><annotation encoding="application/x-tex">u</annotation></semantics></math>
+will be exceeded in
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
+years or the average number of years before a threshold
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>u</mi><annotation encoding="application/x-tex">u</annotation></semantics></math>
+is exceeded.</p>
+<p><strong>Quantiles, mean and return levels of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>-maxima</strong>:
+consider the distribution
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msup><mi>G</mi><mi>T</mi></msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">H(x) = G^T(x)</annotation></semantics></math>
+of the maximum of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
+independent and identically distributed generalized extreme value
+variates with parameters
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mi>μ</mi><mo>,</mo><mi>σ</mi><mo>,</mo><mi>ξ</mi><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(\mu, \sigma, \xi)</annotation></semantics></math>
+and distribution function
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>G</mi><annotation encoding="application/x-tex">G</annotation></semantics></math>.
+By max-stability, the parameters of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">H(x)</annotation></semantics></math>
+are
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>μ</mi><mi>T</mi></msub><mo>=</mo><mi>μ</mi><mo>−</mo><mi>σ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><msup><mi>T</mi><mi>ξ</mi></msup><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>ξ</mi></mrow><annotation encoding="application/x-tex">\mu_T=\mu-\sigma(1-T^\xi)/\xi</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>σ</mi><mi>T</mi></msub><mo>=</mo><mi>σ</mi><msup><mi>T</mi><mi>ξ</mi></msup></mrow><annotation encoding="application/x-tex">\sigma_T=\sigma T^\xi</annotation></semantics></math>
+when
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>≠</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\xi \neq 0</annotation></semantics></math>.
+We denote the expectation of the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>-observation
+maximum by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝔢</mi><mi>T</mi></msub><annotation encoding="application/x-tex">\mathfrak{e}_T</annotation></semantics></math>,
+the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
+quantile of the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>-observation
+maximum by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝔮</mi><mi>p</mi></msub><mo>=</mo><msup><mi>H</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathfrak{q}_p = H^{-1}(p)</annotation></semantics></math>
+and the associated return level by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>z</mi><mrow><mn>1</mn><mi>/</mi><mi>T</mi></mrow></msub><mo>=</mo><msup><mi>G</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mn>1</mn><mi>/</mi><mi>T</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">z_{1/T} =  G^{-1}(1-1/T)</annotation></semantics></math>.
+Then, any of these three quantities can be written as
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><mi>μ</mi><mo>−</mo><mfrac><mi>σ</mi><mi>ξ</mi></mfrac><mrow><mo stretchy="true" form="prefix">{</mo><mn>1</mn><mo>−</mo><msub><mi>κ</mi><mi>ξ</mi></msub><mo stretchy="true" form="postfix">}</mo></mrow><mo>,</mo></mtd><mtd columnalign="left" style="text-align: left"><mi>ξ</mi><mo>&lt;</mo><mn>1</mn><mo>,</mo><mi>ξ</mi><mo>≠</mo><mn>0</mn><mo>,</mo></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><mi>μ</mi><mo>+</mo><mi>σ</mi><msub><mi>κ</mi><mn>0</mn></msub><mo>,</mo></mtd><mtd columnalign="left" style="text-align: left"><mi>ξ</mi><mo>=</mo><mn>0</mn><mo>,</mo></mtd></mtr></mtable></mrow></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align*}
+ \begin{cases}
+ \mu-\frac{\sigma}{\xi}\left\{1-\kappa_{\xi}\right\}, &amp;  \xi &lt;1, \xi \neq 0, \\
+ \mu+\sigma\kappa_0, &amp;  \xi =0,
   \end{cases}
-\end{align*}\]</span> where <span class="math inline">\(\kappa_{\xi}=T^\xi\Gamma(1-\xi)\)</span> for <span class="math inline">\(\mathfrak{e}_T\)</span>, <span class="math inline">\(\kappa_{\xi}=T^\xi\log(1/p)^{-\xi}\)</span> for
-<span class="math inline">\(\mathfrak{q}_p\)</span> and <span class="math inline">\(\kappa_{\xi}=\left\{-\log\left(1-{1}/{T}\right)\right\}^{-\xi}\)</span>
-for <span class="math inline">\(z_{1/T}\)</span>. In the Gumbel case, we
-have <span class="math inline">\(\kappa_0=\log(T)+\gamma_{e}\)</span>
-for <span class="math inline">\(\mathfrak{e}_T\)</span>, <span class="math inline">\(\kappa_0=\log(T)-\log\{-\log(p)\}\)</span> for
-<span class="math inline">\(\mathfrak{q}_p\)</span> and <span class="math inline">\(\kappa_0=-\log\{-\log(1-1/T)\}\)</span> for <span class="math inline">\(z_{1/T}\)</span>.</p>
+\end{align*}</annotation></semantics></math> where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>κ</mi><mi>ξ</mi></msub><mo>=</mo><msup><mi>T</mi><mi>ξ</mi></msup><mi>Γ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>ξ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\kappa_{\xi}=T^\xi\Gamma(1-\xi)</annotation></semantics></math>
+for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝔢</mi><mi>T</mi></msub><annotation encoding="application/x-tex">\mathfrak{e}_T</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>κ</mi><mi>ξ</mi></msub><mo>=</mo><msup><mi>T</mi><mi>ξ</mi></msup><mo>log</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mi>/</mi><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mi>−</mi><mi>ξ</mi></mrow></msup></mrow><annotation encoding="application/x-tex">\kappa_{\xi}=T^\xi\log(1/p)^{-\xi}</annotation></semantics></math>
+for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝔮</mi><mi>p</mi></msub><annotation encoding="application/x-tex">\mathfrak{q}_p</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>κ</mi><mi>ξ</mi></msub><mo>=</mo><msup><mrow><mo stretchy="true" form="prefix">{</mo><mi>−</mi><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mn>1</mn><mi>/</mi><mi>T</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mrow><mi>−</mi><mi>ξ</mi></mrow></msup></mrow><annotation encoding="application/x-tex">\kappa_{\xi}=\left\{-\log\left(1-{1}/{T}\right)\right\}^{-\xi}</annotation></semantics></math>
+for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>z</mi><mrow><mn>1</mn><mi>/</mi><mi>T</mi></mrow></msub><annotation encoding="application/x-tex">z_{1/T}</annotation></semantics></math>.
+In the Gumbel case, we have
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>κ</mi><mn>0</mn></msub><mo>=</mo><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><msub><mi>γ</mi><mi>e</mi></msub></mrow><annotation encoding="application/x-tex">\kappa_0=\log(T)+\gamma_{e}</annotation></semantics></math>
+for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝔢</mi><mi>T</mi></msub><annotation encoding="application/x-tex">\mathfrak{e}_T</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>κ</mi><mn>0</mn></msub><mo>=</mo><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mo>log</mo><mo stretchy="false" form="prefix">{</mo><mi>−</mi><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\kappa_0=\log(T)-\log\{-\log(p)\}</annotation></semantics></math>
+for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝔮</mi><mi>p</mi></msub><annotation encoding="application/x-tex">\mathfrak{q}_p</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>κ</mi><mn>0</mn></msub><mo>=</mo><mi>−</mi><mo>log</mo><mo stretchy="false" form="prefix">{</mo><mi>−</mi><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mn>1</mn><mi>/</mi><mi>T</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\kappa_0=-\log\{-\log(1-1/T)\}</annotation></semantics></math>
+for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>z</mi><mrow><mn>1</mn><mi>/</mi><mi>T</mi></mrow></msub><annotation encoding="application/x-tex">z_{1/T}</annotation></semantics></math>.</p>
 </div>
 <div class="section level2">
 <h2 id="numerical-example">Numerical example<a class="anchor" aria-label="anchor" href="#numerical-example"></a>
@@ -607,15 +732,15 @@ airport in Venezuela, for the purpose of illustration.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## Threshold: 20 </span></span>
 <span><span class="co">## Number Above: 216 </span></span>
-<span><span class="co">## Proportion Above: 0.0604 </span></span>
+<span><span class="co">## Proportion Above: 0.06 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Estimates</span></span>
-<span><span class="co">##   scale    shape  </span></span>
-<span><span class="co">## 15.5800   0.1088  </span></span>
+<span><span class="co">##  scale   shape  </span></span>
+<span><span class="co">## 15.580   0.109  </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Standard Errors</span></span>
-<span><span class="co">##   scale    shape  </span></span>
-<span><span class="co">## 1.60673  0.07785  </span></span>
+<span><span class="co">##  scale   shape  </span></span>
+<span><span class="co">## 1.6067  0.0778  </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Optimization Information</span></span>
 <span><span class="co">##   Convergence: successful</span></span></code></pre>
@@ -626,13 +751,16 @@ selection in the next section.</p>
 <p>The default optimization routine for the generalized Pareto
 distribution is Grimshaw’s method, which profiles out the likelihood.
 The method has theoretical convergence guaranteesfor convergence.
-Because of non-regularity, the maximum likelihood estimator for <span class="math inline">\(\xi &lt; -1\)</span> does not solve the score
-equation and leads to infinite log-likelihood, hence the maximum
-returned lies on the boundary of the parameter space. The standard
-errors are based on the inverse observed information matrix and provided
-only if <span class="math inline">\(\xi&gt;-1/2\)</span>. We can verify
-that our maximum likelihood estimate is indeed a maximum by checking if
-it solves the score equation if <span class="math inline">\(\hat{\xi}&gt;-1\)</span>.</p>
+Because of non-regularity, the maximum likelihood estimator for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>&lt;</mo><mi>−</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">\xi &lt; -1</annotation></semantics></math>
+does not solve the score equation and leads to infinite log-likelihood,
+hence the maximum returned lies on the boundary of the parameter space.
+The standard errors are based on the inverse observed information matrix
+and provided only if
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>&gt;</mo><mi>−</mi><mn>1</mn><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">\xi&gt;-1/2</annotation></semantics></math>.
+We can verify that our maximum likelihood estimate is indeed a maximum
+by checking if it solves the score equation if
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>ξ</mi><mo accent="true">̂</mo></mover><mo>&gt;</mo><mi>−</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">\hat{\xi}&gt;-1</annotation></semantics></math>.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Logic.html" class="external-link">isTRUE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/gpd.score.html">gpd.score</a></span><span class="op">(</span><span class="va">gpdf</span><span class="op">$</span><span class="va">estimate</span>, dat <span class="op">=</span> <span class="va">gpdf</span><span class="op">$</span><span class="va">exceedances</span><span class="op">)</span>,</span>
@@ -640,19 +768,22 @@ it solves the score equation if <span class="math inline">\(\hat{\xi}&gt;-1\)</s
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
 <p>If the sample is small, maximum likelihood estimators are biased for
 the generalized Pareto distribution (the shape parameter is negatively
-biased, regardless of the true value for <span class="math inline">\(\xi\)</span>). Bias correction methods includes
-the modified score of Firth, but the default method is the implicit
-correction (<code>subtract</code>), which solves the implicit equation
-<span class="math display">\[\begin{align}
-   \boldsymbol{\tilde{\theta}}=\hat{\boldsymbol{\theta}}-\boldsymbol{b}(\tilde{\boldsymbol{\theta}}).
-\label{eq:implbias}
-\end{align}\]</span> The point estimate <span class="math inline">\(\boldsymbol{\tilde{\theta}}\)</span> is obtained
-numerically as the root of this nonlinear system of equations. In the
-present case, the sample size is large and hence the first-order
-correction, derived through asymptotic arguments from the generalized
-Pareto distribution likelihood, is small. Note that the bias correction
-requires <span class="math inline">\(\xi &gt; -1/3\)</span>, since it is
-based on third-order cumulants of the distribution.</p>
+biased, regardless of the true value for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ξ</mi><annotation encoding="application/x-tex">\xi</annotation></semantics></math>).
+Bias correction methods includes the modified score of Firth, but the
+default method is the implicit correction (<code>subtract</code>), which
+solves the implicit equation
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mover><mi>𝛉</mi><mo accent="true">̃</mo></mover><mo>=</mo><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><mo>−</mo><mi>𝐛</mi><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>𝛉</mi><mo accent="true">̃</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align}
+   \boldsymbol{\tilde{\theta}}=\hat{\boldsymbol{\theta}}-\boldsymbol{b}(\tilde{\boldsymbol{\theta}}). \label{eq:implbias}
+\end{align}</annotation></semantics></math> The point estimate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>𝛉</mi><mo accent="true">̃</mo></mover><annotation encoding="application/x-tex">\boldsymbol{\tilde{\theta}}</annotation></semantics></math>
+is obtained numerically as the root of this nonlinear system of
+equations. In the present case, the sample size is large and hence the
+first-order correction, derived through asymptotic arguments from the
+generalized Pareto distribution likelihood, is small. Note that the bias
+correction requires
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>&gt;</mo><mi>−</mi><mn>1</mn><mi>/</mi><mn>3</mn></mrow><annotation encoding="application/x-tex">\xi &gt; -1/3</annotation></semantics></math>,
+since it is based on third-order cumulants of the distribution.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gpdbcor</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gpd.bcor.html">gpd.bcor</a></span><span class="op">(</span>dat <span class="op">=</span> <span class="va">gpdf</span><span class="op">$</span><span class="va">exceedances</span>, par <span class="op">=</span> <span class="va">gpdf</span><span class="op">$</span><span class="va">estimate</span><span class="op">)</span></span>
 <span><span class="co">#print the differences between MLE and bias-corrected estimates</span></span>
@@ -664,31 +795,36 @@ based on third-order cumulants of the distribution.</p>
 include approximate confidence intervals based on order statistics. We
 can also get profile likelihood and profile-based confidence intervals
 for most quantities of interest (parameters of the generalized Pareto
-distribution, excepted shortfall, return levels, <span class="math inline">\(N\)</span>-observation maxima mean and
-quantiles).</p>
+distribution, excepted shortfall, return levels,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>-observation
+maxima mean and quantiles).</p>
 </div>
 <div class="section level2">
 <h2 id="exercice">Exercice<a class="anchor" aria-label="anchor" href="#exercice"></a>
 </h2>
 <ol style="list-style-type: decimal">
-<li>Simulate 200 observations from the <span class="math inline">\(r\)</span>-largest likelihood using
-<code>rrlarg</code> with shape parameter <span class="math inline">\(\xi=-0.2\)</span> and <span class="math inline">\(r=5\)</span>.</li>
-<li>Test the hypothesis <span class="math inline">\(\mathscr{H}_0: \xi =
-\xi_0\)</span> using a score test and derive a 90% confidence interval
-for <span class="math inline">\(\xi\)</span>. You can obtain the maximum
-likelihood estimator by calling <code>fit.rlarg</code> and the score and
-information matrix are implemented under <code>rlarg.score</code> and
-<code>rlarg.infomat</code>. Recall that the score statistic <span class="math inline">\(w_{\mathsf{score}} \equiv
-U(\hat{\boldsymbol{\theta}}_{\xi_0})^\top
-i^{-1}(\hat{\boldsymbol{\theta}}_{\xi_0})U(
-\hat{\boldsymbol{\theta}}_{\xi_0}) \sim \chi^2_1.\)</span>
+<li>Simulate 200 observations from the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>-largest
+likelihood using <code>rrlarg</code> with shape parameter
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ξ</mi><mo>=</mo><mi>−</mi><mn>0.2</mn></mrow><annotation encoding="application/x-tex">\xi=-0.2</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">r=5</annotation></semantics></math>.</li>
+<li>Test the hypothesis
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ℋ</mi><mn>0</mn></msub><mo>:</mo><mi>ξ</mi><mo>=</mo><msub><mi>ξ</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\mathscr{H}_0: \xi = \xi_0</annotation></semantics></math>
+using a score test and derive a 90% confidence interval for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ξ</mi><annotation encoding="application/x-tex">\xi</annotation></semantics></math>.
+You can obtain the maximum likelihood estimator by calling
+<code>fit.rlarg</code> and the score and information matrix are
+implemented under <code>rlarg.score</code> and
+<code>rlarg.infomat</code>. Recall that the score statistic
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>w</mi><mrow><mi>𝗌</mi><mi>𝖼</mi><mi>𝗈</mi><mi>𝗋</mi><mi>𝖾</mi></mrow></msub><mo>≡</mo><msub><mo>ℓ</mo><mi>𝛉</mi></msub><msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><msub><mi>ξ</mi><mn>0</mn></msub></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>⊤</mi></msup><msup><mi>i</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><msub><mi>ξ</mi><mn>0</mn></msub></msub><mo stretchy="true" form="postfix">)</mo></mrow><msub><mo>ℓ</mo><mi>𝛉</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>𝛉</mi><mo accent="true">̂</mo></mover><msub><mi>ξ</mi><mn>0</mn></msub></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>∼</mo><msubsup><mi>χ</mi><mn>1</mn><mn>2</mn></msubsup><mi>.</mi></mrow><annotation encoding="application/x-tex">w_{\mathsf{score}} \equiv \ell_{\boldsymbol{\theta}}(\hat{\boldsymbol{\theta}}_{\xi_0})^\top i^{-1}(\hat{\boldsymbol{\theta}}_{\xi_0})\ell_{\boldsymbol{\theta}}( \hat{\boldsymbol{\theta}}_{\xi_0}) \sim \chi^2_1.</annotation></semantics></math>
 </li>
 </ol>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-Coles:2001" class="csl-entry">
 Coles, Stuart. 2001. <em>An <span>I</span>ntroduction to
 <span>S</span>tatistical <span>M</span>odeling of <span>E</span>xtreme
@@ -729,28 +865,26 @@ Distribution.”</span> <em>Technometrics</em> 51 (3): 316–25. <a href="https:
 </div>
 </div>
 </div>
-  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
 
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p>
-<p>Developed by Leo Belzile, Jennifer L. Wadsworth, Paul J. Northrop, Scott D. Grimshaw, Raphael Huser.</p>
+  <p>Developed by Leo Belzile, Jennifer L. Wadsworth, Paul J. Northrop, Scott D. Grimshaw, Raphael Huser.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>

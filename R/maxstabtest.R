@@ -17,7 +17,7 @@
 #' @param ties.method string indicating the method for \code{\link[base]{rank}}. Default to \code{"random"}.
 #' @param ... additional arguments for backward compatibility
 #' @param plot logical indicating whether a graph should be produced (default to \code{TRUE}).
-#' @return a Tukey probability-probability plot with 95% confidence intervals obtained using a nonparametric bootstrap
+#' @return a Tukey probability-probability plot with 95\% confidence intervals obtained using a nonparametric bootstrap
 #' @export
 #' @examples
 #' \dontrun{

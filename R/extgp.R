@@ -755,7 +755,24 @@ tstab.egp <- function(
       stop("Threshold vector not provided")
     }
   }
-  if (model %in% c("egp1", "egp2", "egp3") & length(model) == 1) {
+  model <- match.arg(
+    model,
+    choices = c(
+      "pt-beta",
+      "pt-gamma",
+      "pt-power",
+      "gj-tnorm",
+      "gj-beta",
+      "exptilt",
+      "logist",
+      "egp1",
+      "egp2",
+      "egp3"
+    ),
+    several.ok = FALSE
+  )
+
+  if (model %in% c("egp1", "egp2", "egp3")) {
     model <- switch(
       model,
       egp1 = "pt-beta",

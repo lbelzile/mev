@@ -56,12 +56,13 @@
 #' legend(x = 'topright',lty = c(1,1,1,1), col = c(1,2,3,4),
 #'    legend = c('exact', 'ultimate', 'penultimate'), bty = 'n')
 #' @export
+#' @keywords internal
 smith.penult <- function(
   family,
   method = c("bm", "pot"),
-  u,
-  qu,
-  m,
+  u = NULL,
+  qu = NULL,
+  m = NULL,
   returnList = TRUE,
   ...
 ) {
@@ -135,7 +136,7 @@ smith.penult <- function(
   }
   # not checking for concordance via numerical derivatives, but could be added Block maxima
   if (method == "bm") {
-    if (missing(m)) {
+    if (is.null(m)) {
       stop("Sequence of block size must be provided.")
     }
     # Normalizing sequence
@@ -184,9 +185,9 @@ smith.penult <- function(
     }
     return(params)
   } else if (method == "pot") {
-    if (missing(u) && missing(qu)) {
+    if (is.null(u) & is.null(qu)) {
       stop("Sequence of thresholds must be provided.")
-    } else if (missing(u) && !missing(qu)) {
+    } else if (is.null(u) & !is.null(qu)) {
       if (computeQuant) {
         u <- sapply(qu, function(p) {
           do.call(quantF, c(p = p, fn.arg))
@@ -194,7 +195,7 @@ smith.penult <- function(
       } else {
         u <- rep(NA, length(qu))
       }
-    } else if (!missing(u) && missing(qu)) {
+    } else if (!is.null(u) & is.null(qu)) {
       qu <- sapply(u, function(q) {
         distFn(x = q)
       })
@@ -252,6 +253,130 @@ smith.penult <- function(
   ## The approximations are for \eqn{F^m(x)} for the GEV distribution and for \eqn{1-F(u+x)}{1-F(u)} for the GP distribution.
 }
 
+
+#' Smith's penultimate approximations
+#'
+#' The function takes as arguments the distribution and density functions. There are two options:
+#' \code{method='bm'} yields block maxima and \code{method='pot'} threshold exceedances.
+#' For \code{method='bm'}, the user should provide in such case the block sizes via the
+#' argument \code{m}, whereas if \code{method='pot'}, a vector of threshold values should be
+#' provided. The other argument (\code{thresh} or \code{m} depending on the method) is ignored.
+#'
+#' Alternatively, the user can provide functions \code{densF}, \code{quantF} and \code{distF} for the density,
+#' quantile function and distribution functions, respectively. The user can also supply the derivative
+#' of the density function, \code{ddensF}. If the latter is missing, it will be approximated using finite-differences.
+#'
+#'
+#' @details For \code{method = "pot"}, the function computes the reciprocal hazard and its derivative on the log scale to avoid numerical overflow. Thus, the density function should have argument \code{log} and the distribution function arguments \code{log.p} and \code{lower.tail}, respectively.
+#' @param family the name of the parametric family. Will be used to obtain \code{dfamily}, \code{pfamily}, \code{qfamily}
+#' @param method either block maxima (\code{'bm'}) or peaks-over-threshold (\code{'pot'}) are supported
+#' @param thresh vector of thresholds for method \code{'pot'}
+#' @param qlev vector of quantile levels for method \code{'pot'}, e.g., 0.9, 0.95, ... Ignored if argument \code{thresh} is provided.
+#' @param m vector of block sizes for method \code{'bm'}
+#' @param ... additional arguments passed to \code{densF} and \code{distF}
+#' @author Leo Belzile
+#' @importFrom methods formalArgs
+#' @import stats
+#' @return a data frame containing
+#' \itemize{
+#' \item \code{loc}: location parameters (\code{method='bm'})
+#' \item \code{scale}: scale parameters
+#' \item \code{shape}: shape parameters
+#' \item \code{thresh}: thresholds (if \code{method='pot'}), percentile corresponding to threshold (if \code{method='pot'})
+#' \item \code{m}: block sizes (if \code{method='bm'})
+#' }
+#' @references Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.
+#' @examples
+#' # Threshold exceedance for Normal variables
+#' quants <- seq(1, 5, by = 0.02)
+#' penult <- penultimate(
+#'    family = "norm",
+#'    method = 'pot',
+#'    thresh = quants,
+#'    ddensF = function(x){-x*dnorm(x)}, # optional argument
+#'    )
+#' plot(x = quants,
+#'      y = penult$shape,
+#'      type = 'l',
+#'      xlab = 'quantile',
+#'     ylab = 'Penultimate shape',
+#'     ylim = c(-0.5, 0))
+#' # Block maxima for Gamma variables
+#' # User must provide arguments for shape (or rate), for which there is no default
+#' m <- seq(30, 3650, by = 30)
+#' penult <- penultimate(family = 'gamma', method = 'bm', m = m, shape = 0.1)
+#' plot(x = m,
+#'      y = penult$shape,
+#'      type = 'l',
+#'      xlab = 'quantile',
+#'      ylab = 'penultimate shape')
+#'
+#' # Comparing density of GEV approximation with true density of maxima
+#' m <- 100 # block of size 100
+#' p <- penultimate(
+#'   family = 'norm',
+#'   ddensF = function(x){-x*dnorm(x)},
+#'   method = 'bm',
+#'   m = m)
+#' x <- seq(1, 5, by = 0.01)
+#' plot(
+#'   x = x,
+#'   y = m * dnorm(x) * exp((m-1) * pnorm(x, log.p = TRUE)),
+#'   type = 'l',
+#'   ylab = 'density',
+#'   main = 'Distribution of the maxima of\n 100 standard normal variates')
+#' lines(x, mev::dgev(x, loc = p$loc, scale = p$scale, shape = 0), col = 2)
+#' lines(x, mev::dgev(x, loc = p$loc, scale = p$scale, shape = p$shape), col = 4)
+#' legend(
+#'  x = 'topright',
+#'  lty = c(1, 1, 1),
+#'  col = c(1, 2, 4),
+#'  legend = c('exact', 'ultimate', 'penultimate'),
+#'  bty = 'n')
+#' @export
+penultimate <- function(
+  family,
+  method = c("bm", "pot"),
+  thresh,
+  qlev,
+  m,
+  ...
+) {
+  #  Sort argument by default
+  if (!missing(m)) {
+    m <- sort(m)
+  } else {
+    m <- NULL
+  }
+  if (!missing(thresh)) {
+    thresh <- sort(thresh)
+  } else {
+    thresh <- NULL
+  }
+  if (!missing(qlev)) {
+    qlev <- sort(qlev)
+  } else {
+    qlev <- NULL
+  }
+  args <- list(...)
+  args$returnList <- TRUE
+  args$qu <- qlev
+  args$u <- thresh
+  args$m <- m
+  res <- do.call(
+    what = smith.penult,
+    args = c(
+      family = family,
+      method = method,
+      args
+    )
+  )
+  res$thresh <- res$u
+  res$u <- NULL
+  res <- as.data.frame(res)
+  class(res) <- c("data.frame", "mev_penultimate")
+  return(res)
+}
 
 #' Smith's third penultimate approximation
 #'
@@ -519,5 +644,44 @@ smith.penult.fn <- function(
       }
       return(list(F = GP3rda, f = dGP3rda))
     }
+  }
+}
+
+
+#' Transform arguments using max stability
+#'
+#' Given a vector of location, scale and shape parameters,
+#' compute the corresponding parameters for block of size
+#' \code{m} assuming a generalized extreme value distribution.
+#' @param pars vector of location, scale and shape parameters
+#' @param m [integer] block size
+#' @param inverse [logical] whether to compute the parameters for the inverse relationship (defaults to \code{FALSE})
+#' @export
+#' @examples
+#' maxstable(pars = maxstab(pars = c(1,2,0), m = 10), m = 10, inv = TRUE)
+#' maxstable(pars = maxstab(pars = c(1,2,0.1), m = 5), m = 1/5)
+maxstable <- function(pars, m = 1L, inverse = FALSE) {
+  stopifnot(m > 0, length(pars) == 3L, is.logical(inverse))
+  pars <- as.numeric(pars)
+  if (isTRUE(all.equal(as.numeric(pars[3]), 0))) {
+    isZero <- TRUE
+  } else {
+    isZero <- FALSE
+  }
+  if (isTRUE(inverse)) {
+    m <- 1 / m
+  }
+  if (!isZero) {
+    return(
+      c(
+        loc = pars[1] - pars[2] / pars[3] * (1 - m^pars[3]),
+        scale = pars[2] * m^pars[3],
+        shape = pars[3]
+      )
+    )
+  } else {
+    return(
+      c(loc = pars[1] + pars[2] * log(m), scale = pars[2], shape = 0)
+    )
   }
 }

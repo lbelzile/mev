@@ -29,7 +29,7 @@ a list with elements
 \item{\code{k0}:} number of exceedances
 \item{\code{shape}:} Hill's shape estimate
 \item{\code{rho}:} second-order regular variation parameter estimate
-\item{\code{gof}:} goodness-of-fit statistic for the \"best\" threshold.
+\item{\code{gof}:} goodness-of-fit statistic for the chosen threshold.
 }
 }
 \description{

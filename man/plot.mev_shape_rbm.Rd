@@ -19,5 +19,5 @@
 one or more plots
 }
 \description{
-The function returns plot of the shape estimator along with the value (and 95% Wald-based confidence interval) at the selected threshold, or a plot of the empirical Bayes risk.
+The function returns plot of the shape estimator along with the value (and 95\% Wald-based confidence interval) at the selected threshold, or a plot of the empirical Bayes risk.
 }

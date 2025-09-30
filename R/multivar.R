@@ -32,28 +32,59 @@
 #'  ylab = expression(bar(chi)), xlab = 'p')
 #' abline(h = 1, lty = 3, col = 'grey')
 #' }
-chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 0.95) {
-  base::.Deprecated(new = ".chibar", package = "mev", msg = "The 'chibar' function is being depreceated. Use 'taildep' with 'depmeas = eta' to obtain estimates of 'chibar = 2*eta-1'")
-    if (ncol(as.matrix(dat)) < 2) {
-        stop("The method is valid for multivariate data only.")
-    }
-    confint <- match.arg(arg = confint)
-    # Transform variables to standard Pareto margin
-    sp <- apply(dat, 2, function(x) {
-        1/(1 - rank(x, na.last = "keep", ties.method = "average")/(length(x) + 1))
-    })
-    sp <- apply(sp, 1, min) - 1
-    qu <- quantile(sp, 1 - min(max(0, qu[1]), 1))
-    sp <- sp[sp > qu] - qu
-    if ("delta" == confint) {
-        gpfit_min_par <- gp.fit(sp, threshold = 0)
-        chibar_est <- as.vector((2 * gpfit_min_par$est[2] - 1))
-        return(c(Estimate = chibar_est, `Lower CI` = chibar_est - qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2]),
-            `Upper CI` = chibar_est + qnorm(1 - (1 - level)/2) * 2 * as.vector(gpfit_min_par$std.err[2])))
-    } else {
-        confint_profile <- 2 * confint(gpd.pll(param = "shape", psi = NA, dat = sp, mod = confint, plot = FALSE), level = level, print = FALSE) - 1
-        return(switch(confint, profile = confint_profile, tem = confint_profile[,2]))
-    }
+chibar <- function(
+  dat,
+  confint = c("delta", "profile", "tem"),
+  qu = 0,
+  level = 0.95
+) {
+  base::.Deprecated(
+    new = ".chibar",
+    package = "mev",
+    msg = "The 'chibar' function is being depreceated. Use 'taildep' with 'depmeas = eta' to obtain estimates of 'chibar = 2*eta-1'"
+  )
+  if (ncol(as.matrix(dat)) < 2) {
+    stop("The method is valid for multivariate data only.")
+  }
+  confint <- match.arg(arg = confint)
+  # Transform variables to standard Pareto margin
+  sp <- apply(dat, 2, function(x) {
+    1 /
+      (1 - rank(x, na.last = "keep", ties.method = "average") / (length(x) + 1))
+  })
+  sp <- apply(sp, 1, min) - 1
+  qu <- quantile(sp, 1 - min(max(0, qu[1]), 1))
+  sp <- sp[sp > qu] - qu
+  if ("delta" == confint) {
+    gpfit_min_par <- gp.fit(sp, threshold = 0)
+    chibar_est <- as.vector((2 * gpfit_min_par$est[2] - 1))
+    return(c(
+      Estimate = chibar_est,
+      `Lower CI` = chibar_est -
+        qnorm(1 - (1 - level) / 2) * 2 * as.vector(gpfit_min_par$std.err[2]),
+      `Upper CI` = chibar_est +
+        qnorm(1 - (1 - level) / 2) * 2 * as.vector(gpfit_min_par$std.err[2])
+    ))
+  } else {
+    confint_profile <- 2 *
+      confint(
+        gpd.pll(
+          param = "shape",
+          psi = NA,
+          dat = sp,
+          mod = confint,
+          plot = FALSE
+        ),
+        level = level,
+        print = FALSE
+      ) -
+      1
+    return(switch(
+      confint,
+      profile = confint_profile,
+      tem = confint_profile[, 2]
+    ))
+  }
 }
 
 
@@ -79,24 +110,26 @@ chibar <- function(dat, confint = c("delta", "profile", "tem"), qu = 0, level = 
 #' @examples
 #' angextrapo(rmev(n = 1000, model = 'log', d = 2, param = 0.5))
 angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
-    if (ncol(dat) != 2) {
-        stop("Only implemented in the bivariate case")
-    }
-    sp <- apply(dat, 2, function(x) {
-        1/(1 - rank(x, na.last = "keep", ties.method = "average")/(length(x) + 1))
-    })
-    # Estimate of eta at w = 1/2
-    x <- 1/(1 - qu)
-    eta <- fit.gpd(apply(sp, 1, min), threshold = x)$estimate["shape"]
-    # Angles
-    if (any(c(w < 0, w > 1, length(unique(w)) != length(w)))) {
-        stop("Invalid argument \"w\" to angextrapo")
-    }
-    g <- sapply(w, function(wi) {
-        sum((sp[, 1] > wi * x) + (sp[, 2] > (1 - wi) * x))
-    })/sum(rowSums(sp > x) == 2)
-    # Return angles, empirical estimates of g(w) and eta coefficient
-    return(list(w = w, g = g, eta = eta))
+  if (ncol(dat) != 2) {
+    stop("Only implemented in the bivariate case")
+  }
+  sp <- apply(dat, 2, function(x) {
+    1 /
+      (1 - rank(x, na.last = "keep", ties.method = "average") / (length(x) + 1))
+  })
+  # Estimate of eta at w = 1/2
+  x <- 1 / (1 - qu)
+  eta <- fit.gpd(apply(sp, 1, min), threshold = x)$estimate["shape"]
+  # Angles
+  if (any(c(w < 0, w > 1, length(unique(w)) != length(w)))) {
+    stop("Invalid argument \"w\" to angextrapo")
+  }
+  g <- sapply(w, function(wi) {
+    sum((sp[, 1] > wi * x) + (sp[, 2] > (1 - wi) * x))
+  }) /
+    sum(rowSums(sp > x) == 2)
+  # Return angles, empirical estimates of g(w) and eta coefficient
+  return(list(w = w, g = g, eta = eta))
 }
 
 ##################
@@ -106,7 +139,8 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 #' @param qu quantile level on uniform scale at which to threshold data. Default to 0.95
 #' @param method string indicating the estimation method
 #' @param plot logical indicating whether to return the graph of \code{lambda}
-#'
+#' @param level level for confidence intervals, default to 0.95
+#' @param ... additional arguments, used for backward compatibility
 #'
 #' The confidence intervals are based on normal quantiles. The standard errors for the \code{hill}
 #' are based on the asymptotic covariance and that of the \code{mle} derived using the delta-method.
@@ -120,8 +154,8 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 #' \itemize{
 #' \item \code{w} the sequence of angles in (0,1) at which the \code{lambda} values are evaluated
 #' \item \code{lambda} point estimates of lambda
-#' \item \code{lower.confint} 95% confidence interval for lambda (lower bound)
-#' \item \code{upper.confint} 95% confidence interval for lambda (upper bound)
+#' \item \code{lower.confint} \code{level}\% confidence interval for lambda (lower bound)
+#' \item \code{upper.confint} \code{level}\% confidence interval for lambda (upper bound)
 #' }
 #' @examples
 #' set.seed(12)
@@ -135,104 +169,179 @@ angextrapo <- function(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20)) {
 #' lambdadep(dat, method = 'hill')
 #' }
 #' @export
-lambdadep <- function(dat, qu = 0.95, method = c("hill", "mle", "bayes"), plot = TRUE) {
+lambdadep <- function(
+  dat,
+  qu = 0.95,
+  method = c("hill", "mle", "bayes"),
+  plot = TRUE,
+  level = 0.95,
+  ...
+) {
+  stopifnot(length(level) == 1L, level < 1, level >= 0.25)
+  ci_lev <- 0.5 + c(-level/2, level/2)
   method <- match.arg(method)
-    ## Hill estimator for fixed kth order statistic
-    hill_thresh <- function(dat, qu = 0.95, thresh = quantile(dat, qu)) {
-        dat <- as.numeric(dat)
-        excess <- dat[dat > thresh]
-        1/(mean(log(dat[dat > thresh])) - log(thresh))
+  ## Hill estimator for fixed kth order statistic
+  hill_thresh <- function(dat, qu = 0.95, thresh = quantile(dat, qu)) {
+    dat <- as.numeric(dat)
+    excess <- dat[dat > thresh]
+    1 / (mean(log(dat[dat > thresh])) - log(thresh))
+  }
+  if (method == "bayes") {
+    if (!requireNamespace("revdbayes", quietly = TRUE)) {
+      stop(
+        "Package \"revdbayes\" needed for this function to work. Please install it.",
+        call. = FALSE
+      )
     }
-    if (method == "bayes") {
-      if (!requireNamespace("revdbayes", quietly = TRUE)) {
-        stop("Package \"revdbayes\" needed for this function to work. Please install it.",
-             call. = FALSE)
+  }
+  # Transform variables to the exponential scale
+  Xexp <- t(apply(dat, 2, function(x) {
+    -log(
+      1 -
+        rank(x, na.last = "keep", ties.method = "average") /
+          (length(na.omit(x)) + 1)
+    )
+  }))
+  # Form a bivariate minima pair for a grid of values of w in Sd, the unit simplex
+  v <- rep(1, 2)
+  w_seq <- seq(0, 1, by = 0.02)
+  lambda_seq <- sapply(w_seq, function(w) {
+    ang_weighted_dat <- exp(apply(Xexp / (c(w, 1 - w)), 2, min))
+    if (method == "mle") {
+      fit <- mev::gp.fit(
+        ang_weighted_dat,
+        thresh = quantile(ang_weighted_dat, qu)
+      )
+      return(c(
+        1 / fit$estimate["shape"],
+        fit$std.err["shape"] / (fit$estimate["shape"]^2)
+      ))
+    } else if (method == "hill") {
+      hillest <- hill_thresh(dat = ang_weighted_dat, qu = qu)
+      return(c(hillest, hillest / sqrt((1 - qu) * nrow(dat))))
+    } else if (method == "bayes") {
+      # If at endpoint, posterior shape is degenerate
+      if (w == 0 || w == 1) {
+        return(rep(1, 3))
+      } else {
+        # Try fitting a GP model, mode of posterior should not be too far
+        pot_stval0 <- mev::gp.fit(
+          ang_weighted_dat,
+          thresh = quantile(ang_weighted_dat, qu)
+        )$estimate
+        if (pot_stval0[2] < 1 || pot_stval0[2] > 1 / max(c(1 - w, w))) {
+          # If values are not within the allowed interval, fit GP fixing the shape to a legit value
+          xi <- max(
+            1 + 0.001,
+            min(v[2], 1 / max(c(1 - w, w)) - 0.001, na.rm = TRUE)
+          )
+          pot_stval <- try(
+            mev::fit.gpd(
+              xdat = ang_weighted_dat,
+              threshold = quantile(ang_weighted_dat, qu),
+              fpar = list(shape = xi)
+            )
+          )
+          # Make sure that the result is valid and optim converged
+          if (!inherits(pot_stval, what = "try-error")) {
+            start <- c(pot_stval$estimate[[1]], xi)
+          } else {
+            start <- NA
+          }
+        } else {
+          start <- as.vector(pot_stval0)
+        }
+        # Generate independent samples from the posterior Catch and sink error messages, print statements and warnings - invalid input is
+        # removed anyway and cast to NA if needs be
+        invisible(utils::capture.output(
+          postsamp <- try(
+            suppressWarnings(revdbayes::rpost(
+              n = 300,
+              model = "gp",
+              data = ang_weighted_dat,
+              thresh = quantile(ang_weighted_dat, qu),
+              prior = revdbayes::set_prior(
+                prior = "flat",
+                model = "gp",
+                min_xi = 1,
+                max_xi = 1 / max(c(1 - w, w))
+              ),
+              init_ests = start,
+              trans = "BC"
+            )),
+            silent = TRUE
+          )
+        ))
+        if (inherits(postsamp, what = "try-error")) {
+          # Try again if it failed, with different values
+          invisible(capture.output(
+            postsamp <- try(
+              suppressWarnings(revdbayes::rpost(
+                n = 300,
+                model = "gp",
+                data = ang_weighted_dat,
+                thresh = quantile(ang_weighted_dat, qu),
+                prior = revdbayes::set_prior(
+                  prior = "flat",
+                  model = "gp",
+                  min_xi = 1,
+                  max_xi = 1 / max(c(1 - w, w))
+                ),
+                init_ests = start
+              )),
+              silent = TRUE
+            )
+          ))
+        }
+        if (inherits(postsamp, what = "try-error")) {
+          return(rep(NA, 3))
+        } else {
+          v <- as.vector(apply(postsamp$sim_vals, 2, median))
+          return(quantile(1 / postsamp$sim_vals[, 2], c(ci_level[1], 0.5, ci_level[2])))
+        }
       }
     }
-    # Transform variables to the exponential scale
-    Xexp <- t(apply(dat, 2, function(x) {
-        -log(1 - rank(x, na.last = "keep", ties.method = "average")/(length(na.omit(x)) + 1))
-    }))
-    # Form a bivariate minima pair for a grid of values of w in Sd, the unit simplex
-    v <- rep(1, 2)
-    w_seq <- seq(0, 1, by = 0.02)
-    lambda_seq <- sapply(w_seq, function(w) {
-        ang_weighted_dat <- exp(apply(Xexp/(c(w, 1 - w)), 2, min))
-        if (method == "mle") {
-            fit <- mev::gp.fit(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu))
-            return(c(1/fit$estimate["shape"], fit$std.err["shape"]/(fit$estimate["shape"]^2)))
-        } else if (method == "hill") {
-            hillest <- hill_thresh(dat = ang_weighted_dat, qu = qu)
-            return(c(hillest, hillest/sqrt((1 - qu) * nrow(dat))))
-        } else if (method == "bayes") {
-            # If at endpoint, posterior shape is degenerate
-            if (w == 0 || w == 1) {
-                return(rep(1, 3))
-            } else {
-                # Try fitting a GP model, mode of posterior should not be too far
-                pot_stval0 <- mev::gp.fit(ang_weighted_dat, thresh = quantile(ang_weighted_dat, qu))$estimate
-                if (pot_stval0[2] < 1 || pot_stval0[2] > 1/max(c(1 - w, w))) {
-                  # If values are not within the allowed interval, fit GP fixing the shape to a legit value
-                  xi <- max(
-                    1 + 0.001,
-                    min(v[2], 1 / max(c(1 - w, w)) - 0.001,
-                        na.rm = TRUE)
-                  )
-                  pot_stval <- try(
-                    mev::fit.gpd(xdat = ang_weighted_dat,
-                                 threshold = quantile(ang_weighted_dat,
-                                                      qu),
-                                 fpar = list(shape = xi)
-                                 ))
-                  # Make sure that the result is valid and optim converged
-                  if (!inherits(pot_stval, what = "try-error")) {
-                    start <- c(pot_stval$estimate[[1]], xi)
-                  } else {
-                    start <- NA
-                  }
-                } else {
-                  start <- as.vector(pot_stval0)
-                }
-                # Generate independent samples from the posterior Catch and sink error messages, print statements and warnings - invalid input is
-                # removed anyway and cast to NA if needs be
-                invisible(utils::capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp", data = ang_weighted_dat,
-                  thresh = quantile(ang_weighted_dat, qu), prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1,
-                    max_xi = 1/max(c(1 - w, w))), init_ests = start, trans = "BC")), silent = TRUE)))
-                if (inherits(postsamp, what = "try-error")) {
-                  # Try again if it failed, with different values
-                  invisible(capture.output(postsamp <- try(suppressWarnings(revdbayes::rpost(n = 300, model = "gp", data = ang_weighted_dat,
-                    thresh = quantile(ang_weighted_dat, qu), prior = revdbayes::set_prior(prior = "flat", model = "gp", min_xi = 1,
-                      max_xi = 1/max(c(1 - w, w))), init_ests = start)), silent = TRUE)))
-                }
-                if (inherits(postsamp, what = "try-error")) {
-                  return(rep(NA, 3))
-                } else {
-                  v <- as.vector(apply(postsamp$sim_vals, 2, median))
-                  return(quantile(1/postsamp$sim_vals[, 2], c(0.025, 0.5, 0.975)))
-                }
-            }
-        }
-    })
-    if (method %in% c("hill", "mle")) {
-        lower <- pmax(c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5), pmin(1, lambda_seq[1, ] - qnorm(0.975) * lambda_seq[2,
-            ]))
-        upper <- pmax(c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5), pmin(1, lambda_seq[1, ] + qnorm(0.975) * lambda_seq[2,
-            ]))
-        pe <- pmax(c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5), pmin(1, lambda_seq[1, ]))
-    } else if (method == "bayes") {
-        lower <- lambda_seq[1, ]
-        upper <- lambda_seq[3, ]
-        pe <- lambda_seq[2, ]
-    }
-    if (plot) {
-        plot(type = "n", x = 0.5, y = 1, xlim = c(0, 1), ylim = c(0.5, 1), xlab = expression(omega), ylab = expression(lambda(omega)),
-            bty = "l")
-        segments(x1 = 0.5, x0 = 0, y1 = 0.5, y0 = 1, col = "gray")
-        segments(x1 = 0.5, x0 = 1, y1 = 0.5, y0 = 1, col = "gray")
-        segments(x1 = 0, x0 = 1, y1 = 1, y0 = 1, col = "gray")
-        lines(w_seq, lower, lty = 1, col = "red")
-        lines(w_seq, upper, lty = 1, col = "red")
-        lines(w_seq, pe, lwd = 2)
-    }
-    invisible(list(w = w_seq, lambda = pe, lower.confint = lower, upper.confint = upper))
+  })
+  if (method %in% c("hill", "mle")) {
+    lower <- pmax(
+      c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5),
+      pmin(1, lambda_seq[1, ] + qnorm(ci_level[1]) * lambda_seq[2, ])
+    )
+    upper <- pmax(
+      c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5),
+      pmin(1, lambda_seq[1, ] + qnorm(ci_level[2]) * lambda_seq[2, ])
+    )
+    pe <- pmax(
+      c(1 - w_seq[w_seq < 0.5], w_seq[w_seq <= 0.5] + 0.5),
+      pmin(1, lambda_seq[1, ])
+    )
+  } else if (method == "bayes") {
+    lower <- lambda_seq[1, ]
+    upper <- lambda_seq[3, ]
+    pe <- lambda_seq[2, ]
+  }
+  if (plot) {
+    plot(
+      type = "n",
+      x = 0.5,
+      y = 1,
+      xlim = c(0, 1),
+      ylim = c(0.5, 1),
+      xlab = expression(omega),
+      ylab = expression(lambda(omega)),
+      bty = "l"
+    )
+    segments(x1 = 0.5, x0 = 0, y1 = 0.5, y0 = 1, col = "gray")
+    segments(x1 = 0.5, x0 = 1, y1 = 0.5, y0 = 1, col = "gray")
+    segments(x1 = 0, x0 = 1, y1 = 1, y0 = 1, col = "gray")
+    lines(w_seq, lower, lty = 1, col = "red")
+    lines(w_seq, upper, lty = 1, col = "red")
+    lines(w_seq, pe, lwd = 2)
+  }
+  invisible(list(
+    w = w_seq,
+    lambda = pe,
+    lower.confint = lower,
+    upper.confint = upper
+  ))
 }
