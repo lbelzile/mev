@@ -294,50 +294,60 @@ xasym <- function(
       ))
     }
   }
-  if (plot) {
-    ellips <- list(...)
-    if (is.null(ellips$bty)) {
-      ellips$bty <- 'l'
-    }
-    if (is.null(ellips$xlab)) {
-      ellips$xlab <- "probability level"
-    }
-    if (is.null(ellips$ylab)) {
-      ellips$ylab = "extremal asymmetry"
-    }
-    if (is.null(ellips$pch)) {
-      ellips$pch <- 20
-    }
-    if (is.null(ellips$ylim)) {
-      ellips$ylim <- c(-1, 1)
-    }
-    if (is.null(ellips$xlim)) {
-      ellips$ylim <- range(u)
-      ellips$ylim <- pmin(ellips$ylim, 1)
-    }
-    if (is.null(ellips$yaxs)) {
-      ellips$yaxs <- "i"
-    }
-    ellips$x <- u
-    ellips$y <- est
-    do.call("plot", ellips)
-    if (confint != "none") {
-      lines(u, conf_int[, 1], lty = 2)
-      lines(u, conf_int[, 2], lty = 2)
-    }
-  }
   if (confint == "none") {
-    return(invisible(
-      data.frame(threshold = u, coef = est)
-    ))
+    ret <- data.frame(
+      threshold = u,
+      coef = est
+    )
   } else {
-    return(invisible(
-      data.frame(
-        threshold = u,
-        coef = est,
-        lower = pmax(-1, conf_int[, 1]),
-        upper = pmin(1, conf_int[, 2])
-      )
-    ))
+    ret <- data.frame(
+      threshold = u,
+      coef = est,
+      lower = pmax(-1, conf_int[, 1]),
+      upper = pmin(1, conf_int[, 2])
+    )
   }
+  attr(ret, "method") <- method
+  attr(ret, "confint") <- confint
+  class(ret) <- "mev_xasym"
+  if (isTRUE(plot)) {
+    plot(ret, ...)
+  }
+  return(invisible(ret))
+}
+
+
+#' @export
+plot.mev_xasym <- function(x, ...) {
+  ellips <- list(...)
+  if (is.null(ellips$bty)) {
+    ellips$bty <- 'l'
+  }
+  if (is.null(ellips$xlab)) {
+    ellips$xlab <- "probability level"
+  }
+  if (is.null(ellips$ylab)) {
+    ellips$ylab = "extremal asymmetry"
+  }
+  if (is.null(ellips$pch)) {
+    ellips$pch <- 20
+  }
+  if (is.null(ellips$ylim)) {
+    ellips$ylim <- c(-1, 1)
+  }
+  if (is.null(ellips$xlim)) {
+    ellips$xlim <- range(x$threshold)
+    ellips$xlim <- pmax(0, pmin(ellips$xlim, 1))
+  }
+  if (is.null(ellips$yaxs)) {
+    ellips$yaxs <- "i"
+  }
+  ellips$x <- x$threshold
+  ellips$y <- x$coef
+  do.call("plot", ellips)
+  if (attr(x, "confint") != "none") {
+    lines(x$threshold, x$lower, lty = 2)
+    lines(x$threshold, x$upper, lty = 2)
+  }
+  return(invisible(NULL))
 }
