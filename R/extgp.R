@@ -106,8 +106,10 @@ egp.ll <- function(
   }
   par <- as.numeric(par) # strip names
   model <- match.arg(model)
-  if (isTRUE(any(xdat < thresh))) {
-    xdat = xdat[xdat > thresh] - thresh
+  if (!missing(thresh)) {
+    if (!isTRUE(all.equal(thresh, 0))) {
+      xdat = xdat[xdat > thresh] - thresh
+    }
   }
   kappa = par[1]
   sigma = par[2]

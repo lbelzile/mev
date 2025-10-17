@@ -328,8 +328,8 @@ dgp <- function(x, loc = 0, scale = 1, shape = 0, log = FALSE) {
     log(1 / scale) -
       (1 / shape + 1) * log1p(pmax(-1, shape * (x - loc) / scale))
   )
-  d[!((d >= 0) & ((1 + shape * d) >= 0)) & !is.na(d)] <- -Inf
-  d[is.na(d)] <- Inf
+  d[(x - loc) < 0] <- -Inf
+  d[is.na(d)] <- NA
   if (!log) {
     d <- exp(d)
   }

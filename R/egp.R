@@ -38,8 +38,15 @@
 #' @examples
 #' \dontrun{
 #' data(rain, package = "ismev")
-#' fit.extgp(rain[rain>0], model=1, method = 'mle', init = c(0.9, gp.fit(rain, 0)$est),
-#'  rounded = 0.1, confint = TRUE, R = 20)
+#' fit.extgp(
+#'   rain[rain > 0],
+#'   model = 1,
+#'   method = 'mle',
+#'   init = c(0.9, fit.gpd(rain)$est),
+#'   rounded = 0.1,
+#'   confint = TRUE,
+#'   R = 20
+#' )
 #' }
 fit.extgp <- function(
   data,
