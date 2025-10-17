@@ -43,6 +43,8 @@ shape.lthill <- function(
   if (length(k0) > 1L) {
     k0o <- sort(k0)
     k0 <- k0o[length(k0)]
+  } else {
+    k0o <- k0
   }
   k <- as.integer(k)
   n <- length(xdat)
@@ -82,6 +84,7 @@ shape.lthill <- function(
 #' @param k0 [integer] number of largest order statistics, strictly less than \code{k}
 #' @param k [integer] number of order statistics for the threshold
 #' @param sorted [logical] if \code{TRUE}, data are assumed to be sorted in decreasing order
+#' @export
 #' @return a scalar with the shape parameter estimate
 #' @references Bhattacharya, S., Kallitsis, M. and S. Stoev, (2019) Data-adaptive trimming of the Hill estimator and detection of outliers in the extremes of heavy-tailed data. Electronic Journal of Statistics 13, 1872–1925
 shape.trimhill <- function(xdat, k, k0, sorted = FALSE) {

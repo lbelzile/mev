@@ -5,33 +5,35 @@
 \title{Estimators of the tail coefficient}
 \usage{
 kjtail(
-  data,
-  q,
+  xdat,
+  qlev,
   ptail = NULL,
-  mqu,
+  mqu = NULL,
   type = 1,
-  ties.method = eval(formals(rank)$ties.method)
+  ties.method = eval(formals(rank)$ties.method),
+  ...
 )
 }
 \arguments{
-\item{data}{a matrix of observations}
+\item{xdat}{a matrix of observations}
 
-\item{q}{vector of quantile levels}
+\item{qlev}{vector of quantile levels}
 
-\item{ptail}{tail probability smaller than \code{q}. Default to \code{NULL}}
+\item{ptail}{tail probability smaller than \code{qlev}. Default to \code{NULL}}
 
-\item{mqu}{marginal quantile levels for semiparametric estimation; data above this are modelled using a generalized Pareto distribution. If missing, empirical estimation is used throughout}
+\item{mqu}{marginal quantile levels for semiparametric estimation; data above this are modelled using a generalized Pareto distribution. If \code{NULL}, empirical estimation is used throughout}
 
 \item{type}{integer indicating the estimator type}
 
-\item{ties.method}{method for ties}
+\item{ties.method}{method for handling of ties in rank transformation}
+
+\item{...}{additional arguments, for backward compatibility}
 }
 \value{
 a list with elements
 \itemize{
 \item \code{p} quantile level for estimation
-\item \code{eta} estimated coefficient of tail dependence \eqn{\eta}
-\item \code{eta_sd} estimated standard error of \eqn{\eta}
+\item \code{eta} matrix of estimated coefficient of tail dependence \eqn{\eta}, and standard errors
 \item \code{k1} parameter of the tail expansion
 \item \code{pat} proportion of observations above the threshold
 \item \code{lambda} tail dependence coefficient (sic)
@@ -44,7 +46,9 @@ for the coefficient of tail dependence \eqn{\eta} and the
 joint tail orthant probability
 }
 \note{
-EXPERIMENTAL. The numerical optimization of the likelihood surface is difficult, as the function is ill-behaved. Visual inspection of estimates is necessary to check for non-convergence.
+EXPERIMENTAL. The numerical optimization of the likelihood surface is
+difficult, as the function is ill-behaved. Visual inspection of estimates is
+often necessary to check for possible lack of convergence.
 }
 \examples{
 d <- 2
@@ -56,7 +60,7 @@ data <- mev::mvrnorm(
    mu = rep(0, d),
   Sigma = Sigma)
 q <- seq(0.95, 0.995, by = 0.005)
-taildep <- kjtail(data = data, q = q)
+kj <- kjtail(xdat = data, qlev = q)
 with(taildep,
  plot(x = 1-pat,
       y = eta,

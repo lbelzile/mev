@@ -5,21 +5,21 @@
 #'  Semadeni's (2021) PhD thesis.
 #'  Two estimators are implemented: one based on empirical distributions, the second using empirical likelihood.
 #' @details Let \code{U}, \code{V} be uniform random variables and define the partial extremal dependence coefficients
-#' \deqn{\varphi_{+}(u) = \Pr(V > U | U > u, V > u),},
-#' \deqn{\varphi_{-}(u) = \Pr(V < U | U > u, V > u),}
-#' \deqn{\varphi_0(u) = \Pr(V = U | U > u, V > u).}
+#' \deqn{\varphi_{+}(u) = \Pr(V > U \mid U > u, V > u),},
+#' \deqn{\varphi_{-}(u) = \Pr(V < U \mid U > u, V > u),}
+#' \deqn{\varphi_0(u) = \Pr(V = U \mid U > u, V > u).}
 #' Define
 #' \deqn{ \varphi(u) = \frac{\varphi_{+} - \varphi_{-}}{\varphi_{+} + \varphi_{-}}}
 #' and the coefficient of extremal asymmetry as \eqn{\varphi = \lim_{u \to 1} \varphi(u)}.
 #'
 #' The empirical likelihood estimator, derived for max-stable vectors with unit Frechet margins, is
-#' \deqn{\frac{\sum_i p_i I(w_i \leq 0.5) - 0.5}{0.5 - 2\sum_i p_i(0.5-w_i) I(w_i \leq 0.5)}}
-#' where \eqn{p_i} is the empirical likelihood weight for observation \eqn{i} and \eqn{w_i} is the pseudo-angle associated to the first coordinate.
-#' @param data an \code{n} by 2 matrix of observations
-#' @param u vector of probability levels at which to evaluate extremal asymmetry
+#' \deqn{\widehat{\varphi}_{\mathrm{el}} = \frac{\sum_i p_i \mathrm{I}(w_i \leq 0.5) - 0.5}{0.5 - 2\sum_i p_i(0.5-w_i) \mathrm{I}(w_i \leq 0.5)}}
+#' where \eqn{p_i} is the empirical likelihood weight for observation \eqn{i}, \eqn{\mathrm{I}} is an indicator function and \eqn{w_i} is the pseudo-angle associated to the first coordinate, derived based on exceedances above \eqn{u}.
+#' @param xdat an \code{n} by 2 matrix of observations
+#' @param qlev vector of quantile levels at which to evaluate extremal asymmetry
 #' @param nq integer; number of quantiles at which to evaluate the coefficient if \code{u} is \code{NULL}
 #' @param qlim a vector of length 2 with the probability limits for the quantiles
-#' @param method string indicating the estimation method, one of \code{empirical} or empirical likelihood (\code{emplik})
+#' @param  estimator string indicating the estimation method, one of \code{empirical} or empirical likelihood (\code{emplik})
 #' @param confint string for the method used to derive confidence intervals, either \code{none} (default) or a nonparametric \code{bootstrap}
 #' @param level probability level for confidence intervals, default to 0.95 or bounds for the interval
 #' @param B integer; number of bootstrap replicates (if applicable)
@@ -43,12 +43,13 @@
 #' xasym(samp, method = "emplik")
 #' }
 #' @export
+#' @keywords internal
 xasym <- function(
-  data,
-  u = NULL,
+  xdat,
+  qlev = NULL,
   nq = 40,
   qlim = c(0.8, 0.99),
-  method = c("empirical", "emplik"),
+  estimator = c("emp", "elik"),
   confint = c("none", "wald", "bootstrap"),
   level = 0.95,
   B = 999L,
@@ -57,6 +58,33 @@ xasym <- function(
   plot = TRUE,
   ...
 ) {
+  args <- list(...)
+  if (missing(xdat) & !is.null(args$data)) {
+    xdat <- args$data
+  } else if (missing(xdat)) {
+    stop(
+      "Argument \"xdat\" missing: must be a matrix of observations."
+    )
+  }
+  if (!is.null(args$method)) {
+    # 2025.10.16 backward compatibility
+    estimator <- args$method
+  }
+  method <- match.arg(
+    estimator,
+    choices = c("empirical", "emplik", "emp", "elik")
+  )
+  if (method == "empirical") {
+    method <- "emp"
+  }
+  if (method == "emplik") {
+    method = "elik"
+  }
+  data <- xdat
+  if (!is.null(args$u)) {
+    qlev <- args$u
+  }
+  u <- qlev
   if (inherits(data, "data.frame")) {
     data <- as.matrix(data)
   }
@@ -67,7 +95,7 @@ xasym <- function(
     stop("\"xdat\" must be a matrix with two columns.")
   }
   n <- nrow(data)
-  method <- match.arg(method)
+
   confint <- match.arg(confint)
   if (length(qlim) != 2L) {
     stop("\"qlim\" must be a bivariate numeric vector.")
@@ -135,7 +163,7 @@ xasym <- function(
   }
 
   # Compute empirical coefficient
-  if (method == "empirical") {
+  if (method == "emp") {
     empirical_coef <- function(
       u,
       rkdata,
@@ -208,7 +236,7 @@ xasym <- function(
         est + qnorm(qulevels[2]) * sqrt(variance)
       )
     }
-  } else if (method == "emplik") {
+  } else if (method == "elik") {
     # Function to compute empirical likelihood-based estimator
     xcoef_fun_emplik <- function(angles, weights) {
       (sum(weights * (angles < 0.5)) - 0.5) /
@@ -301,53 +329,18 @@ xasym <- function(
     )
   } else {
     ret <- data.frame(
-      threshold = u,
+      qlev = u,
       coef = est,
       lower = pmax(-1, conf_int[, 1]),
       upper = pmin(1, conf_int[, 2])
     )
   }
-  attr(ret, "method") <- method
+  attr(ret, "estimator") <- method
   attr(ret, "confint") <- confint
-  class(ret) <- "mev_xasym"
+  attr(ret, "measure") <- "xasym"
+  class(ret) <- c("mev_xdep", "data.frame")
   if (isTRUE(plot)) {
     plot(ret, ...)
   }
   return(invisible(ret))
-}
-
-
-#' @export
-plot.mev_xasym <- function(x, ...) {
-  ellips <- list(...)
-  if (is.null(ellips$bty)) {
-    ellips$bty <- 'l'
-  }
-  if (is.null(ellips$xlab)) {
-    ellips$xlab <- "probability level"
-  }
-  if (is.null(ellips$ylab)) {
-    ellips$ylab = "extremal asymmetry"
-  }
-  if (is.null(ellips$pch)) {
-    ellips$pch <- 20
-  }
-  if (is.null(ellips$ylim)) {
-    ellips$ylim <- c(-1, 1)
-  }
-  if (is.null(ellips$xlim)) {
-    ellips$xlim <- range(x$threshold)
-    ellips$xlim <- pmax(0, pmin(ellips$xlim, 1))
-  }
-  if (is.null(ellips$yaxs)) {
-    ellips$yaxs <- "i"
-  }
-  ellips$x <- x$threshold
-  ellips$y <- x$coef
-  do.call("plot", ellips)
-  if (attr(x, "confint") != "none") {
-    lines(x$threshold, x$lower, lty = 2)
-    lines(x$threshold, x$upper, lty = 2)
-  }
-  return(invisible(NULL))
 }

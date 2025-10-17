@@ -289,7 +289,7 @@ gpd.lmom <- function(xdat, thresh, sorted = FALSE, Lskew = FALSE) {
 #'
 #' @inheritParams thselect.alrs
 #' @param approx [string] method to use to obtain moments of first L-moment
-#' @param nsim[integer] number of replications for Monte Carlo approximation
+#' @param nsim [integer] number of replications for Monte Carlo approximation
 #' @return a list with components
 #' \itemize{
 #' \item \code{thresh0}: selected threshold returned by the procedure

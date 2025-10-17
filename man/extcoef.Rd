@@ -5,33 +5,33 @@
 \title{Estimators of the extremal coefficient}
 \usage{
 extcoef(
-  dat,
+  xdat,
   coord = NULL,
   thresh = NULL,
   estimator = c("schlather", "smith", "fmado"),
-  standardize = TRUE,
-  method = c("nonparametric", "parametric"),
+  margtrans = c("emp", "gev", "none"),
+  ties.method = "random",
   prob = 0,
   plot = TRUE,
   ...
 )
 }
 \arguments{
-\item{dat}{an \code{n} by \code{D} matrix of unit Frechet observations}
+\item{xdat}{an \code{n} by \code{D} matrix of unit Frechet observations}
 
 \item{coord}{an optional \code{d} by \code{D} matrix of location coordinates}
 
 \item{thresh}{threshold parameter (default is to keep all data if \code{prob = 0}).}
 
-\item{estimator}{string indicating which model estimates to compute, one of \code{smith}, \code{schlather} or \code{fmado}.}
+\item{estimator}{string indicating which estimator to compute, one of \code{smith}, \code{schlather} or \code{fmado}.}
 
-\item{standardize}{logical; should observations be transformed to unit Frechet scale? Default is to transform}
+\item{margtrans}{string indicating which method to use to transform the margins to unit Frechet scale, either \code{emp} for nonparametric transformation via rank transform, \code{gev} for fit of generalized extreme value distribution to marginals, or \code{none}}
 
-\item{method}{string indicating which method to use to transform the margins. See \bold{Details}}
+\item{ties.method}{method for handling of ties in rank transformation}
 
 \item{prob}{probability of not exceeding threshold \code{thresh}}
 
-\item{plot}{logical; should cloud of pairwise empirical estimates be plotted? Default to \code{TRUE}.}
+\item{plot}{logical; should cloud or matrix of pairwise empirical estimates be plotted? Default to \code{TRUE}.}
 
 \item{...}{additional parameters passed to the function, currently ignored.}
 }
@@ -40,15 +40,15 @@ an invisible list with vectors \code{dist} if \code{coord} is non-null or else a
  \code{extcoef} and the supplied \code{estimator}, \code{fmado} and \code{binned}. If \code{estimator == "schlather"}, an additional matrix with 2 columns containing the binned distance \code{binned} with the \code{h} and the binned extremal coefficient.
 }
 \description{
-These functions estimate the extremal coefficient using an approximate sample
-from the Frechet distribution.
+These functions estimate the extremal coefficient using an approximate
+ sample from the Frechet distribution.
 }
 \details{
-The \bold{Smith} estimator: suppose \eqn{Z(x)} is simple max-stable vector
-(i.e., with unit Frechet marginals). Then
- \eqn{1/Z} is unit exponential and \eqn{1/\max(Z(s_1), Z(s_2))} is exponential
- with rate \eqn{\theta = \max\{Z(s_1), Z(s_2)\}}.
- The extremal index for the pair can therefore be calculated using the reciprocal mean.
+The \bold{Smith} estimator: suppose \eqn{Z(x)} is simple max-stable vector (i.e., with unit Frechet marginals). Then
+ \eqn{1/Z} is unit exponential and \eqn{1/\max(Z(s_1), Z(s_2))}
+ is exponential with rate \eqn{\theta = \max\{Z(s_1), Z(s_2)\}}.
+ The extremal index for the pair can therefore be calculated using
+  the reciprocal mean.
 
 The \bold{Schlather and Tawn} estimator: the likelihood of the naive estimator for a pair
 of two sites \eqn{A} is
@@ -58,9 +58,12 @@ of two sites \eqn{A} is
 where \eqn{\bar{X}_i = n^{-1} \sum_{j=1}^n 1/X_i^{(j)}} is the harmonic mean and \eqn{z}
 is a threshold on the unit Frechet scale.
 The search for the maximum likelihood estimate for every pair \eqn{A}
- is restricted to the interval \eqn{[1,3]}. A binned version of the extremal coefficient cloud is also returned.
-The Schlather estimator is not self-consistent. The Schlather and Tawn estimator includes as special case
-the Smith estimator if we do not censor the data (\code{p = 0}) and do not standardize observations by their harmonic mean.
+is restricted to the interval \eqn{[1,3]}.
+A binned version of the extremal coefficient cloud is also returned.
+The Schlather estimator is not self-consistent.
+The Schlather and Tawn estimator includes as special case
+the Smith estimator if we do not censor the data (\code{p = 0})
+and do not standardize observations by their harmonic mean.
 
 
 The \bold{F-madogram} estimator is a non-parametric estimate based on a stationary process
@@ -70,55 +73,99 @@ where
 \deqn{\nu(h) = \frac{1}{2} \mathsf{E}[|F(Z(s+h)-F(Z(s))|]}
 The implementation only uses complete pairs to calculate the relative ranks.
 
-All estimators are coded in plain R and computations are not optimized. The estimation
-time can therefore be significant for large data sets. If there are no missing observations,
-the routine \code{fmadogram} from the \code{SpatialExtremes} package should be prefered as it is
+All estimators are coded in plain R and computations are not optimized.
+The estimation time can therefore be large for large data sets.
+If there are no missing observations, the routine \code{fmadogram}
+from the \code{SpatialExtremes} package should be preferred as it is
 noticeably faster.
 
 The data will typically consist of max-stable vectors or block maxima.
-Both of the Smith and the Schlather--Tawn estimators require unit Frechet margins; the margins will be standardized
-to the unit Frechet scale, either parametrically or nonparametrically unless \code{standardize = FALSE}.
-If \code{method = "parametric"}, a parametric GEV model is fitted to each column of \code{dat} using maximum likelihood
- estimation and transformed back using the probability integral transform. If \code{method = "nonparametric"},
+Both of the Smith and the Schlather--Tawn estimators require unit
+ Frechet margins; the margins will be standardized
+to the unit Frechet scale, either parametrically or nonparametrically unless \code{margtrans="none"}.
+If \code{margtrans = "gev"}, a parametric GEV model is fitted to each column of \code{dat} using maximum likelihood
+ estimation and transformed back using the probability integral transform. If \code{method = "emp"},
  using the empirical distribution function. The latter is the default, as it is appreciably faster.
 }
 \examples{
 \dontrun{
-coord <- 10*cbind(runif(50), runif(50))
+coord <- 10 * cbind(runif(50), runif(50))
 di <- as.matrix(dist(coord))
-dat <- rmev(n = 1000, d = 100, param = 3, sigma = exp(-di/2), model = 'xstud')
-res <- extcoef(dat = dat, coord = coord)
+dat <- rmev(
+  n = 1000,
+  d = 100,
+  param = 3,
+  sigma = exp(-di / 2),
+  model = 'xstud'
+)
+res <- extcoef(xdat = dat, coord = coord)
 # Extremal Student extremal coefficient function
 
-XT.extcoeffun <- function(h, nu, corrfun, ...){
-  if(!is.function(corrfun)){
+XT.extcoeffun <- function(h, nu, corrfun, ...) {
+  if (!is.function(corrfun)) {
     stop('Invalid function \"corrfun\".')
   }
   h <- unique(as.vector(h))
   rhoh <- sapply(h, corrfun, ...)
-  cbind(h = h, extcoef = 2*pt(sqrt((nu+1)*(1-rhoh)/(1+rhoh)), nu+1))
+  cbind(
+    h = h,
+    extcoef = 2 * pt(sqrt((nu + 1) * (1 - rhoh) / (1 + rhoh)), nu + 1)
+  )
 }
 #This time, only one graph with theoretical extremal coef
-plot(res$dist, res$extcoef, ylim = c(1,2), pch = 20); abline(v = 2, col = 'gray')
-extcoefxt <- XT.extcoeffun(seq(0, 10, by = 0.1), nu = 3,
-                            corrfun = function(x){exp(-x/2)})
-lines(extcoefxt[,'h'], extcoefxt[,'extcoef'], type = 'l', col = 'blue', lwd = 2)
+plot(res$dist, res$extcoef, ylim = c(1, 2), pch = 20)
+abline(v = 2, col = 'gray')
+extcoefxt <- XT.extcoeffun(
+  seq(0, 10, by = 0.1),
+  nu = 3,
+  corrfun = function(x) {
+    exp(-x / 2)
+  }
+)
+lines(
+  extcoefxt[, 'h'],
+  extcoefxt[, 'extcoef'],
+  type = 'l',
+  col = 'blue',
+  lwd = 2
+)
 # Brown--Resnick extremal coefficient function
-BR.extcoeffun <- function(h, vario, ...){
-  if(!is.function(vario)){
+BR.extcoeffun <- function(h, vario, ...) {
+  if (!is.function(vario)) {
     stop('Invalid function \"vario\".')
   }
   h <- unique(as.vector(h))
   gammah <- sapply(h, vario, ...)
-  cbind(h = h, extcoef = 2*pnorm(sqrt(gammah/4)))
+  cbind(h = h, extcoef = 2 * pnorm(sqrt(gammah / 4)))
 }
-extcoefbr<- BR.extcoeffun(seq(0, 20, by = 0.25), vario = function(x){2*x^0.7})
-lines(extcoefbr[,'h'], extcoefbr[,'extcoef'], type = 'l', col = 'orange', lwd = 2)
+extcoefbr <- BR.extcoeffun(
+  seq(0, 20, by = 0.25),
+  vario = function(x) {
+    2 * x^0.7
+  }
+)
+lines(
+  extcoefbr[, 'h'],
+  extcoefbr[, 'extcoef'],
+  type = 'l',
+  col = 'orange',
+  lwd = 2
+)
 
-coord <- 10*cbind(runif(20), runif(20))
+coord <- 10 * cbind(runif(20), runif(20))
 di <- as.matrix(dist(coord))
-dat <- rmev(n = 1000, d = 20, param = 3, sigma = exp(-di/2), model = 'xstud')
-res <- extcoef(dat = dat, coord = coord, estimator = "smith")
+dat <- rmev(
+  n = 1000,
+  d = 20,
+  param = 3,
+  sigma = exp(-di / 2),
+  model = 'xstud'
+)
+res <- extcoef(
+  xdat = dat,
+  coord = coord,
+  estimator = "smith"
+)
 }
 }
 \references{

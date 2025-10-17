@@ -4,10 +4,10 @@
 \alias{extremo}
 \title{Pairwise extremogram for max-risk functional}
 \usage{
-extremo(dat, margp, coord, scale = 1, rho = 0, plot = FALSE, ...)
+extremo(xdat, margp, coord, scale = 1, rho = 0, plot = FALSE, ...)
 }
 \arguments{
-\item{dat}{data matrix}
+\item{xdat}{data matrix}
 
 \item{margp}{marginal probability above which to threshold observations}
 
@@ -25,7 +25,7 @@ extremo(dat, margp, coord, scale = 1, rho = 0, plot = FALSE, ...)
 an invisible matrix with pairwise estimates of chi along with distance (unsorted)
 }
 \description{
-The function computes the pairwise \eqn{chi} estimates and plots them as a function of the distance between sites.
+The function computes the pairwise \eqn{chi} estimates and plots them as a function of the distance between sites. The function also includes utilities for geometric anisotropy.
 }
 \examples{
 \dontrun{
@@ -69,27 +69,31 @@ hin <- function(par, ...){
     pi/2 - par[4],
     par[4]+pi/2)
   }
-opt <- alabama::auglag(par = c(0.7, 30, 1, 0),
-                       hin = hin,
-                        fn = function(par){
-                          mindistpvario(par, emp = extdat[,'prob'], coord = coord)})
+opt <- alabama::auglag(
+  par = c(0.7, 30, 1, 0),
+  hin = hin,
+  control.outer = list(trace = 0),
+  fn = function(par){
+   mindistpvario(par, emp = extdat$prob, coord = coord)})
 stopifnot(opt$kkt1, opt$kkt2)
 # Plotting the extremogram in the deformed space
 distfa <- distg(loc = coord, opt$par[3], opt$par[4])
 plot(
- x = c(distfa[lower.tri(distfa)]), 
- y = extdat[,2], 
+ x = c(distfa[lower.tri(distfa)]),
+ y = extdat$prob,
  pch = 20,
- yaxs = "i", 
- xaxs = "i", 
+ yaxs = "i",
+ xaxs = "i",
  bty = 'l',
- xlab = "distance", 
- ylab= "cond. prob. of exceedance", 
+ xlab = "distance",
+ ylab= "cond. prob. of exceedance",
  ylim = c(0,1))
 lines(
-  x = (distvec <- seq(0,200, length = 1000)), 
-  col = 2, lwd = 2,
+  x = (distvec <- seq(0,200, length = 1000)),
   y = 2*(1-pnorm(sqrt(power.vario(distvec, alpha = opt$par[1],
-                               scale = opt$par[2])/2))))
+                               scale = opt$par[2])/2))),
+  col = 2,
+  lwd = 2)
 }
 }
+\keyword{internal}

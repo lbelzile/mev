@@ -5,25 +5,25 @@
 \title{Coefficient of tail correlation and tail dependence}
 \usage{
 taildep(
-  data,
-  u = NULL,
+  xdat,
+  qlev = NULL,
   nq = 40,
   qlim = c(0.8, 0.99),
   depmeas = c("eta", "chi"),
-  method = list(eta = c("emp", "betacop", "gpd", "hill"), chi = c("emp", "betacop")),
+  estimator = list(eta = c("emp", "betacop", "gpd", "hill"), chi = c("emp", "betacop")),
   confint = c("wald", "lrt"),
   level = 0.95,
   trunc = TRUE,
-  empirical.transformation = TRUE,
+  margtrans = c("emp", "none"),
   ties.method = "random",
   plot = TRUE,
   ...
 )
 }
 \arguments{
-\item{data}{an \eqn{n} by \eqn{d} matrix of multivariate observations}
+\item{xdat}{an \eqn{n} by \eqn{d} matrix of multivariate observations}
 
-\item{u}{vector of percentiles between 0 and 1}
+\item{qlev}{vector of percentiles between 0 and 1}
 
 \item{nq}{number of quantiles of the structural variable at which to form a grid; only used if \code{u = NULL}.}
 
@@ -31,7 +31,7 @@ taildep(
 
 \item{depmeas}{dependence measure, either of \code{"eta"} or \code{"chi"}}
 
-\item{method}{named list giving the estimation method for \code{eta} and \code{chi}. Default to \code{"emp"} for both.}
+\item{estimator}{named list giving the estimation method for \code{eta} and \code{chi}. Default to \code{"emp"} for both.}
 
 \item{confint}{string indicating the type of confidence interval for \eqn{\eta}, one of \code{"wald"} or \code{"lrt"}}
 
@@ -39,7 +39,7 @@ taildep(
 
 \item{trunc}{logical indicating whether the estimates and confidence intervals should be truncated in \eqn{[0,1]}}
 
-\item{empirical.transformation}{logical indicating whether observations should be transformed to pseudo-uniform scale (default to \code{TRUE}); otherwise, they are assumed to be uniform}
+\item{margtrans}{marginal transformation; if \code{"none"}, data are assumed to be in uniform margins}
 
 \item{ties.method}{string indicating the type of method for \code{rank}; see \code{\link[base]{rank}} for a list of options. Default to \code{"random"}}
 
@@ -50,7 +50,7 @@ taildep(
 \value{
 a named list with elements
 \itemize{
-\item \code{u}: a \code{K} vector of percentile levels
+\item \code{qlev}: a \code{K} vector of percentile levels
 \item \code{eta}: a \code{K} by 3 matrix with point estimates, lower and upper confidence intervals
 \item \code{chi}: a \code{K} by 3 matrix with point estimates, lower and upper confidence intervals
 }
@@ -60,7 +60,7 @@ For data with unit Pareto margins, the coefficient of tail dependence \eqn{\eta}
 where \eqn{L(x)} is a slowly varying function. Ignoring the latter, several estimators of \eqn{\eta} can be defined. In unit Pareto margins, \eqn{\eta} is a nonnegative shape parameter that can be estimated by fitting a generalized Pareto distribution above a high threshold. In exponential margins, \eqn{\eta} is a scale parameter and the maximum likelihood estimator of the latter is the Hill estimator. Both methods are based on peaks-over-threshold and the user can choose between pointwise confidence obtained through a likelihood ratio test statistic (\code{"lrt"}) or the Wald statistic (\code{"wald"}).
 }
 \details{
-The most common approach for estimation is the empirical survival copula, by evaluating the proportion of sample minima with uniform margins that exceed a given \eqn{x}. An alternative estimator uses a smoothed estimator of the survival copula using Bernstein polynomial, resulting in the so-called \code{betacop} estimator. Approximate pointwise confidence confint for the latter are obtained by assuming the proportion of points is binomial.
+The most common approach for estimation is the empirical survival copula, by evaluating the proportion of sample minima with uniform margins that exceed a given \eqn{x}. An alternative estimator uses a smoothed estimator of the survival copula using Bernstein polynomial, resulting in the so-called \code{betacop} estimator. Approximate pointwise confidence intervals for the latter are obtained by assuming the proportion of points is binomial.
 
 The coefficient of tail correlation \eqn{\chi} is
 \deqn{\chi = \lim_{u \to 1} \frac{\Pr(F_1(X_1)>u, \ldots, F_D(X_D)>u)}{1-u}.}

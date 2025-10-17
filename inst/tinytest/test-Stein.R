@@ -8,12 +8,14 @@ expect_equal(
   mev::gpd.ll(par = c(100, 0.1), dat = exc)
 )
 
-opt_vanilla <- fit.wgpd(xdat = exc, threshold = 0.1,
-                        weightfun = function(n){rep(1, n)})
+opt_vanilla <- fit.wgpd(xdat = exc, threshold = 0.1, weightfun = function(n) {
+  rep(1, n)
+})
 opt_mev <- mev::fit.gpd(xdat = exc, threshold = 0.1)
 expect_equal(
   as.numeric(coef(opt_mev)),
-  opt_vanilla$param,tolerance = 1e-5
+  as.numeric(opt_vanilla$param),
+  tolerance = 1e-5
 )
 # Check log likelihood
 expect_equal(
@@ -25,8 +27,9 @@ expect_equal(
 opt <- fit.wgpd(xdat = exc)
 expect_equal(
   opt$nllh,
-  -stein_gp_lik(pars = opt$estimate,
-               xdat = opt$exceedances,
-               weights = Stein_weights(opt$nat, gamma = 1))
+  -stein_gp_lik(
+    pars = opt$estimate,
+    xdat = opt$exceedances,
+    weights = Stein_weights(opt$nat, gamma = 1)
+  )
 )
-

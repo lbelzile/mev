@@ -5,7 +5,6 @@
 ^.gitignore
 README.html
 README.md
-^.R/fitcomposite.R
 ^.data/italcent.rda
 ^.data/zurichrain.rda
 ^.data/padova.rda
@@ -37,10 +36,15 @@ vignettes/04-simulation_cache/*
 vignettes/04-simulation_files/*
 vignettes/mev-vignette-back.pdf
 cran-comments.md
+^.R/mgp.R
+^.R/taildep2.R
+^.R/regression.R
+^.R/fitcomposite.R
+^.R/condextr.R
 R/mgp.R
-R/taildep2.R
-R/regression.R
 R/condextr.R
+R/regression.R
+R/taildep2.R
 ^revdep$
 ^CRAN-SUBMISSION$
 ^doc$

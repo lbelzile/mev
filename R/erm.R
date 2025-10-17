@@ -9,7 +9,7 @@
 #' @references Feuerverger, A. and P. Hall (1999), Estimating a tail exponent by modelling departure from a Pareto distribution, \emph{The Annals of Statistics} 27(\bold{2}), 760-781. <doi:10.1214/aos/1018031215>
 #'
 #' @details The second-order parameter is difficult to pin down, and while values within \eqn{[-1,0)} are most logical under Hall model, the model parameters become unidentifiable when \eqn{\rho \to 0}. The default constraint restrict \eqn{-5 <\rho < -0.5}, with the upper bound changed to \eqn{-0.25} for sample of sizes larger than 5000 observations. Users can set the value of the bounds for \eqn{\rho} via argument \code{bounds}. The optimization is initialized at the Hill estimator.
-#'
+#' @export
 #' @references Beirlant, J., Dierckx, G., Goegebeur, Y. G. Matthys (1999). Tail Index Estimation and an Exponential Regression Model. \emph{Extremes}, 2, 177–200 (1999). <doi:10.1023/A:1009975020370>
 #'
 #' @return a data frame with columns

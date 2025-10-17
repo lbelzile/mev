@@ -6,17 +6,18 @@
 - Multiple shape estimators (Hill, Pickands, moment estimator, generalized quantile) via `fit.shape` and specific routines `shape.moment`, `shape.pickands`, `shape.pickandsxu`, `shape.genquant` and `shape.hill`.
 - Weissman quantile estimator (`qweissman`)
 - Function `dgeoaniso` for geometric anisotropy, using the parametrization of Rai and Brown (2025)
-- Robust threshold selection diagnostic wrapper
 - Distributions for extended generalized Pareto, with new models and profile likelihood
 
 ## Changes:
 
 - Function `PickandsXU` is deprecated and replaced with `shape.pickandsxu`
 - Function `fit.gpd` with method `obre` now returns ordered exceedances and weights.
-- `spunif` now correctly handles missing values
+- `spunif` now correctly handles missing values.
+- d/p/q/r for `gev` and `gp` now fully vectorized with respect to arguments, including shape parameter
 - `confint.eprof` has an argument for boundary non-regular null distribution (for the most common case). 
 - Breaking changes to `fit.egp`, `egp.retlev`, `tstab.egp`. The former now allows fixed parameters (for profiling).
 - All functions for automatic threshold selection are now named using the prefix `thselect.` Their arguments are somewhat standardized, and they each have distinct plot and print methods.
+
 
 
 # mev 1.17  (Release date 2024-07-09)

@@ -4,14 +4,16 @@
 \alias{angextrapo}
 \title{Bivariate angular dependence function for extrapolation based on rays}
 \usage{
-angextrapo(dat, qu = 0.95, w = seq(0.05, 0.95, length = 20))
+angextrapo(xdat, qlev = 0.95, w = seq(0.05, 0.95, length = 20), ...)
 }
 \arguments{
-\item{dat}{an \eqn{n} by \eqn{2} matrix of multivariate observations}
+\item{xdat}{an \eqn{n} by \eqn{2} matrix of observations}
 
-\item{qu}{quantile level on uniform scale at which to threshold data. Default to 0.95}
+\item{qlev}{quantile level on uniform scale at which to threshold data. Default to 0.95}
 
 \item{w}{vector of unique angles between 0 and 1 at which to evaluate scale empirically.}
+
+\item{...}{additional arguments, for backward compatibility}
 }
 \value{
 a list with elements
@@ -23,8 +25,8 @@ a list with elements
 }
 \description{
 The scale parameter \eqn{g(w)} in the Ledford and Tawn approach is estimated empirically for
-\eqn{x} large as \deqn{\frac{\Pr(X_P>xw, Y_P>x(1-w))}{\Pr(X_P>x, Y_P>x)}}
-where the sample (\eqn{X_P, Y_P}) are observations on a common unit Pareto scale.
+\eqn{x} large as \deqn{\hat{g}(w) = \frac{\Pr(X_P>xw, Y_P>x(1-w))}{\Pr(X_P>x, Y_P>x)}}
+where the sample (\eqn{X_P, Y_P}) are observations on the unit Pareto scale.
  The coefficient \eqn{\eta} is estimated using maximum likelihood as the
  shape parameter of a generalized Pareto distribution on \eqn{\min(X_P, Y_P)}.
 }
@@ -34,3 +36,4 @@ angextrapo(rmev(n = 1000, model = 'log', d = 2, param = 0.5))
 \references{
 Ledford, A.W. and J. A. Tawn (1996), Statistics for near independence in multivariate extreme values. \emph{Biometrika}, \bold{83}(1), 169--187.
 }
+\keyword{internal}

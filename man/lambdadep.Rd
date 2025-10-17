@@ -56,3 +56,4 @@ dat <- matrix(runif(n = 2000), ncol = 2)
 lambdadep(dat, method = 'hill')
 }
 }
+\keyword{internal}

@@ -3,7 +3,7 @@
 #' For data with unit Pareto margins, the coefficient of tail dependence \eqn{\eta} is defined  via \deqn{\Pr(\min(X) > x) = L(x)x^{-1/\eta},}
 #' where \eqn{L(x)} is a slowly varying function. Ignoring the latter, several estimators of \eqn{\eta} can be defined. In unit Pareto margins, \eqn{\eta} is a nonnegative shape parameter that can be estimated by fitting a generalized Pareto distribution above a high threshold. In exponential margins, \eqn{\eta} is a scale parameter and the maximum likelihood estimator of the latter is the Hill estimator. Both methods are based on peaks-over-threshold and the user can choose between pointwise confidence obtained through a likelihood ratio test statistic (\code{"lrt"}) or the Wald statistic (\code{"wald"}).
 #'
-#' The most common approach for estimation is the empirical survival copula, by evaluating the proportion of sample minima with uniform margins that exceed a given \eqn{x}. An alternative estimator uses a smoothed estimator of the survival copula using Bernstein polynomial, resulting in the so-called \code{betacop} estimator. Approximate pointwise confidence confint for the latter are obtained by assuming the proportion of points is binomial.
+#' The most common approach for estimation is the empirical survival copula, by evaluating the proportion of sample minima with uniform margins that exceed a given \eqn{x}. An alternative estimator uses a smoothed estimator of the survival copula using Bernstein polynomial, resulting in the so-called \code{betacop} estimator. Approximate pointwise confidence intervals for the latter are obtained by assuming the proportion of points is binomial.
 #'
 #' The coefficient of tail correlation \eqn{\chi} is
 #' \deqn{\chi = \lim_{u \to 1} \frac{\Pr(F_1(X_1)>u, \ldots, F_D(X_D)>u)}{1-u}.}
@@ -11,8 +11,8 @@
 #' @note As of version 1.15, the percentiles used are from the minimum variable. This ensures that, regardless of the number of variables,
 #' there is no error message returned because the quantile levels are too low for there to be observations
 #' @export
-#' @param data an \eqn{n} by \eqn{d} matrix of multivariate observations
-#' @param u vector of percentiles between 0 and 1
+#' @param xdat an \eqn{n} by \eqn{d} matrix of multivariate observations
+#' @param qlev vector of percentiles between 0 and 1
 #' @param nq number of quantiles of the structural variable at which to form a grid; only used if \code{u = NULL}.
 #' @param qlim limits for the sequence \code{u} of the structural variable
 #' @param depmeas dependence measure, either of \code{"eta"} or \code{"chi"}
@@ -20,13 +20,13 @@
 #' @param level the confidence level required (default to 0.95).
 #' @param trunc logical indicating whether the estimates and confidence intervals should be truncated in \eqn{[0,1]}
 #' @param ties.method string indicating the type of method for \code{rank}; see \code{\link[base]{rank}} for a list of options. Default to \code{"random"}
-#' @param empirical.transformation logical indicating whether observations should be transformed to pseudo-uniform scale (default to \code{TRUE}); otherwise, they are assumed to be uniform
-#' @param method named list giving the estimation method for \code{eta} and \code{chi}. Default to \code{"emp"} for both.
+#' @param margtrans marginal transformation; if \code{"none"}, data are assumed to be in uniform margins
+#' @param estimator named list giving the estimation method for \code{eta} and \code{chi}. Default to \code{"emp"} for both.
 #' @param plot logical; should graphs be plotted?
 #' @param ... additional arguments passed to \code{plot}; current support for \code{main}, \code{xlab}, \code{ylab}, \code{add} and further \code{pch}, \code{lty}, \code{type}, \code{col} for points; additional arguments for confidence intervals are handled via \code{cipch}, \code{cilty}, \code{citype}, \code{cicol}.
 #' @return a named list with elements
 #' \itemize{
-#' \item \code{u}: a \code{K} vector of percentile levels
+#' \item \code{qlev}: a \code{K} vector of percentile levels
 #' \item \code{eta}: a \code{K} by 3 matrix with point estimates, lower and upper confidence intervals
 #' \item \code{chi}: a \code{K} by 3 matrix with point estimates, lower and upper confidence intervals
 #' }
@@ -40,23 +40,45 @@
 #' }
 #' @importFrom "utils" "combn"
 taildep <- function(
-  data,
-  u = NULL,
+  xdat,
+  qlev = NULL,
   nq = 40,
   qlim = c(0.8, 0.99),
   depmeas = c("eta", "chi"),
-  method = list(
+  estimator = list(
     eta = c("emp", "betacop", "gpd", "hill"),
     chi = c("emp", "betacop")
   ),
   confint = c("wald", "lrt"),
   level = 0.95,
   trunc = TRUE,
-  empirical.transformation = TRUE,
+  margtrans = c("emp", "none"),
   ties.method = "random",
   plot = TRUE,
   ...
 ) {
+  args <- list(...)
+  if (missing(xdat) & !is.null(args$data)) {
+    xdat <- args$data
+  } else if (missing(xdat)) {
+    stop(
+      "Argument \"xdat\" missing: must be a matrix of observations."
+    )
+  }
+  if (!is.null(args$method)) {
+    # 2025.10.16 backward compatibility
+    estimator <- args$method
+  }
+  margtrans <- match.arg(margtrans)
+  if (!is.null(args$empirical.transformation)) {
+    margtrans <- ifelse(args$empirical.transformation, "emp", "none")
+  }
+  empirical.transformation <- margtrans != "none"
+  data <- xdat
+  if (!is.null(args$u)) {
+    qlev <- args$u
+  }
+  u <- qlev
   if (is.character(depmeas)) {
     depmeas <- which(
       c("eta", "chi") %in%
@@ -69,12 +91,18 @@ taildep <- function(
       "Invalid argument for \"depmeas\": must be either \"eta\",\"chi\" or both."
     )
   }
-  if (!(is.list(method) && isTRUE(all(depmeas_names %in% names(method))))) {
+  if (!is.list(estimator) && length(depmeas) == 2L) {
     stop(paste0(
-      "\"method\" should be a list with components ",
-      paste(depmeas_names[depmeas], collapse = " and "),
+      "\"estimator\" should be a list with components ",
+      paste(depmeas_names, collapse = " and "),
       "."
     ))
+  } else if (!is.list(estimator)) {
+    estimator <- switch(
+      depmeas_names,
+      "chi" = list("chi" = estimator),
+      "eta" = list("eta" = estimator)
+    )
   }
   ties.method <- match.arg(
     ties.method,
@@ -88,14 +116,14 @@ taildep <- function(
   stopifnot(D > 1)
   if (1 %in% depmeas) {
     methodeta <- match.arg(
-      method$eta[1],
+      estimator$eta[1],
       choices = c("emp", "betacop", "gpd", "hill")
     )
   } else {
     methodeta <- c()
   }
   if (2 %in% depmeas) {
-    methodchi <- match.arg(method$chi[1], choices = c("emp", "betacop"))
+    methodchi <- match.arg(estimator$chi[1], choices = c("emp", "betacop"))
   } else {
     methodchi <- c()
   }
@@ -300,7 +328,7 @@ taildep <- function(
       est_chi[est_chi < 0] <- 0
     }
   }
-  out <- list(u = u)
+  out <- list(qlev = u)
   if (1 %in% depmeas) {
     colnames(est_eta) <- c("coef", "lowerci", "upperci")
     out$eta <- est_eta
@@ -310,7 +338,7 @@ taildep <- function(
   if (2 %in% depmeas) {
     colnames(est_chi) <- c("coef", "lowerci", "upperci")
     out$chi <- est_chi
-    out$chi_method <- methodchi
+    out$chi_confint_method <- methodchi
   }
   out$dim <- dim(data)
   class(out) <- "mev_taildep"
@@ -322,7 +350,7 @@ taildep <- function(
 
 #' @export
 plot.mev_taildep <- function(x, ...) {
-  if (length(x$u) < 3) {
+  if (length(x$qlev) < 3) {
     return(invisible(NULL))
   }
   ellips <- list(...)
@@ -369,7 +397,7 @@ plot.mev_taildep <- function(x, ...) {
     main <- ellips$main
   }
   if (is.null(ellips$xlab)) {
-    xlab <- rep("u", 2)
+    xlab <- rep("quantile level", 2)
   } else {
     xlab <- rep(ellips$xlab, length.out = 2)
   }
@@ -426,15 +454,15 @@ plot.mev_taildep <- function(x, ...) {
   D <- x$dim
   if (show[1]) {
     matplot(
-      x$u,
+      x$qlev,
       x$eta,
       type = c(type[1], rep(citype[1], 2)),
       pch = c(pch[1], rep(cipch[1], 2)),
       lty = c(lty[1], rep(cilty[1], 2)),
       col = c(col[1], rep(cicol[1], 2)),
       xlim = c(
-        min(x$u) - diff(range(x$u)) / 100,
-        pmin(1, max(x$u) + diff(range(x$u)) / 100)
+        min(x$qlev) - diff(range(x$qlev)) / 100,
+        pmin(1, max(x$qlev) + diff(range(x$qlev)) / 100)
       ),
       ylim = c(0, 1),
       xaxs = "i",
@@ -444,23 +472,23 @@ plot.mev_taildep <- function(x, ...) {
       ylab = ylab[1],
       bty = "l",
       panel.first = {
-        segments(x$u[1], 0, 1, 0, lty = 5, col = "grey")
-        segments(x$u[1], 1, 1, 1, lty = 5, col = "grey")
-        segments(x$u[1], 1 / D, 1, 1 / D, lty = 5, col = "grey")
+        segments(x$qlev[1], 0, 1, 0, lty = 5, col = "grey")
+        segments(x$qlev[1], 1, 1, 1, lty = 5, col = "grey")
+        segments(x$qlev[1], 1 / D, 1, 1 / D, lty = 5, col = "grey")
       }
     )
   }
   if (show[2]) {
     matplot(
-      x$u,
+      x$qlev,
       x$chi,
       type = c(type[2], rep(citype[2], 2)),
       pch = c(pch[2], rep(cipch[2], 2)),
       lty = c(lty[2], rep(cilty[2], 2)),
       col = c(col[2], rep(cicol[2], 2)),
       xlim = c(
-        min(x$u) - diff(range(x$u)) / 100,
-        pmin(1, max(x$u) + diff(range(x$u)) / 100)
+        min(x$qlev) - diff(range(x$qlev)) / 100,
+        pmin(1, max(x$qlev) + diff(range(x$qlev)) / 100)
       ),
       ylim = c(0, 1),
       xaxs = "i",
@@ -470,8 +498,8 @@ plot.mev_taildep <- function(x, ...) {
       xlab = xlab[2],
       ylab = ylab[2],
       panel.first = {
-        segments(x$u[1], 0, 1, 0, lty = 5, col = "grey")
-        segments(x$u[1], 1, 1, 1, lty = 5, col = "grey")
+        segments(x$qlev[1], 0, 1, 0, lty = 5, col = "grey")
+        segments(x$qlev[1], 1, 1, 1, lty = 5, col = "grey")
       }
     )
   }
@@ -484,24 +512,26 @@ plot.mev_taildep <- function(x, ...) {
 #' for the coefficient of tail dependence \eqn{\eta} and the
 #' joint tail orthant probability
 #'
-#' @param data a matrix of observations
-#' @param q vector of quantile levels
-#' @param ptail tail probability smaller than \code{q}. Default to \code{NULL}
-#' @param mqu marginal quantile levels for semiparametric estimation; data above this are modelled using a generalized Pareto distribution. If missing, empirical estimation is used throughout
-#' @param ties.method method for ties
+#' @param xdat a matrix of observations
+#' @param qlev vector of quantile levels
+#' @param ptail tail probability smaller than \code{qlev}. Default to \code{NULL}
+#' @param mqu marginal quantile levels for semiparametric estimation; data above this are modelled using a generalized Pareto distribution. If \code{NULL}, empirical estimation is used throughout
+#' @param ties.method method for handling of ties in rank transformation
 #' @param type integer indicating the estimator type
+#' @param ... additional arguments, for backward compatibility
 #' @return a list with elements
 #' \itemize{
 #' \item \code{p} quantile level for estimation
-#' \item \code{eta} estimated coefficient of tail dependence \eqn{\eta}
-#' \item \code{eta_sd} estimated standard error of \eqn{\eta}
+#' \item \code{eta} matrix of estimated coefficient of tail dependence \eqn{\eta}, and standard errors
 #' \item \code{k1} parameter of the tail expansion
 #' \item \code{pat} proportion of observations above the threshold
 #' \item \code{lambda} tail dependence coefficient (sic)
 #' \item \code{tailprob} tail probability, if \code{ptail} is provided
 #' }
 #' @export
-#' @note EXPERIMENTAL. The numerical optimization of the likelihood surface is difficult, as the function is ill-behaved. Visual inspection of estimates is necessary to check for non-convergence.
+#' @note EXPERIMENTAL. The numerical optimization of the likelihood surface is
+#' difficult, as the function is ill-behaved. Visual inspection of estimates is
+#' often necessary to check for possible lack of convergence.
 #' @examples
 #' d <- 2
 #' rho <- 0.9
@@ -512,32 +542,38 @@ plot.mev_taildep <- function(x, ...) {
 #'    mu = rep(0, d),
 #'   Sigma = Sigma)
 #' q <- seq(0.95, 0.995, by = 0.005)
-#' taildep <- kjtail(data = data, q = q)
+#' kj <- kjtail(xdat = data, qlev = q)
 #' with(taildep,
 #'  plot(x = 1-pat,
 #'       y = eta,
 #'       ylim = c(0,1),
 #'       panel.first = {abline(h = (1+rho)/2)}))
 kjtail <- function(
-  data,
-  q,
+  xdat,
+  qlev,
   ptail = NULL,
-  mqu,
+  mqu = NULL,
   type = 1,
-  ties.method = eval(formals(rank)$ties.method)
+  ties.method = eval(formals(rank)$ties.method),
+  ...
 ) {
+  args <- list(...)
+  if (missing(xdat) & !is.null(args$data)) {
+    xdat <- args$data
+  }
+  data <- xdat
   data <- na.omit(as.matrix(data))
   d <- ncol(data)
   n <- nrow(data)
-  if (isTRUE(any(q <= 0, q > 1))) {
-    stop("\"q\" must be a vector of probabilities.")
+  if (isTRUE(any(qlev <= 0, qlev > 1))) {
+    stop("\"qlev\" must be a vector of probabilities.")
   }
-  if (isTRUE(any(q < 0.5))) {
+  if (isTRUE(any(qlev < 0.5))) {
     warning("Small quantile selected.")
   }
   # Transform to tail quantiles
-  q <- 1 - q
-  if (missing(mqu)) {
+  qlev <- 1 - qlev
+  if (is.null(mqu)) {
     unif <- apply(data, 2, rank, ties.method = ties.method) / (n + 1L)
   } else {
     if (!length(mqu) %in% c(1L, d)) {
@@ -555,10 +591,10 @@ kjtail <- function(
   }
   # Consider minimum of tail
   Ud <- 1 - apply(unif, 1, min)
-  q <- sort(q, decreasing = TRUE)
+  qlev <- sort(qlev, decreasing = TRUE)
   etahat <- etasd <- k1hat <- nabove <- jtprob <- plev <- rep(
     NA_real_,
-    length(q)
+    length(qlev)
   )
   neglik_fn <- function(par, xdat, Tp) {
     k1 <- par[1]
@@ -571,8 +607,8 @@ kjtail <- function(
       )))
     )
   }
-  for (j in seq_along(q)) {
-    plev[j] <- Tp <- quantile(Ud, q[j])
+  for (j in seq_along(qlev)) {
+    plev[j] <- Tp <- quantile(Ud, qlev[j])
     sUd <- Ud[Ud < Tp]
     nabove[j] <- length(sUd)
     if (j == 1L) {
@@ -616,10 +652,9 @@ kjtail <- function(
     }
   }
   lambdahat <- nabove / n * k1hat
-  ret_list <- list(
+  ret <- list(
     p = 1 - as.numeric(plev),
-    eta = as.numeric(etahat),
-    eta_sd = etasd,
+    eta = cbind(coef = as.numeric(etahat), sd = etasd),
     k1 = k1hat,
     pat = nabove / n,
     lambda = as.numeric(lambdahat)
@@ -637,5 +672,31 @@ kjtail <- function(
       )
     }
   }
-  return(ret_list)
+  class(ret) <- "mev_taildep_kj"
+  return(invisible(ret))
+}
+
+#' @export
+plot.mev_taildep_kj <- function(x, level = 0.95, ...) {
+  stopifnot(is.numeric(level), isTRUE(all(level < 1, level > 0)))
+  if (length(level) == 2L) {
+    level <- sort(level)
+  } else {
+    level <- c((1 - level) / 2, 0.5 + level / 2)
+  }
+  matplot(
+    x = 1 - x$pat,
+    y = cbind(
+      x$eta[, 1],
+      pmax(0, x$eta[, 1] + qnorm(level[1]) * x$eta[, 2]),
+      pmin(1, x$eta[, 1] + qnorm(level[2]) * x$eta[, 2])
+    ),
+    ylim = c(0, 1),
+    lty = c(1, 2, 2),
+    col = c("black", "grey", "grey"),
+    bty = "l",
+    ylab = expression(eta),
+    type = "l",
+    xlab = "quantile level"
+  )
 }

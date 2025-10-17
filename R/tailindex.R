@@ -128,12 +128,12 @@ shape.hill <- function(xdat, k) {
   cumlogdat <- cumsum(logdata[1:n])
   shape <- cumlogdat[ks] / ks - logdata[ks + 1]
   if (length(k) > 1) {
-    return(
-      data.frame(
-        k = k,
-        shape = shape[k %in% ks]
-      )
-    )
+    res <- data.frame(
+      k = ks,
+      shape = shape
+    )[ks %in% k, ]
+    attr(res, which = "row.names") <- 1:length(k)
+    return(res)
   } else {
     return(as.numeric(cumsum(logdata[1:k])[k] / k - logdata[k + 1]))
   }
@@ -250,8 +250,8 @@ shape.rbm = function(xdat, k = 10:floor(length(xdat) / 2), ...) {
     risk = empbayes,
     thresh = xdat[ks]
   )[ks %in% k, ]
-  attr(res, which = "row.names") <- NULL
-  class(res) <- "mev_shape_rbm"
+  class(res) <- c("mev_shape_rbm", "data.frame")
+  attr(res, which = "row.names") <- 1:length(k)
   if (length(k) == 1L) {
     return(res$shape)
   } else {
@@ -910,3 +910,52 @@ rho.gbw <- function(
 #   n <- length(logdata)
 #   k <- as.integer(sort(k))
 # }
+
+#' Weissman's quantile estimator
+#'
+#' Given a small probability of exceedance \code{p},
+#' the number of exceedances \code{k} out of \code{n} observation
+#' above the threshold \eqn{u} (\code{thresh}) (corresponding typically to the (\eqn{k+1})th order statistic, compute the tail quantile at level \eqn{Q(1-p)} using the estimator of Weissman (1978) under the assumption of Pareto tail (positive shape \eqn{\xi}), viz.
+#' \deqn{ Q(1-p) = u \left(\frac{k}{pn}\right)^{\xi}.}
+#'
+#' @param p tail probability, must be larger than the proportion of exceedances \code{k/n}.
+#' @param k vector of the number of exceedances above \code{thresh}
+#' @param n integer, total sample size
+#' @param thresh vector of thresholds
+#' @param shape vector of positive shape parameters
+#' @references Weissman, I. (1978). Estimation of Parameters and Larger Quantiles Based on the \emph{k} Largest Observations. \emph{Journal of the American Statistical Association}, 73(\bold{364}), 812–815. <doi:10.2307/2286285>.
+#' @return a vector of tail quantiles
+#' @export
+#' @examples
+#' set.seed(2025)
+#' p <- 1/100
+#' xdat <- rgp(n = 1000, loc = 2, scale = 2, shape = 0.4)
+#' hill <- shape.hill(xdat, k = seq(20L, 100L, by = 10L))
+#' thresh <- sort(xdat, decreasing = TRUE)[hill$k+1]
+#' qweissman(
+#'    p = 1/100,
+#'    k = hill$k,
+#'    n = length(xdat),
+#'    thresh = thresh,
+#'    shape = hill$shape)
+#' # Compare with true quantile
+#' qgp(1/100, loc = 2, scale = 2, shape = 0.4, lower.tail = FALSE)
+qweissman <- function(p, k, n, thresh, shape) {
+  m <- length(k)
+  stopifnot(
+    "Vectors \"k\" and \"shape\" must be of the same length." = (m ==
+      length(shape)),
+    "Vectors \"k\" and \"thresh\" must be of the same length." = (m ==
+      length(thresh)),
+    "Sample size must be a scalar." = (length(n) == 1L),
+    "Number of exceedances \"k\" must be less than sample size \"n\"." = isTRUE(all(
+      k < n
+    )),
+    "Tail probability must be a scalar." = (length(p) == 1L) | (m == 1L),
+    "Tail probability must be smaller than fraction of exceedances." = isTRUE(all(
+      p < k / n
+    )),
+    "Shape parameter must be strictly positive." = isTRUE(all(shape > 0))
+  )
+  thresh * (k / n / p)^shape
+}

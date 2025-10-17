@@ -13,7 +13,7 @@ thselect.ksmd(xdat, thresh, approx = c("asymptotic", "mc"), nsim = 1000L)
 
 \item{approx}{[string] method to use to obtain moments of first L-moment}
 
-\item{nsim[integer]}{number of replications for Monte Carlo approximation}
+\item{nsim}{[integer] number of replications for Monte Carlo approximation}
 }
 \value{
 a list with components
