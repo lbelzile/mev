@@ -64,8 +64,7 @@ thresh <- mev::qgp(seq(0.1, 0.5, by = 0.05), 0, 1, 0.5)
 tstab.egp(
    xdat = xdat,
    thresh = thresh,
-   model = "pt-gamma",
-   plots = 1:3)
+   model = "pt-gamma")
 xdat <- regp(
   n = 100,
   scale = 1,

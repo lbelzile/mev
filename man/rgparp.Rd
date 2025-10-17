@@ -67,7 +67,7 @@ The standard Pareto process corresponds to \code{scale = loc = rep(1, d)}.
 }
 \examples{
 rgparp(n = 10, risk = 'site', siteindex = 2, d = 3, param = 2.5,
-   model = 'log', scale = c(1, 2, 3), loc = c(2, 3, 4))
+   model = 'log', scale = c(1, 2, 3), loc = c(2, 3, 4), shape = 0.5)
 rgparp(n = 10, risk = 'max', d = 4, param = c(0.2, 0.1, 0.9, 0.5),
    scale = 1:4, loc = 1:4, model = 'bilog')
 rgparp(n = 10, risk = 'sum', d = 3, param = c(0.8, 1.2, 0.6, -0.5),

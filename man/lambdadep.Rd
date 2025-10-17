@@ -45,10 +45,10 @@ a plot of the lambda function if \code{plot=TRUE}, plus an invisible list with c
 Estimation of the bivariate angular dependence function of Wadsworth and Tawn (2013)
 }
 \examples{
+\dontrun{
 set.seed(12)
 dat <- mev::rmev(n = 1000, d = 2, model = "log", param = 0.1)
 lambdadep(dat, method = 'hill')
-\dontrun{
 lambdadep(dat, method = 'bayes')
 lambdadep(dat, method = 'mle')
 # With independent observations

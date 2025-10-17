@@ -339,8 +339,7 @@ plot.mev_egp_retlev <- function(x, ...) {
 #' tstab.egp(
 #'    xdat = xdat,
 #'    thresh = thresh,
-#'    model = "pt-gamma",
-#'    plots = 1:3)
+#'    model = "pt-gamma")
 #' xdat <- regp(
 #'   n = 100,
 #'   scale = 1,

@@ -658,8 +658,8 @@ smith.penult.fn <- function(
 #' @param inverse [logical] whether to compute the parameters for the inverse relationship (defaults to \code{FALSE})
 #' @export
 #' @examples
-#' maxstable(pars = maxstab(pars = c(1,2,0), m = 10), m = 10, inv = TRUE)
-#' maxstable(pars = maxstab(pars = c(1,2,0.1), m = 5), m = 1/5)
+#' maxstable(pars = maxstable(pars = c(1,2,0), m = 10), m = 10, inv = TRUE)
+#' maxstable(pars = maxstable(pars = c(1,2,0.1), m = 5), m = 1/5)
 maxstable <- function(pars, m = 1L, inverse = FALSE) {
   stopifnot(m > 0, length(pars) == 3L, is.logical(inverse))
   pars <- as.numeric(pars)

@@ -19,6 +19,6 @@ compute the corresponding parameters for block of size
 \code{m} assuming a generalized extreme value distribution.
 }
 \examples{
-maxstable(pars = maxstab(pars = c(1,2,0), m = 10), m = 10, inv = TRUE)
-maxstable(pars = maxstab(pars = c(1,2,0.1), m = 5), m = 1/5)
+maxstable(pars = maxstable(pars = c(1,2,0), m = 10), m = 10, inv = TRUE)
+maxstable(pars = maxstable(pars = c(1,2,0.1), m = 5), m = 1/5)
 }

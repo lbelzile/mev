@@ -61,9 +61,6 @@ data <- mev::mvrnorm(
   Sigma = Sigma)
 q <- seq(0.95, 0.995, by = 0.005)
 kj <- kjtail(xdat = data, qlev = q)
-with(taildep,
- plot(x = 1-pat,
-      y = eta,
-      ylim = c(0,1),
-      panel.first = {abline(h = (1+rho)/2)}))
+plot(kj)
+abline(h = (1+rho)/2, col = 2)
 }

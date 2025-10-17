@@ -191,10 +191,10 @@ angextrapo <- function(
 #' \item \code{upper.confint} \code{level}\% confidence interval for lambda (upper bound)
 #' }
 #' @examples
+#' \dontrun{
 #' set.seed(12)
 #' dat <- mev::rmev(n = 1000, d = 2, model = "log", param = 0.1)
 #' lambdadep(dat, method = 'hill')
-#' \dontrun{
 #' lambdadep(dat, method = 'bayes')
 #' lambdadep(dat, method = 'mle')
 #' # With independent observations
