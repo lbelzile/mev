@@ -792,6 +792,8 @@ rgparp <- function(
     ustar <- (1 +
       shape[siteindex] * (us - loc[siteindex]) / scale[siteindex])^(1 /
       shape[siteindex])
+    if(ustar <= 0){
+      stop("Invalid location, scale and shape combination: the lower bound is at zero or less: please increase the threshold.")
   } else if (riskf == "mean") {
     # difference vs max is 1/d factor
     ustar <- min(
@@ -882,6 +884,7 @@ rgparp <- function(
     attr(samp, "accept.rate") <- ntotacc / ntotsim
     return(samp)
   } else {
+    # risk functional is "site"
     #Acceptance rate is 1
     samp <- ustar /
       runif(n) *

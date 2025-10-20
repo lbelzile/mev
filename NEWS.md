@@ -1,24 +1,46 @@
-# mev 1.18  (Release date ???)
+# mev 2.0
 
 ## New:
 
-- Stein's weighted generalized Pareto estimator with `fit.wgpd`
-- Multiple shape estimators (Hill, Pickands, moment estimator, generalized quantile) via `fit.shape` and specific routines `shape.moment`, `shape.pickands`, `shape.pickandsxu`, `shape.genquant` and `shape.hill`.
+- All functions producing plot now export objects with associated S3 routines.
+- Stein's weighted generalized Pareto estimator with `fit.wgpd` and suggested weights `Stein_weights`.
+- Multiple shape estimators (Hill, Pickands, moment estimator, generalized quantile) via `fit.shape` and specific routines `shape.hill`, `shape.erm`, `shape.genjack`, `shape.lthill`, `shape.trunhill`, `shape.rbm`, `shape.moment`, `shape.pickands`, `shape.osz`, `shape.genquant` and `shape.vries`.
+- Second order regular variation parameter estimation via `fit.rho` (four estimators available, via `rho.dk`, `rho.fagh`, `rho.gbw` and `rho.ghp`).
+- L-moment estimator for generalized Pareto distribution via `gpd.lmom`.
+- Estimator of tail dependence of Krupskii and Joe (`kjtail`) and through `xdep.eta`.
 - Weissman quantile estimator (`qweissman`)
 - Function `dgeoaniso` for geometric anisotropy, using the parametrization of Rai and Brown (2025)
-- Distributions for extended generalized Pareto, with new models and profile likelihood
+- Function `maxstable` for changes of parameters for GEV.
+- Distributions for extended generalized Pareto (d/p/q/r egp), with new models and profile likelihood (`egp.pll`). This also affects the plotting routines. The nomenclature has been modified for argument 'model' in egp.fit, egp.ll and egp.retlev with backward compatibility. 
+- New methods for threshold selection (16 in total) `thselect.alrs`, `thselect.bab`, `thselect.cv`, `theselect.expgqt`, `thselect.gbw`, `thselect.mdps`, `thselect.mrl` (which supersedes `automrl`), `thselect.pec`, `thselect.pickands`, `thselect.rbm`, `thselect.samsee`, 
+- Threshold stability plots for different estimators `tstab.hill`, `tstab.lthill` (with different diagnostics), `tstab.mrl`
 
 ## Changes:
 
-- Function `PickandsXU` is deprecated and replaced with `shape.pickandsxu`
+- Function `PickandsXU` is deprecated and replaced with `shape.osz`
 - Function `fit.gpd` with method `obre` now returns ordered exceedances and weights.
 - `spunif` now correctly handles missing values.
 - d/p/q/r for `gev` and `gp` now fully vectorized with respect to arguments, including shape parameter
 - `confint.eprof` has an argument for boundary non-regular null distribution (for the most common case). 
 - Breaking changes to `fit.egp`, `egp.retlev`, `tstab.egp`. The former now allows fixed parameters (for profiling).
-- All functions for automatic threshold selection are now named using the prefix `thselect.` Their arguments are somewhat standardized, and they each have distinct plot and print methods.
+- All functions for threshold selection are now named using the prefix `thselect.` Their arguments are somewhat standardized, and they each have distinct plot and print methods with automatic selection.
+- All threshold stability plots now have the same syntax, with prefix `tstab.`
+- Measures of extremal dependence now via functions prefixed with `xdep.`, including `xdep.chi`, `xdep.eta`, `xdep.chibar` and `xdep.asym`. The first three call `taildep`, the last one supersedes `xasym`.
+- Function `lambdadep` deprecated, replaced with `adf` to better comply with current nomenclature.
+- Function `automrl` deprecated in favour of `thselect.mrl`.
+- Function `chibar` removed in favour of `xdep.chibar`.
+- Arguments of `extcoef` for marginal transformation `margtrans` have been modified (backward compatible changes).
+- Function `fit.egp` now includes alternative arguments to select the optimization routine
+- Internal function (exported, but hidden) `jac` has been replaced by `jac_gpd_pareto` to avoid ambiguity
+- Tests for max stability (`maxstabtest`) and independence via score (`scoreindep`) now renamed `test.maxstab` and `test.scoreindep`
+- Change to name `infomat.test` now `thselect.sdinfo`, `vmetric` now `thselect.vmetric`, `W.diag` now `thselect.wseq`, `NC.diag` now `thselect.ncpgp`
+- Arguments of `xasym` modified to make syntax more uniform.
 
+## Fixes:
 
+- Function `adf` now allow for values above 1 for bivariate angular dependence function.
+- Function `.infomat` needs not have data argument.
+- Fix generalized Pareto fit with fixed parameters
 
 # mev 1.17  (Release date 2024-07-09)
 

@@ -36,8 +36,6 @@ vignettes/04-simulation_cache/*
 vignettes/04-simulation_files/*
 vignettes/mev-vignette-back.pdf
 cran-comments.md
-^.R/mgp.R
-^.R/taildep2.R
 ^.R/regression.R
 ^.R/fitcomposite.R
 ^.R/condextr.R

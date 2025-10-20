@@ -44,7 +44,7 @@ condex.dataconstr <- function(
   )
 }
 
-# Adapated from function texmex:::ConstraintsAreSatisfied
+# Adapted from function texmex:::ConstraintsAreSatisfied
 # by Harry Southworth and Janet Heffernan
 # Adaptive barrier; returns negative value when violated
 optim_constr_ht <- function(par, constants, ...) {
@@ -454,7 +454,7 @@ predict.condex <- function(
         }))
     }
     # Compute the Monte Carlo average of conditional probability
-    # multiplied by marginal probability of exceedance (Y0)
+    # multiplied by margtransf probability of exceedance (Y0)
     prob[i] <- prob[i] / nsim * (1 - thresh[i])
   }
   pred <- ifelse(
@@ -489,7 +489,7 @@ fit.condex <- function(
     "max",
     "min"
   ),
-  marginal = c(
+  margtransf = c(
     "empirical",
     "none",
     "semipar"
@@ -499,9 +499,12 @@ fit.condex <- function(
   ...
 ) {
   constraint <- isTRUE(constraint)
-  margtransfo <- match.arg(marginal)
+  margtransf <- match.arg(margtransf)
   ties.method <- match.arg(ties.method)
   use <- match.arg(use)
+  if (is.data.frame(xdat)) {
+    xdat <- as.matrix(xdat)
+  }
   stopifnot(is.matrix(xdat))
   D <- ncol(xdat)
   index <- unique(as.integer(index))
@@ -509,22 +512,26 @@ fit.condex <- function(
   if (use == "complete") {
     xdat <- na.omit(xdat)
   }
-  if (margtransfo == "empirical") {
+  if (margtransf == "empirical") {
     sdata <- qlaplace(
       apply(xdat, 2, function(x) {
         rank(x, ties.method = "random", na.last = "keep") /
           (sum(!is.na(x)) + 1L)
       })
     )
-  } else if (margtransfo == "semipar") {
+  } else if (margtransf == "semipar") {
     stopifnot(
       is.vector(mthresh),
       length(mthresh) == ncol(xdat)
     )
-    sdata <- qlaplace(mev::spunif(xdat, thresh = rep(mthresh, ncol(xdat))))
+    sdata <- qlaplace(
+      mev::spunif(xdat, thresh = rep(mthresh, ncol(xdat)))
+    )
   } else {
     sdata <- xdat
   }
+  # TODO the index above can be multiple indices
+  # TODO figure out constraints are enforced or not, based on argument
   fn <- function(par, ...) {
     -condex.pseudoll(
       par = par,
@@ -571,3 +578,8 @@ fit.condex <- function(
     scale = scale
   )
 }
+
+# TODO simulate from conditional extremes model above
+
+
+# predict method with importance sampling and algorithm from paper
