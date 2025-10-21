@@ -337,9 +337,9 @@ plot.mev_thselect_infomat <- function(
 }
 
 
-#' Extremal index estimators based on interexceedance time and gap of exceedances
+#' Extremal index estimators
 #'
-#' The function implements the maximum likelihood estimator and iteratively reweighted least
+#' The function implements estimators of the extremal index based on interexceedance time and gap of exceedances. The maximum likelihood estimator and iteratively reweighted least
 #' square estimators of Suveges (2007)  as well as the intervals estimator. The implementation
 #' differs from the presentation of the paper in that an iteration limit is enforced to make sure
 #' the iterative procedure terminates. Multiple thresholds can be supplied.
@@ -380,7 +380,9 @@ plot.mev_thselect_infomat <- function(
 #' @param plot logical; if \code{TRUE}, plot the extremal index as a function of \code{q}
 #' @return a vector or matrix of estimated extremal index of dimension \code{length(method)} by \code{length(q)}.
 #' @param warn logical; if \code{TRUE}, receive a warning when the sample size is too small
+#' @param ... additional arguments, for backward compatibility
 #' @examples
+#' \dontrun{
 #' set.seed(234)
 #' # Moving maxima model with theta=0.5
 #' a <- 1; theta <-  1/(1+a)
@@ -388,22 +390,180 @@ plot.mev_thselect_infomat <- function(
 #' x <- pmax(sim[-length(sim)]*a,sim[-1])
 #' q <- seq(0.9, 0.99, by = 0.01)
 #' ext.index(xdat = x, quantile = q, method = c ('wls', 'mle'))
+#' }
+#' @keywords internal
 #' @export
 ext.index <- function(
   xdat,
   quantile = 0.95,
   method = c("wls", "mle", "intervals"),
   plot = FALSE,
-  warn = FALSE
+  warn = FALSE,
+  ...
 ) {
-  method <- match.arg(method, c("wls", "mle", "intervals"), several.ok = TRUE)
-  q <- quantile
+  .Deprecated(new = "xdep.xindex", package = "mev")
+  method <- match.arg(method, several.ok = TRUE)
+  out <- matrix(
+    nrow = length(method),
+    ncol = length(quantile)
+  )
+  colnames(out) <- paste0(quantile * 100, "%")
+  rownames(out) <- method
+  for (m in seq_along(method)) {
+    out[m, ] <- xdep.xindex(
+      xdat = xdat,
+      qlev = quantile,
+      estimator = method[m],
+      plot = FALSE,
+      confint = "none",
+      warn = warn
+    )$coef
+  }
+  if (isTRUE(plot)) {
+    if (nrow(out) == 1L) {
+      plot(
+        x = quantile,
+        y = as.numeric(out),
+        type = "l",
+        xlab = "q",
+        ylim = c(0, 1),
+        ylab = "extremal index",
+        lwd = 2
+      )
+    } else {
+      matplot(
+        quantile,
+        t(out),
+        type = "l",
+        xlab = "q",
+        ylim = c(0, 1),
+        ylab = "extremal index",
+        lwd = 2
+      )
+      legend(
+        x = "bottomright",
+        legend = method,
+        bty = "n",
+        lwd = 2,
+        lty = 1:3,
+        col = 1:3
+      )
+    }
+  }
+  return(out)
+}
+
+#' Extremal index estimators
+#'
+#' The function implements estimators of the extremal index based on interexceedance time and gap of exceedances. The maximum likelihood estimator and iteratively reweighted least
+#' square estimators of Suveges (2007)  as well as the intervals estimator. The implementation
+#' differs from the presentation of the paper in that an iteration limit is enforced to make sure
+#' the iterative procedure terminates. Multiple thresholds can be supplied.
+#'
+#' The iteratively reweighted least square is a procedure based on the gaps of exceedances \eqn{S_n=T_n-1}{Tn-1}
+#' The model is first fitted to non-zero gaps, which are rescaled to have unit exponential scale. The slope
+#' between the theoretical quantiles and the normalized gap of exceedances is \eqn{b=1/\theta}{b=1/\theta},
+#' with intercept \eqn{a=\log(\theta)/\theta}{a=log(\theta)/\theta}.
+#' As such, the estimate of the extremal index is based on \eqn{\hat{\theta}=\exp(\hat{a}/\hat{b})}{\theta=exp(a/b)}.
+#' The weights are chosen in such a way as to reduce the influence of the smallest values.
+#' The estimator exploits the dual role of \eqn{\theta}{theta} as the parameter of the mean for
+#' the interexceedance time as well as the mixture proportion for the non-zero component.
+#'
+#' The maximum likelihood is based on an independence likelihood for the rescaled gap of exceedances,
+#' namely \eqn{\bar{F}(u_n)S(u_n)}{(1-F(u))*S(u)}. The score equation is equivalent to a quadratic equation in
+#' \eqn{\theta}{theta} and the maximum likelihood estimate is available in closed form.
+#' Its validity requires however condition \eqn{D^{(2)}(u_n)}{D2(u)} to apply;
+#' this should be checked by the user beforehand.
+#'
+#'A warning is emitted if the effective sample size is less than 50 observations.
+#'
+#' @author Leo Belzile
+#' @references Ferro and Segers (2003). Inference for clusters of extreme values,
+#' JRSS: Series B, \strong{65}(2), 545-556.
+#' @references Suveges (2007) Likelihood estimation of the extremal index. \emph{Extremes},
+#'  \strong{10}(1), 41-55.
+#' @references Suveges and Davison (2010), Model misspecification in peaks over threshold analysis. \emph{Annals of Applied Statistics}, \strong{4}(1), 203-221.
+#'@references Fukutome, Liniger and Suveges (2015), Automatic threshold and run parameter selection: a climatology
+#' for extreme hourly precipitation in Switzerland. \emph{Theoretical and Applied Climatology},
+#' \strong{120}(3), 403-416.
+#'
+#'
+#' @param xdat numeric vector of observations
+#' @param qlev a vector of quantile levels in (0,1) for estimation of the extremal index. Defaults to 0.95
+#' @param estimator a string specifying the chosen method (only one allowed). Must be either \code{wls}
+#' for weighted least squares, \code{mle} for maximum likelihood estimation or \code{intervals}
+#' for the intervals estimator of Ferro and Segers (2003). Partial match is allowed.
+#' @param confint string indicating the type of confidence interval, one of \code{"wald"} or \code{"lrt"} for \code{estimator="mle"}, else \code{"none"}
+#' @param level the confidence level required (default to 0.95).
+#' @param plot logical; if \code{TRUE}, plot the extremal index as a function of \code{q}
+#' @param warn logical; if \code{TRUE}, receive a warning when the sample size is too small
+#' @param ... additional arguments, for backward compatibility
+#' @return a data frame
+#' \itemize{
+#' \item \code{qlev}: quantile level of estimates
+#' \item \code{coef}: point estimates
+#' \item \code{lower}: lower bound of confidence interval
+#' \item \code{upper}: lower bound of confidence interval
+#' }
+#' @examples
+#' set.seed(234)
+#' # Moving maxima model with theta=0.5
+#' a <- 1; theta <-  1/(1+a)
+#' sim <- rgev(10001, loc=1/(1+a),scale=1/(1+a),shape=1)
+#' x <- pmax(sim[-length(sim)]*a,sim[-1])
+#' q <- seq(0.9, 0.99, by = 0.01)
+#' xdep.xindex(
+#'   xdat = x,
+#'   qlev = q,
+#'   estimator = "mle",
+#'   confint = "wald")
+#' @export
+xdep.xindex <- function(
+  xdat,
+  qlev = 0.95,
+  estimator = c("wls", "mle", "intervals"),
+  confint = c("none", "wald", "lrt"),
+  level = 0.95,
+  plot = FALSE,
+  warn = FALSE,
+  ...
+) {
+  args <- list(...)
+  if (!is.null(args$quantile)) {
+    qlev <- args$quantile
+  }
+  if (!is.null(args$method)) {
+    estimator <- args$method
+  }
+  method <- match.arg(
+    estimator,
+    c("wls", "mle", "intervals"),
+    several.ok = TRUE
+  )
+  confint <- match.arg(confint)
+  if ((confint == "lrt") & (estimator != "mle")) {
+    warning(
+      "Invalid confidence method: likelihood based confidence intervals only valid with estimator \"mle\"."
+    )
+    confint <- "none"
+  }
+  if ((confint == "wald") & (estimator == "intervals")) {
+    warning(
+      "Invalid confidence method: Wald-based confidence intervals not yet implemented for \"intervals\" estimaror."
+    )
+    confint <- "none"
+  }
+  q <- qlev
   stopifnot(all(q < 1), all(q > 0))
   q <- sort(q)
   xdat <- as.vector(xdat)
   threshold <- quantile(xdat, q)
   # Main function, to be called recursively
-  extmethods <- function(x = xdat, threshold = threshold, method = method) {
+  extmethods <- function(
+    x = xdat,
+    threshold = threshold,
+    method = method
+  ) {
     # The gap of exceedances
     stopifnot(length(threshold) == 1L)
     excind <- which(x > threshold)
@@ -426,10 +586,14 @@ ext.index <- function(
     Nc <- length(chi)
     if (method == "wls") {
       # Suveges (2007); see Ferro (2003) for explanations
-      xs <- -log(1 - (1:Nc) / (Nc + 1)) #theoretical quantiles
-      w <- cumsum(1 / ((N - 1):(N - Nc))^2) #regression weights
-      coefs <- lm(chi ~ xs, weights = w)$coef #slope is 1/th, intercept log(th)/th,
-      # plot(y=chi, x=xs,xlim=c(0,7),ylim=c(0,11));abline(coefs)
+      # Theoretical quantiles
+      xs <- -log(1 - (1:Nc) / (Nc + 1))
+      # Regression weights
+      w <- cumsum(1 / ((N - 1):(N - Nc))^2)
+      # Slope is 1/theta, intercept log(theta)/theta,
+      coefs <- lm(chi ~ xs, weights = w)$coef
+      # plot(y = chi, x = xs, xlim = c(0, 7),
+      # ylim = c(0, 11)); abline(coefs)
       theta <- min(exp(coefs[1] / coefs[2]), 1)
       Nc.new <- Nc
       if (Nc.new <= 1) {
@@ -459,8 +623,21 @@ ext.index <- function(
           chi.new <- chi[-(1:(Nc - Nc.new))]
           w.new <- w[-(1:(Nc - Nc.new))]
         }
-        coefs <- lm(chi.new ~ xs.new, weights = w.new)$coef
+        lmod <- lm(chi.new ~ xs.new, weights = w.new)
+        coefs <- lmod$coef
         theta <- min(exp(coefs[1] / coefs[2]), 1)
+      }
+      if (confint == "wald") {
+        gr <- c(1 / coefs[2], -coefs[1] / coefs[2]^2) * exp(coefs[1] / coefs[2])
+        # Delta method
+        se <- try(c(sqrt(t(gr) %*% vcov(lmod) %*% gr)), silent = TRUE)
+        if (inherits(se, "try-error")) {
+          se <- NA
+        }
+        return(c(
+          theta,
+          theta + qnorm(c(0.5 - level / 2, 0.5 + level / 2)) * se
+        ))
       }
     } else if (method == "mle") {
       # Suveges (2007) and Suveges and Davison (2010)
@@ -471,6 +648,39 @@ ext.index <- function(
         Nc -
         sqrt((schi + N - 1 + Nc)^2 - 8 * Nc * schi)) /
         (2 * schi)
+      loglik <- function(theta) {
+        (N - 1 - Nc) * log(1 - theta) + 2 * Nc * log(theta) - theta * schi
+      }
+      if (confint %in% c("wald", "lrt")) {
+        vcov <- c(
+          -solve(numDeriv::hessian(
+            func = loglik,
+            x = theta
+          ))
+        )
+        se <- sqrt(vcov)
+        if (confint == "wald") {
+          CI <- c(
+            theta,
+            theta + qnorm(c(0.5 - level / 2, 0.5 + level / 2)) * se
+          )
+          return(CI)
+        }
+        if (confint == "lrt") {
+          psi <- seq(theta - 3 * se, theta + 3 * se, length.out = 21)
+          pll <- loglik(psi)
+          out <- list(
+            psi = psi,
+            pll = pll,
+            maxpll = max(pll),
+            psi.max = theta,
+            std.error = se
+          )
+          class(out) <- "eprof"
+          CI <- confint(out, level = level)
+          return(CI)
+        }
+      }
     } else if (method == "intervals") {
       # Ferro and Segers (2003)
       if (max(exceeds - 1) <= 2) {
@@ -487,30 +697,27 @@ ext.index <- function(
     }
     return(theta)
   }
+
   # Provide a vector if multiple thresholds are supplied
-  theta <- sapply(method, function(metho) {
-    sapply(threshold, function(thresh) {
-      extmethods(x = xdat, threshold = thresh, method = metho)
-    })
+  theta <- sapply(threshold, function(thresh) {
+    extmethods(x = xdat, threshold = thresh, method = method)
   })
-  if (plot) {
-    matplot(
-      q,
-      theta,
-      type = "l",
-      xlab = "q",
-      ylim = c(0, 1),
-      ylab = "extremal index",
-      lwd = 2
-    )
-    legend(
-      x = "bottomright",
-      legend = method,
-      bty = "n",
-      lwd = 2,
-      lty = 1:3,
-      col = 1:3
+  if (confint == "none") {
+    out <- data.frame(qlev = q, coef = c(theta))
+  } else if (confint %in% c("wald", "lrt")) {
+    out <- data.frame(
+      qlev = q,
+      coef = as.numeric(theta[1, ]),
+      lower = pmax(0, as.numeric(theta[2, ])),
+      upper = pmin(1, as.numeric(theta[3, ]))
     )
   }
-  return(t(theta))
+  attr(out, "estimator") <- estimator
+  attr(out, "confint") <- confint
+  attr(out, "measure") <- "xindex"
+  class(out) <- c("mev_xdep", "data.frame")
+  if (plot) {
+    plot(out)
+  }
+  return(invisible(out))
 }

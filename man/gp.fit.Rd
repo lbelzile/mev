@@ -29,6 +29,9 @@ gp.fit(
 
 \item{warnSE}{logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.}
 }
+\value{
+a list; see \code{\link[mev]{fit.gpd}} for details
+}
 \description{
 The function \code{\link[mev]{fit.gpd}} is a wrapper around \code{gp.fit}
 }

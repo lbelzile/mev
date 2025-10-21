@@ -61,7 +61,7 @@ The routine `fit.shape`, or alternatively one of subroutines for real or positiv
 
 Note that both of the trimmed and truncated Hill estimators are not vectorized.
 
-Second-order regular variation estimators
+Second-order regular variation estimators (via `fit.rho`)
 
 - `rho.dk`: estimator of Drees and Kaufmann (1998)
 - `rho.gbw`: estimator of Goegebeur, Beirland and de Wet (2008)
@@ -138,19 +138,26 @@ Sampling algorithms for parametric models, multivariate and spatial extreme valu
 
 ### Extremal dependence measures
 
-Measures of tail dependence $\theta$, $\eta$, $\chi$ and $\varphi$.
+Measures of tail dependence $\theta$, $\eta$, $\chi$ and $\varphi$, with common functionalities, returning data frames with coefficient estimates and confidence intervals
 
-- `taildep`: estimators of coefficients of tail dependence $\eta$ and tail correlation $\chi$
+
+- `xdep.eta`: coefficient of extremal dependence $\eta$ (including routine for the estimator of Kruspskii and Joe in `kjtail`)
+- `xdep.chi`: tail correlation $\chi$.
+- `xdep.chibar`: coefficient $\overline{\chi}$
+- `xdep.xindex`: extremal index estimators based on interexceedance time and gap of exceedances
+- `xdep.asym`: estimators of the extremal asymmetry coefficient $\varphi$.
+
+Older functions that return similar summaries
+
+- `adf`: bivariate angular dependence function of Wadsworth and Tawn (2013)
 - `extcoef`: estimators of the extremal coefficient
-- `xasym`: estimators of the extremal asymmetry coefficient
+- `taildep`: estimators of coefficients of tail dependence $\eta$ and tail correlation $\chi$
 - `angextrapo`: bivariate tail dependence $\eta$ across rays
-- `lambdadep`: bivariate function of Wadsworth and Tawn (2013)
-- `ext.index`: extremal index estimators based on interexceedance time and gap of exceedances
 - `extremo`: pairwise extremogram as a function of distance for spatial data
 
 ## Datasets
 
-Various datasets collected here and there, (exclusively?)  for univariate peaks over threshold analysis
+Various datasets
 
 - `abisko`: Abisko rainfall
 - `eskrain`: Eskdalemuir observatory daily rainfall
@@ -168,7 +175,7 @@ Various datasets collected here and there, (exclusively?)  for univariate peaks 
 
 Some functionalities for fitting spatial data
 
-- `distg`: matrix of pairwise distance with geometric anisotropy
+- `distg`, `dgeoaniso`: matrix of pairwise distance with geometric anisotropy
 - Variogram models (unexported functions `powerexp.cor`, `power.vario`, `schlather.vario`)
 - `Lambda2cov`: convert variogram to covariance of conditional random field
 

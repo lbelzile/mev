@@ -3,7 +3,7 @@
 #' @description This function provides the log-likelihood and quantiles for the three different families presented
 #' in Papastathopoulos and Tawn (2013) and the two proposals of Gamet and Jalbert (2022), plus exponential tilting. All of the models contain an additional parameter, \eqn{\kappa \ge 0}.
 #' All families share the same tail index as the generalized Pareto distribution, while allowing for lower thresholds.
-#' For most models, the distribution reduce to the generalised Pareto when \eqn{\kappa=1} (for models \code{gj-tnorm} and \code{logist}, on the boundary of the parameter space when \eqn{kappa \to 0}).
+#' For most models, the distribution reduce to the generalised Pareto when \eqn{\kappa=1} (for models \code{gj-tnorm} and \code{logist}, on the boundary of the parameter space when \eqn{\kappa \to 0}).
 #'
 #' @references Papastathopoulos, I. and J. Tawn (2013). Extended generalised Pareto models for tail estimation, \emph{Journal of Statistical Planning and Inference} \bold{143}(3), 131--143, <doi:10.1016/j.jspi.2012.07.001>.
 #' @references Gamet, P. and Jalbert, J. (2022). A flexible extended generalized Pareto distribution for tail estimation. \emph{Environmetrics}, \bold{33}(6), <doi:10.1002/env.2744>.
@@ -22,14 +22,11 @@
 #' @param plot logical; if \code{TRUE}, a plot of the return levels
 #' @importFrom grDevices hcl.colors
 #'
-#' @details
-#'
-#' For return levels, the \code{p} argument can be related to \eqn{T} year exceedances as follows:
+#' @details For return levels, the \code{p} argument can be related to \eqn{T} year exceedances as follows:
 #' if there are \eqn{n_y} observations per year, than take \code{p}
 #' to equal \eqn{1/(Tn_y)} to obtain the \eqn{T}-years return level.
 #' @author Leo Belzile
-#' @return \code{egp.ll} returns the log-likelihood value.
-#' @return \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a list with tail probabilities \code{p}, return levels \code{retlev}, thresholds \code{thresh} and model name \code{model}.
+#' @return \code{egp.ll} returns the log-likelihood value, while \code{egp.retlev} returns a plot of the return levels if \code{plot=TRUE} and a list with tail probabilities \code{p}, return levels \code{retlev}, thresholds \code{thresh} and model name \code{model}.
 #' @examples
 #' set.seed(123)
 #' xdat <- rgp(1000, loc = 0, scale = 2, shape = 0.5)

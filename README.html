@@ -354,7 +354,7 @@ display: none;
 
 <div id="mev-modelling-extreme-values" class="section level1">
 <h1><code>mev</code>: Modelling Extreme values</h1>
-<p><a href="https://cran.r-project.org/package=mev"><img role="img" aria-label="CRAN_Status_Badge" src="data:image/svg+xml; charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMjAiIGFyaWEtbGFiZWw9IkNSQU4gMS4xNyDigJMgMjAyNC0wNy0wOSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJiIiB4Mj0iMCIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmJiIiBzdG9wLW9wYWNpdHk9Ii4xIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3Atb3BhY2l0eT0iLjEiLz4KICA8L2xpbmVhckdyYWRpZW50PgogIDxtYXNrIGlkPSJhIj4KICAgIDxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iMjAiIHJ4PSIzIiBmaWxsPSIjZmZmIi8+CiAgPC9tYXNrPgogIDxnIG1hc2s9InVybCgjYSkiPgogICAgPHBhdGggZmlsbD0iIzU1NSIgZD0iTTAgMGg0M3YyMEgweiIvPgogICAgPHBhdGggZmlsbD0iIzRjMSIgZD0iTTQzIDBoMTM2LjV2MjBINDN6Ii8+CiAgICA8cGF0aCBmaWxsPSJ1cmwoI2IpIiBkPSJNMCAwaDE2MHYyMEgweiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIgogICAgIGZvbnQtZmFtaWx5PSJEZWphVnUgU2FucyxWZXJkYW5hLEdlbmV2YSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIj4KICAgIDx0ZXh0IHg9IjIxLjUiIHk9IjE1IiBmaWxsPSIjMDEwMTAxIiBmaWxsLW9wYWNpdHk9Ii4zIj4KICAgICAgQ1JBTgogICAgPC90ZXh0PgogICAgPHRleHQgeD0iMjEuNSIgeT0iMTQiPgogICAgICBDUkFOCiAgICA8L3RleHQ+CiAgICA8dGV4dCB4PSIxMDAuNSIgeT0iMTUiIGZpbGw9IiMwMTAxMDEiIGZpbGwtb3BhY2l0eT0iLjMiPgogICAgICAxLjE3IOKAkyAyMDI0LTA3LTA5CiAgICA8L3RleHQ+CiAgICA8dGV4dCB4PSIxMDAuNSIgeT0iMTQiPgogICAgICAxLjE3IOKAkyAyMDI0LTA3LTA5CiAgICA8L3RleHQ+CiAgPC9nPgo8L3N2Zz4=" alt="CRAN_Status_Badge" /></a> <a href="http://www.gnu.org/licenses/gpl-3.0.html"><img role="img" aria-label="License" src="data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjIiIGhlaWdodD0iMjAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0ibGljZW5zZTogR1BMICgmZ3Q7PSAzKSI+PHRpdGxlPmxpY2Vuc2U6IEdQTCAoJmd0Oz0gMyk8L3RpdGxlPjxsaW5lYXJHcmFkaWVudCBpZD0icyIgeDI9IjAiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiYmIiIHN0b3Atb3BhY2l0eT0iLjEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3Atb3BhY2l0eT0iLjEiLz48L2xpbmVhckdyYWRpZW50PjxjbGlwUGF0aCBpZD0iciI+PHJlY3Qgd2lkdGg9IjEyMiIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNmZmYiLz48L2NsaXBQYXRoPjxnIGNsaXAtcGF0aD0idXJsKCNyKSI+PHJlY3Qgd2lkdGg9IjQ3IiBoZWlnaHQ9IjIwIiBmaWxsPSIjNTU1Ii8+PHJlY3QgeD0iNDciIHdpZHRoPSI3NSIgaGVpZ2h0PSIyMCIgZmlsbD0iIzAwN2VjNiIvPjxyZWN0IHdpZHRoPSIxMjIiIGhlaWdodD0iMjAiIGZpbGw9InVybCgjcykiLz48L2c+PGcgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IlZlcmRhbmEsR2VuZXZhLERlamFWdSBTYW5zLHNhbnMtc2VyaWYiIHRleHQtcmVuZGVyaW5nPSJnZW9tZXRyaWNQcmVjaXNpb24iIGZvbnQtc2l6ZT0iMTEwIj48dGV4dCBhcmlhLWhpZGRlbj0idHJ1ZSIgeD0iMjQ1IiB5PSIxNTAiIGZpbGw9IiMwMTAxMDEiIGZpbGwtb3BhY2l0eT0iLjMiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiB0ZXh0TGVuZ3RoPSIzNzAiPmxpY2Vuc2U8L3RleHQ+PHRleHQgeD0iMjQ1IiB5PSIxNDAiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiBmaWxsPSIjZmZmIiB0ZXh0TGVuZ3RoPSIzNzAiPmxpY2Vuc2U8L3RleHQ+PHRleHQgYXJpYS1oaWRkZW49InRydWUiIHg9IjgzNSIgeT0iMTUwIiBmaWxsPSIjMDEwMTAxIiBmaWxsLW9wYWNpdHk9Ii4zIiB0cmFuc2Zvcm09InNjYWxlKC4xKSIgdGV4dExlbmd0aD0iNjUwIj5HUEwgKCZndDs9IDMpPC90ZXh0Pjx0ZXh0IHg9IjgzNSIgeT0iMTQwIiB0cmFuc2Zvcm09InNjYWxlKC4xKSIgZmlsbD0iI2ZmZiIgdGV4dExlbmd0aD0iNjUwIj5HUEwgKCZndDs9IDMpPC90ZXh0PjwvZz48L3N2Zz4=" alt="License" /></a> <a href="http://www.r-pkg.org/pkg/mev"><img role="img" aria-label="Downloads" src="data:image/svg+xml; charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDkiIGhlaWdodD0iMjAiIGFyaWEtbGFiZWw9IkNSQU4gZG93bmxvYWRzIDI4NjgvbW9udGgiPgogIDxsaW5lYXJHcmFkaWVudCBpZD0iYiIgeDI9IjAiIHkyPSIxMDAlIj4KICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2JiYiIgc3RvcC1vcGFjaXR5PSIuMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLW9wYWNpdHk9Ii4xIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8bWFzayBpZD0iYSI+CiAgICA8cmVjdCB3aWR0aD0iMTQ5IiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iI2ZmZiIvPgogIDwvbWFzaz4KICA8ZyBtYXNrPSJ1cmwoI2EpIj48cGF0aCBmaWxsPSIjNTU1IiBkPSJNMCAwaDcwdjIwSDB6Ii8+CiAgICA8cGF0aCBmaWxsPSIjNGMxIiBkPSJNNzAgMGg3OXYyMEg3MHoiLz4KICAgIDxwYXRoIGZpbGw9InVybCgjYikiIGQ9Ik0wIDBoMTQ5djIwSDB6Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiCiAgICAgZm9udC1mYW1pbHk9IkRlamFWdSBTYW5zLFZlcmRhbmEsR2VuZXZhLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiPgogICAgPHRleHQgeD0iMzYiIHk9IjE1IiBmaWxsPSIjMDEwMTAxIiBmaWxsLW9wYWNpdHk9Ii4zIj4KICAgICAgZG93bmxvYWRzCiAgICA8L3RleHQ+CiAgICA8dGV4dCB4PSIzNiIgeT0iMTQiPgogICAgICBkb3dubG9hZHMKICAgIDwvdGV4dD4KICAgIDx0ZXh0IHg9IjEwOC41IiB5PSIxNSIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyI+CiAgICAgIDI4NjgvbW9udGgKICAgIDwvdGV4dD4KICAgIDx0ZXh0IHg9IjEwOC41IiB5PSIxNCI+CiAgICAgIDI4NjgvbW9udGgKICAgIDwvdGV4dD4KICA8L2c+Cjwvc3ZnPg==" alt="Downloads" /></a></p>
+<p><a href="https://cran.r-project.org/package=mev"><img role="img" aria-label="CRAN_Status_Badge" src="data:image/svg+xml; charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMjAiIGFyaWEtbGFiZWw9IkNSQU4gMS4xNyDigJMgMjAyNC0wNy0wOSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJiIiB4Mj0iMCIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmJiIiBzdG9wLW9wYWNpdHk9Ii4xIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3Atb3BhY2l0eT0iLjEiLz4KICA8L2xpbmVhckdyYWRpZW50PgogIDxtYXNrIGlkPSJhIj4KICAgIDxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iMjAiIHJ4PSIzIiBmaWxsPSIjZmZmIi8+CiAgPC9tYXNrPgogIDxnIG1hc2s9InVybCgjYSkiPgogICAgPHBhdGggZmlsbD0iIzU1NSIgZD0iTTAgMGg0M3YyMEgweiIvPgogICAgPHBhdGggZmlsbD0iIzRjMSIgZD0iTTQzIDBoMTM2LjV2MjBINDN6Ii8+CiAgICA8cGF0aCBmaWxsPSJ1cmwoI2IpIiBkPSJNMCAwaDE2MHYyMEgweiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIgogICAgIGZvbnQtZmFtaWx5PSJEZWphVnUgU2FucyxWZXJkYW5hLEdlbmV2YSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIj4KICAgIDx0ZXh0IHg9IjIxLjUiIHk9IjE1IiBmaWxsPSIjMDEwMTAxIiBmaWxsLW9wYWNpdHk9Ii4zIj4KICAgICAgQ1JBTgogICAgPC90ZXh0PgogICAgPHRleHQgeD0iMjEuNSIgeT0iMTQiPgogICAgICBDUkFOCiAgICA8L3RleHQ+CiAgICA8dGV4dCB4PSIxMDAuNSIgeT0iMTUiIGZpbGw9IiMwMTAxMDEiIGZpbGwtb3BhY2l0eT0iLjMiPgogICAgICAxLjE3IOKAkyAyMDI0LTA3LTA5CiAgICA8L3RleHQ+CiAgICA8dGV4dCB4PSIxMDAuNSIgeT0iMTQiPgogICAgICAxLjE3IOKAkyAyMDI0LTA3LTA5CiAgICA8L3RleHQ+CiAgPC9nPgo8L3N2Zz4=" alt="CRAN_Status_Badge" /></a> <a href="http://www.gnu.org/licenses/gpl-3.0.html"><img role="img" aria-label="License" src="data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjIiIGhlaWdodD0iMjAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0ibGljZW5zZTogR1BMICgmZ3Q7PSAzKSI+PHRpdGxlPmxpY2Vuc2U6IEdQTCAoJmd0Oz0gMyk8L3RpdGxlPjxsaW5lYXJHcmFkaWVudCBpZD0icyIgeDI9IjAiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiYmIiIHN0b3Atb3BhY2l0eT0iLjEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3Atb3BhY2l0eT0iLjEiLz48L2xpbmVhckdyYWRpZW50PjxjbGlwUGF0aCBpZD0iciI+PHJlY3Qgd2lkdGg9IjEyMiIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNmZmYiLz48L2NsaXBQYXRoPjxnIGNsaXAtcGF0aD0idXJsKCNyKSI+PHJlY3Qgd2lkdGg9IjQ3IiBoZWlnaHQ9IjIwIiBmaWxsPSIjNTU1Ii8+PHJlY3QgeD0iNDciIHdpZHRoPSI3NSIgaGVpZ2h0PSIyMCIgZmlsbD0iIzAwN2VjNiIvPjxyZWN0IHdpZHRoPSIxMjIiIGhlaWdodD0iMjAiIGZpbGw9InVybCgjcykiLz48L2c+PGcgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IlZlcmRhbmEsR2VuZXZhLERlamFWdSBTYW5zLHNhbnMtc2VyaWYiIHRleHQtcmVuZGVyaW5nPSJnZW9tZXRyaWNQcmVjaXNpb24iIGZvbnQtc2l6ZT0iMTEwIj48dGV4dCBhcmlhLWhpZGRlbj0idHJ1ZSIgeD0iMjQ1IiB5PSIxNTAiIGZpbGw9IiMwMTAxMDEiIGZpbGwtb3BhY2l0eT0iLjMiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiB0ZXh0TGVuZ3RoPSIzNzAiPmxpY2Vuc2U8L3RleHQ+PHRleHQgeD0iMjQ1IiB5PSIxNDAiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiBmaWxsPSIjZmZmIiB0ZXh0TGVuZ3RoPSIzNzAiPmxpY2Vuc2U8L3RleHQ+PHRleHQgYXJpYS1oaWRkZW49InRydWUiIHg9IjgzNSIgeT0iMTUwIiBmaWxsPSIjMDEwMTAxIiBmaWxsLW9wYWNpdHk9Ii4zIiB0cmFuc2Zvcm09InNjYWxlKC4xKSIgdGV4dExlbmd0aD0iNjUwIj5HUEwgKCZndDs9IDMpPC90ZXh0Pjx0ZXh0IHg9IjgzNSIgeT0iMTQwIiB0cmFuc2Zvcm09InNjYWxlKC4xKSIgZmlsbD0iI2ZmZiIgdGV4dExlbmd0aD0iNjUwIj5HUEwgKCZndDs9IDMpPC90ZXh0PjwvZz48L3N2Zz4=" alt="License" /></a> <a href="http://www.r-pkg.org/pkg/mev"><img role="img" aria-label="Downloads" src="data:image/svg+xml; charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDkiIGhlaWdodD0iMjAiIGFyaWEtbGFiZWw9IkNSQU4gZG93bmxvYWRzIDkwNDEvbW9udGgiPgogIDxsaW5lYXJHcmFkaWVudCBpZD0iYiIgeDI9IjAiIHkyPSIxMDAlIj4KICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2JiYiIgc3RvcC1vcGFjaXR5PSIuMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLW9wYWNpdHk9Ii4xIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8bWFzayBpZD0iYSI+CiAgICA8cmVjdCB3aWR0aD0iMTQ5IiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iI2ZmZiIvPgogIDwvbWFzaz4KICA8ZyBtYXNrPSJ1cmwoI2EpIj48cGF0aCBmaWxsPSIjNTU1IiBkPSJNMCAwaDcwdjIwSDB6Ii8+CiAgICA8cGF0aCBmaWxsPSIjNGMxIiBkPSJNNzAgMGg3OXYyMEg3MHoiLz4KICAgIDxwYXRoIGZpbGw9InVybCgjYikiIGQ9Ik0wIDBoMTQ5djIwSDB6Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiCiAgICAgZm9udC1mYW1pbHk9IkRlamFWdSBTYW5zLFZlcmRhbmEsR2VuZXZhLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiPgogICAgPHRleHQgeD0iMzYiIHk9IjE1IiBmaWxsPSIjMDEwMTAxIiBmaWxsLW9wYWNpdHk9Ii4zIj4KICAgICAgZG93bmxvYWRzCiAgICA8L3RleHQ+CiAgICA8dGV4dCB4PSIzNiIgeT0iMTQiPgogICAgICBkb3dubG9hZHMKICAgIDwvdGV4dD4KICAgIDx0ZXh0IHg9IjEwOC41IiB5PSIxNSIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyI+CiAgICAgIDkwNDEvbW9udGgKICAgIDwvdGV4dD4KICAgIDx0ZXh0IHg9IjEwOC41IiB5PSIxNCI+CiAgICAgIDkwNDEvbW9udGgKICAgIDwvdGV4dD4KICA8L2c+Cjwvc3ZnPg==" alt="Downloads" /></a></p>
 <p>An <strong>R</strong> package for the analysis of univariate,
 multivariate and functional extreme values. The package includes routine
 functions for univariate analyses multiple threshold selection
@@ -421,11 +421,27 @@ Segers and Zhou</li>
 Haan.</li>
 <li><code>shape.pickands</code>: Pickands estimator (poor
 performance)</li>
-<li><code>shape.vries</code>*: de Vries estimator</li>
+<li><code>shape.vries</code>*: de Vries estimator of de Haan and
+Peng.</li>
+<li><code>shape.genjack</code>*: generalized jacknnife shape estimator
+of Gomes et al. </li>
 <li><code>shape.rbm</code>*: Wager’s random block maxima estimator</li>
+<li><code>shape.genquant</code>*: generalized quantile</li>
 <li><code>shape.trimhill</code>*: trimmed Hill estimator</li>
 <li><code>shape.lthill</code>*: left-truncated Hill estimator</li>
-<li><code>shape.genquant</code>*: generalized quantile</li>
+</ul>
+<p>Note that both of the trimmed and truncated Hill estimators are not
+vectorized.</p>
+<p>Second-order regular variation estimators (via
+<code>fit.rho</code>)</p>
+<ul>
+<li><code>rho.dk</code>: estimator of Drees and Kaufmann (1998)</li>
+<li><code>rho.gbw</code>: estimator of Goegebeur, Beirland and de Wet
+(2008)</li>
+<li><code>rho.fagh</code>: estimator of Fraga Alves, Gomes and de Haan
+(2003)</li>
+<li><code>rho.ghp</code>: estimator of Gomes, de Haan and Peng
+(2002)</li>
 </ul>
 </div>
 <div id="threshold-selection-diagnostics" class="section level2">
@@ -449,7 +465,7 @@ mean residual life diagnostics</li>
 threshold selection diagnostic</li>
 <li><code>thselect.alrs</code>: automatic L-moments ratio selection
 method of Silva Lomba and Fraga Alves (2020)</li>
-<li><code>thselect.mahadist</code>: Mahalanobis distance-based selection
+<li><code>thselect.ksmd</code>: Mahalanobis distance-based selection
 method based on L-moments of Kiran and Srivinas (2021)</li>
 </ul>
 <p>Some semiparametric methods</p>
@@ -462,6 +478,12 @@ threshold selection of Beirlant, Vynckier and Teugels (1996)</li>
 Goegebeur, Beirlant and de Wet (2008)</li>
 <li><code>thselect.rbm</code>: Random block maximum estimator of Wager
 (2014), with empirical Bayes risk minimization</li>
+<li><code>thselect.pec</code>: prediction error C-criterion with
+non-robust estimator of Dupuis and Victoria-Feser (2003)</li>
+<li><code>thselect.mdps</code>: minimum distance threshold selection
+procedure of Clauset, Shalizi and Newman (2009)</li>
+<li><code>thselect.samsee</code>: smooth asymptotic mean squared error
+estimator of Schneider, Krajina, and Krivobokova (2021)</li>
 </ul>
 </div>
 <div id="threshold-stability-plots" class="section level2">
@@ -474,7 +496,6 @@ generalized Pareto</li>
 <li><code>tstab.cv</code>: coefficient of variation stability plot</li>
 <li><code>tstab.mrl</code>: mean residual life plot</li>
 <li><code>tstab.hill</code>: Hill plot</li>
-<li><code>tstab.thill</code>: left-truncated Hill plot ???</li>
 </ul>
 </div>
 <div id="multivariate" class="section level2">
@@ -495,9 +516,10 @@ models</li>
 <p>Two tests, one for max-stability and the other for asymptotic
 independence</p>
 <ul>
-<li><code>maxstabtest</code>: test of max-stability</li>
-<li><code>scoreindep</code>: score test of asymptotic independence for
-bivariate logistic model</li>
+<li><code>test.maxstab</code>: graphical test of max-stability (P-P
+plot)</li>
+<li><code>test.scoreindep</code>: score test of asymptotic independence
+for bivariate logistic model</li>
 </ul>
 <div id="nonparametric" class="section level3">
 <h3>Nonparametric</h3>
@@ -535,18 +557,27 @@ processes</li>
 </ul>
 <div id="extremal-dependence-measures" class="section level3">
 <h3>Extremal dependence measures</h3>
-<p>Measures of tail dependence <span class="math inline">\(\theta\)</span>, <span class="math inline">\(\eta\)</span>, <span class="math inline">\(\chi\)</span> and <span class="math inline">\(\varphi\)</span>.</p>
+<p>Measures of tail dependence <span class="math inline">\(\theta\)</span>, <span class="math inline">\(\eta\)</span>, <span class="math inline">\(\chi\)</span> and <span class="math inline">\(\varphi\)</span>, with common functionalities,
+returning data frames with coefficient estimates and confidence
+intervals</p>
 <ul>
+<li><code>xdep.eta</code>: coefficient of extremal dependence <span class="math inline">\(\eta\)</span> (including routine for the estimator
+of Kruspskii and Joe in <code>kjtail</code>)</li>
+<li><code>xdep.chi</code>: tail correlation <span class="math inline">\(\chi\)</span>.</li>
+<li><code>xdep.chibar</code>: coefficient <span class="math inline">\(\overline{\chi}\)</span></li>
+<li><code>xdep.xindex</code>: extremal index estimators based on
+interexceedance time and gap of exceedances</li>
+<li><code>xdep.asym</code>: estimators of the extremal asymmetry
+coefficient <span class="math inline">\(\varphi\)</span>.</li>
+</ul>
+<p>Older functions that return similar summaries</p>
+<ul>
+<li><code>adf</code>: bivariate angular dependence function of Wadsworth
+and Tawn (2013)</li>
+<li><code>extcoef</code>: estimators of the extremal coefficient</li>
 <li><code>taildep</code>: estimators of coefficients of tail dependence
 <span class="math inline">\(\eta\)</span> and tail correlation <span class="math inline">\(\chi\)</span></li>
-<li><code>extcoef</code>: estimators of the extremal coefficient</li>
-<li><code>xasym</code>: estimators of the extremal asymmetry
-coefficient</li>
 <li><code>angextrapo</code>: bivariate tail dependence <span class="math inline">\(\eta\)</span> across rays</li>
-<li><code>lambdadep</code>: bivariate function of Wadsworth and Tawn
-(2013)</li>
-<li><code>ext.index</code>: extremal index estimators based on
-interexceedance time and gap of exceedances</li>
 <li><code>extremo</code>: pairwise extremogram as a function of distance
 for spatial data</li>
 </ul>
@@ -554,14 +585,20 @@ for spatial data</li>
 </div>
 <div id="datasets" class="section level2">
 <h2>Datasets</h2>
-<p>Various datasets collected here and there, (exclusively?) for
-univariate peaks over threshold analysis</p>
+<p>Various datasets</p>
 <ul>
 <li><code>abisko</code>: Abisko rainfall</li>
 <li><code>eskrain</code>: Eskdalemuir observatory daily rainfall</li>
+<li><code>frwind</code>: time series of wind speeds</li>
 <li><code>geomagnetic</code>: magnitude of geomagnetic storms</li>
+<li><code>leedspollution</code>: multivariate air pollutant from
+Leeds</li>
 <li><code>maiquetia</code>: Maiquetia daily rainfall series</li>
 <li><code>nidd</code>: river Nidd daily flow</li>
+<li><code>nutrients</code>: interview component from NHANES on
+nutrients</li>
+<li><code>pandemics</code>: estimated records on number of death from
+pandemics</li>
 <li><code>venice</code>: Venice sea level data</li>
 <li><code>w1500m</code>: women 1500m track records</li>
 </ul>
@@ -570,11 +607,11 @@ univariate peaks over threshold analysis</p>
 <h2>Spatial</h2>
 <p>Some functionalities for fitting spatial data</p>
 <ul>
-<li><code>distg</code>: matrix of pairwise distance with geometric
-anisotropy</li>
+<li><code>distg</code>, <code>dgeoaniso</code>: matrix of pairwise
+distance with geometric anisotropy</li>
 <li>Variogram models (unexported functions <code>powerexp.cor</code>,
 <code>power.vario</code>, <code>schlather.vario</code>)</li>
-<li><code>Lambda2cov</code>: conver variogram to covariance of
+<li><code>Lambda2cov</code>: convert variogram to covariance of
 conditional random field</li>
 </ul>
 </div>

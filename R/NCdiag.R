@@ -356,14 +356,14 @@ print.mev_thdiag_northropcoleman <-
 # Algebraic calculation of score vector #
 #------------------------------------------------------------------------------#
 
-#' Algebraic score
-#'
-#' @param y vector of excesses of lowest threshold \code{u1}
-#' @param x parameter vector (\code{sigma1}, \code{phi_1}, \ldots, \code{phi_m})
-#' @param v thresholds relative to lowest threshold
-#' @param w differences between thresholds (\code{w[m]} not used)
-#' @param m number of thresholds
-#' @keywords internal
+# Algebraic score
+#
+# @param y vector of excesses of lowest threshold \code{u1}
+# @param x parameter vector (\code{sigma1}, \code{phi_1}, \ldots, \code{phi_m})
+# @param v thresholds relative to lowest threshold
+# @param w differences between thresholds (\code{w[m]} not used)
+# @param m number of thresholds
+# @keywords internal
 .score_algebraic <- function(y, x, w, v, m) {
   n <- length(y) # sample size
   sigma1 <- x[1] # sigma_1
@@ -440,13 +440,14 @@ print.mev_thdiag_northropcoleman <-
 # Algebraic calculation of expected information #
 #------------------------------------------------------------------------------#
 
-#' Algebraic calculation of the expected information
-#'
-#' @param x parameter vector: (\code{sigma1}, \code{phi_1}, \ldots, \code{phi_m})
-#' @param v thresholds relative to lowest threshold
-#' @param w differences between thresholds (\code{w[m]} not used)
-#' @param m number of thresholds
-#' @keywords internal
+# Algebraic calculation of the expected information
+#
+# @param x parameter vector: (\code{sigma1}, \code{phi_1}, \ldots,\code{phi_m})
+# @param v thresholds relative to lowest threshold
+# @param w differences between thresholds (\code{w[m]} not used)
+# @param m number of thresholds
+# @return a matrix with the expected information
+# @keywords internal
 .exp_info_algebraic <- function(x, w, v, m) {
   sigma1 <- x[1] # sigma_1
   phi <- x[-1] # (phi_1, ..., phi_m)

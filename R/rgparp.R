@@ -792,8 +792,11 @@ rgparp <- function(
     ustar <- (1 +
       shape[siteindex] * (us - loc[siteindex]) / scale[siteindex])^(1 /
       shape[siteindex])
-    if(ustar <= 0){
-      stop("Invalid location, scale and shape combination: the lower bound is at zero or less: please increase the threshold.")
+    if (ustar <= 0) {
+      stop(
+        "Invalid location, scale and shape combination: the lower bound is at zero or less: please increase the threshold."
+      )
+    }
   } else if (riskf == "mean") {
     # difference vs max is 1/d factor
     ustar <- min(

@@ -23,6 +23,9 @@
 
 \item{...}{additional arguments, currently ignored}
 }
+\value{
+\code{NULL}; use to produce plots
+}
 \description{
 Mean residual life parameter stability plot
 }

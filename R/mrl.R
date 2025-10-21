@@ -306,6 +306,7 @@ tstab.mrl <- function(
 #' @param type [string] whether to plot pointwise confidence intervals using segments (\code{"ptwise"}) or using dashed lines (\code{"band"})
 #' @param x object resulting from a call to \code{tstab.mrl}
 #' @param ... additional arguments, currently ignored
+#' @return \code{NULL}; use to produce plots
 #' @export
 plot.mev_tstab_mrl <- function(
   x,
@@ -362,4 +363,5 @@ plot.mev_tstab_mrl <- function(
       col = c("black", "grey", "grey")
     )
   }
+  return(invisible(NULL))
 }

@@ -15,6 +15,9 @@ Lambda2cov(Lambda, co, subA, subB)
 
 \item{subB}{vector of integers with sub-entries (not in \code{co}) for columns. If missing, default to \code{subA}.}
 }
+\value{
+a covariance matrix
+}
 \description{
 The matrix \code{Lambda} is half the semivariogram matrix. The function
 returns the conditional covariance with respect to entries in \code{co},

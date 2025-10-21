@@ -1,4 +1,3 @@
-
 #' Power variogram model
 #'
 #' The power variogram model is
@@ -88,6 +87,7 @@ schlather.vario <- function(h, alpha, beta, scale = 1) {
 #' @param subA vector of integers with sub-entries (not in \code{co}) for rows
 #' @param subB vector of integers with sub-entries (not in \code{co}) for columns. If missing, default to \code{subA}.
 #' @keywords internal
+#' @return a covariance matrix
 #' @export
 Lambda2cov <- function(Lambda, co, subA, subB) {
   if (length(co) > 1) {
@@ -100,7 +100,8 @@ Lambda2cov <- function(Lambda, co, subA, subB) {
     if (subA[co]) {
       stop("Covariance matrix should be shed with respect to conditioning site")
     }
-  } else if (co %in% subA) { # is numeric
+  } else if (co %in% subA) {
+    # is numeric
     stop("Invalid conditioning variable for covariance matrix")
   }
   if (missing(subB)) {
@@ -111,9 +112,12 @@ Lambda2cov <- function(Lambda, co, subA, subB) {
         stop("Invalid length")
       }
       if (subB[co]) {
-        stop("Covariance matrix should be shed with respect to conditioning site")
+        stop(
+          "Covariance matrix should be shed with respect to conditioning site"
+        )
       }
-    } else if (co %in% subB) { # is numeric
+    } else if (co %in% subB) {
+      # is numeric
       stop("Invalid conditioning variable for covariance matrix")
     }
   }

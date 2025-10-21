@@ -3,7 +3,7 @@
 \name{gev.ll}
 \alias{gev.ll}
 \alias{gev.ll.optim}
-\title{log likelihood for the generalized extreme value distribution}
+\title{Log likelihood for the generalized extreme value distribution}
 \usage{
 gev.ll(par, dat)
 

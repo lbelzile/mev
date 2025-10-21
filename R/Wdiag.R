@@ -679,30 +679,30 @@ W.diag <- function(
 
 #####################################################################################
 
-#' Joint maximum likelihood for the non-homogeneous Poisson Process
+# Joint maximum likelihood for the non-homogeneous Poisson Process
 #'
-#' Calculates the MLEs of the parameters (\eqn{\mu}, \eqn{\sigma}, \eqn{\xi}), and joint
-#' asymptotic covariance matrix of these MLEs over a range of thresholds as supplied by the user.
-#' @param x vector of data
-#' @param u optional vector of thresholds. If not supplied, then k thresholds between quantiles (q1, q2) will be used
-#' @param k number of thresholds to consider if \code{u} not supplied
-#' @param q1 lower  quantile to consider for threshold
-#' @param q2 upper quantile to consider for threshold. Default to 1
-#' @param par starting values for the optimization
-#' @param  M  number of superpositions or 'blocks' / 'years' the process corresponds to.
-#' It affects the estimation of \eqn{mu} and \eqn{sigma},
-#' but these can be changed post-hoc to correspond to any number)
-#'
-#' @author Jennifer L. Wadsworth
-#' @return a list with components
-#' \itemize{
-#' \item mle matrix of MLEs above the supplied thresholds; columns are (\eqn{\mu}, \eqn{\sigma}, \eqn{\xi})
-#' \item Cov.all joint asymptotic covariance matrix of all MLEs
-#' \item Cov.mu joint asymptotic covariance matrix of MLEs for \eqn{\mu}
-#' \item Cov.sig joint asymptotic covariance matrix of MLEs for \eqn{\sigma}
-#' \item Cov.xi joint asymptotic covariance matrix of MLEs for \eqn{\xi}
-#' }
-#' @keywords internal
+# Calculates the MLEs of the parameters (\eqn{\mu}, \eqn{\sigma}, \eqn{\xi}), and joint
+# asymptotic covariance matrix of these MLEs over a range of thresholds as supplied by the user.
+# @param x vector of data
+# @param u optional vector of thresholds. If not supplied, then k thresholds between quantiles (q1, q2) will be used
+# @param k number of thresholds to consider if \code{u} not supplied
+# @param q1 lower  quantile to consider for threshold
+# @param q2 upper quantile to consider for threshold. Default to 1
+# @param par starting values for the optimization
+# @param  M  number of superpositions or 'blocks' / 'years' the process corresponds to.
+# It affects the estimation of \eqn{mu} and \eqn{sigma},
+# but these can be changed post-hoc to correspond to any number)
+#
+# @author Jennifer L. Wadsworth
+# @return a list with components
+# \itemize{
+# \item mle matrix of MLEs above the supplied thresholds; columns are (\eqn{\mu}, \eqn{\sigma}, \eqn{\xi})
+# \item Cov.all joint asymptotic covariance matrix of all MLEs
+# \item Cov.mu joint asymptotic covariance matrix of MLEs for \eqn{\mu}
+# \item Cov.sig joint asymptotic covariance matrix of MLEs for \eqn{\sigma}
+# \item Cov.xi joint asymptotic covariance matrix of MLEs for \eqn{\xi}
+# }
+# @keywords internal
 .Joint_MLE_NHPP <- function(x, u = NULL, k, q1, q2 = 1, par, M) {
   if (!is.null(u)) {
     k <- length(u)
@@ -823,14 +823,14 @@ W.diag <- function(
 
 ###################################################################################
 
-#' Contrast matrix
-#'
-#' Produces a contrast matrix with (1,-1) elements running down the two diagonals
-#'
-#'@param k number of columns (the number of rows is \code{k-1})
-#'
-#'@return a \code{k-1} x \code{k} contrast matrix
-#'@keywords internal
+# Contrast matrix
+#
+# Produces a contrast matrix with (1,-1) elements running down the two diagonals
+#
+# @param k number of columns (the number of rows is \code{k-1})
+#
+# @return a \code{k-1} x \code{k} contrast matrix
+# @keywords internal
 .C1 <- function(k) {
   Cm <- diag(x = 1, nrow = k - 1, ncol = k)
   Cm[row(Cm) + 1 == col(Cm)] <- -1

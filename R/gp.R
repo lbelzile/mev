@@ -868,6 +868,7 @@
 #'
 #' The function \code{\link[mev]{fit.gpd}} is a wrapper around \code{gp.fit}
 #' @export
+#' @return a list; see \code{\link[mev]{fit.gpd}} for details
 #' @inheritParams fit.gpd
 #' @keywords internal
 gp.fit <- function(

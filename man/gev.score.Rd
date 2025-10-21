@@ -11,6 +11,9 @@ gev.score(par, dat)
 
 \item{dat}{sample vector}
 }
+\value{
+a vector of length containing the derivative of the
+}
 \description{
 Score vector for the generalized extreme value distribution
 }

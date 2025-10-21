@@ -366,7 +366,8 @@ plot.mev_xdep <- function(x, ...) {
       xasym = expression("extremal asymmetry" ~ phi),
       chi = expression("tail correlation" ~ chi),
       eta = expression("tail dependence" ~ eta),
-      chibar = expression(bar(chi))
+      chibar = expression(bar(chi)),
+      xindex = "extremal index"
     )
   }
   if (is.null(ellips$pch)) {
@@ -378,7 +379,8 @@ plot.mev_xdep <- function(x, ...) {
       xasym = c(-1, 1),
       chi = c(0, 1),
       eta = c(0, 1),
-      chibar = c(-1, 1)
+      chibar = c(-1, 1),
+      xindex = c(0, 1)
     )
   }
   if (is.null(ellips$xlim)) {

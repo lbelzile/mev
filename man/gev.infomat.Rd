@@ -15,7 +15,10 @@ gev.infomat(par, dat, method = c("obs", "exp"), nobs = length(dat))
 
 \item{nobs}{number of observations}
 }
+\value{
+a 3 by 3 matrix containing the expected or observed information
+}
 \description{
-The function returns the expected or observed information matrix.
+Information matrix for the generalized extreme value distribution
 }
 \keyword{internal}
