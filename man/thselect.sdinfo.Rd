@@ -4,14 +4,14 @@
 \alias{thselect.sdinfo}
 \title{Threshold selection diagnostic of Suveges and Davison}
 \usage{
-thselect.sdinfo(xdat, thresh, quantile, plot = FALSE, kmax = 1)
+thselect.sdinfo(xdat, thresh, qlev, plot = FALSE, kmax = 1)
 }
 \arguments{
 \item{xdat}{[vector] vector of observations}
 
 \item{thresh}{[vector] candidate thresholds}
 
-\item{quantile}{[vector] probability levels to define threshold if \code{thresh} is missing.}
+\item{qlev}{[vector] probability levels to define threshold if \code{thresh} is missing.}
 
 \item{plot}{[logical]; should the graphical diagnostic be plotted?}
 
@@ -52,7 +52,7 @@ Fukutome et al. (2015) propose an ad hoc automated procedure
 \examples{
 thselect.sdinfo(
   xdat = rgp(n = 10000),
-  quantile = seq(0.1, 0.9, length = 10),
+  qlev = seq(0.1, 0.9, length = 10),
   kmax = 3)
 }
 \references{

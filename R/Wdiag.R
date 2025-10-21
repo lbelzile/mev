@@ -855,7 +855,11 @@ plot.mev_thselect_wadsworth <-
       several.ok = FALSE
     )
     plots <- tolower(type)
-    plots <- match.arg(plots, choices = c("wn", "ps"), several.ok = TRUE)
+    plots <- match.arg(
+      plots,
+      choices = c("wn", "ps"),
+      several.ok = TRUE
+    )
     if (length(plots) < 1) {
       stop(
         "Only options for white noise plot (\"wn\") and parameter stability plot (\"ps\") are supported."
@@ -978,7 +982,7 @@ print.mev_thselect_wadsworth <-
 #'
 #' @param xdat a numeric vector or matrix of data to be fitted.
 #' @param thresh vector of candidate thresholds.
-#' @param quantile vector of probabilities for empirical quantiles used in place of the threshold, used if argument \code{thresh} is missing.
+#' @param qlev vector of probabilities for empirical quantiles used in place of the threshold, used if argument \code{thresh} is missing.
 #' @param model string specifying whether the univariate or multivariate diagnostic should be used. Either \code{nhpp} for the univariate model, or \code{exp} (\code{invexp}) for the bivariate exponential model with rate (inverse rate) parametrization. See details.
 #' @param nsim number of Monte Carlo simulations used to assess the null distribution of the test statistic
 #' @param level confidence level of intervals, defaults to 0.95
@@ -1024,16 +1028,15 @@ print.mev_thselect_wadsworth <-
 #'                 Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 #' thselect.wseq(
 #'   xdat = xbvn,
-#'   quantile = seq(0, 0.9, length.out = 30),
+#'   qlev = seq(0, 0.9, length.out = 30),
 #'   model = 'taildep',
 #'   plot = TRUE)
-#' #inverse rate parametrization
 #' }
 #' @export
 thselect.wseq <- function(
   xdat,
   thresh,
-  quantile,
+  qlev,
   model = c("nhpp", "taildep", "rtaildep"),
   npp = 1,
   nsim = 1000L,
@@ -1060,9 +1063,9 @@ thselect.wseq <- function(
     xdat <- apply(na.omit(xdat), 1, min)
     args$transform <- FALSE
   }
-  if (missing(thresh) && !missing(quantile)) {
-    stopifnot(isTRUE(all(quantile >= 0, quantile < 1, is.finite(quantile))))
-    thresh <- quantile(xdat, probs = quantile)
+  if (missing(thresh) && !missing(qlev)) {
+    stopifnot(isTRUE(all(qlev >= 0, qlev < 1, is.finite(qlev))))
+    thresh <- quantile(xdat, probs = qlev)
   }
   plots <- args$type
   if (is.null(plots)) {
@@ -1084,13 +1087,13 @@ thselect.wseq <- function(
       )
     )
   )
-  if (missing(quantile)) {
-    quantile <- NULL
+  if (missing(qlev)) {
+    qlev <- NULL
   }
   res <- list(
     thresh = as.numeric(thresh),
     thresh0 = wdiag$thresh,
-    quantile = quantile,
+    qlev = qlev,
     model = mod,
     nsim = nsim,
     level = level,

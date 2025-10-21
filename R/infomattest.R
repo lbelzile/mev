@@ -191,7 +191,7 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
 #' @references White (1982), Maximum Likelihood Estimation of Misspecified Models. \emph{Econometrica}, \strong{50}(1), 1-25.
 #' @param xdat [vector] vector of observations
 #' @param thresh [vector] candidate thresholds
-#' @param quantile [vector] probability levels to define threshold if \code{thresh} is missing.
+#' @param qlev [vector] probability levels to define threshold if \code{thresh} is missing.
 #' @param kmax [int] the largest K-gap under consideration for clusters
 #' @param plot [logical]; should the graphical diagnostic be plotted?
 #' @return an invisible list of class  with elements
@@ -207,20 +207,20 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
 #' @examples
 #' thselect.sdinfo(
 #'   xdat = rgp(n = 10000),
-#'   quantile = seq(0.1, 0.9, length = 10),
+#'   qlev = seq(0.1, 0.9, length = 10),
 #'   kmax = 3)
 #' @export
 thselect.sdinfo <- function(
   xdat,
   thresh,
-  quantile,
+  qlev,
   plot = FALSE,
   kmax = 1
 ) {
   ret <- infomat.test(
     xdat = xdat,
     thresh = thresh,
-    q = quantile,
+    q = qlev,
     K = kmax,
     plot = FALSE
   )
@@ -230,7 +230,7 @@ thselect.sdinfo <- function(
     pval = ret$pvals,
     loglik = ret$loglik,
     mle = ret$mle,
-    quantile = ret$q,
+    qlev = ret$q,
     kmax = kmax
   )
   class(ret_list) <- "mev_thselect_infomat"
@@ -272,10 +272,10 @@ plot.mev_thselect_infomat <- function(
 ) {
   type <- match.arg(type)
   xlab <- match.arg(xlab)
-  if (is.null(x$quantile)) {
+  if (is.null(x$qlev)) {
     xlab <- "threshold"
   }
-  xp <- switch(xlab, "threshold" = x$thresh, "quantile" = x$quantile)
+  xp <- switch(xlab, "threshold" = x$thresh, "quantile level" = x$qlev)
   if (type == "heatmap") {
     cols <-
       colorRampPalette(

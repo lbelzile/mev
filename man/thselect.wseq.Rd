@@ -7,7 +7,7 @@
 thselect.wseq(
   xdat,
   thresh,
-  quantile,
+  qlev,
   model = c("nhpp", "taildep", "rtaildep"),
   npp = 1,
   nsim = 1000L,
@@ -21,7 +21,7 @@ thselect.wseq(
 
 \item{thresh}{vector of candidate thresholds.}
 
-\item{quantile}{vector of probabilities for empirical quantiles used in place of the threshold, used if argument \code{thresh} is missing.}
+\item{qlev}{vector of probabilities for empirical quantiles used in place of the threshold, used if argument \code{thresh} is missing.}
 
 \item{model}{string specifying whether the univariate or multivariate diagnostic should be used. Either \code{nhpp} for the univariate model, or \code{exp} (\code{invexp}) for the bivariate exponential model with rate (inverse rate) parametrization. See details.}
 
@@ -78,7 +78,7 @@ xbvn <- mvrnorm(n = 6000L,
                 Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 thselect.wseq(
   xdat = xbvn,
-  quantile = seq(0, 0.9, length.out = 30),
+  qlev = seq(0, 0.9, length.out = 30),
   model = 'taildep',
   plot = TRUE)
 #inverse rate parametrization
