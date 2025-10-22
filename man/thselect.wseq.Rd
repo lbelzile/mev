@@ -73,7 +73,7 @@ thresh <- quantile(xdat, seq(0, 0.9, by = 0.1))
  plot = TRUE,
  type = "ps"))
 # Multivariate example, with coefficient of tail dependence
-xbvn <- mvrnorm(n = 6000L,
+xbvn <- rmnorm(n = 6000L,
                 mu = rep(0, 2),
                 Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 thselect.wseq(
@@ -81,7 +81,6 @@ thselect.wseq(
   qlev = seq(0, 0.9, length.out = 30),
   model = 'taildep',
   plot = TRUE)
-#inverse rate parametrization
 }
 }
 \references{

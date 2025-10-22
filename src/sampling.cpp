@@ -63,15 +63,15 @@ NumericMatrix rdir(int n, NumericVector alpha, bool normalize = true){
 //' @param n sample size
 //' @param mu mean vector. Will set the dimension
 //' @param Sigma a square covariance matrix, of same dimension as \code{mu}.
-//' No sanity check is performed to validate that the matrix is p.s.d., so use at own risk
+//' No sanity check is performed to validate that the matrix is positive definite, so use at own risk
 //' @export
 //' @return an \code{n} sample from a multivariate Normal distribution
 //' @examples
-//' mvrnorm(n=10, mu=c(0,2), Sigma=diag(2))
-// [[Rcpp::export]]
-NumericMatrix mvrnorm(int n, NumericVector mu, NumericMatrix Sigma){
+//' rmnorm(n = 10, mu = c(0,2), Sigma = diag(2))
+// [[Rcpp::export(rmnorm)]]
+NumericMatrix rmnorm(int n, NumericVector mu, NumericMatrix Sigma){
   if (Sigma.nrow()!=Sigma.ncol() || mu.size()!=Sigma.ncol()){
-    Rcpp::stop("Incompatible arguments - mvrnorm");
+    Rcpp::stop("Incompatible arguments - rmnorm");
   }
   int length = Sigma.nrow();
   arma::rowvec Mu(mu.begin(), length, false);
@@ -87,10 +87,10 @@ NumericMatrix mvrnorm(int n, NumericVector mu, NumericMatrix Sigma){
   return Rcpp::as<Rcpp::NumericMatrix>(wrap(samplemat));
 }
 
-// [[Rcpp::export(.mvrnorm_chol)]]
-NumericMatrix mvrnorm_chol(int n, NumericVector mu, arma::mat Sigma_chol){
+// [[Rcpp::export(.rmnorm_chol)]]
+NumericMatrix rmnorm_chol(int n, NumericVector mu, arma::mat Sigma_chol){
   if (Sigma_chol.n_rows!=Sigma_chol.n_cols || mu.size()!=Sigma_chol.n_cols){
-    Rcpp::stop("Incompatible arguments - mvrnorm");
+    Rcpp::stop("Incompatible arguments - rmnorm");
   }
   int length = Sigma_chol.n_rows;
   arma::rowvec Mu(mu.begin(), length, false);
@@ -112,8 +112,8 @@ NumericMatrix mvrnorm_chol(int n, NumericVector mu, arma::mat Sigma_chol){
 //' @keywords internal
 //' @return an \code{n} sample from a multivariate Normal distribution
 //'
-// [[Rcpp::export(.mvrnorm_arma)]]
-arma::mat mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat, bool eigen = true){
+// [[Rcpp::export(.rmnorm_arma)]]
+arma::mat rmnorm_arma(int n, arma::colvec Mu, arma::mat Xmat, bool eigen = true){
 	// Cholesky decomposition -
 	if(eigen){
   	int length = Xmat.n_rows;
@@ -135,8 +135,8 @@ arma::mat mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat, bool eigen = true
 	}
 }
 
-// [[Rcpp::export(.mvrnorm_chol_arma)]]
-arma::mat mvrnorm_chol_arma(int n, arma::colvec Mu, arma::mat Chol_Cov){
+// [[Rcpp::export(.rmnorm_chol_arma)]]
+arma::mat rmnorm_chol_arma(int n, arma::colvec Mu, arma::mat Chol_Cov){
     arma::mat Y = arma::randn(n, Chol_Cov.n_cols);
     arma::mat samp = Y * Chol_Cov;
     samp.each_row() += Mu.t();
@@ -149,7 +149,7 @@ arma::mat mvrt(int n, arma::mat scaleMat, double dof, arma::rowvec loc){
   arma::colvec zerovec = arma::colvec(scaleMat.n_cols);
   zerovec.zeros();
   double ldof = log(dof);
-  arma::mat samp = mvrnorm_chol_arma(n, zerovec, cholesky);
+  arma::mat samp = rmnorm_chol_arma(n, zerovec, cholesky);
   NumericVector nuV = Rcpp::rchisq(n, dof);
   for(int i=0; i<n; i++){
    samp.row(i) = samp.row(i) * exp(0.5 * (ldof - log(nuV[i]))) + loc;
@@ -339,7 +339,7 @@ NumericVector rPexstud_old (int index, arma::mat sigma, NumericVector al){
   //Covar matrix is not positive definite; shed it
   Covar.shed_row(index); Covar.shed_col(index);
   //Sample from d-1 dimensional normal
-  arma::vec normalsamp = mvrnorm_arma(1, zeromean, Covar).row(0).t();
+  arma::vec normalsamp = rmnorm_arma(1, zeromean, Covar).row(0).t();
   //Add the missing zero entry back
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
@@ -370,7 +370,7 @@ NumericVector rPexstud (int index, arma::mat cholesky, arma::mat sigma, NumericV
   arma::vec zeromean = arma::vec(sigma.n_cols-1);// b/c need constructor, then setter
   zeromean.zeros(); // set elements of vector to zero
   //Sample from d-1 dimensional normal
-  arma::vec normalsamp = mvrnorm_chol_arma(1, zeromean, cholesky).row(0).t();
+  arma::vec normalsamp = rmnorm_chol_arma(1, zeromean, cholesky).row(0).t();
   //Add the missing zero entry back
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
@@ -402,7 +402,7 @@ NumericVector rPHuslerReiss (int index, arma::mat cholesky, arma::mat Sigma){
   mu = -2.0*Sigma.col(index);
   mu.shed_row(index);
   //Sample from d-1 dimensional normal
-  arma::vec normalsamp = mvrnorm_chol_arma(1, mu, cholesky).row(0).t();
+  arma::vec normalsamp = rmnorm_chol_arma(1, mu, cholesky).row(0).t();
   //Add the missing zero entry back
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
@@ -426,7 +426,7 @@ NumericVector rPHuslerReiss_old (int index, arma::mat Lambda){
   //Covar matrix is not positive definite; shed it
   Covar.shed_row(index); Covar.shed_col(index);
   //Sample from d-1 dimensional normal
-  arma::vec normalsamp = mvrnorm_arma(1, mu, Covar).row(0).t();
+  arma::vec normalsamp = rmnorm_arma(1, mu, Covar).row(0).t();
   //Add the missing zero entry back
   arma::vec indexentry = arma::vec(1);
   indexentry.zeros();
@@ -449,7 +449,7 @@ NumericVector rPHuslerReiss_old (int index, arma::mat Lambda){
 NumericVector rPBrownResnick (int index, arma::mat Sigma_chol, NumericMatrix Sigma){
   if(index<0 || index >= Sigma.ncol()) Rcpp::stop("Invalid argument in rPBrownResnick");
   NumericVector mu(Sigma.ncol());
-  NumericMatrix mvnormsamp = mvrnorm_chol(1, mu, Sigma_chol);
+  NumericMatrix mvnormsamp = rmnorm_chol(1, mu, Sigma_chol);
   NumericVector samp(Sigma.ncol());
   for(int i=0; i < Sigma.ncol(); i++){
     samp[i] = exp(mvnormsamp(0,i)-mvnormsamp(0,index)-0.5*(Sigma(i,i)+
@@ -461,7 +461,7 @@ NumericVector rPBrownResnick (int index, arma::mat Sigma_chol, NumericMatrix Sig
 NumericVector rPBrownResnick_old (int index, NumericMatrix Sigma){
   if(index<0 || index >= Sigma.ncol()) Rcpp::stop("Invalid argument in rPBrownResnick");
   NumericVector mu(Sigma.ncol());
-  NumericMatrix mvnormsamp = mvrnorm(1, mu, Sigma);
+  NumericMatrix mvnormsamp = rmnorm(1, mu, Sigma);
   NumericVector samp(Sigma.ncol());
   for(int i=0; i < Sigma.ncol(); i++){
     samp[i] = exp(mvnormsamp(0,i)-mvnormsamp(0,index)-0.5*(Sigma(i,i)+
@@ -476,7 +476,7 @@ NumericVector rPSmith_old (int index, arma::mat Sigma, arma::mat loc){
   arma::vec mu = arma::vec(Sigma.n_cols);
   //arma::rowvec mut = arma::rowvec(d);
   mu.zeros(); //mut.zeros();
-  arma::mat mvnormsamp = mvrnorm_arma(1, mu, Sigma);
+  arma::mat mvnormsamp = rmnorm_arma(1, mu, Sigma);
   NumericVector samp(d);
   NumericVector constant(1);
   constant[0] = dmvnorm_arma(mvnormsamp, mu.t(), Sigma)(0);
@@ -504,7 +504,7 @@ NumericVector rPSmith (int index, arma::mat Sigma_chol, arma::mat loc){
   arma::vec mu = arma::vec(Sigma_chol.n_cols);
   //arma::rowvec mut = arma::rowvec(d);
   mu.zeros(); //mut.zeros();
-  arma::mat mvnormsamp = mvrnorm_chol_arma(1, mu, Sigma_chol);
+  arma::mat mvnormsamp = rmnorm_chol_arma(1, mu, Sigma_chol);
   NumericVector samp(d);
   NumericVector constant(1);
   constant[0] = dmvnorm_chol_arma(mvnormsamp, mu.t(), Sigma_chol)(0);
@@ -752,7 +752,7 @@ NumericMatrix rhrspec(int n, arma::mat Lambda){
     //Redefine values
     //Sample from d-1 dimensional normal
     normalsamp = arma::rowvec(d-1);
-    normalsamp = mvrnorm_chol_arma(1, mu, cholesky).row(0);
+    normalsamp = rmnorm_chol_arma(1, mu, cholesky).row(0);
     normalsamp.insert_cols(j, indexentry);
     samp.row(r) = exp(normalsamp);
     samp(r,j) = 1.0; //Sometimes off due to rounding
@@ -782,7 +782,7 @@ NumericMatrix rhrspec(int n, arma::mat Lambda){
 NumericMatrix rbrspec (int n, arma::mat Sigma_chol, NumericMatrix Sigma){
   int d = Sigma.ncol();
   NumericVector mu(d);
-  NumericMatrix mvnormsamp = mvrnorm_chol(n, mu, Sigma_chol);
+  NumericMatrix mvnormsamp = rmnorm_chol(n, mu, Sigma_chol);
   NumericMatrix samp(n, d);
   int j;
   for(int r=0; r<n; r++){
@@ -817,7 +817,7 @@ NumericMatrix rsmithspec(int n, arma::mat Sigma_chol, arma::mat loc){
   mu.zeros();
   NumericMatrix samp(n, d);
   int j;
-  arma::mat mvnormsamp = mvrnorm_chol_arma(n, mu, Sigma_chol);
+  arma::mat mvnormsamp = rmnorm_chol_arma(n, mu, Sigma_chol);
   arma::mat dist(1, Sigma_chol.n_cols);
   for(int r=0; r<n; r++){
     j = sampleone(d);

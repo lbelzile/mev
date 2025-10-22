@@ -84,17 +84,17 @@ rdir <- function(n, alpha, normalize = TRUE) {
 #' @param n sample size
 #' @param mu mean vector. Will set the dimension
 #' @param Sigma a square covariance matrix, of same dimension as \code{mu}.
-#' No sanity check is performed to validate that the matrix is p.s.d., so use at own risk
+#' No sanity check is performed to validate that the matrix is positive definite, so use at own risk
 #' @export
 #' @return an \code{n} sample from a multivariate Normal distribution
 #' @examples
-#' mvrnorm(n=10, mu=c(0,2), Sigma=diag(2))
-mvrnorm <- function(n, mu, Sigma) {
-    .Call(`_mev_mvrnorm`, n, mu, Sigma)
+#' rmnorm(n = 10, mu = c(0,2), Sigma = diag(2))
+rmnorm <- function(n, mu, Sigma) {
+    .Call(`_mev_rmnorm`, n, mu, Sigma)
 }
 
-.mvrnorm_chol <- function(n, mu, Sigma_chol) {
-    .Call(`_mev_mvrnorm_chol`, n, mu, Sigma_chol)
+.rmnorm_chol <- function(n, mu, Sigma_chol) {
+    .Call(`_mev_rmnorm_chol`, n, mu, Sigma_chol)
 }
 
 #' Multivariate Normal distribution sampler (Rcpp version), derived using the eigendecomposition
@@ -107,12 +107,12 @@ mvrnorm <- function(n, mu, Sigma) {
 #' @keywords internal
 #' @return an \code{n} sample from a multivariate Normal distribution
 #'
-.mvrnorm_arma <- function(n, Mu, Xmat, eigen = TRUE) {
-    .Call(`_mev_mvrnorm_arma`, n, Mu, Xmat, eigen)
+.rmnorm_arma <- function(n, Mu, Xmat, eigen = TRUE) {
+    .Call(`_mev_rmnorm_arma`, n, Mu, Xmat, eigen)
 }
 
-.mvrnorm_chol_arma <- function(n, Mu, Chol_Cov) {
-    .Call(`_mev_mvrnorm_chol_arma`, n, Mu, Chol_Cov)
+.rmnorm_chol_arma <- function(n, Mu, Chol_Cov) {
+    .Call(`_mev_rmnorm_chol_arma`, n, Mu, Chol_Cov)
 }
 
 .mvrt <- function(n, scaleMat, dof, loc) {

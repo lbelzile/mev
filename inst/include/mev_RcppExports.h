@@ -214,17 +214,17 @@ namespace mev {
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix mvrnorm(int n, NumericVector mu, NumericMatrix Sigma) {
-        typedef SEXP(*Ptr_mvrnorm)(SEXP,SEXP,SEXP);
-        static Ptr_mvrnorm p_mvrnorm = NULL;
-        if (p_mvrnorm == NULL) {
-            validateSignature("NumericMatrix(*mvrnorm)(int,NumericVector,NumericMatrix)");
-            p_mvrnorm = (Ptr_mvrnorm)R_GetCCallable("mev", "_mev_mvrnorm");
+    inline NumericMatrix rmnorm(int n, NumericVector mu, NumericMatrix Sigma) {
+        typedef SEXP(*Ptr_rmnorm)(SEXP,SEXP,SEXP);
+        static Ptr_rmnorm p_rmnorm = NULL;
+        if (p_rmnorm == NULL) {
+            validateSignature("NumericMatrix(*rmnorm)(int,NumericVector,NumericMatrix)");
+            p_rmnorm = (Ptr_rmnorm)R_GetCCallable("mev", "_mev_rmnorm");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_mvrnorm(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(Sigma)));
+            rcpp_result_gen = p_rmnorm(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(Sigma)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -235,17 +235,17 @@ namespace mev {
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix _mvrnorm_chol(int n, NumericVector mu, arma::mat Sigma_chol) {
-        typedef SEXP(*Ptr__mvrnorm_chol)(SEXP,SEXP,SEXP);
-        static Ptr__mvrnorm_chol p__mvrnorm_chol = NULL;
-        if (p__mvrnorm_chol == NULL) {
-            validateSignature("NumericMatrix(*_mvrnorm_chol)(int,NumericVector,arma::mat)");
-            p__mvrnorm_chol = (Ptr__mvrnorm_chol)R_GetCCallable("mev", "_mev__mvrnorm_chol");
+    inline NumericMatrix _rmnorm_chol(int n, NumericVector mu, arma::mat Sigma_chol) {
+        typedef SEXP(*Ptr__rmnorm_chol)(SEXP,SEXP,SEXP);
+        static Ptr__rmnorm_chol p__rmnorm_chol = NULL;
+        if (p__rmnorm_chol == NULL) {
+            validateSignature("NumericMatrix(*_rmnorm_chol)(int,NumericVector,arma::mat)");
+            p__rmnorm_chol = (Ptr__rmnorm_chol)R_GetCCallable("mev", "_mev__rmnorm_chol");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__mvrnorm_chol(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(Sigma_chol)));
+            rcpp_result_gen = p__rmnorm_chol(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(Sigma_chol)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -256,17 +256,17 @@ namespace mev {
         return Rcpp::as<NumericMatrix >(rcpp_result_gen);
     }
 
-    inline arma::mat _mvrnorm_arma(int n, arma::colvec Mu, arma::mat Xmat, bool eigen = true) {
-        typedef SEXP(*Ptr__mvrnorm_arma)(SEXP,SEXP,SEXP,SEXP);
-        static Ptr__mvrnorm_arma p__mvrnorm_arma = NULL;
-        if (p__mvrnorm_arma == NULL) {
-            validateSignature("arma::mat(*_mvrnorm_arma)(int,arma::colvec,arma::mat,bool)");
-            p__mvrnorm_arma = (Ptr__mvrnorm_arma)R_GetCCallable("mev", "_mev__mvrnorm_arma");
+    inline arma::mat _rmnorm_arma(int n, arma::colvec Mu, arma::mat Xmat, bool eigen = true) {
+        typedef SEXP(*Ptr__rmnorm_arma)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr__rmnorm_arma p__rmnorm_arma = NULL;
+        if (p__rmnorm_arma == NULL) {
+            validateSignature("arma::mat(*_rmnorm_arma)(int,arma::colvec,arma::mat,bool)");
+            p__rmnorm_arma = (Ptr__rmnorm_arma)R_GetCCallable("mev", "_mev__rmnorm_arma");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__mvrnorm_arma(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Mu)), Shield<SEXP>(Rcpp::wrap(Xmat)), Shield<SEXP>(Rcpp::wrap(eigen)));
+            rcpp_result_gen = p__rmnorm_arma(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Mu)), Shield<SEXP>(Rcpp::wrap(Xmat)), Shield<SEXP>(Rcpp::wrap(eigen)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -277,17 +277,17 @@ namespace mev {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat _mvrnorm_chol_arma(int n, arma::colvec Mu, arma::mat Chol_Cov) {
-        typedef SEXP(*Ptr__mvrnorm_chol_arma)(SEXP,SEXP,SEXP);
-        static Ptr__mvrnorm_chol_arma p__mvrnorm_chol_arma = NULL;
-        if (p__mvrnorm_chol_arma == NULL) {
-            validateSignature("arma::mat(*_mvrnorm_chol_arma)(int,arma::colvec,arma::mat)");
-            p__mvrnorm_chol_arma = (Ptr__mvrnorm_chol_arma)R_GetCCallable("mev", "_mev__mvrnorm_chol_arma");
+    inline arma::mat _rmnorm_chol_arma(int n, arma::colvec Mu, arma::mat Chol_Cov) {
+        typedef SEXP(*Ptr__rmnorm_chol_arma)(SEXP,SEXP,SEXP);
+        static Ptr__rmnorm_chol_arma p__rmnorm_chol_arma = NULL;
+        if (p__rmnorm_chol_arma == NULL) {
+            validateSignature("arma::mat(*_rmnorm_chol_arma)(int,arma::colvec,arma::mat)");
+            p__rmnorm_chol_arma = (Ptr__rmnorm_chol_arma)R_GetCCallable("mev", "_mev__rmnorm_chol_arma");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__mvrnorm_chol_arma(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Mu)), Shield<SEXP>(Rcpp::wrap(Chol_Cov)));
+            rcpp_result_gen = p__rmnorm_chol_arma(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(Mu)), Shield<SEXP>(Rcpp::wrap(Chol_Cov)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

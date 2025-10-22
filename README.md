@@ -127,7 +127,7 @@ Sampling algorithms for parametric models, multivariate and spatial extreme valu
 
 - `rrlarg`: simulation of $r$-largest observations from point process of extremes
 - `rdir`: simulation of Dirichlet vectors
-- `mvrnorm`: simulation of multivariate normal vectors
+- `rmnorm`: simulation of multivariate normal vectors
 - `rmev`: exact simulation of multivariate extreme value distributions
 - `rmevspec`: random samples from angular distributions of multivariate extreme value models.
 - `rparp`: simulation from R-Pareto processes

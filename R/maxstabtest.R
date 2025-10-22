@@ -23,7 +23,7 @@
 #' \dontrun{
 #' xdat <- mev::rmev(n = 250, d = 100, param = 0.5, model = "log")
 #' test.maxstab(xdat, m = 100)
-#' xdat <- mev::mvrnorm(n = 250, Sigma = diag(0.5, 10) + matrix(0.5, 10, 10), mu = rep(0, 10))
+#' xdat <- rmnorm(n = 250, Sigma = diag(0.5, 10) + matrix(0.5, 10, 10), mu = rep(0, 10))
 #' test.maxstab(xdat, m = 2, nmax = 100)
 #' test.maxstab(xdat, m = ncol(xdat))
 #' }

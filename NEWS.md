@@ -35,6 +35,7 @@
 - Tests for max stability (`maxstabtest`) and independence via score (`scoreindep`) now renamed `test.maxstab` and `test.scoreindep`
 - Change to name `infomat.test` now `thselect.sdinfo`, `vmetric` now `thselect.vmetric`, `W.diag` now `thselect.wseq`, `NC.diag` now `thselect.ncpgp`
 - Arguments of `xasym` modified to make syntax more uniform.
+- Function `mvrnorm` renamed to `rmvnorm`.
 
 ## Fixes:
 

@@ -91,7 +91,7 @@ set.seed(123)
 W.diag(xdat = abs(rnorm(5000)), model = 'nhpp',
        k = 30, q1 = 0, plots = "PS")
 W.diag(rexp(1000), model = 'nhpp', k = 20, q1 = 0)
-xbvn <- mvrnorm(n = 6000,
+xbvn <- rmnorm(n = 6000,
                 mu = rep(0, 2),
                 Sigma = cbind(c(1, 0.7), c(0.7, 1)))
 # Transform margins to exponential manually

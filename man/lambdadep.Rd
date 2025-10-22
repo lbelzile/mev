@@ -47,7 +47,7 @@ Estimation of the bivariate angular dependence function of Wadsworth and Tawn (2
 \examples{
 \dontrun{
 set.seed(12)
-dat <- mev::rmev(n = 1000, d = 2, model = "log", param = 0.1)
+dat <- rmev(n = 1000, d = 2, model = "log", param = 0.1)
 lambdadep(dat, method = 'hill')
 lambdadep(dat, method = 'bayes')
 lambdadep(dat, method = 'mle')

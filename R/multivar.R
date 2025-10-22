@@ -34,7 +34,7 @@
 # #' )
 # #' abline(h = 1, lty = 3, col = 'grey')
 # #' # Multivariate normal sample, chibar = 0 - strong asymptotic independence at penultimate level
-# #' dat <- mvrnorm(n = 1000, mu = c(0, 0), Sigma = cbind(c(1, 0.75), c(0.75, 1)))
+# #' dat <- rmnorm(n = 1000, mu = c(0, 0), Sigma = cbind(c(1, 0.75), c(0.75, 1)))
 # #' chibar(dat, 'tem', q = 0.1)
 # #' chibar_est <- t(sapply(s, function(keep) {
 # #'   chibar(dat, 'profile', qu = keep)
@@ -193,7 +193,7 @@ angextrapo <- function(
 #' @examples
 #' \dontrun{
 #' set.seed(12)
-#' dat <- mev::rmev(n = 1000, d = 2, model = "log", param = 0.1)
+#' dat <- rmev(n = 1000, d = 2, model = "log", param = 0.1)
 #' lambdadep(dat, method = 'hill')
 #' lambdadep(dat, method = 'bayes')
 #' lambdadep(dat, method = 'mle')

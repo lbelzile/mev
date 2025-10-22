@@ -537,7 +537,7 @@ plot.mev_taildep <- function(x, ...) {
 #' rho <- 0.9
 #' Sigma <- matrix(rho, d, d) + diag(1 - rho, d)
 #' eta_true <- 1/sum(Sigma)
-#' data <- mev::mvrnorm(
+#' data <- rmnorm(
 #'    n = 1e4,
 #'    mu = rep(0, d),
 #'   Sigma = Sigma)
