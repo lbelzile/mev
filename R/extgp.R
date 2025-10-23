@@ -707,6 +707,15 @@ egp.fitrange <-
 #' @param type [string] confidence interval type, either \code{wald} or \code{profile}.
 #' @param param [string] parameter, either \code{shape} or additional parameter \code{kappa}
 #' @param plot [logical] if \code{TRUE} (default), return a threshold stability plot
+#' @return an invisible list object of class \code{mev_egp_tstab} with elements
+#' \itemize{
+#' \item{\code{kappa}:}  matrix of parameter estimates and confidence intervals for \eqn{\kappa}, if specified in \code{param}
+#' \item{\code{shape}:}  matrix of parameter estimates and confidence intervals for the shape parameter \eqn{\xi}, if specified in \code{param}
+#' \item{\code{thresh}:} vector of threshold candidates
+#' \item{\code{level}:} level of the confidence intervals
+#' \item{\code{model}:} string giving the EGP model family
+#' \item{\code{type}:} type of confidence interval
+#' }
 #' @export
 #' @examples
 #' xdat <- rgp(n = 1000)
@@ -730,7 +739,7 @@ tstab.egp <- function(
     "logist"
   ),
   param = c("shape", "kappa"),
-  type = c("wald", "profile"),
+  type = c("wald", "lrt"),
   transform = FALSE,
   level = 0.95,
   plot = TRUE,
@@ -778,7 +787,10 @@ tstab.egp <- function(
       egp3 = "pt-power"
     )
   }
-  type <- match.arg(type)
+  type <- match.arg(type, choices = c("lrt", "profile", "wald"))
+  if (type == "lrt") {
+    type <- "profile"
+  }
   if (is.numeric(plots)) {
     plots <- as.integer(plots)
   } else {
@@ -794,8 +806,6 @@ tstab.egp <- function(
   if (length(plots) == 0) {
     stop("No option for plots")
   }
-  model <- match.arg(model)
-  type <- match.arg(type)
   if (missing(thresh) && isTRUE(any(c(missing(umin), missing(umax))))) {
     stop(
       "Must provide either minimum and maximum threshold values, or a vector of threshold \"thresh\"."
@@ -1848,4 +1858,224 @@ egp.pll <- function(
     plot(ans)
   }
   return(invisible(ans))
+}
+
+
+#' Threshold selection based on extended generalized Pareto models
+#'
+#' Fit an EGP model to data over a range of candidate thresholds \code{thresh} and perform likelihood-based tests of equality for \eqn{\kappa=c}, where \eqn{c=1} for all regular models and $\eqn{c=0} for the \code{'gj-tnorm'} and \code{'logist'} models, for which the generalized Pareto special case corresponds to a value of \eqn{\kappa} occuring on the boundary of the parameter space.
+#'
+#' The threshold selection procedure returns chi-square statistics (\code{stat}) for Wald or profile likelihood ratio tests, along with p-values (\code{pval}) obtained from large sample distribution. The threshold returned is the lowest for which all further higher thresholds fail to reject the null hypothesis of \eqn{\kappa=c}, or equivalently of generalized Pareto tail.
+#' @inheritParams tstab.egp
+#' @param type choice of test statistic, either \code{wald} for Wald-based intervals, or \code{lrt} for profile likelihood ratio test.
+#' @param plot [logical] if \code{TRUE}, return a plot of p-values against threshold
+#' @param ... additional arguments, passed to plotting routine
+#' @return an invisible list of class \code{mev_thselect_egp} with elements
+#' \itemize{
+#' \item{\code{thresh}:} vector of threshold candidates
+#' \item{\code{thresh0}:} selected threshold among candidates
+#' \item{\code{coef}:}  vector of parameter estimates for \eqn{\kappa}
+#' \item{\code{stat}:} squared version of the test statistic
+#' \item{\code{pval}:} p-value obtained from the  \eqn{\chi^2_1} approximation
+#' \item{\code{level}:} level of the confidence intervals
+#' \item{\code{model}:} string giving the EGP model family
+#' \item{\code{type}:} type of confidence interval
+#' }
+#' @export
+#' @examples
+#' ths <- thselect.egp(
+#'   xdat = rexp(1000),
+#'   thresh = qexp(c(0.8,0.9,0.95)),
+#'   model = "pt-power")
+#' print(ths)
+#' plot(ths)
+thselect.egp <- function(
+  xdat,
+  thresh,
+  model = c(
+    "pt-beta",
+    "pt-gamma",
+    "pt-power",
+    "gj-tnorm",
+    "gj-beta",
+    "exptilt",
+    "logist"
+  ),
+  type = c("wald", "lrt"),
+  level = 0.95,
+  transform = FALSE,
+  plot = FALSE,
+  ...
+) {
+  model <- match.arg(model)
+  regular <- !model %in% c("logist", "gj-tnorm")
+  tval <- ifelse(isTRUE(regular), 1, 0)
+  type <- match.arg(type)
+  transform <- isTRUE(transform)
+  if (type == "lrt" | !regular) {
+    transform <- FALSE
+  }
+  if (transform) {
+    tval <- log(tval + 1e-8)
+  }
+  if (length(thresh) <= 1) {
+    stop(
+      "Invalid argument\"thresh\" provided;\n please use a vector of threshold candidates of length at least 2"
+    )
+  }
+  nt <- length(thresh)
+  kappa <- stat <- pval <- rep(NA, length.out = nt)
+  for (i in seq_along(thresh)) {
+    mle <- try(
+      fit.egp(
+        xdat = xdat,
+        thresh = thresh[i],
+        model = model,
+        method = "Nelder"
+      ),
+      silent = TRUE
+    )
+    if (inherits(mle, "try-error")) {
+      next
+    } else {
+      est <- coef(mle)
+      kappa[i] <- est[1]
+      if (type == "wald") {
+        if (transform) {
+          est[1] <- log(est[1] + 1e-8)
+          fn_numderiv <- function(par) {
+            -egp.ll(
+              par = c(exp(par[1]), par[2], par[3]),
+              xdat = xdat,
+              thresh = thresh[i],
+              model = model
+            )
+          }
+          opt <- optim(
+            par = est,
+            fn = fn_numderiv,
+            method = "Nelder",
+            hessian = TRUE
+          )
+          se <- try(
+            expr = suppressWarnings(
+              sqrt(diag(solve(opt$hessian)))[1]
+            ),
+            silent = TRUE
+          )
+          if (inherits(se, "try-error")) {
+            se <- NA
+          }
+        } else {
+          se <- mle$std.err[1]
+        }
+        # Report wald on the chi-square (non-directional stat)
+        stat[i] <- ((est[1] - tval) / se)^2
+        pval[i] <- pchisq(stat[i], df = 1, lower.tail = FALSE)
+        # Boundary case
+        if (isTRUE(all.equal(kappa[i], 0, check.attributes = FALSE))) {
+          pval[i] = 0.5 + 0.5 * pval
+        }
+      } else if (type == "lrt") {
+        alt <- try(
+          fit.egp(
+            xdat = xdat,
+            thresh = thresh[i],
+            fpar = list(kappa = tval),
+            model = model,
+            method = "Nelder"
+          ),
+          silent = TRUE
+        )
+        if (!inherits(alt, "try-error")) {
+          stat[i] <- 2 * (alt$nllh - mle$nllh)
+          pval[i] <- pchisq(stat[i], df = 1, lower.tail = FALSE)
+          if (isTRUE(all.equal(kappa[i], 0, check.attributes = FALSE))) {
+            pval[i] <- 0.5 + 0.5 * pval
+          }
+        }
+      }
+    }
+  }
+  stopifnot(isTRUE(level < 1), isTRUE(level > 0))
+  reject <- which(pval < (1 - level) & !is.na(pval))
+  if (length(reject) == 0L) {
+    thindex <- 1L
+  } else {
+    thindex <- max(pt_reject) + 1L
+  }
+  thresh0 <- thresh[thindex]
+  obj <- list(
+    thresh = as.numeric(thresh),
+    thresh0 = as.numeric(thresh0),
+    coef = kappa,
+    stat = stat,
+    pval = pval,
+    level = level,
+    model = model,
+    type = type
+  )
+
+  class(obj) <- c("mev_egp_thselect")
+  if (isTRUE(plot)) {
+    plot(obj, ...)
+  }
+  return(invisible(obj))
+}
+#' @export
+plot.mev_egp_thselect <- function(x, ...) {
+  args <- list(...)
+  # Produce the plot ......
+  if (is.null(args$ylab)) {
+    args$ylab <- "p-value"
+  }
+  if (is.null(args$bty)) {
+    args$bty <- "l"
+  }
+  if (is.null(args$xlab)) {
+    args$xlab <- "threshold"
+  }
+  if (is.null(args$type)) {
+    args$type <- "b"
+  }
+  if (is.null(args$pch)) {
+    args$pch <- 20
+  }
+  if (is.null(args$ylim)) {
+    args$ylim <- c(0, 1)
+  }
+  args$x <- x$thresh
+  args$y <- x$pval
+  do.call(what = "plot", args = args)
+  mtext(
+    switch(x$type, lrt = "likelihood ratio", wald = "Wald"),
+    side = 1,
+    line = 2,
+    adj = 1,
+    outer = FALSE
+  )
+  abline(h = 1 - x$level, lty = 2)
+  return(invisible(NULL))
+}
+
+#' @export
+print.mev_egp_thselect <- function(
+  x,
+  digits = min(3, getOption("digits") - 3),
+  ...
+) {
+  cat(
+    "Threshold selection method: \nExtended generalized Pareto model.\n"
+  )
+  method <- ifelse(x$type == "wald", "Wald test", "likelihood ratio test")
+  cat(
+    "Largest threshold above which we always fail to reject ",
+    "\n",
+    "the null hypothesis of common generalized Pareto at level",
+    1 - x$level,
+    "\n"
+  )
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
+
+  return(invisible(NULL))
 }

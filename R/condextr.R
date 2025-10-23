@@ -581,5 +581,9 @@ fit.condex <- function(
 
 # TODO simulate from conditional extremes model above
 
-
+# pspgp <- function(x){
+#   spunif(x, thresh = thresh
+#
+#          ecdf(x) + pgpd()
+# }
 # predict method with importance sampling and algorithm from paper

@@ -10,7 +10,7 @@ tstab.egp(
   model = c("pt-beta", "pt-gamma", "pt-power", "gj-tnorm", "gj-beta", "exptilt",
     "logist"),
   param = c("shape", "kappa"),
-  type = c("wald", "profile"),
+  type = c("wald", "lrt"),
   transform = FALSE,
   level = 0.95,
   plot = TRUE,
@@ -35,6 +35,17 @@ tstab.egp(
 \item{plot}{[logical] if \code{TRUE} (default), return a threshold stability plot}
 
 \item{...}{additional arguments for the plot function, currently ignored.}
+}
+\value{
+an invisible list object of class \code{mev_egp_tstab} with elements
+\itemize{
+\item{\code{kappa}:}  matrix of parameter estimates and confidence intervals for \eqn{\kappa}, if specified in \code{param}
+\item{\code{shape}:}  matrix of parameter estimates and confidence intervals for the shape parameter \eqn{\xi}, if specified in \code{param}
+\item{\code{thresh}:} vector of threshold candidates
+\item{\code{level}:} level of the confidence intervals
+\item{\code{model}:} string giving the EGP model family
+\item{\code{type}:} type of confidence interval
+}
 }
 \description{
 Threshold stability plots for extended generalized Pareto models

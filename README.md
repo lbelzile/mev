@@ -74,7 +74,8 @@ Functions for automatic selection of threshold with the peaks over threshold met
 
 - `thselect.wseq`: Wadsworth (2016) sequential analysis threshold diagnostics
 - `thselect.vmetric`: metric-based threshold selection of Varty et al. (2025+)
-- `thselect.ncpgp`: Northrop and Coleman (2014) piecewise generalized Pareto
+- `thselect.ncpgp`: Northrop and Coleman (2014) comparison of  piecewise generalized Pareto versus generalized Pareto models
+- `thselect.egp`:  Comparison of extended generalized Pareto versus generalized Pareto
 - `thselect.cv`: del Castillo and Padilla (2016) coefficient of variation method
 - `thselect.sdinfo`: Suveges and Davison (2010) information matrix test
 - `thselect.mrl`: Langousis et al. (2016) automatization of mean residual life diagnostics

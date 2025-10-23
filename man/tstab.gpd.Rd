@@ -7,7 +7,7 @@
 tstab.gpd(
   xdat,
   thresh,
-  method = c("wald", "profile", "post"),
+  method = c("wald", "lrt", "post"),
   level = 0.95,
   plot = TRUE,
   which = c("scale", "shape"),
@@ -63,7 +63,7 @@ u <- qnorm(seq(0.9,0.99, by= 0.01))
 par(mfrow = c(1,2))
 tstab.gpd(xdat = dat, thresh = u, changepar = FALSE)
 \dontrun{
-tstab.gpd(xdat = dat, thresh = u, method = "profile")
+tstab.gpd(xdat = dat, thresh = u, method = "lrt")
 tstab.gpd(xdat = dat, thresh = u, method = "post")
 }
 }

@@ -37,39 +37,45 @@
 #' par(mfrow = c(1,2))
 #' tstab.gpd(xdat = dat, thresh = u, changepar = FALSE)
 #' \dontrun{
-#' tstab.gpd(xdat = dat, thresh = u, method = "profile")
+#' tstab.gpd(xdat = dat, thresh = u, method = "lrt")
 #' tstab.gpd(xdat = dat, thresh = u, method = "post")
 #' }
-tstab.gpd <- function(xdat,
-                      thresh,
-                      method = c("wald", "profile", "post"),
-                      level = 0.95,
-                      plot = TRUE,
-                      which = c("scale", "shape"),
-                      changepar = TRUE,
-                      ...) {
+tstab.gpd <- function(
+  xdat,
+  thresh,
+  method = c("wald", "lrt", "post"),
+  level = 0.95,
+  plot = TRUE,
+  which = c("scale", "shape"),
+  changepar = TRUE,
+  ...
+) {
   args <- list(...)
   if (isTRUE(all(which %in% 1:2))) {
     which <- c("scale", "shape")[which]
   }
   which <-
-    match.arg(which,
-              choices = c("scale", "shape"),
-              several.ok = TRUE)
+    match.arg(which, choices = c("scale", "shape"), several.ok = TRUE)
   if (missing(xdat) && !is.null(args$dat)) {
     dat <- args$dat
     args$dat <- NULL
-  } else{
+  } else {
     dat <- xdat
   }
   dat <- as.vector(dat)
   thresh <- unique(sort(thresh))
   # Strip threshold vectors for which the fit will likely fail
-  thresh <- thresh[sapply(thresh, function(u) {
-    sum(dat > u)
-  }) > 10]
+  thresh <- thresh[
+    sapply(thresh, function(u) {
+      sum(dat > u)
+    }) >
+      10
+  ]
   stopifnot(length(level) == 1, level > 0, level < 1)
-  method <- match.arg(method)
+  method <- match.arg(method, choices = c("wald", "profile", "lrt", "post"))
+  if (method == "lrt") {
+    method <- "profile"
+  }
   if (method == "post") {
     if (!requireNamespace("revdbayes", quietly = TRUE)) {
       stop(
@@ -98,7 +104,7 @@ tstab.gpd <- function(xdat,
       nll <- -gpd.ll(par = c(sigma, par), dat = dat)
       if (!is.finite(nll)) {
         return(-1e10)
-      } else{
+      } else {
         return(nll)
       }
     }
@@ -111,16 +117,32 @@ tstab.gpd <- function(xdat,
       parmat[i, 1] <- parmat[i, 1] - parmat[i, 2] * (thresh[i] - thresh[1])
       if (is.matrix(gpdu$vcov)) {
         stderr.transfo <-
-          try(sqrt(t(c(1, -thresh[i] + thresh[1])) %*% gpdu$vcov %*% c(1, -thresh[i] +
-                                                                         thresh[1]))[1, 1], silent = TRUE)
+          try(
+            sqrt(
+              t(c(1, -thresh[i] + thresh[1])) %*%
+                gpdu$vcov %*%
+                c(
+                  1,
+                  -thresh[i] +
+                    thresh[1]
+                )
+            )[1, 1],
+            silent = TRUE
+          )
       }
-      if (!is.matrix(gpdu$vcov) |
-          inherits(stderr.transfo, "try-error")) {
+      if (
+        !is.matrix(gpdu$vcov) |
+          inherits(stderr.transfo, "try-error")
+      ) {
         stderr.transfo <- NA
       }
       if (method == "wald") {
         confintmat[i, 3] <-
-          pmax(-1, gpdu$estimate['shape'] - gpdu$std.err['shape'] * qnorm(1 - alpha / 2))
+          pmax(
+            -1,
+            gpdu$estimate['shape'] -
+              gpdu$std.err['shape'] * qnorm(1 - alpha / 2)
+          )
         confintmat[i, 4] <-
           gpdu$estimate['shape'] + gpdu$std.err['shape'] * qnorm(1 - alpha / 2)
         confintmat[i, 1] <-
@@ -142,7 +164,7 @@ tstab.gpd <- function(xdat,
             confintmat[i, 3:4] <-
               confint(profxi, level = level, print = FALSE)[2:3]
             confintmat[i, 3] <- -1
-          } else{
+          } else {
             profxi <- gpd.pll(
               param = "shape",
               mod = "profile",
@@ -152,7 +174,7 @@ tstab.gpd <- function(xdat,
             )
 
             confintmat[i, 3:4] <-
-             pmax(-1, confint(profxi, level = level, print = FALSE)[2:3])
+              pmax(-1, confint(profxi, level = level, print = FALSE)[2:3])
           }
         }
         if ("scale" %in% which) {
@@ -161,28 +183,36 @@ tstab.gpd <- function(xdat,
           xi_sigma_vals <- rep(NA_real_, k)
           if (!is.na(stderr.transfo)) {
             grid_psi <-
-              parmat[i, 1] + seq(-3 * stderr.transfo,
-                                 3.5 * stderr.transfo,
-                                 length = k)
-          } else{
+              parmat[i, 1] +
+              seq(-3 * stderr.transfo, 3.5 * stderr.transfo, length = k)
+          } else {
             grid_psi <-
-              seq(-3 * parmat[i, 1] / sqrt(gpdu$nat),
-                  3.5 * parmat[i, 1] / sqrt(gpdu$nat),
-                  length = k)
+              seq(
+                -3 * parmat[i, 1] / sqrt(gpdu$nat),
+                3.5 * parmat[i, 1] / sqrt(gpdu$nat),
+                length = k
+              )
           }
           #Profile for scale := sigma_u - xi (u - u_0)
           for (j in seq_len(k)) {
-            opt_prof <- try(optimize(
-              f = pllsigmainv,
-              upper = 1.5,
-              lower = pmin(0, pmax(
-                -1, -grid_psi[j] / (xmax - thresh[1])
-              ) + 1e-10),
-              sigmat = grid_psi[j],
-              dat = gpdu$exceedances,
-              thresh = thresh[i] - thresh[1]
-            ),
-            silent = TRUE)
+            opt_prof <- try(
+              optimize(
+                f = pllsigmainv,
+                upper = 1.5,
+                lower = pmin(
+                  0,
+                  pmax(
+                    -1,
+                    -grid_psi[j] / (xmax - thresh[1])
+                  ) +
+                    1e-10
+                ),
+                sigmat = grid_psi[j],
+                dat = gpdu$exceedances,
+                thresh = thresh[i] - thresh[1]
+              ),
+              silent = TRUE
+            )
             if (!inherits(opt_prof, "try-error")) {
               xi_sigma_vals[j] <- opt_prof$minimum
               prof_vals[j] <- opt_prof$objective
@@ -198,16 +228,21 @@ tstab.gpd <- function(xdat,
             ),
             class = "eprof"
           )
-          if(isTRUE(parmat[i,2] == -1)){
-            spl <- smooth.spline(y = c(prof$psi),
-                                 x = c(-2*(prof$pll - prof$maxpll)))
-            conf <- sort(c(predict(spl, qchisq(0.95,1))$y, parmat[i,1]))
-          } else{
-          conf <-  try(confint(
-              prof,
-              level = level,
-              print = FALSE)[2:3],
-            silent = TRUE)
+          if (isTRUE(parmat[i, 2] == -1)) {
+            spl <- smooth.spline(
+              y = c(prof$psi),
+              x = c(-2 * (prof$pll - prof$maxpll))
+            )
+            conf <- sort(c(predict(spl, qchisq(0.95, 1))$y, parmat[i, 1]))
+          } else {
+            conf <- try(
+              confint(
+                prof,
+                level = level,
+                print = FALSE
+              )[2:3],
+              silent = TRUE
+            )
           }
           if (!inherits(conf, "try-error")) {
             confintmat[i, 1:2] <- pmin(maxmodifsc, conf)
@@ -226,8 +261,12 @@ tstab.gpd <- function(xdat,
               prior = "norm",
               model = "gp",
               mean = rep(0, 2),
-              cov = c(100 *
-                        gpdu$estimate[1], 1) * diag(np)
+              cov = c(
+                100 *
+                  gpdu$estimate[1],
+                1
+              ) *
+                diag(np)
             )
           )$sim_vals
         # )
@@ -235,13 +274,12 @@ tstab.gpd <- function(xdat,
         confintmat[i, ] <-
           apply(postsim, 2, quantile, c(alpha / 2, 1 - alpha / 2))
       }
-
     }
   }
   lower <- confintmat[, c(1, 3)]
   upper <- confintmat[, c(2, 4)]
   colnames(parmat) <-
-    colnames(lower) <- colnames(upper) <-  c("modif. scale", "shape")
+    colnames(lower) <- colnames(upper) <- c("modif. scale", "shape")
   ret <-
     structure(
       list(
@@ -260,19 +298,19 @@ tstab.gpd <- function(xdat,
         "The estimated parameters are constant for all thresholds, with shape parameter estimates on the boundary of the parameter space."
       )
     }
-    plot(ret,
-           which = (1:2)[c("scale", "shape") %in% which],
-           changepar = changepar, ...)
+    plot(
+      ret,
+      which = (1:2)[c("scale", "shape") %in% which],
+      changepar = changepar,
+      ...
+    )
   }
   return(invisible(ret))
 }
 
 #'@export
 plot.mev_tstab.gpd <-
-  function(x,
-           which = 1:2,
-           changepar = TRUE,
-           ...) {
+  function(x, which = 1:2, changepar = TRUE, ...) {
     ellipsis <- list(...)
     names_ell <- names(ellipsis)
     if (!is.logical(changepar)) {
@@ -289,22 +327,33 @@ plot.mev_tstab.gpd <-
     if ("main" %in% names_ell) {
       main <- ellipsis$main
       ellipsis$main <- NULL
-    } else{
+    } else {
       main <- c("Parameter stability plot", "")
-
     }
     if (!"sub" %in% names_ell) {
-      sub <- c(switch(
-        x$method,
-        wald = paste("Wald", x$level * 100, "% pointwise confidence intervals"),
-        profile = paste(
-          "profile likelihood",
-          x$level * 100,
-          "% pointwise confidence intervals"
+      sub <- c(
+        switch(
+          x$method,
+          wald = paste(
+            "Wald",
+            x$level * 100,
+            "% pointwise confidence intervals"
+          ),
+          profile = paste(
+            "profile likelihood",
+            x$level * 100,
+            "% pointwise confidence intervals"
+          ),
+          lrt = paste(
+            "profile likelihood",
+            x$level * 100,
+            "% pointwise confidence intervals"
+          ),
+          post = paste(x$level * 100, "% pointwise credible intervals")
         ),
-        post = paste(x$level * 100, "% pointwise credible intervals")
-      ), "")
-    } else{
+        ""
+      )
+    } else {
       sub <- ellipsis$sub
       ellipsis$sub <- NULL
     }
@@ -314,7 +363,7 @@ plot.mev_tstab.gpd <-
     }
     if (!"ylab" %in% names_ell) {
       ylab <- c("modif. scale", "shape")
-    } else{
+    } else {
       ylab <- ellipsis$ylab
       if (length(ylab) != length(which)) {
         stop(paste(
@@ -326,34 +375,36 @@ plot.mev_tstab.gpd <-
     }
     if (!"xlab" %in% names_ell) {
       xlab <- "threshold"
-    } else{
+    } else {
       xlab <- ellipsis$xlab
       ellipsis$xlab <- NULL
     }
     if (!"bty" %in% names_ell) {
       bty <- "l"
-    } else{
+    } else {
       bty <- ellipsis$bty
       ellipsis$bty <- NULL
     }
     if (!"pch" %in% names_ell) {
       pch <- 20
-    } else{
+    } else {
       pch <- ellipsis$pch
       ellipsis$pch <- NULL
     }
     #modified scale
     if (1 %in% which) {
-      ylim <- c(min(x$lower[, 1], na.rm = TRUE),
-                x$mle[,1] + c(-0.1, 0.1),
-                max(x$upper[, 1], na.rm = TRUE))
+      ylim <- c(
+        min(x$lower[, 1], na.rm = TRUE),
+        x$mle[, 1] + c(-0.1, 0.1),
+        max(x$upper[, 1], na.rm = TRUE)
+      )
       # If there are only missing values for upper/lower, this
       # returns a vector of length 0 and +/- Inf
       ylim <- range(ylim[is.finite(ylim)])
       pars <-
         list(
           x = x$threshold,
-          y =  x$mle[, 1],
+          y = x$mle[, 1],
           pch = pch,
           ylab = ylab[1],
           xlab = xlab,
@@ -369,13 +420,18 @@ plot.mev_tstab.gpd <-
         text = sub[1]
       )
       for (i in seq_along(x$threshold)) {
-        lines(c(x$threshold[i], x$threshold[i]), c(x$lower[i, 1], x$upper[i, 1]))
+        lines(
+          c(x$threshold[i], x$threshold[i]),
+          c(x$lower[i, 1], x$upper[i, 1])
+        )
       }
     }
     if (2 %in% which) {
-      ylim <- c(min(x$lower[, 2], na.rm = TRUE),
-                x$mle[,2] + c(-0.1, 0.1),
-                max(x$upper[, 2], na.rm = TRUE))
+      ylim <- c(
+        min(x$lower[, 2], na.rm = TRUE),
+        x$mle[, 2] + c(-0.1, 0.1),
+        max(x$upper[, 2], na.rm = TRUE)
+      )
       # If there are only missing values for upper/lower, this
       # returns a vector of length 0 and +/- Inf
       ylim <- range(ylim[is.finite(ylim)])
@@ -391,7 +447,7 @@ plot.mev_tstab.gpd <-
           bty = bty,
           main = main[2]
         )
-      do.call(plot,  pars)
+      do.call(plot, pars)
       mtext(
         side = 3,
         line = -0.2,
@@ -399,7 +455,10 @@ plot.mev_tstab.gpd <-
         text = sub[2]
       )
       for (i in 1:length(x$threshold)) {
-        lines(c(x$threshold[i], x$threshold[i]), c(x$lower[i, 2], x$upper[i, 2]))
+        lines(
+          c(x$threshold[i], x$threshold[i]),
+          c(x$lower[i, 2], x$upper[i, 2])
+        )
       }
     }
   }
