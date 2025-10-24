@@ -54,29 +54,69 @@ of the density function, \code{ddensF}. If the latter is missing, it will be app
 For \code{method = "pot"}, the function computes the reciprocal hazard and its derivative on the log scale to avoid numerical overflow. Thus, the density function should have argument \code{log} and the distribution function arguments \code{log.p} and \code{lower.tail}, respectively.
 }
 \examples{
-#Threshold exceedance for Normal variables
-qu <- seq(1,5,by=0.02)
-penult <- smith.penult(family = "norm", ddensF=function(x){-x*dnorm(x)},
-   method = 'pot', u = qu)
-plot(qu, penult$shape, type='l', xlab='Quantile',
-   ylab='Penultimate shape', ylim=c(-0.5,0))
+# Threshold exceedance for Normal variables
+qu <- seq(1, 5, by = 0.02)
+penult <- smith.penult(
+  family = "norm",
+  ddensF = function(x) {
+    -x * dnorm(x)
+  },
+  method = 'pot',
+  u = qu
+)
+plot(
+  x = qu,
+  y = penult$shape,
+  type = 'l',
+  xlab = 'Quantile',
+  ylab = 'Penultimate shape',
+  ylim = c(-0.5, 0)
+)
 #Block maxima for Gamma variables -
 #User must provide arguments for shape (or rate)
-m <- seq(30, 3650, by=30)
-penult <- smith.penult(family = 'gamma', method = 'bm', m=m, shape=0.1)
-plot(m, penult$shape, type='l', xlab='Quantile', ylab='Penultimate shape')
+m <- seq(30, 3650, by = 30)
+penult <- smith.penult(
+  family = 'gamma',
+  method = 'bm',
+  m = m,
+  shape = 0.1
+)
+plot(
+  x = m,
+  penult$shape,
+  type = 'l',
+  xlab = 'Quantile',
+  ylab = 'Penultimate shape'
+)
 
 #Comparing density of GEV approximation with true density of maxima
 m <- 100 #block of size 100
-p <- smith.penult(family='norm',
-   ddensF=function(x){-x*dnorm(x)}, method='bm', m=m, returnList=FALSE)
+p <- smith.penult(
+  family = 'norm',
+  ddensF = function(x) {
+    -x * dnorm(x)
+  },
+  method = 'bm',
+  m = m,
+  returnList = FALSE
+)
 x <- seq(1, 5, by = 0.01)
-plot(x, m*dnorm(x)*exp((m-1)*pnorm(x,log.p=TRUE)),type='l', ylab='Density',
-main='Distribution of the maxima of\n 100 standard normal variates')
-lines(x, mev::dgev(x,loc=p[1], scale=p[2], shape=0),col=2)
-lines(x, mev::dgev(x,loc=p[1], scale=p[2], shape=p[3]),col=3)
-legend(x = 'topright',lty = c(1,1,1,1), col = c(1,2,3,4),
-   legend = c('exact', 'ultimate', 'penultimate'), bty = 'n')
+plot(
+  x,
+  m * dnorm(x) * exp((m - 1) * pnorm(x, log.p = TRUE)),
+  type = 'l',
+  ylab = 'Density',
+  main = 'Distribution of the maxima of\n 100 standard normal variates'
+)
+lines(x, mev::dgev(x, loc = p[1], scale = p[2], shape = 0), col = 2)
+lines(x, mev::dgev(x, loc = p[1], scale = p[2], shape = p[3]), col = 3)
+legend(
+  x = 'topright',
+  lty = c(1, 1, 1, 1),
+  col = c(1, 2, 3, 4),
+  legend = c('exact', 'ultimate', 'penultimate'),
+  bty = 'n'
+)
 }
 \references{
 Smith, R.L. (1987). Approximations in extreme value theory. \emph{Technical report 205}, Center for Stochastic Process, University of North Carolina, 1--34.

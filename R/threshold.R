@@ -72,7 +72,10 @@ tstab.gpd <- function(
       10
   ]
   stopifnot(length(level) == 1, level > 0, level < 1)
-  method <- match.arg(method, choices = c("wald", "profile", "lrt", "post"))
+  method <- match.arg(
+    arg = method[1],
+    choices = c("wald", "profile", "lrt", "post")
+  )
   if (method == "lrt") {
     method <- "profile"
   }

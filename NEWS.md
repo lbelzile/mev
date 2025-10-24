@@ -8,6 +8,10 @@
 
 - Arguments `method` for `tstab.egp` and `tstab.gp` now has `"lrt"` instead of `"profile"` (choice backward compatible).
 
+## Fixes:
+
+- Function `pegp` did not work
+
 # mev 2.0 (Release date 2025-10-22)
 
 Major release with breaking changes (mostly function names and arguments) for more coherence. Many functions now flagged as deprecated, but changes to the syntax are often backward compatible.

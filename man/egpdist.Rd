@@ -36,7 +36,8 @@ qegp(
   kappa,
   model = c("pt-beta", "pt-gamma", "pt-power", "gj-tnorm", "gj-beta", "exptilt",
     "logist"),
-  lower.tail = TRUE
+  lower.tail = TRUE,
+  log.p = FALSE
 )
 
 regp(

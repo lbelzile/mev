@@ -1092,9 +1092,10 @@ pegp.G4 <- function(x, kappa, a = 1 / 32) {
   x <- pmin(1, pmax(0, x))
   stopifnot(length(a) == 1L, a > 0, a < 0.5, length(kappa) == 1L, kappa > 0)
   cst <- (pbeta(0.5, kappa, kappa) - pbeta(a, kappa, kappa))
-  (pbeta((0.5 - a) * x + a, shape1 = kappa, shape2 = kappa) -
+  out <- (pbeta((0.5 - a) * x + a, shape1 = kappa, shape2 = kappa) -
     pbeta(a, kappa, kappa)) /
     cst
+  pmin(1, pmax(0, out))
 }
 
 pegp.G5 <- function(x, kappa) {
@@ -1125,7 +1126,8 @@ pegp.G7 <- function(x, kappa) {
     x
   } else {
     cst <- plogis(0, 1, 1 / kappa)
-    (plogis(x, location = 1, scale = 1 / kappa) - cst) / (0.5 - cst)
+    out <- (plogis(x, location = 1, scale = 1 / kappa) - cst) / (0.5 - cst)
+    pmin(1, pmax(0, out))
   }
 }
 
@@ -1366,22 +1368,25 @@ pegp <- function(
       log.p = log.p
     ))
   }
-  p <- pgp(q, loc = 0, scale = scale, shape = shape, lower.tail = lower.tail)
+  p <- pgp(q, loc = 0, scale = scale, shape = shape, lower.tail = TRUE)
   pg <- switch(
     model,
-    "pt-beta" = pegp.G1(pg, kappa = kappa, shape = shape),
-    "pt-gamma" = pegp.G2(pg, kappa = kappa),
-    "pt-power" = pegp.G3(pg, kappa = kappa),
-    "gj-tnorm" = pegp.G5(pg, kappa = kappa),
-    "gj-beta" = pegp.G4(pg, kappa = kappa),
-    "exptilt" = pegp.G6(pg, kappa = kappa),
-    "logist" = pegp.G7(pg, kappa = kappa)
+    "pt-beta" = pegp.G1(p, kappa = kappa, shape = shape),
+    "pt-gamma" = pegp.G2(p, kappa = kappa),
+    "pt-power" = pegp.G3(p, kappa = kappa),
+    "gj-tnorm" = pegp.G5(p, kappa = kappa),
+    "gj-beta" = pegp.G4(p, kappa = kappa),
+    "exptilt" = pegp.G6(p, kappa = kappa),
+    "logist" = pegp.G7(p, kappa = kappa)
   )
-  if (!isTRUE(log.p)) {
-    return(pg)
-  } else {
-    return(log(pg))
+  pg <- pmin(1, pmax(0, pg))
+  if (!isTRUE(lower.tail)) {
+    pg <- 1 - pg
   }
+  if (isTRUE(log.p)) {
+    pg <- log(pg)
+  }
+  return(pg)
 }
 
 #' @rdname egpdist
@@ -1445,8 +1450,13 @@ qegp <- function(
     "exptilt",
     "logist"
   ),
-  lower.tail = TRUE
+  lower.tail = TRUE,
+  log.p = FALSE
 ) {
+  if (isTRUE(log.p)) {
+    log.p <- FALSE
+    p <- exp(p)
+  }
   stopifnot(
     length(kappa) == 1L,
     length(scale) == 1L,
@@ -1469,15 +1479,21 @@ qegp <- function(
     )
   } else {
     qu[vals] <- qgp(
-      switch(
-        model,
-        "pt-beta" = qegp.G1(p[vals], kappa = kappa, shape = shape),
-        "pt-gamma" = qegp.G2(p[vals], kappa = kappa),
-        "pt-power" = qegp.G3(p[vals], kappa = kappa),
-        "gj-tnorm" = qegp.G5(p[vals], kappa = kappa),
-        "gj-beta" = qegp.G4(p[vals], kappa = kappa),
-        "exptilt" = qegp.G6(p[vals], kappa = kappa),
-        "logist" = qegp.G7(p[vals], kappa = kappa)
+      p = pmin(
+        1, # problems with numerical tolerance/rounding to 1e-16 above 1
+        pmax(
+          0,
+          switch(
+            model,
+            "pt-beta" = qegp.G1(p[vals], kappa = kappa, shape = shape),
+            "pt-gamma" = qegp.G2(p[vals], kappa = kappa),
+            "pt-power" = qegp.G3(p[vals], kappa = kappa),
+            "gj-tnorm" = qegp.G5(p[vals], kappa = kappa),
+            "gj-beta" = qegp.G4(p[vals], kappa = kappa),
+            "exptilt" = qegp.G6(p[vals], kappa = kappa),
+            "logist" = qegp.G7(p[vals], kappa = kappa)
+          )
+        )
       ),
       scale = scale,
       shape = shape
@@ -2002,7 +2018,7 @@ thselect.egp <- function(
   if (length(reject) == 0L) {
     thindex <- 1L
   } else {
-    thindex <- max(pt_reject) + 1L
+    thindex <- max(reject) + 1L
   }
   thresh0 <- thresh[thindex]
   obj <- list(
