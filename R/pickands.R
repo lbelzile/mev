@@ -34,8 +34,8 @@ thselect.pickands <- function(
     thresh <- xdat[m_candidate]
   } else {
     thresh <- sort(thresh)
-    m_candidate <- sapply(thresh, function(x) {
-      sum(xdat > thresh)
+    m_candidate <- sapply(thresh, function(th) {
+      sum(xdat > th)
     })
   }
   shape <- scale <- dist <- numeric(length(m_candidate))

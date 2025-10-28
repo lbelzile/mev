@@ -413,8 +413,10 @@ penultimate <- function(
   )
   res$thresh <- res$u
   res$u <- NULL
+  res$qlev <- res$qu
+  res$qu <- NULL
   res <- as.data.frame(res)
-  class(res) <- c("data.frame", "mev_penultimate")
+  class(res) <- c("mev_penultimate", "data.frame")
   return(res)
 }
 
@@ -685,6 +687,19 @@ smith.penult.fn <- function(
       return(list(F = GP3rda, f = dGP3rda))
     }
   }
+}
+
+#' @export
+plot.mev_penultimate <- function(x, ...) {
+  plot(
+    x = x$qlev,
+    y = x$shape,
+    xlab = "quantile level",
+    ylab = "shape",
+    bty = "l",
+    type = "b",
+    ylim = c(min(x$shape) - 0.2, max(x$shape) + 0.2)
+  )
 }
 
 

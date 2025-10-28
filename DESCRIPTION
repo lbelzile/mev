@@ -1,7 +1,7 @@
 Package: mev
 Type: Package
 Title: Modelling of Extreme Values
-Version: 2.0.0001
+Version: 2.0.0002
 Authors@R: c(
    person(given="Leo", family="Belzile", role = c("aut", "cre"), email = "belzilel@gmail.com", comment = c(ORCID = "0000-0002-9135-014X")), 
    person(given="Jennifer L.", family="Wadsworth", role=c("aut")), 

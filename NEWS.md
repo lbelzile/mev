@@ -10,7 +10,10 @@
 
 ## Fixes:
 
-- Function `pegp` did not work
+- Function `pegp` did not work properly, and did not correctly handle `lower.tail` argument
+- `thselect.mdps` now return shape parameter (rather than reciprocal shape), consistent with other semiparametric methods
+- `thselect.pickands` now correctly handles user-provided  threshold vectors.
+- 
 
 # mev 2.0 (Release date 2025-10-22)
 

@@ -113,6 +113,7 @@ thselect.mdps <- function(xdat) {
   kseq <- 2:n
   # Hill estimator for k=2, ..., n
   hill <- cumlogdat[kseq - 1] / (kseq - 1) - logdat[kseq]
+  # browser()
   Dk <- numeric(length = n - 1L)
   for (k in seq_along(Dk)) {
     j <- 1:(k - 1)
@@ -123,7 +124,7 @@ thselect.mdps <- function(xdat) {
   k0 <- which.min(Dk)
   res <- list(
     k0 = k0,
-    shape = 1 / hill[k0],
+    shape = hill[k0],
     thresh0 = xdat[k0]
   )
   class(res) <- "mev_thselect_mdps"
