@@ -17,6 +17,8 @@
 - Warnings are not produced when `fit.egp` fails to obtain standard errors.
 - The `print` method for `thselect.egp` is more explicit about the lack of threshold returned if the hypothesis is rejected at the highest threshold considered (which returns `NA`).
 - `thselect.ncpgp` now passes ordered thresholds to inner function to avoid warning messages.
+- Function `shape.hill` now provides more informative error messages when passing vectors of invalid number of exceedances `k`.
+
 
 # mev 2.0 (Release date 2025-10-22)
 

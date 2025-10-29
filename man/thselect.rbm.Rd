@@ -13,6 +13,11 @@ thselect.rbm(xdat, kmax = length(xdat))
 }
 \value{
 a list with elements
+\itemize{
+\item{\code{k0}:} the number of exceedances at the selected threshold
+\item{\code{thresh0}:} the selected threshold, or accordingly the (\eqn{k_0+1})th order statistic
+\item{\code{shape}:} the RBM shape estimate
+}
 }
 \description{
 Threshold selection for the random block maxima method

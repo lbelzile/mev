@@ -115,12 +115,22 @@ PickandsXU <- function(xdat, m) {
 shape.hill <- function(xdat, k) {
   logdata <- log(xdat[xdat > 0 & is.finite(xdat)])
   logdata <- sort(logdata, decreasing = TRUE)
-  if (missing(k)) {
-    k <- seq(10, length(logdata) - 1)
-  }
   n <- length(logdata)
-  k <- as.integer(sort(k))
-  k <- k[k < n]
+  stopifnot(n > 10)
+  if (missing(k)) {
+    k <- 10:(n - 1)
+  } else {
+    k <- as.integer(sort(k))
+    if (k[length(k)] >= n) {
+      k <- k[k < n]
+    }
+    if (length(k) == 0 | k[1] < 1) {
+      stop(
+        "Invalid value for \"k\": must be a vector of integers between 1 and length(xdat)-1."
+      )
+    }
+  }
+
   kmin <- k[1]
   kmax <- min(k[length(k)], n - 1)
   n <- min(kmax + 1, n)
@@ -326,6 +336,11 @@ plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
 #' @inheritParams shape.rbm
 #' @param kmax maximum number of exceedances to consider.
 #' @return a list with elements
+#' \itemize{
+#' \item{\code{k0}:} the number of exceedances at the selected threshold
+#' \item{\code{thresh0}:} the selected threshold, or accordingly the (\eqn{k_0+1})th order statistic
+#' \item{\code{shape}:} the RBM shape estimate
+#' }
 #' @export
 thselect.rbm <- function(xdat, kmax = length(xdat)) {
   xdat <- sort(xdat, decreasing = TRUE)
