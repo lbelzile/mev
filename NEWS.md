@@ -7,13 +7,16 @@
 ## Changes:
 
 - Arguments `method` for `tstab.egp` and `tstab.gp` now has `"lrt"` instead of `"profile"` (choice backward compatible).
+- `thselect.sdinfo` gains an argument `k` to select the number of gaps, and returns a threshold `thresh0` and `k` as part of the object output. The print method has been modified to reflect this.
 
 ## Fixes:
 
-- Function `pegp` did not work properly, and did not correctly handle `lower.tail` argument
+- Function `pegp` did not work, and did not correctly handle `lower.tail` argument
 - `thselect.mdps` now return shape parameter (rather than reciprocal shape), consistent with other semiparametric methods
 - `thselect.pickands` now correctly handles user-provided  threshold vectors.
-- 
+- Warnings are not produced when `fit.egp` fails to obtain standard errors.
+- The `print` method for `thselect.egp` is more explicit about the lack of threshold returned if the hypothesis is rejected at the highest threshold considered (which returns `NA`).
+- `thselect.ncpgp` now passes ordered thresholds to inner function to avoid warning messages.
 
 # mev 2.0 (Release date 2025-10-22)
 

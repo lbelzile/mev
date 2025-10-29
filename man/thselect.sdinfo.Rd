@@ -4,7 +4,7 @@
 \alias{thselect.sdinfo}
 \title{Threshold selection diagnostic of Suveges and Davison}
 \usage{
-thselect.sdinfo(xdat, thresh, qlev, plot = FALSE, kmax = 1)
+thselect.sdinfo(xdat, thresh, qlev, plot = FALSE, kmax = 1, k = 1)
 }
 \arguments{
 \item{xdat}{[vector] vector of observations}
@@ -16,6 +16,8 @@ thselect.sdinfo(xdat, thresh, qlev, plot = FALSE, kmax = 1)
 \item{plot}{[logical]; should the graphical diagnostic be plotted?}
 
 \item{kmax}{[int] the largest K-gap under consideration for clusters}
+
+\item{k}{[int] the K-gap for automatic threshold selection}
 }
 \value{
 an invisible list of class  with elements

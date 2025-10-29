@@ -692,7 +692,7 @@ thselect.ncpgp <- function(
   )
   ncdiag <- NC.diag(
     xdat = xdat,
-    u = thresh,
+    u = sort(thresh),
     do.LRT = test == "lr",
     size = 1 - level,
     plot = FALSE

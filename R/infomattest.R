@@ -193,6 +193,7 @@ infomat.test <- function(xdat, thresh, q, K, plot = TRUE, ...) {
 #' @param thresh [vector] candidate thresholds
 #' @param qlev [vector] probability levels to define threshold if \code{thresh} is missing.
 #' @param kmax [int] the largest K-gap under consideration for clusters
+#' @param k [int] the K-gap for automatic threshold selection
 #' @param plot [logical]; should the graphical diagnostic be plotted?
 #' @return an invisible list of class  with elements
 #' \itemize{
@@ -215,7 +216,8 @@ thselect.sdinfo <- function(
   thresh,
   qlev,
   plot = FALSE,
-  kmax = 1
+  kmax = 1,
+  k = 1
 ) {
   ret <- infomat.test(
     xdat = xdat,
@@ -224,14 +226,29 @@ thselect.sdinfo <- function(
     K = kmax,
     plot = FALSE
   )
+  if (is.numeric(k) & is.finite(k)) {
+    k <- as.integer(k)
+    stopifnot(k <= kmax)
+    imt_reject <- which(as.numeric(ret$pvals[, k]) < 0.05)
+    if (length(imt_reject) == 0L) {
+      thindex <- 1L
+    } else {
+      thindex <- max(imt_reject) + 1L
+    }
+    thresh0 <- ret$thresh[thindex]
+  } else {
+    thresh0 <- NULL
+  }
   ret_list <- list(
     thresh = ret$thresh,
+    thresh0 = thresh0,
     stat = ret$IMT,
     pval = ret$pvals,
     loglik = ret$loglik,
     mle = ret$mle,
     qlev = ret$q,
-    kmax = kmax
+    kmax = kmax,
+    k = k
   )
   class(ret_list) <- "mev_thselect_infomat"
   if (isTRUE(plot)) {
@@ -243,10 +260,10 @@ thselect.sdinfo <- function(
 
 #' @export
 print.mev_thselect_infomat <-
-  function(x, ...) {
+  function(x, digits = min(3, getOption("digits") - 3), ...) {
     pvals <- as.data.frame(formatC(
       x$pval,
-      digits = 2,
+      digits = digits,
       width = 3,
       format = "f"
     ))
@@ -255,11 +272,25 @@ print.mev_thselect_infomat <-
     rownames(pvals) <- format(
       as.numeric(x$thresh),
       trim = TRUE,
-      digits = 3,
+      digits = digits,
       nsmall = 0
     )
     cat("Suveges and Davison information matrix test\n")
+    if (!is.null(x$thresh0)) {
+      if (!is.na(x$thresh0)) {
+        cat(paste0(
+          "Selected threshold for gap of K=",
+          x$k,
+          ": ",
+          round(x$thresh0, digits),
+          ".\n"
+        ))
+      } else {
+        cat(paste0("No threshold returned for ", x$k, "gap.\n\n"))
+      }
+    }
     cat("p-values for thresholds (row) and gap size (col)\n\n")
+
     print(pvals)
   }
 

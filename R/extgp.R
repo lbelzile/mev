@@ -581,17 +581,21 @@ fit.egp <- function(
       isTRUE(mle$kkt1 & mle$kkt2)
   ) {
     fitted$convergence <- "successful"
-    fitted$vcov <- try(
-      expr = solve(mle$hessian),
+    vcov <- try(
+      expr = suppressWarnings(solve(mle$hessian)),
       silent = TRUE
     )
-    fitted$std.err <- try(
-      expr = sqrt(diag(fitted$vcov)),
-      silent = TRUE
-    )
-    if (
-      inherits(fitted$std.err, what = "try-error") || fitted$param[3] < -0.5
-    ) {
+    if (!inherits(vcov, "try-error")) {
+      fitted$vcov <- vcov
+      se <- try(
+        expr = suppressWarnings(sqrt(diag(fitted$vcov))),
+        silent = TRUE
+      )
+      if (!inherits(se, "try-error")) {
+        fitted$std.err <- se
+      }
+    }
+    if (inherits(vcov, what = "try-error") || fitted$param[3] < -0.5) {
       fitted$vcov <- NULL
       fitted$std.err <- rep(NA, 3)
     }
@@ -2081,7 +2085,7 @@ print.mev_egp_thselect <- function(
   ...
 ) {
   cat(
-    "Threshold selection method: \nExtended generalized Pareto model.\n"
+    "Threshold selection method: extended generalized Pareto model.\n"
   )
   method <- ifelse(x$type == "wald", "Wald test", "likelihood ratio test")
   cat(
@@ -2091,7 +2095,13 @@ print.mev_egp_thselect <- function(
     1 - x$level,
     "\n"
   )
-  cat("Selected threshold:", round(x$thresh0, digits), "\n")
+  if (!is.na(x$thresh0)) {
+    cat("Selected threshold:", round(x$thresh0, digits), "\n")
+  } else {
+    cat(
+      "No selected threshold: null hypothesis rejected at the highest threshold considered.\n"
+    )
+  }
 
   return(invisible(NULL))
 }

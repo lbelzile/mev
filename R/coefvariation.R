@@ -255,13 +255,13 @@ plot.mev_thselect_cv <- function(x, ...) {
 #' @export
 #' @examples
 #' tstab.cv(
-#' xdat = rgp(1000),
-#' thresh = qgp(seq(0,0.9, by = 0.1)),
-#' method = "cv")
-#'  tstab.cv(
-#' xdat = rgp(1000),
-#' thresh = qgp(seq(0,0.9, by = 0.1)),
-#' method = "empirical")
+#'    xdat = rgp(1000),
+#'    thresh = qgp(seq(0,0.9, by = 0.1)),
+#'    method = "cv")
+#' tstab.cv(
+#'    xdat = rgp(1000),
+#'    thresh = qgp(seq(0,0.9, by = 0.1)),
+#'    method = "empirical")
 tstab.cv <- function(
   xdat,
   thresh,

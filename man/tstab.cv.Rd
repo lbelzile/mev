@@ -37,11 +37,11 @@ This function calculates parametric estimates of the coefficient of variation wi
 }
 \examples{
 tstab.cv(
-xdat = rgp(1000),
-thresh = qgp(seq(0,0.9, by = 0.1)),
-method = "cv")
- tstab.cv(
-xdat = rgp(1000),
-thresh = qgp(seq(0,0.9, by = 0.1)),
-method = "empirical")
+   xdat = rgp(1000),
+   thresh = qgp(seq(0,0.9, by = 0.1)),
+   method = "cv")
+tstab.cv(
+   xdat = rgp(1000),
+   thresh = qgp(seq(0,0.9, by = 0.1)),
+   method = "empirical")
 }
