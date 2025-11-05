@@ -39,7 +39,9 @@
 #' @examples
 #' xdat <- rexp(1000, rate = 1/2)
 #' thresh <- quantile(xdat, prob = c(0.25,0.5, 0.75))
-#'
+#' thv <- thselect.vmetric(xdat, thresh, B = 99)
+#' plot(thv)
+#' print(thv)
 thselect.vmetric <- function(
   xdat,
   thresh,
@@ -48,7 +50,8 @@ thselect.vmetric <- function(
   dist = c("l1", "l2"),
   uq = FALSE,
   neval = 1000L,
-  ci = 0.95
+  ci = 0.95,
+  plot = FALSE
 ) {
   stopifnot(ci > 0, ci < 1, length(ci) == 1L, is.finite(ci))
   dist <- match.arg(dist)
@@ -197,6 +200,9 @@ thselect.vmetric <- function(
     ))
   )
   class(res) <- "mev_thselect_vmetric"
+  if (isTRUE(plot)) {
+    plot(res)
+  }
   return(invisible(res))
 }
 
@@ -280,6 +286,8 @@ plot.mev_thselect_vmetric <-
     } else {
       thresh <- x$thresh0
       thid <- which(x$thresh == thresh)
+      probs <- sort(probs)[1:2]
+      stopifnot(probs[1] > 0, probs[2] < 1)
       if (x$type == "pp") {
         obs_quant_sim <- switch(
           type,
@@ -408,8 +416,7 @@ plot.mev_thselect_vmetric <-
         col = "grey90",
         border = NA
       )
-      probs <- sort(probs)
-      stopifnot(probs[1] > 0, probs[2] < 1)
+
       segments(
         x0 = xp,
         x1 = xp,

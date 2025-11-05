@@ -397,9 +397,8 @@ plot.mev_tstab.gpd <-
     #modified scale
     if (1 %in% which) {
       ylim <- c(
-        min(x$lower[, 1], na.rm = TRUE),
-        x$mle[, 1] + c(-0.1, 0.1),
-        max(x$upper[, 1], na.rm = TRUE)
+        min(x$lower[, 1], na.rm = TRUE) - 0.1,
+        max(x$upper[, 1], na.rm = TRUE) + 0.1
       )
       # If there are only missing values for upper/lower, this
       # returns a vector of length 0 and +/- Inf
@@ -431,9 +430,8 @@ plot.mev_tstab.gpd <-
     }
     if (2 %in% which) {
       ylim <- c(
-        min(x$lower[, 2], na.rm = TRUE),
-        x$mle[, 2] + c(-0.1, 0.1),
-        max(x$upper[, 2], na.rm = TRUE)
+        min(x$lower[, 2], na.rm = TRUE) - 0.1,
+        max(x$upper[, 2], na.rm = TRUE) + 0.1
       )
       # If there are only missing values for upper/lower, this
       # returns a vector of length 0 and +/- Inf

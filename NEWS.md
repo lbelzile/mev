@@ -3,6 +3,7 @@
 ## New:
 
 - Function `thselect.egp` for threshold selection with tests similar to Northop and Coleman routine
+- Function `thselect.cbm` for threshold selection with semiparametric bootstrap mean square error estimation of shape parameter.
 
 ## Changes:
 

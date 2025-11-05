@@ -12,7 +12,8 @@ thselect.vmetric(
   dist = c("l1", "l2"),
   uq = FALSE,
   neval = 1000L,
-  ci = 0.95
+  ci = 0.95,
+  plot = FALSE
 )
 }
 \arguments{
@@ -63,7 +64,9 @@ of the metric.
 \examples{
 xdat <- rexp(1000, rate = 1/2)
 thresh <- quantile(xdat, prob = c(0.25,0.5, 0.75))
-
+thv <- thselect.vmetric(xdat, thresh, B = 99)
+plot(thv)
+print(thv)
 }
 \references{
 Varty, Z. and J.A. Tawn and P.M. Atkinson and S. Bierman (2021+), Inference for extreme earthquake magnitudes accounting for a time-varying measurement process.

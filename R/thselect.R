@@ -216,3 +216,114 @@ print.mev_thselect_pec <- function(
   cat("Shape estimate:", round(x$shape, digits), "\n")
   return(invisible(NULL))
 }
+
+
+#' Threshold selection by shape mean square error minimization
+#'
+#' Use a semiparametric bootstrap to calculate the mean squared error
+#' of the shape parameter using maximum likelihood for different thresholds, and return the one that minimize the mean squared error.
+#'
+#' @param xdat vector of observations
+#' @param thresh vector of thresholds
+#' @param B number of bootstrap replications
+#' @export
+#' @return an object of class \code{mev_thselect_cbm} containing
+#' \itemize{
+#' \item{\code{thresh}: ordered vector of candidate thresholds}
+#' \item{\code{thresh0}: selected threshold}
+#' \item{\code{shape}: shape parameter coefficient estimates at each threshold}
+#' \item{\code{nexc}: number of exceedances at each threshold}
+#' \item{\code{bias}: vector of bootstrap bias estimates}
+#' \item{\code{var}: vector of bootstrap variance estimates}
+#' \item{\code{mse}: vector of mean squared error bootstrap estimates}
+#' }
+#' @references Caers, J., Beirlant, J. and Maes, M.A. (1999). Statistics for Modeling Heavy Tailed Distributions in Geology: Part I. Methodology. \emph{Mathematical Geology}, 31, 391–410. <doi:10.1023/A:1007538624271>
+#' @examples
+#' set.seed(2025)
+#' xdat <- rnorm(1000)
+#' thresh <- qnorm(c(0.8, 0.9, 0.95))
+#' thselect.cbm(xdat, thresh, B = 50)
+thselect.cbm <- function(xdat, thresh, B = 100) {
+  thresh <- sort(thresh)
+  xdat <- sort(xdat[is.finite(xdat)])
+  n <- length(xdat)
+  nth <- length(thresh)
+  stopifnot(thresh[nth] < xdat[n])
+  B <- as.integer(B)
+  stopifnot(B >= 19L)
+  # empdist <- ecdf(xdat)(thresh)
+  nexc <- sapply(thresh, function(u) {
+    sum(xdat > u)
+  })
+  pu <- 1 - nexc / n
+  boot_shape <- matrix(nrow = B, ncol = nth)
+  shapes <- bias <- boot_mean <- varia <- numeric(nth)
+  for (i in seq_along(thresh)) {
+    gpd_fit <- mev::fit.gpd(xdat = xdat, thresh = thresh[i])
+    shapes[i] <- coef(gpd_fit)['shape']
+    for (b in 1:B) {
+      boot_u <- runif(n)
+      above <- which(boot_u > pu[i])
+      boot_samp <- mev::qgp(
+        p = (boot_u[above] - pu[i]) / (1 - pu[i]),
+        scale = coef(gpd_fit)['scale'],
+        shape = coef(gpd_fit)['shape']
+      )
+      boot_shape[b, i] <- coef(mev::fit.gpd(boot_samp, thresh = 0))['shape']
+    }
+  }
+  # Compute MSE
+  bootmean <- colMeans(boot_shape)
+  bias <- bootmean - shapes
+  varia <- apply(boot_shape, 2, var)
+  mse <- bias^2 + varia
+  ret <- list(
+    thresh = thresh,
+    thresh0 = thresh[which.min(mse)],
+    nexc = nexc,
+    shape = shapes,
+    bias = bias,
+    var = varia,
+    mse = mse
+  )
+  class(ret) <- "mev_thselect_cbm"
+  return(invisible(ret))
+}
+
+#' @export
+plot.mev_thselect_cbm <- function(x, ...) {
+  plot(
+    x$thresh,
+    x$mse,
+    type = "b",
+    ylim = c(0, max(x$mse)),
+    yaxs = "i",
+    xlab = "threshold",
+    ylab = "mean squared error",
+    panel.first = {
+      abline(v = x$thresh0, lty = 3, col = "gray50")
+    }
+  )
+  lines(x$thresh, x$bias^2, lty = 2)
+  points(x$thresh, x$bias^2, pch = 2)
+  lines(x$thresh, x$var, lty = 3)
+  points(x$thresh, x$var, pch = 3)
+  return(invisible(NULL))
+}
+
+#' @export
+print.mev_thselect_cbm <- function(
+  x,
+  digits = min(3, getOption("digits") - 3),
+  ...
+) {
+  thind <- which(x$thresh %in% x$thresh0)
+  cat(
+    "Threshold selection method: Caers, Beirlant and Maes (1999)\n"
+  )
+  cat("Bootstrap mean square error minimization\n")
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
+  cat("Number of exceedances:", round(x$nexc[thind], digits), "\n")
+  cat("Shape estimate:", round(x$shape[thind], digits), "\n")
+  return(invisible(NULL))
+}
