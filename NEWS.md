@@ -2,17 +2,19 @@
 
 ## New:
 
-- Function `thselect.egp` for threshold selection with tests similar to Northop and Coleman routine
+- Function `thselect.egp` for threshold selection with tests similar to Northop and Coleman routine.
 - Function `thselect.cbm` for threshold selection with semiparametric bootstrap mean square error estimation of shape parameter.
 
 ## Changes:
 
+- `thselect.vmetric` argument `ci` has been renamed to `level` (backward compatible).
 - Arguments `method` for `tstab.egp` and `tstab.gp` now has `"lrt"` instead of `"profile"` (choice backward compatible).
 - `thselect.sdinfo` gains an argument `k` to select the number of gaps, and returns a threshold `thresh0` and `k` as part of the object output. The print method has been modified to reflect this.
 
 ## Fixes:
 
-- Function `pegp` did not work, and did not correctly handle `lower.tail` argument
+- Function `pegp` did not work, and did not correctly handle `lower.tail` argument.
+- Functions `degp` and `regp` correctly handle the case `shape=0` for models `pt-beta` and `pt-gamma`.
 - `thselect.mdps` now return shape parameter (rather than reciprocal shape), consistent with other semiparametric methods
 - `thselect.pickands` now correctly handles user-provided  threshold vectors.
 - Warnings are not produced when `fit.egp` fails to obtain standard errors.

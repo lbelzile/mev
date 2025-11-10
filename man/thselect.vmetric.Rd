@@ -12,8 +12,9 @@ thselect.vmetric(
   dist = c("l1", "l2"),
   uq = FALSE,
   neval = 1000L,
-  ci = 0.95,
-  plot = FALSE
+  level = 0.95,
+  plot = FALSE,
+  ...
 )
 }
 \arguments{
@@ -31,7 +32,11 @@ thselect.vmetric(
 
 \item{neval}{number of points at which to estimate the metric. Default to 1000L}
 
-\item{ci}{level of symmetric confidence interval. Default to 0.95}
+\item{level}{level of symmetric confidence interval. Default to 0.95}
+
+\item{plot}{logical; if \code{TRUE}, returns a plot}
+
+\item{...}{additional arguments for backward compatibility}
 }
 \value{
 an invisible list with components
@@ -40,7 +45,8 @@ an invisible list with components
 \item \code{thresh0}: vector of candidate thresholds
 \item \code{metric}: value of the metric criterion evaluated at each threshold
 \item \code{type}: argument \code{type}
-\item \code{dist}: argument \code{dist}
+\item \code{dist}: argument \code{dist},
+\item \code{level}: level of confidence interval, from \code{level}
 }
 }
 \description{

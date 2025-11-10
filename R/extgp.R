@@ -791,7 +791,12 @@ tstab.egp <- function(
       egp3 = "pt-power"
     )
   }
-  type <- match.arg(type, choices = c("lrt", "profile", "wald"))
+  type <- match.arg(
+    type,
+    choices = c("lrt", "profile", "wald"),
+    several.ok = TRUE
+  )
+  type <- type[1]
   if (type == "lrt") {
     type <- "profile"
   }
@@ -1267,7 +1272,11 @@ degp.G7 <- function(x, kappa, log = FALSE) {
 
 qegp.G1 <- function(x, kappa, shape) {
   x <- pmin(1, pmax(0, x))
-  1 - (1 - qbeta(x, kappa, 1 / abs(shape)))^(1 / (abs(shape)))
+  if (isTRUE(abs(shape) < 1e-8)) {
+    stop("Not supported")
+  } else {
+    1 - (1 - qbeta(x, kappa, 1 / abs(shape)))^(1 / (abs(shape)))
+  }
 }
 
 qegp.G2 <- function(x, kappa) {
@@ -1419,6 +1428,14 @@ degp <- function(
     scale > 0
   )
   model <- match.arg(model)
+  if (model %in% c("pt-beta", "pt-gamma") & abs(shape) < 1e-8) {
+    return(dgamma(
+      x = x,
+      scale = scale,
+      shape = kappa,
+      log = log
+    ))
+  }
   pg <- pgp(q = x, scale = scale, shape = shape)
   logdens <- switch(
     model,
@@ -1474,7 +1491,7 @@ qegp <- function(
   }
   qu <- rep(NA, length(p))
   vals <- is.finite(p) & p >= 0 & p <= 1
-  if (model %in% c("pt-beta", "pt-gamma") & abs(shape) < 1e-8) {
+  if (model %in% c("pt-beta", "pt-gamma") & (abs(shape) < 1e-8)) {
     qu[vals] <- qgamma(
       p = p[vals],
       scale = scale,
@@ -1532,17 +1549,7 @@ regp <- function(
     scale > 0
   )
   model <- match.arg(model)
-  pg <- switch(
-    model,
-    "pt-beta" = qegp.G1(runif(n), kappa = kappa, shape = shape),
-    "pt-gamma" = qegp.G2(runif(n), kappa = kappa),
-    "pt-power" = qegp.G3(runif(n), kappa = kappa),
-    "gj-tnorm" = qegp.G5(runif(n), kappa = kappa),
-    "gj-beta" = qegp.G4(runif(n), kappa = kappa),
-    "exptilt" = qegp.G6(runif(n), kappa = kappa),
-    "logist" = qegp.G7(runif(n), kappa = kappa)
-  )
-  qgp(pg, loc = 0, scale = scale, shape = shape)
+  qegp(p = runif(n), scale = scale, shape = shape, kappa = kappa, model = model)
 }
 
 #' Profile log likelihood for extended generalized Pareto models

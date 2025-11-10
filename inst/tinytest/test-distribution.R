@@ -177,7 +177,6 @@ expect_equal(
 )
 
 # Tests for EGP
-set.seed(1234)
 models = c(
   "pt-beta",
   "pt-gamma",
@@ -187,97 +186,114 @@ models = c(
   "exptilt",
   "logist"
 )
-for (mod in seq_along(models)) {
-  kappa <- runif(1, 0, 2)
-  shape <- runif(1, -0.99, 1)
-  scale <- rexp(1)
-  model <- models[mod]
-  u <- seq(0, 1, length.out = nobs)
-  samp <- regp(
-    n = 20,
-    kappa = kappa,
-    scale = scale,
-    shape = shape,
-    model = model
-  )
-  expect_equal(
-    mev::pegp(
-      mev::qegp(u, kappa = kappa, scale = scale, shape = 0, model = model),
+# Also test case of xi=0
+for (m in 1:2) {
+  for (mod in seq_along(models)) {
+    set.seed(1234)
+    print(paste("Model", models[mod]))
+    kappa <- runif(1, 0.5, 2)
+    shape <- runif(1, -0.99, 1)
+    scale <- rexp(1)
+    if (m == 2) {
+      shape <- 0
+    }
+    model <- models[mod]
+    u <- seq(0, 1, length.out = nobs)
+    samp <- regp(
+      n = 20,
       kappa = kappa,
       scale = scale,
-      shape = 0,
+      shape = shape,
       model = model
-    ),
-    u
-  )
+    )
+    print(expect_true(!isTRUE(all.equal(samp, rep(0, 20)))))
+    print(expect_equal(
+      mev::pegp(
+        mev::qegp(u, kappa = kappa, scale = scale, shape = 0, model = model),
+        kappa = kappa,
+        scale = scale,
+        shape = 0,
+        model = model
+      ),
+      u
+    ))
 
-  expect_equal(
-    mev::pegp(
-      mev::qegp(u, kappa = kappa, scale = scale, shape = shape, model = model),
-      kappa = kappa,
-      scale = scale,
-      shape = shape,
-      model = model
-    ),
-    u
-  )
-  # Check lower tail swap works
-  expect_equal(
-    mev::pegp(
-      samp,
-      kappa = kappa,
-      scale = scale,
-      shape = shape,
-      model = model
-    ),
-    1 -
+    print(expect_equal(
+      mev::pegp(
+        mev::qegp(
+          u,
+          kappa = kappa,
+          scale = scale,
+          shape = shape,
+          model = model
+        ),
+        kappa = kappa,
+        scale = scale,
+        shape = shape,
+        model = model
+      ),
+      u
+    ))
+    # Check lower tail swap works
+    print(expect_equal(
       mev::pegp(
         samp,
         kappa = kappa,
         scale = scale,
         shape = shape,
-        model = model,
-        lower.tail = FALSE
-      )
-  )
-  expect_equal(
-    log(mev::pegp(
-      samp,
-      kappa = kappa,
-      scale = scale,
-      shape = shape,
-      model = model
-    )),
-    mev::pegp(
-      samp,
-      kappa = kappa,
-      scale = scale,
-      shape = shape,
-      model = model,
-      log.p = TRUE
-    )
-  )
-
-  # Check that density is derivative of distribution function
-  expect_equal(
-    numDeriv::grad(
-      func = function(x) {
+        model = model
+      ),
+      1 -
         mev::pegp(
-          x,
+          samp,
+          kappa = kappa,
+          scale = scale,
+          shape = shape,
+          model = model,
+          lower.tail = FALSE
+        )
+    ))
+    print(
+      expect_equal(
+        log(mev::pegp(
+          samp,
           kappa = kappa,
           scale = scale,
           shape = shape,
           model = model
+        )),
+        mev::pegp(
+          samp,
+          kappa = kappa,
+          scale = scale,
+          shape = shape,
+          model = model,
+          log.p = TRUE
         )
-      },
-      x = samp
-    ),
-    mev::degp(
-      samp,
-      kappa = kappa,
-      scale = scale,
-      shape = shape,
-      model = model
+      )
     )
-  )
+
+    # Check that density is derivative of distribution function
+    print(expect_equal(
+      numDeriv::grad(
+        func = function(x) {
+          mev::pegp(
+            x,
+            kappa = kappa,
+            scale = scale,
+            shape = shape,
+            model = model
+          )
+        },
+        x = samp
+      ),
+      mev::degp(
+        samp,
+        kappa = kappa,
+        scale = scale,
+        shape = shape,
+        model = model
+      )
+    ))
+  }
 }

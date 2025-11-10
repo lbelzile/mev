@@ -23,14 +23,17 @@
 #' @param B number of bootstrap replications
 #' @param uq logical; if \code{TRUE}, generate bootstrap samples accounting for the sampling distribution of parameters
 #' @param neval number of points at which to estimate the metric. Default to 1000L
-#' @param ci level of symmetric confidence interval. Default to 0.95
+#' @param level level of symmetric confidence interval. Default to 0.95
+#' @param plot logical; if \code{TRUE}, returns a plot
+#' @param ... additional arguments for backward compatibility
 #' @return an invisible list with components
 #' \itemize{
 #' \item \code{thresh}: scalar threshold minimizing criterion
 #' \item \code{thresh0}: vector of candidate thresholds
 #' \item \code{metric}: value of the metric criterion evaluated at each threshold
 #' \item \code{type}: argument \code{type}
-#' \item \code{dist}: argument \code{dist}
+#' \item \code{dist}: argument \code{dist},
+#' \item \code{level}: level of confidence interval, from \code{level}
 #' }
 #' @export
 #' @references Varty, Z. and J.A. Tawn and P.M. Atkinson and S. Bierman (2021+), Inference for extreme earthquake magnitudes accounting for a time-varying measurement process.
@@ -50,9 +53,15 @@ thselect.vmetric <- function(
   dist = c("l1", "l2"),
   uq = FALSE,
   neval = 1000L,
-  ci = 0.95,
-  plot = FALSE
+  level = 0.95,
+  plot = FALSE,
+  ...
 ) {
+  args <- list(...)
+  if (!is.null(args$ci)) {
+    level <- args$ci
+  }
+  ci <- level
   stopifnot(ci > 0, ci < 1, length(ci) == 1L, is.finite(ci))
   dist <- match.arg(dist)
   type <- match.arg(type)
@@ -192,6 +201,7 @@ thselect.vmetric <- function(
     scale = scale,
     shape = shape,
     xdat = xdat,
+    level = level,
     tolerance = t(apply(
       boot_tolerance[[cindex]],
       1,
