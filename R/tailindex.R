@@ -293,15 +293,26 @@ plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
       xlog = isTRUE(log),
       xlab = "log number of exceedances",
       ylab = "shape",
-      ylim = c(0, max(x$shape[x$k >= 10])),
+      ylim = c(
+        min(
+          x$shape[k0] + qnorm(0.025) * x$shape[k0] / sqrt(x$k[k0]),
+          x$shape[x$k >= 10]
+        ) -
+          0.05,
+        max(x$shape[x$k >= 10])
+      ),
       bty = "l",
       type = "l"
     )
-    segments(
+    points(x = x$k[k0], y = x$shape[k0], pch = 20)
+    arrows(
+      angle = 90,
+      length = 0.1,
+      code = 3,
       x0 = x$k[k0],
       y0 = x$shape[k0] + qnorm(0.025) * x$shape[k0] / sqrt(x$k[k0]),
       y1 = x$shape[k0] + qnorm(0.975) * x$shape[k0] / sqrt(x$k[k0]),
-      col = "grey",
+      col = "grey20",
     )
     mtext(
       text = eval(bquote(expression(k[0] ~ "=" ~ .(x$k[k0])))),
@@ -309,8 +320,19 @@ plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
       adj = 1,
       line = 0
     )
-    rug(x = x$k[k0], ticksize = -0.1, col = "grey50")
-    rug(side = 2, x = x$shape[k0], ticksize = -0.1, col = "grey50")
+    rug(
+      x = x$k[k0],
+      ticksize = -0.1,
+      col = "grey30",
+      lwd = 1.5
+    )
+    rug(
+      side = 2,
+      x = x$shape[k0],
+      ticksize = -0.1,
+      lwd = 1.5,
+      col = "grey30"
+    )
   }
   if ("risk" %in% type) {
     plot(
@@ -328,7 +350,12 @@ plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
       adj = 1,
       line = 0
     )
-    rug(x = x$k[k0])
+    rug(
+      x = x$k[k0],
+      ticksize = -0.1,
+      lwd = 1.5,
+      col = "grey30"
+    )
   }
 }
 

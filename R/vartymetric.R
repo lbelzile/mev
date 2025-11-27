@@ -4,26 +4,35 @@
 #' automated diagnostic for the  independent and identically distributed case with no rounding.
 #'
 #' The algorithm proceeds by first computing the maximum
-#' likelihood algorithm and then simulating datasets from
-#' replication with parameters drawn from a bivariate normal
-#' approximation to the maximum likelihood estimator distribution.
-#'
+#' likelihood algorithm and then simulating replication datasets
+#' using either a parametric or nonparametric bootstrap.
 #' For each bootstrap sample, we refit the
 #'  model and convert the quantiles to
-#'  exponential or uniform variates.
-#' The mean absolute or mean squared distance
-#' is calculated on these. The threshold
-#' returned is the one with the lowest value
-#' of the metric.
+#'  exponential or uniform variates depending on \code{type}, or else if \code{eqd} by calculating the expected plotting positions for the simulated sample.
+#'
+#' If \code{uq = TRUE} and we specify \code{bootstrap = "parametric"}, the
+#' estimation uncertainty is taken into consideration and each sample
+#' is drawn from a generalized Pareto distribution, but with different parameters
+#' reflecting the sampling distribution.
+#'
+#'
+#' The mean absolute or mean squared distance is calculated on
+#' each bootstrap sample at each threshold, and then aggregated into
+#' a single average at each \code{thresh} value. The threshold
+#' returned is the one with the lowest average value of the metric.
+#'
+#' Collings et al. (2025) recommend to use quantile-quantile plot, but with
+#' \code{pp} starting from some minimal threshold and going no further than the \eqn{1-10/n} probability level. This can be supplied via \code{pp}. When choosin  \code{type = "tails"}, only probability points exceeding the threshold level are kept, so the metric is evaluated at the same levels, but with fewer points, as we increase the threshold level.
 #'
 #' @param xdat vector of observations
 #' @param thresh vector of thresholds
 #' @param type string indicating scale, either \code{exp} for exponential quantile-quantile plot  as in Varty et al. (2021) or \code{pp} for probability-probability plot (uniform). The method \code{qq} or expected quantile discrepancy (\code{eqd}) corresponds to Murphy et al. (2024) with the quantiles on the generalized Pareto scale.
 #' @param dist string indicating norm, either \code{l1} for absolute error or \code{l2} for quadratic error
 #' @param B number of bootstrap replications
-#' @param uq logical; if \code{TRUE}, generate bootstrap samples accounting for the sampling distribution of parameters
-#' @param neval number of points at which to estimate the metric. Default to 1000L
+#' @param uq logical; if \code{TRUE}, generate bootstrap samples accounting for the sampling distribution of parameters. Only valid when \code{bootstrap = "parametric"}.
+#' @param pp plotting positions for the uniform. If \code{type = "tails"}, only the values exceeding the threshold probability level are kept. Default to 250 uniform plotting positions on the unit interval.
 #' @param level level of symmetric confidence interval. Default to 0.95
+#' @param bootstrap string, one of \code{nonparametric} (sampling with replacement from exceedances) or \code{parametric} (sampling from generalized Pareto).
 #' @param plot logical; if \code{TRUE}, returns a plot
 #' @param ... additional arguments for backward compatibility
 #' @return an invisible list with components
@@ -34,25 +43,36 @@
 #' \item \code{type}: argument \code{type}
 #' \item \code{dist}: argument \code{dist},
 #' \item \code{level}: level of confidence interval, from \code{level}
+#' \item \code{bootstrap}: type of bootstrap, either \code{parametric} or \code{nonparametric}.
 #' }
 #' @export
 #' @references Varty, Z. and J.A. Tawn and P.M. Atkinson and S. Bierman (2021+), Inference for extreme earthquake magnitudes accounting for a time-varying measurement process.
 #' @references Murphy, C., Tawn, J. A., & Varty, Z. (2024). \emph{Automated Threshold Selection and Associated Inference Uncertainty for Univariate Extremes}. Technometrics, 67(\bold{2}), 215–224. <doi:10.1080/00401706.2024.2421744>
+#' @references Collings, T.P., C. Murphy-Barltrop, C. Murphy, I.D. Haigh, P.D. Bates, and N.D. Quinn (2025). \emph{Automated tail-informed threshold selection for extreme coastal sea levels}, Natural Hazards and Earth System Sciences, 25(\bold{11}), 4545–4562, <doi:10.5194/nhess-25-4545-2025>.
 #'
 #' @examples
 #' xdat <- rexp(1000, rate = 1/2)
 #' thresh <- quantile(xdat, prob = c(0.25,0.5, 0.75))
+#' # Method of Murphy, Tawn and Varty (2024) - EQD
 #' thv <- thselect.vmetric(xdat, thresh, B = 99)
 #' plot(thv)
+#' plot(thv, type = "metric")
 #' print(thv)
+#' # TAILS method
+#' tails <- thselect.vmetric(
+#'   xdat,
+#'   thresh = thresh,
+#'   type = "tails",
+#'   pp = seq(0.8, 1-10/length(xdat), length.out = 250))
 thselect.vmetric <- function(
   xdat,
   thresh,
   B = 199L,
-  type = c("eqd", "exp", "qq", "pp"),
+  type = c("eqd", "exp", "qq", "pp", "tails"),
   dist = c("l1", "l2"),
   uq = FALSE,
-  neval = 1000L,
+  bootstrap = c("nonparametric", "parametric"),
+  pp = ppoints(250),
   level = 0.95,
   plot = FALSE,
   ...
@@ -61,11 +81,24 @@ thselect.vmetric <- function(
   if (!is.null(args$ci)) {
     level <- args$ci
   }
+  if (!is.null(args$neval)) {
+    pp <- ppoints(neval)
+    warning(
+      "Overwriting \"pp\" supplied values since argument \"neval\" was provided"
+    )
+  }
+  # sort pp and remove missing values
+  pp <- sort(pp, na.last = NA)
+  neval <- length(pp)
+  stopifnot(pp[1] > 0, pp[neval] < 1)
   ci <- level
   stopifnot(ci > 0, ci < 1, length(ci) == 1L, is.finite(ci))
   dist <- match.arg(dist)
   type <- match.arg(type)
-  if (type == "eqd") {
+  bootstrap <- match.arg(bootstrap)
+  type0 <- type
+  tails <- type0 == "tails"
+  if (type %in% c("eqd", "tails")) {
     type <- "qq"
   }
   B <- as.integer(B)
@@ -99,6 +132,10 @@ thselect.vmetric <- function(
           quantile(xdat, ppoints))^2
       )
     } else if (type == "pp" & dist == "l1") {
+      # Points are uniform from the bootstrap
+      # this avoids having the transformation to
+      #  unit exponential / backtransformation,
+      #  which is unnecessary
       m <- mean(
         (ppoints * (1 - ppoints) / sqrt(length(xdat)))^(-1 / 2) *
           abs(ppoints - ecdf(xdat)(ppoints))
@@ -115,7 +152,6 @@ thselect.vmetric <- function(
   metric <- se_metric <- numeric(nt)
   scale <- numeric(nt)
   shape <- numeric(nt)
-  ps <- ppoints(n = neval)
   boot_tolerance <- list()
   for (i in seq_along(thresh)) {
     # 1) Fit model
@@ -124,12 +160,28 @@ thselect.vmetric <- function(
       xdat = exc,
       threshold = 0
     )
+    # Probability of exceedance and levels (for TAILS)
+    if (tails) {
+      tau_u <- length(exc) / length(xdat)
+      pps <- pp > (1 - tau_u)
+      pp_u <- 1 - (1 - pp[pps]) / tau_u
+    } else {
+      pp_u <- pp
+    }
     if (isTRUE(uq)) {
-      boot_par <- mev::gpd.boot(
-        object = mle,
-        B = B,
-        method = "post"
-      )
+      if (bootstrap == "nonparametric") {
+        warning(
+          "Invalid option: cannot get uncertainty quantification with nonparametric bootstrap. Setting \"uq = FALSE\"."
+        )
+        uq <- FALSE
+      } else {
+        # default is false
+        boot_par <- mev::gpd.boot(
+          object = mle,
+          B = B,
+          method = "post"
+        )
+      }
     }
     scale[i] <- coef(mle)[1]
     shape[i] <- coef(mle)[2]
@@ -138,14 +190,22 @@ thselect.vmetric <- function(
     stat <- rep(NA, B)
     boot_samp <- matrix(0, nrow = nobs(mle), ncol = B)
     for (j in seq_len(B)) {
-      if (isTRUE(uq)) {
-        spars <- boot_par[j, ]
+      if (bootstrap == "parametric") {
+        if (isTRUE(uq)) {
+          spars <- boot_par[j, ]
+        }
+        boot_samp[, j] <- mev::rgp(
+          n = nobs(mle),
+          scale = spars[1],
+          shape = spars[2]
+        )
+      } else if (bootstrap == "nonparametric") {
+        boot_samp[, j] <- sample(
+          exc,
+          size = length(exc),
+          replace = TRUE
+        )
       }
-      boot_samp[, j] <- mev::rgp(
-        n = nobs(mle),
-        scale = spars[1],
-        shape = spars[2]
-      )
       boot_mle <- try(mev::fit.gpd(boot_samp[, j], thresh = 0))
       if (!inherits(boot_mle, "try-error")) {
         if (type %in% c("exp", "pp")) {
@@ -160,7 +220,7 @@ thselect.vmetric <- function(
         }
         stat[j] <- compute_metric(
           xdat = boot_samp[, j],
-          ppoints = ps,
+          ppoints = pp_u,
           type = type,
           dist = dist,
           pars = coef(boot_mle)
@@ -188,7 +248,7 @@ thselect.vmetric <- function(
       cbind(boot_samp, exc),
       2,
       quantile,
-      probs = ps
+      probs = pp_u
     )
   }
   cindex <- which.min(metric)
@@ -202,6 +262,7 @@ thselect.vmetric <- function(
     shape = shape,
     xdat = xdat,
     level = level,
+    bootstrap = bootstrap,
     tolerance = t(apply(
       boot_tolerance[[cindex]],
       1,
@@ -237,6 +298,7 @@ print.mev_thselect_vmetric <-
         "\n"
       )
     )
+    cat(paste(x$bootstrap, "bootstrap \n"))
     cat("Selected threshold:", round(x$thresh0, digits), "\n")
     return(invisible(NULL))
   }
@@ -465,6 +527,18 @@ plot.mev_thselect_vmetric <-
 #' normal approximation or \code{'post'} (default) for posterior sampling
 #' @return a matrix of size B by 2 whose columns contain scale and shape parameters
 #' @export
+#' @examples
+#' set.seed(2025)
+#' xdat <- rgev(100, loc = 0, scale = 2, shape = -0.1)
+#' fgp <- fit.gpd(xdat)
+#' plot(
+#'  gpd.boot(fgp, method = "post")
+#' )
+#' points(
+#'  gpd.boot(fgp, method = "norm"),
+#'  col = 2,
+#'  pch = 20
+#' )
 gpd.boot <- function(object, B = 1000L, method = c("post", "norm")) {
   method <- match.arg(method)
   B <- as.integer(B)

@@ -1,7 +1,20 @@
-# mev 2.1
+# mev 2.2
+
 
 ## New:
 
+- Option `tails` for `thselect.vmetric`
+
+## Changes:
+
+- Default range of `ylim` for `plot.mev_shape_rbm` has been changed
+- Parameter `neval` for `thselect.vmetric` replaced by `pp` to let users directly select probability points, as suggested in Collings et al. (2025)
+
+# mev 2.1  (Release date 2025-11-10)
+
+## New:
+
+- Option `tails` for `thselect.vmetrics`
 - Function `thselect.egp` for threshold selection with tests similar to Northop and Coleman routine.
 - Function `thselect.cbm` for threshold selection with semiparametric bootstrap mean square error estimation of shape parameter.
 
