@@ -327,3 +327,207 @@ print.mev_thselect_cbm <- function(
   cat("Shape estimate:", round(x$shape[thind], digits), "\n")
   return(invisible(NULL))
 }
+#' Threshold selection via minimization of the weighted Cramér-von Mises
+#'
+#' For a Pareto-type sample, return the threshold that
+#' minimizes a weighted Cramér-von Mises criterion for the
+#' exponential sample with scale \eqn{H_{n, n_u}} and
+#' the log increments.
+#'
+
+#' @references Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51–69. <doi:10.57805/revstat.v6i1.57>
+thselect.wcvm <- function(xdat, k) {
+  xdat <- sort(xdat, decreasing = TRUE)
+  xdat <- xdat[is.finite(xdat) & xdat > 0]
+  if (missing(k)) {
+    shape_hill <- shape.hill(xdat)
+  } else {
+    shape_hill <- shape.hill(xdat, k = k)
+  }
+  kseq <- shape_hill$k
+  nk <- length(kseq)
+  logxdat <- log(xdat)
+  criterion <- numeric(length = nk)
+  for (i in seq_len(nk)) {
+    nexc <- kseq[i]
+    Hnu <- shape_hill$shape[i]
+    criterion[i] <- mean(
+      1:nexc /
+        (nexc - 1:nexc + 1) *
+        (logxdat[1:nexc] -
+          logxdat[nexc + 1] +
+          Hnu * log(1:nexc / (nexc + 1)))^2
+    ) /
+      Hnu
+  }
+  k0ind <- which.min(criterion)
+  out <- list(
+    k0 = kseq[k0ind],
+    shape = shape_hill$shape[k0ind],
+    thresh = xdat[kseq[k0ind] + 1],
+    criterion = data.frame(k = kseq, crit = criterion)
+  )
+  class(out) <- "mev_thselect_wcvm"
+  return(invisible(out))
+}
+
+
+#' @export
+print.mev_thselect_wcvm <- function(
+  x,
+  digits = min(3, getOption("digits") - 3),
+  ...
+) {
+  cat(
+    "Threshold selection method: Goegebeur, Beirlant and de Weit (2008) \n Weighted Cramer-von Mises distance for log exceedances\n"
+  )
+  cat("Selected threshold:", round(x$thresh, digits), "\n")
+  cat("Shape parameter:", round(x$shape, digits), "\n")
+  cat("Number of exceedances:", round(x$k0, digits), "\n")
+  return(invisible(NULL))
+}
+
+
+#' @export
+plot.mev_thselect_wcvm <- function(x, ...) {
+  args <- list(...)
+  args$x <- x$criterion$k
+  args$y <- log(x$criterion$crit)
+  if (is.null(args$ylab)) {
+    args$ylab <- "log of weighted Cramér-von Mises distance"
+  }
+  if (is.null(args$xlab)) {
+    args$xlab <- "number of exceedances"
+  }
+  if (is.null(args$bty)) {
+    args$bty <- "l"
+  }
+  if (is.null(args$type)) {
+    args$type <- "l"
+  }
+  do.call(plot, args = args)
+  abline(v = x$k0, col = "grey90", lty = 2)
+
+  return(invisible(NULL))
+}
+
+#' Pickands' order statistics threshold selection method
+#'
+#' Restricting to the largest fourth of the data, returns the number of exceedances that minimizes the Kolmogorov-Smirnov statistic, i.e., the maximum absolute difference between the estimated generalized Pareto and the empirical distribution of exceedances. Relative to the paper, different estimation methods are proposed.
+#'
+#' @references  James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \doi{10.1214/aos/1176343003}
+#' @param xdat [numeric] vector of observations
+#' @param method [string] estimation method, either the quartiles of Pickands (1975), maximum likelihood, probability weighted moments or L-moments
+#' @param thresh [numeric] vector of candidate thresholds. If missing, defaults to order statistics from the 10th to a quarter of the sample size.
+#' @return a list with components
+#' \itemize{
+#' \item \code{k0}: number of exceedances
+#' \item \code{thresh0}: selected threshold returned by the procedure
+#' \item \code{thresh}: vector of candidate thresholds
+#' \item \code{dist}; vector of Kolmogorov-Smirnoff distance
+#' \item \code{method}; string for the estimation method
+#' \item \code{scale}: estimated scale parameter at the chosen threshold
+#' \item \code{shape}: estimated shape parameter at the chosen threshold
+#' }
+#' @note The quartiles estimator of Pickands is robust, but very inefficient. It is provided for historical reasons.
+#' @export
+thselect.pickands <- function(
+  xdat,
+  thresh,
+  method = c("mle", "lmom", "quartiles")
+) {
+  method <- match.arg(method)
+  xdat <- as.vector(xdat)
+  xdat <- sort(xdat[is.finite(xdat)], decreasing = TRUE)
+  n <- length(xdat)
+  if (missing(thresh)) {
+    mmax <- floor(n / 4)
+    mmin <- 10L
+    m_candidate <- mmax:mmin
+    thresh <- xdat[m_candidate]
+  } else {
+    thresh <- sort(thresh)
+    m_candidate <- sapply(thresh, function(th) {
+      sum(xdat > th)
+    })
+  }
+  shape <- scale <- dist <- numeric(length(m_candidate))
+  for (i in seq_along(m_candidate)) {
+    m <- m_candidate[i]
+    samp <- xdat[seq_len(m - 1)] - thresh[i]
+    if (method == "quartiles") {
+      quants <- as.numeric(quantile(samp, probs = c(0.5, 0.75)))
+      shape[i] <- (log(diff(quants)) - log(quants[1])) / log(2)
+      scale[i] <- quants[1] * shape[i] / (2^shape[i] - 1)
+    } else if (method == "mle") {
+      coefs <- coef(mev::fit.gpd(xdat = samp, threshold = 0))
+      shape[i] <- coefs['shape']
+      scale[i] <- coefs['scale']
+    } else if (method == "lmom") {
+      pars <- gpd.lmom(rev(samp), sorted = TRUE, Lskew = FALSE)
+      scale[i] <- pars['scale']
+      shape[i] <- pars['shape']
+    } #else if (method == "lmom") {
+    #pars <- gpd.lmom(samp, sorted = TRUE, Lskew = TRUE)
+    #scale[i] <- pars['scale']
+    #shape[i] <- pars['shape']
+    #}
+    dist[i] <- max(abs(
+      rank(samp) /
+        length(samp) -
+        mev::pgp(samp, scale = scale[i], shape = shape[i])
+    ))
+  }
+  ind <- which.min(dist)
+  k0 <- as.integer(m_candidate[ind])
+  ret <- list(
+    k0 = k0,
+    thresh0 = thresh[ind],
+    dist = dist,
+    thresh = thresh,
+    method = method,
+    scale = scale[ind],
+    shape = shape[ind]
+  )
+  class(ret) <- "mev_thselect_pickands"
+  return(invisible(ret))
+}
+
+#' @export
+plot.mev_thselect_pickands <- function(x, ...) {
+  plot(
+    x = x$thresh,
+    y = x$dist,
+    pch = 20,
+    xlab = "threshold",
+    ylab = "Kolmogorov-Smirnoff distance",
+    bty = "l",
+    panel.first = {
+      abline(v = x$thresh0, col = "gray", lty = 2)
+    }
+  )
+}
+
+#' @export
+print.mev_thselect_pickands <- function(
+  x,
+  digits = min(3, getOption("digits") - 3),
+  ...
+) {
+  cat(
+    "Threshold selection method: Pickands (1975)\n Kolmogorov-Smirnoff goodness-of-fit statistic\n"
+  )
+  cat(
+    "Estimation method:",
+    switch(
+      x$method,
+      mle = "maximum likelihood",
+      lmom = "L-moments",
+      quartile = "quartile"
+    ),
+    "\n"
+  )
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
+  cat("Number of exceedances:", round(x$k0, digits), "\n")
+  return(invisible(NULL))
+}

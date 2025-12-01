@@ -7,13 +7,15 @@
 fit.gpd(
   xdat,
   threshold = 0,
-  method = "Grimshaw",
+  method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang", "obre", "pwm"),
   show = FALSE,
   MCMC = NULL,
   k = 4,
   tol = 1e-08,
   fpar = NULL,
-  warnSE = FALSE
+  warnSE = FALSE,
+  returnsamp = TRUE,
+  ...
 )
 }
 \arguments{
@@ -35,6 +37,8 @@ fit.gpd(
 \item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
 
 \item{warnSE}{logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.}
+
+\item{returnsamp}{logical; if \code{TRUE}, the object returned contains the sample vector of exceedances, which is needed for plots. This argument is useful for cases where the vector of observations takes up a lot of memory to avoid needless copies.}
 }
 \value{
 If \code{method} is neither \code{'zs'} nor \code{'zhang'}, a list containing the following components:

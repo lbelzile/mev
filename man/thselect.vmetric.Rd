@@ -8,10 +8,11 @@ thselect.vmetric(
   xdat,
   thresh,
   B = 199L,
-  type = c("eqd", "exp", "qq", "pp"),
+  type = c("eqd", "exp", "qq", "pp", "tails"),
   dist = c("l1", "l2"),
   uq = FALSE,
-  neval = 1000L,
+  bootstrap = c("nonparametric", "parametric"),
+  pp = ppoints(250),
   level = 0.95,
   plot = FALSE,
   ...
@@ -28,9 +29,11 @@ thselect.vmetric(
 
 \item{dist}{string indicating norm, either \code{l1} for absolute error or \code{l2} for quadratic error}
 
-\item{uq}{logical; if \code{TRUE}, generate bootstrap samples accounting for the sampling distribution of parameters}
+\item{uq}{logical; if \code{TRUE}, generate bootstrap samples accounting for the sampling distribution of parameters. Only valid when \code{bootstrap = "parametric"}.}
 
-\item{neval}{number of points at which to estimate the metric. Default to 1000L}
+\item{bootstrap}{string, one of \code{nonparametric} (sampling with replacement from exceedances) or \code{parametric} (sampling from generalized Pareto).}
+
+\item{pp}{plotting positions for the uniform. If \code{type = "tails"}, only the values exceeding the threshold probability level are kept. Default to 250 uniform plotting positions on the unit interval.}
 
 \item{level}{level of symmetric confidence interval. Default to 0.95}
 
@@ -47,6 +50,7 @@ an invisible list with components
 \item \code{type}: argument \code{type}
 \item \code{dist}: argument \code{dist},
 \item \code{level}: level of confidence interval, from \code{level}
+\item \code{bootstrap}: type of bootstrap, either \code{parametric} or \code{nonparametric}.
 }
 }
 \description{
@@ -55,27 +59,45 @@ automated diagnostic for the  independent and identically distributed case with 
 }
 \details{
 The algorithm proceeds by first computing the maximum
-likelihood algorithm and then simulating datasets from
-replication with parameters drawn from a bivariate normal
-approximation to the maximum likelihood estimator distribution.
-
+likelihood algorithm and then simulating replication datasets
+using either a parametric or nonparametric bootstrap.
 For each bootstrap sample, we refit the
  model and convert the quantiles to
- exponential or uniform variates.
-The mean absolute or mean squared distance
-is calculated on these. The threshold
-returned is the one with the lowest value
-of the metric.
+ exponential or uniform variates depending on \code{type}, or else if \code{eqd} by calculating the expected plotting positions for the simulated sample.
+
+If \code{uq = TRUE} and we specify \code{bootstrap = "parametric"}, the
+estimation uncertainty is taken into consideration and each sample
+is drawn from a generalized Pareto distribution, but with different parameters
+reflecting the sampling distribution.
+
+
+The mean absolute or mean squared distance is calculated on
+each bootstrap sample at each threshold, and then aggregated into
+a single average at each \code{thresh} value. The threshold
+returned is the one with the lowest average value of the metric.
+
+Collings et al. (2025) recommend to use quantile-quantile plot, but with
+\code{pp} starting from some minimal threshold and going no further than the \eqn{1-10/n} probability level. This can be supplied via \code{pp}. When choosin  \code{type = "tails"}, only probability points exceeding the threshold level are kept, so the metric is evaluated at the same levels, but with fewer points, as we increase the threshold level.
 }
 \examples{
 xdat <- rexp(1000, rate = 1/2)
 thresh <- quantile(xdat, prob = c(0.25,0.5, 0.75))
+# Method of Murphy, Tawn and Varty (2024) - EQD
 thv <- thselect.vmetric(xdat, thresh, B = 99)
 plot(thv)
+plot(thv, type = "metric")
 print(thv)
+# TAILS method
+tails <- thselect.vmetric(
+  xdat,
+  thresh = thresh,
+  type = "tails",
+  pp = seq(0.8, 1-10/length(xdat), length.out = 250))
 }
 \references{
 Varty, Z. and J.A. Tawn and P.M. Atkinson and S. Bierman (2021+), Inference for extreme earthquake magnitudes accounting for a time-varying measurement process.
 
 Murphy, C., Tawn, J. A., & Varty, Z. (2024). \emph{Automated Threshold Selection and Associated Inference Uncertainty for Univariate Extremes}. Technometrics, 67(\bold{2}), 215–224. <doi:10.1080/00401706.2024.2421744>
+
+Collings, T.P., C. Murphy-Barltrop, C. Murphy, I.D. Haigh, P.D. Bates, and N.D. Quinn (2025). \emph{Automated tail-informed threshold selection for extreme coastal sea levels}, Natural Hazards and Earth System Sciences, 25(\bold{11}), 4545–4562, <doi:10.5194/nhess-25-4545-2025>.
 }

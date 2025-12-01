@@ -7,8 +7,9 @@
 
 ## Changes:
 
-- Default range of `ylim` for `plot.mev_shape_rbm` has been changed
 - Parameter `neval` for `thselect.vmetric` replaced by `pp` to let users directly select probability points, as suggested in Collings et al. (2025)
+- Range for shape plots with semiparametric methods has been reduced
+- Function `fit.gpd` now allows for `returnsamp` parameter to disable return of vector of exceedances. New method `"pwm"` implemented.
 
 # mev 2.1  (Release date 2025-11-10)
 

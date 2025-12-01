@@ -874,36 +874,51 @@
 gp.fit <- function(
   xdat,
   threshold,
-  method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"),
+  method = c(
+    "Grimshaw",
+    "auglag",
+    "nlm",
+    "optim",
+    "ismev",
+    "zs",
+    "zhang",
+    "pwm"
+  ),
   show = FALSE,
   MCMC = NULL,
   fpar = NULL,
-  warnSE = TRUE
+  warnSE = TRUE,
+  returnsamp = TRUE,
+  ...
 ) {
   xi.tol = 1e-04
   xdat <- na.omit(xdat)
   xdatu <- xdat[xdat > threshold] - threshold
+  if (isTRUE(returnsamp)) {
+    sampexc <- xdatu
+  } else {
+    sampexc <- NULL
+  }
   if (length(xdatu) < 3) {
     stop("Too few observations to fit a generalized Pareto model.")
   }
   # Optimization of model, depending on routine
   method <- match.arg(method)
+
   if (!is.null(fpar)) {
     stopifnot(
       is.list(fpar),
       length(fpar) == 1L,
       names(fpar) %in% c("scale", "shape")
     )
-    if (method %in% c("zs", "zhang")) {
-      stop("Invalid method choice.")
+    if (method %in% c("pwm", "zs", "zhang")) {
+      stop("Invalid method choice with argument \"fpar\".")
     }
     method <- "fpar"
   }
   if (!is.null(MCMC) && !method %in% c("zs", "zhang"))
     warning("Ignoring argument \"MCMC\" for frequentist estimation")
-  if (missing(method)) {
-    method = "Grimshaw"
-  }
+
   if (method == "nlm") {
     temp <- .Zhang_Stephens_posterior(xdatu)
     temp <- .GP_1D_fit_nlm(
@@ -1047,6 +1062,7 @@ gp.fit <- function(
     }
     names(temp$mle) <- names(temp$se) <- param_names[!wf]
     names(temp$param) <- param_names
+
     output <- structure(
       list(
         estimate = temp$mle,
@@ -1060,7 +1076,7 @@ gp.fit <- function(
         pat = length(xdatu) / length(xdat),
         convergence = ifelse(temp$conv == 0, "successful", temp$conv),
         counts = temp$counts,
-        exceedances = xdatu,
+        exceedances = sampexc,
         wfixed = wf
       ),
       class = "mev_gpd"
@@ -1143,7 +1159,7 @@ gp.fit <- function(
           thin = bayespost$thin,
           burnin = bayespost$burnin,
           niter = bayespost$niter,
-          exceedances = xdatu
+          exceedances = sampexc
         ),
         class = c("mev_gpdbayes", "mev_gpd")
       )
@@ -1157,13 +1173,73 @@ gp.fit <- function(
           nat = length(xdatu),
           pat = length(xdatu) / length(xdat),
           approx.mean = temp$mle,
-          exceedances = xdatu
+          exceedances = sampexc
         ),
         class = c("mev_gpdbayes")
       )
     }
     if (show) print(post)
     return(invisible(post))
+  } else if (method == "pwm") {
+    temp <- list()
+    temp$mle <- gpd.lmom(xdat = xdatu, thresh = 0, sorted = FALSE)
+    pwm_vcov <- function(pars) {
+      sc <- pars[1]
+      k <- -pars[2]
+      # formula from Hosking and Wallis (1987)
+      rbind(
+        c(
+          sc^2 * (7 + 18 * k + 11 * k^2 + 2 * k^3),
+          sc * ((2 + k) * (2 + 6 * k + 7 * k^2 + 2 * k^3))
+        ),
+        c(
+          sc * ((2 + k) * (2 + 6 * k + 7 * k^2 + 2 * k^3)),
+          (1 + k) * (2 + k)^2 * (1 + k + 2 * k^2)
+        )
+      ) /
+        ((1 + 2 * k) * (3 + 2 * k))
+    }
+    # only if(temp$mle[2] < 1){
+    temp$vcov <- try(
+      pwm_vcov(temp$mle) / length(xdatu),
+      silent = TRUE
+    )
+    if (inherits(temp$vcov, "try-error")) {
+      temp$vcov <- matrix(NA, nrow = 2, ncol = 2)
+      temp$se <- rep(NA, 2)
+    } else {
+      temp$se <- try(sqrt(diag(temp$vcov)), silent = TRUE)
+      if (inherits(temp$se, "try-error")) {
+        temps$se <- rep(NA, 2)
+      }
+    }
+    colnames(temp$vcov) <-
+      rownames(temp$vcov) <-
+        names(temp$se) <-
+          names(temp$mle) <- c("scale", "shape")
+    # Variance covariance matrix
+    output <- structure(
+      list(
+        estimate = temp$mle,
+        param = temp$mle,
+        std.err = temp$se,
+        vcov = temp$vcov,
+        threshold = threshold,
+        method = method,
+        nllh = -gpd.ll(par = temp$mle, dat = xdatu),
+        nat = sum(xdat > threshold),
+        pat = length(xdatu) / length(xdat),
+        convergence = "successful",
+        counts = 1,
+        exceedances = sampexc,
+        wfixed = rep(FALSE, 2L)
+      ),
+      class = "mev_gpd"
+    )
+    if (show) {
+      print(output)
+    }
+    return(invisible(output))
   }
   if (method == "Grimshaw") {
     pjn <- .fit.gpd.grimshaw(xdatu) # Grimshaw (1993) function, note: k is -xi, a is sigma
@@ -1217,6 +1293,7 @@ gp.fit <- function(
   if (temp$mle[2] < -1 && temp$conv == 0) {
     warning("The MLE is not a solution to the score equation for \"xi < -1'")
   }
+
   names(temp$mle) <- names(std.errors) <- c("scale", "shape")
   output <- structure(
     list(
@@ -1231,7 +1308,7 @@ gp.fit <- function(
       pat = length(xdatu) / length(xdat),
       convergence = ifelse(temp$conv == 0, "successful", temp$conv),
       counts = temp$counts,
-      exceedances = xdatu,
+      exceedances = sampexc,
       wfixed = rep(FALSE, 2L)
     ),
     class = "mev_gpd"
@@ -1256,6 +1333,7 @@ gp.fit <- function(
 #' (higher bounds are more efficient, low bounds are more robust). Default to 4.
 #' @param tol numerical tolerance for OBRE weights iterations.
 #' @param show logical: should diagnostics and estimates be printed. Default to \code{FALSE}.
+#' @param returnsamp logical; if \code{TRUE}, return the sample exceedances
 #' @seealso \code{\link{fit.gpd}}
 #' @return a list with the same components as \code{\link{fit.gpd}},
 #' in addition to
@@ -1269,7 +1347,14 @@ gp.fit <- function(
 #' @examples
 #' dat <- rexp(100)
 #' .fit.gpd.rob(dat, 0.1)
-.fit.gpd.rob <- function(dat, thresh, k = 4, tol = 1e-5, show = FALSE) {
+.fit.gpd.rob <- function(
+  dat,
+  thresh,
+  k = 4,
+  tol = 1e-5,
+  show = FALSE,
+  returnsamp = TRUE
+) {
   k <- max(k, sqrt(2))
   ninit <- length(dat)
   gpd.score.i <- function(par, dat) {
@@ -1415,6 +1500,11 @@ gp.fit <- function(
   }
   od <- order(dat)
 
+  if (isTRUE(returnsamp)) {
+    sampexc <- dat[od]
+  } else {
+    sampexc <- NULL
+  }
   ret <- structure(
     list(
       estimate = par_val,
@@ -1428,7 +1518,7 @@ gp.fit <- function(
       pat = length(dat) / ninit,
       counts = c("function" = niter),
       param = par_val,
-      exceedances = dat[od],
+      exceedances = sampexc,
       weights = Wgt_dat[od]
     ),
     class = "mev_gpd"

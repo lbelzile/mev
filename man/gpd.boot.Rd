@@ -37,3 +37,16 @@ mimicking the joint distribution of maximum likelihood.
 The benefit of the latter is that it is more reliable
 in small samples and when the shape is negative.
 }
+\examples{
+set.seed(2025)
+xdat <- rgev(100, loc = 0, scale = 2, shape = -0.1)
+fgp <- fit.gpd(xdat)
+plot(
+ gpd.boot(fgp, method = "post")
+)
+points(
+ gpd.boot(fgp, method = "norm"),
+ col = 2,
+ pch = 20
+)
+}

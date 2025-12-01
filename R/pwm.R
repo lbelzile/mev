@@ -1,125 +1,3 @@
-#' Pickands' order statistics threshold selection method
-#'
-#' Restricting to the largest fourth of the data, returns the number of exceedances that minimizes the Kolmogorov-Smirnov statistic, i.e., the maximum absolute difference between the estimated generalized Pareto and the empirical distribution of exceedances. Relative to the paper, different estimation methods are proposed.
-#'
-#' @references  James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \doi{10.1214/aos/1176343003}
-#' @param xdat [numeric] vector of observations
-#' @param method [string] estimation method, either the quartiles of Pickands (1975), maximum likelihood, probability weighted moments or L-moments
-#' @param thresh [numeric] vector of candidate thresholds. If missing, defaults to order statistics from the 10th to a quarter of the sample size.
-#' @return a list with components
-#' \itemize{
-#' \item \code{k0}: number of exceedances
-#' \item \code{thresh0}: selected threshold returned by the procedure
-#' \item \code{thresh}: vector of candidate thresholds
-#' \item \code{dist}; vector of Kolmogorov-Smirnoff distance
-#' \item \code{method}; string for the estimation method
-#' \item \code{scale}: estimated scale parameter at the chosen threshold
-#' \item \code{shape}: estimated shape parameter at the chosen threshold
-#' }
-#' @note The quartiles estimator of Pickands is robust, but very inefficient. It is provided for historical reasons.
-#' @export
-thselect.pickands <- function(
-  xdat,
-  thresh,
-  method = c("mle", "lmom", "quartiles")
-) {
-  method <- match.arg(method)
-  xdat <- as.vector(xdat)
-  xdat <- sort(xdat[is.finite(xdat)], decreasing = TRUE)
-  n <- length(xdat)
-  if (missing(thresh)) {
-    mmax <- floor(n / 4)
-    mmin <- 10L
-    m_candidate <- mmax:mmin
-    thresh <- xdat[m_candidate]
-  } else {
-    thresh <- sort(thresh)
-    m_candidate <- sapply(thresh, function(th) {
-      sum(xdat > th)
-    })
-  }
-  shape <- scale <- dist <- numeric(length(m_candidate))
-  for (i in seq_along(m_candidate)) {
-    m <- m_candidate[i]
-    samp <- xdat[seq_len(m - 1)] - thresh[i]
-    if (method == "quartiles") {
-      quants <- as.numeric(quantile(samp, probs = c(0.5, 0.75)))
-      shape[i] <- (log(diff(quants)) - log(quants[1])) / log(2)
-      scale[i] <- quants[1] * shape[i] / (2^shape[i] - 1)
-    } else if (method == "mle") {
-      coefs <- coef(mev::fit.gpd(xdat = samp, threshold = 0))
-      shape[i] <- coefs['shape']
-      scale[i] <- coefs['scale']
-    } else if (method == "lmom") {
-      pars <- gpd.lmom(rev(samp), sorted = TRUE, Lskew = FALSE)
-      scale[i] <- pars['scale']
-      shape[i] <- pars['shape']
-    } #else if (method == "lmom") {
-    #pars <- gpd.lmom(samp, sorted = TRUE, Lskew = TRUE)
-    #scale[i] <- pars['scale']
-    #shape[i] <- pars['shape']
-    #}
-    dist[i] <- max(abs(
-      rank(samp) /
-        length(samp) -
-        mev::pgp(samp, scale = scale[i], shape = shape[i])
-    ))
-  }
-  ind <- which.min(dist)
-  k0 <- as.integer(m_candidate[ind])
-  ret <- list(
-    k0 = k0,
-    thresh0 = thresh[ind],
-    dist = dist,
-    thresh = thresh,
-    method = method,
-    scale = scale[ind],
-    shape = shape[ind]
-  )
-  class(ret) <- "mev_thselect_pickands"
-  return(invisible(ret))
-}
-
-#' @export
-plot.mev_thselect_pickands <- function(x, ...) {
-  plot(
-    x = x$thresh,
-    y = x$dist,
-    pch = 20,
-    xlab = "threshold",
-    ylab = "Kolmogorov-Smirnoff distance",
-    bty = "l",
-    panel.first = {
-      abline(v = x$thresh0, col = "gray", lty = 2)
-    }
-  )
-}
-
-#' @export
-print.mev_thselect_pickands <- function(
-  x,
-  digits = min(3, getOption("digits") - 3),
-  ...
-) {
-  cat(
-    "Threshold selection method: Pickands (1975)\n Kolmogorov-Smirnoff goodness-of-fit statistic\n"
-  )
-  cat(
-    "Estimation method:",
-    switch(
-      x$method,
-      mle = "maximum likelihood",
-      lmom = "L-moments",
-      quartile = "quartile"
-    ),
-    "\n"
-  )
-  cat("Selected threshold:", round(x$thresh0, digits), "\n")
-  cat("Number of exceedances:", round(x$k0, digits), "\n")
-  return(invisible(NULL))
-}
-
-
 #' Automatic L-moment ratio selection method
 #'
 #' Given a sample of observations, calculate the L-skewness and L-kurtosis
@@ -254,8 +132,14 @@ lmoments <- function(xdat, sorted = FALSE) {
 #' @param thresh [numeric] optional threshold argument
 #' @param sorted [logical] if \code{TRUE}, observations are sorted in increasing order
 #' @param Lskew [logical]; if \code{TRUE}, shape is obtained from L-skewness rather than first two moments.
+#' @param return string, either \code{vector} for a vector of length 2 from the parameters, or \code{list} for an object of class \code{mev_gpd}
 #' @return a vector of length two with the scale and shape estimates
-gpd.lmom <- function(xdat, thresh, sorted = FALSE, Lskew = FALSE) {
+gpd.lmom <- function(
+  xdat,
+  thresh,
+  sorted = FALSE,
+  Lskew = FALSE
+) {
   if (!missing(thresh)) {
     stopifnot(is.numeric(thresh), length(thresh) == 1L)
     xdat <- xdat[xdat > thresh] - thresh

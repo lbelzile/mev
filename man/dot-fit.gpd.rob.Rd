@@ -4,7 +4,7 @@
 \alias{.fit.gpd.rob}
 \title{Robust threshold selection of Dupuis}
 \usage{
-.fit.gpd.rob(dat, thresh, k = 4, tol = 1e-05, show = FALSE)
+.fit.gpd.rob(dat, thresh, k = 4, tol = 1e-05, show = FALSE, returnsamp = TRUE)
 }
 \arguments{
 \item{dat}{a numeric vector of data}
@@ -17,6 +17,8 @@
 \item{tol}{numerical tolerance for OBRE weights iterations.}
 
 \item{show}{logical: should diagnostics and estimates be printed. Default to \code{FALSE}.}
+
+\item{returnsamp}{logical; if \code{TRUE}, return the sample exceedances}
 }
 \value{
 a list with the same components as \code{\link{fit.gpd}},

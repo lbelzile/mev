@@ -7,11 +7,13 @@
 gp.fit(
   xdat,
   threshold,
-  method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang"),
+  method = c("Grimshaw", "auglag", "nlm", "optim", "ismev", "zs", "zhang", "pwm"),
   show = FALSE,
   MCMC = NULL,
   fpar = NULL,
-  warnSE = TRUE
+  warnSE = TRUE,
+  returnsamp = TRUE,
+  ...
 )
 }
 \arguments{
@@ -28,6 +30,8 @@ gp.fit(
 \item{fpar}{a named list with fixed parameters, either \code{scale} or \code{shape}}
 
 \item{warnSE}{logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.}
+
+\item{returnsamp}{logical; if \code{TRUE}, the object returned contains the sample vector of exceedances, which is needed for plots. This argument is useful for cases where the vector of observations takes up a lot of memory to avoid needless copies.}
 }
 \value{
 a list; see \code{\link[mev]{fit.gpd}} for details
