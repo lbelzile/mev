@@ -960,13 +960,17 @@ rho.gbw <- function(
 #' above the threshold \eqn{u} (\code{thresh}) (corresponding typically to the (\eqn{k+1})th order statistic, compute the tail quantile at level \eqn{Q(1-p)} using the estimator of Weissman (1978) under the assumption of Pareto tail (positive shape \eqn{\xi}), viz.
 #' \deqn{ Q(1-p) = u \left(\frac{k}{pn}\right)^{\xi}.}
 #'
+#' @note The confidence interval estimators are those for Hill estimator derived in Buidentag, Beirlant and de Wet (2020) in equations 23 (\code{bbw1}), 28 (\code{bbw2}) and 31 (\code{bbw3}, saddlepoint approximation) under the assumption of zero asymptotic bias.
 #' @param p tail probability, must be larger than the proportion of exceedances \code{k/n}.
 #' @param k vector of the number of exceedances above \code{thresh}
 #' @param n integer, total sample size
 #' @param thresh vector of thresholds
 #' @param shape vector of positive shape parameters
+#' @param confint string indicating the type of confidence interval.
+#' @param level level of confidence intervals, default to 0.95.
 #' @references Weissman, I. (1978). Estimation of Parameters and Larger Quantiles Based on the \emph{k} Largest Observations. \emph{Journal of the American Statistical Association}, 73(\bold{364}), 812–815. <doi:10.2307/2286285>.
-#' @return a vector of tail quantiles
+#' @references Buitendag S, Beirlant J and de Wet T. (2020) Confidence intervals for extreme Pareto-type quantiles. \emph{Scandinavian Journal of Statistics}, 47, 36–55. <doi:10.1111/sjos.12396>.
+#' @return a vector of tail quantiles if \code{confint = "none"} (default), or a data frame with columns \code{quantile}, \code{lower} and \code{upper} for the point estimates and confidence intervals of the quantiles.
 #' @export
 #' @examples
 #' set.seed(2025)
@@ -982,7 +986,17 @@ rho.gbw <- function(
 #'    shape = hill$shape)
 #' # Compare with true quantile
 #' qgp(1/100, loc = 2, scale = 2, shape = 0.4, lower.tail = FALSE)
-qweissman <- function(p, k, n, thresh, shape) {
+qweissman <- function(
+  p,
+  k,
+  n,
+  thresh,
+  shape,
+  confint = c("none", "bbw1", "bbw2", "bbw3"),
+  level = 0.95
+) {
+  stopifnot(length(level) == 1L, level < 1, level > 0.5)
+  confint <- match.arg(confint)
   m <- length(k)
   stopifnot(
     "Vectors \"k\" and \"shape\" must be of the same length." = (m ==
@@ -999,5 +1013,93 @@ qweissman <- function(p, k, n, thresh, shape) {
     )),
     "Shape parameter must be strictly positive." = isTRUE(all(shape > 0))
   )
-  thresh * (k / n / p)^shape
+  qW <- thresh * (k / n / p)^shape
+  if (confint == "none") {
+    return(qW)
+  }
+  # Second order regular variation function
+  hrho <- function(x, rho) {
+    if (rho == 0) {
+      log(x)
+    } else {
+      (x^rho - 1) / rho
+    }
+  }
+  # estimator of Buidentag et al. (2021), asymptotic confint, eq. 23
+  if (confint == "bbw1") {
+    lower <- qW *
+      exp(-shape * hrho(k / n / p, rho = 0) * qnorm((1 + level) / 2) / sqrt(k))
+    upper <- qW *
+      exp(-shape * hrho(k / n / p, rho = 0) * qnorm((1 - level) / 2) / sqrt(k))
+  } else if (confint == "bbw2") {
+    # eq. 28 of Buidentag et al.
+    ql <- qnorm((1 + level) / 2) / sqrt(k)
+    qu <- -ql
+    lower <- qW^(1 / (1 + ql)) * thresh^(ql / (1 + ql))
+    upper <- qW^(1 / (1 + qu)) * thresh^(qu / (1 + qu))
+  } else if (confint == "bbw3") {
+    lower <- upper <- numeric(length(qW))
+    for (ks in seq_along(k)) {
+      # Saddlepoint approximation for Hill
+      saddle <- function(x, k) {
+        stopifnot(length(k) == 1L)
+        Kw <- function(x, k) {
+          -k * log(1 - x / k)
+        }
+        Kpw <- function(x, k) {
+          1 / (1 - x / k)
+        }
+        Kppw <- function(x, k) {
+          1 / (1 - x / k)^2 / k
+        }
+        psi <- try(
+          uniroot(
+            f = function(z) {
+              Kpw(z, k) - x
+            },
+            interval = c(-1e8, k - 1e-8)
+          )$root,
+          silent = TRUE
+        )
+        if (!inherits(psi, "try-error")) {
+          w <- ifelse(
+            abs(psi) < 1e-5,
+            0,
+            sign(psi) * sqrt(2) * sqrt(psi * x - Kw(psi, k))
+          )
+          qsad <- pnorm(w) +
+            ifelse(
+              abs(w - 0) > 1e-4,
+              dnorm(w) *
+                (1 / w - 1 / (psi * sqrt(Kppw(psi, k = k)))),
+              0
+            )
+          return(qsad)
+        } else {
+          return(NA)
+        }
+      }
+      qlow <- uniroot(
+        f = function(z) {
+          saddle(z, k = k[ks]) - (1 - level) / 2
+        },
+        interval = c(1e-5, 0.98)
+      )$root
+      qhigh <- uniroot(
+        f = function(z) {
+          saddle(z, k = k[ks]) - (1 + level) / 2
+        },
+        interval = c(1.02, 2)
+      )$root
+      lower[ks] <- thresh[ks] * exp(shape[ks] * log(k[ks] / n / p) / qhigh)
+      upper[ks] <- thresh[ks] * exp(shape[ks] * log(k[ks] / n / p) / qlow)
+    }
+  }
+  # matplot(x = k, y = cbind(qW, lower, upper), type = "l", col = c("black","grey","grey"), lty = c(1,2,2))
+  # Asymptotic confidence intervals under lambda=0
+  data.frame(
+    quantile = qW,
+    lower = lower,
+    upper = upper
+  )
 }

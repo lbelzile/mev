@@ -218,6 +218,110 @@ print.mev_thselect_pec <- function(
 }
 
 
+#' Threshold selection based on weighted Kolmogorov-Smirnov distance
+#'
+#' Use a semiparametric bootstrap to calculate the null distribution of the weighted Kolmogorov-Smirnov difference between the generalized Pareto distribution and the empirical distribution
+#'
+#' @param xdat vector of observations
+#' @param thresh vector of thresholds
+#' @param B number of bootstrap replications
+#' @export
+#' @return an object of class \code{mev_thselect_goks} containing
+#' \itemize{
+#' \item{\code{thresh}: ordered vector of candidate thresholds}
+#' \item{\code{thresh0}: selected threshold}
+#' \item{\code{coef}: scale and shape parameters}
+#' \item{\code{nexc}: number of exceedances at each threshold}
+#' \item{\code{stat}: vector of weighted Kolmogorov-Smirnov statistic}
+#' \item{\code{pval}: bootstrap p-value for the weighted Kolmogorov-Smirnov statistic at the selected threshold}
+#' }
+#' @references Gonzalo, Jesús and José Olmo (2004). Which Extreme Values Are Really Extreme?, \emph{Journal of Financial Econometrics}, 2(\bold{3}), <doi:10.1093/jjfinec/nbh014>
+#' @examples
+#' set.seed(2025)
+#' xdat <- rgp(n = 200, shape = 0.1)
+#' thresh <- quantile(xdat, c(0.8,0.9,0.95))
+#' thselect.goks(xdat, thresh, B = 50)
+thselect.goks <- function(xdat, thresh, B = 100, eps = 0.5) {
+  stopifnot(
+    is.numeric(eps),
+    length(eps) == 1L,
+    eps >= 0,
+    eps <= 0.5
+  )
+  xdat <- sort(xdat[is.finite(xdat)], decreasing = TRUE)
+  n <- length(xdat)
+  if (missing(thresh)) {
+    stopifnot(n > 20)
+    nexc_min <- ceiling(0.25 * n)
+    stopifnot(nexc_min > 20)
+    thresh <- xdat[nexc_min:20]
+  } else {
+    thresh <- sort(thresh)
+    stopifnot(thresh[nth] < xdat[1])
+  }
+  nth <- length(thresh)
+
+  B <- as.integer(B)
+  stopifnot(B >= 19L)
+  # empdist <- ecdf(xdat)(thresh)
+  nexc <- sapply(thresh, function(u) {
+    sum(xdat > u)
+  })
+  pu <- 1 - nexc / n
+  wks <- numeric(B)
+  stat <- numeric(nth)
+  coefs <- matrix(nrow = nth, ncol = 2)
+  for (i in seq_along(thresh)) {
+    gpd_fit <- mev::fit.gpd(xdat = xdat, thresh = thresh[i])
+    coefs[i, ] <- coef(gpd_fit)
+    exc <- gpd_fit$exceedances
+    ecdf_fun <- ecdf(exc)
+    stat[i] <- length(exc)^eps *
+      max(abs(
+        rank(exc) /
+          length(exc) -
+          mev::pgp(
+            q = exc,
+            scale = coefs[i, 1],
+            shape = coefs[i, 2]
+          )
+      ))
+  }
+  i <- which.min(stat)
+  # P-value for GPD fit
+  for (b in 1:B) {
+    boot_u <- runif(n)
+    above <- which(boot_u > pu[i])
+    boot_samp <- mev::qgp(
+      p = (boot_u[above] - pu[i]) / (1 - pu[i]),
+      scale = coefs[i, 1],
+      shape = coefs[i, 2]
+    )
+    boot_fit <- mev::fit.gpd(boot_samp, thresh = 0)
+    wks[b] <- length(boot_samp)^eps *
+      max(abs(
+        rank(boot_samp) /
+          length(boot_samp) -
+          mev::pgp(
+            q = boot_samp,
+            scale = coef(boot_fit)['scale'],
+            shape = coef(boot_fit)['shape']
+          )
+      ))
+  }
+  ret <- list(
+    thresh = thresh,
+    thresh0 = thresh[i],
+    coef = coefs[i, ],
+    nexc = round(pu[i] * n),
+    stat = stat,
+    pval = mean(wks > stat[i])
+  )
+  class(ret) <- "mev_thselect_goks"
+  return(invisible(ret))
+}
+
+
 #' Threshold selection by shape mean square error minimization
 #'
 #' Use a semiparametric bootstrap to calculate the mean squared error
@@ -327,14 +431,24 @@ print.mev_thselect_cbm <- function(
   cat("Shape estimate:", round(x$shape[thind], digits), "\n")
   return(invisible(NULL))
 }
-#' Threshold selection via minimization of the weighted Cramér-von Mises
+
+#' Threshold selection via minimization of the weighted Cramér-von Mises distance
 #'
 #' For a Pareto-type sample, return the threshold that
 #' minimizes a weighted Cramér-von Mises criterion for the
 #' exponential sample with scale \eqn{H_{n, n_u}} and
 #' the log increments.
 #'
-
+#' @param xdat vector of positive exceedances
+#' @param k vector of number of exceedances, or integer indicating the maximum value of \eqn{k}, in which case a vector of integers from \eqn{k=10} to \code{k} is constructed
+#' @return an object of class \code{mev_thselect_wcvm} (list) with elements
+#' \itemize{
+#' \item \code{k0}: selected number of order statistics
+#' \item \code{shape}: Hill estimate of the shape at selected threshold
+#' \item \code{thresh}: value of the threshold (the (k+1)st largest order statistic)
+#' \item \code{criterion}: a data frame with columns \code{k} and \code{crit} giving the criterion value
+#' }
+#' @export
 #' @references Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51–69. <doi:10.57805/revstat.v6i1.57>
 thselect.wcvm <- function(xdat, k) {
   xdat <- sort(xdat, decreasing = TRUE)
@@ -342,6 +456,11 @@ thselect.wcvm <- function(xdat, k) {
   if (missing(k)) {
     shape_hill <- shape.hill(xdat)
   } else {
+    k <- as.integer(k)
+    if (length(k) == 1L) {
+      stopifnot(k > 10)
+      k <- 10:k
+    }
     shape_hill <- shape.hill(xdat, k = k)
   }
   kseq <- shape_hill$k

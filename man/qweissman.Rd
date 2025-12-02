@@ -4,7 +4,15 @@
 \alias{qweissman}
 \title{Weissman's quantile estimator}
 \usage{
-qweissman(p, k, n, thresh, shape)
+qweissman(
+  p,
+  k,
+  n,
+  thresh,
+  shape,
+  confint = c("none", "bbw1", "bbw2", "bbw3"),
+  level = 0.95
+)
 }
 \arguments{
 \item{p}{tail probability, must be larger than the proportion of exceedances \code{k/n}.}
@@ -16,15 +24,22 @@ qweissman(p, k, n, thresh, shape)
 \item{thresh}{vector of thresholds}
 
 \item{shape}{vector of positive shape parameters}
+
+\item{confint}{string indicating the type of confidence interval.}
+
+\item{level}{level of confidence intervals, default to 0.95.}
 }
 \value{
-a vector of tail quantiles
+a vector of tail quantiles if \code{confint = "none"} (default), or a data frame with columns \code{quantile}, \code{lower} and \code{upper} for the point estimates and confidence intervals of the quantiles.
 }
 \description{
 Given a small probability of exceedance \code{p},
 the number of exceedances \code{k} out of \code{n} observation
 above the threshold \eqn{u} (\code{thresh}) (corresponding typically to the (\eqn{k+1})th order statistic, compute the tail quantile at level \eqn{Q(1-p)} using the estimator of Weissman (1978) under the assumption of Pareto tail (positive shape \eqn{\xi}), viz.
 \deqn{ Q(1-p) = u \left(\frac{k}{pn}\right)^{\xi}.}
+}
+\note{
+The confidence interval estimators are those for Hill estimator derived in Buidentag, Beirlant and de Wet (2020) in equations 23 (\code{bbw1}), 28 (\code{bbw2}) and 31 (\code{bbw3}, saddlepoint approximation) under the assumption of zero asymptotic bias.
 }
 \examples{
 set.seed(2025)
@@ -43,4 +58,6 @@ qgp(1/100, loc = 2, scale = 2, shape = 0.4, lower.tail = FALSE)
 }
 \references{
 Weissman, I. (1978). Estimation of Parameters and Larger Quantiles Based on the \emph{k} Largest Observations. \emph{Journal of the American Statistical Association}, 73(\bold{364}), 812–815. <doi:10.2307/2286285>.
+
+Buitendag S, Beirlant J and de Wet T. (2020) Confidence intervals for extreme Pareto-type quantiles. \emph{Scandinavian Journal of Statistics}, 47, 36–55. <doi:10.1111/sjos.12396>.
 }

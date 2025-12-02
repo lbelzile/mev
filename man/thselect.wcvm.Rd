@@ -2,9 +2,23 @@
 % Please edit documentation in R/thselect.R
 \name{thselect.wcvm}
 \alias{thselect.wcvm}
-\title{Threshold selection via minimization of the weighted Cramér-von Mises}
+\title{Threshold selection via minimization of the weighted Cramér-von Mises distance}
 \usage{
 thselect.wcvm(xdat, k)
+}
+\arguments{
+\item{xdat}{vector of positive exceedances}
+
+\item{k}{vector of number of exceedances, or integer indicating the maximum value of \eqn{k}, in which case a vector of integers from \eqn{k=10} to \code{k} is constructed}
+}
+\value{
+an object of class \code{mev_thselect_wcvm} (list) with elements
+\itemize{
+\item \code{k0}: selected number of order statistics
+\item \code{shape}: Hill estimate of the shape at selected threshold
+\item \code{thresh}: value of the threshold (the (k+1)st largest order statistic)
+\item \code{criterion}: a data frame with columns \code{k} and \code{crit} giving the criterion value
+}
 }
 \description{
 For a Pareto-type sample, return the threshold that
