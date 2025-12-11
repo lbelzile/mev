@@ -14,8 +14,6 @@ gpd.lmom(xdat, thresh, sorted = FALSE, Lskew = FALSE)
 \item{sorted}{[logical] if \code{TRUE}, observations are sorted in increasing order}
 
 \item{Lskew}{[logical]; if \code{TRUE}, shape is obtained from L-skewness rather than first two moments.}
-
-\item{return}{string, either \code{vector} for a vector of length 2 from the parameters, or \code{list} for an object of class \code{mev_gpd}}
 }
 \value{
 a vector of length two with the scale and shape estimates

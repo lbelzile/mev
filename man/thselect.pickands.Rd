@@ -34,3 +34,6 @@ The quartiles estimator of Pickands is robust, but very inefficient. It is provi
 \references{
 James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \doi{10.1214/aos/1176343003}
 }
+\seealso{
+[thselect.goks]
+}

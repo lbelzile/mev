@@ -4,14 +4,18 @@
 \alias{thselect.goks}
 \title{Threshold selection based on weighted Kolmogorov-Smirnov distance}
 \usage{
-thselect.goks(xdat, thresh, B = 100, eps = 0.5)
+thselect.goks(xdat, thresh, test = TRUE, B = 100, eps = 0.5)
 }
 \arguments{
 \item{xdat}{vector of observations}
 
 \item{thresh}{vector of thresholds}
 
+\item{test}{logical; if \code{TRUE}, test goodness-of-fit via a parametric bootstrap from the fitted generalized Pareto distribution}
+
 \item{B}{number of bootstrap replications}
+
+\item{eps}{scalar between 0 and 0.5 giving the power of the number of exceedances. The default is Kolmogorov-Smirnov, and 0 returns Pickands (1975) method.}
 }
 \value{
 an object of class \code{mev_thselect_goks} containing
@@ -34,5 +38,5 @@ thresh <- quantile(xdat, c(0.8,0.9,0.95))
 thselect.goks(xdat, thresh, B = 50)
 }
 \references{
-Gonzalo, Jesús and José Olmo (2004). Which Extreme Values Are Really Extreme?, \emph{Journal of Financial Econometrics}, 2(\bold{3}), <doi:10.1093/jjfinec/nbh014>
+Gonzalo, Jesus and Jose Olmo (2004). Which Extreme Values Are Really Extreme?, \emph{Journal of Financial Econometrics}, 2(\bold{3}), <doi:10.1093/jjfinec/nbh014>
 }

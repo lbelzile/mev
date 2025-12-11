@@ -36,5 +36,5 @@ thresh <- qnorm(c(0.8, 0.9, 0.95))
 thselect.cbm(xdat, thresh, B = 50)
 }
 \references{
-Caers, J., Beirlant, J. and Maes, M.A. (1999). Statistics for Modeling Heavy Tailed Distributions in Geology: Part I. Methodology. \emph{Mathematical Geology}, 31, 391–410. <doi:10.1023/A:1007538624271>
+Caers, J., Beirlant, J. and Maes, M.A. (1999). Statistics for Modeling Heavy Tailed Distributions in Geology: Part I. Methodology. \emph{Mathematical Geology}, 31, 391-410. <doi:10.1023/A:1007538624271>
 }

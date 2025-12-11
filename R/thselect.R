@@ -4,7 +4,7 @@
 #' of Schneider et al. (2021) for threshold selection.
 #' The implementation uses a second-order regular variation index of -1
 #'
-#' @references Schneider, L.F., Krajina, A. & Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881–913 \doi{10.1007/s10687-021-00405-7}
+#' @references Schneider, L.F., Krajina, A. and Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881-913 \doi{10.1007/s10687-021-00405-7}
 #' @param xdat vector of positive exceedances
 #' @return a list with elements
 #' \describe{
@@ -224,7 +224,9 @@ print.mev_thselect_pec <- function(
 #'
 #' @param xdat vector of observations
 #' @param thresh vector of thresholds
+#' @param test logical; if \code{TRUE}, test goodness-of-fit via a parametric bootstrap from the fitted generalized Pareto distribution
 #' @param B number of bootstrap replications
+#' @param eps scalar between 0 and 0.5 giving the power of the number of exceedances. The default is Kolmogorov-Smirnov, and 0 returns Pickands (1975) method.
 #' @export
 #' @return an object of class \code{mev_thselect_goks} containing
 #' \itemize{
@@ -235,13 +237,13 @@ print.mev_thselect_pec <- function(
 #' \item{\code{stat}: vector of weighted Kolmogorov-Smirnov statistic}
 #' \item{\code{pval}: bootstrap p-value for the weighted Kolmogorov-Smirnov statistic at the selected threshold}
 #' }
-#' @references Gonzalo, Jesús and José Olmo (2004). Which Extreme Values Are Really Extreme?, \emph{Journal of Financial Econometrics}, 2(\bold{3}), <doi:10.1093/jjfinec/nbh014>
+#' @references Gonzalo, Jesus and Jose Olmo (2004). Which Extreme Values Are Really Extreme?, \emph{Journal of Financial Econometrics}, 2(\bold{3}), <doi:10.1093/jjfinec/nbh014>
 #' @examples
 #' set.seed(2025)
 #' xdat <- rgp(n = 200, shape = 0.1)
 #' thresh <- quantile(xdat, c(0.8,0.9,0.95))
 #' thselect.goks(xdat, thresh, B = 50)
-thselect.goks <- function(xdat, thresh, B = 100, eps = 0.5) {
+thselect.goks <- function(xdat, thresh, test = TRUE, B = 100, eps = 0.5) {
   stopifnot(
     is.numeric(eps),
     length(eps) == 1L,
@@ -255,20 +257,18 @@ thselect.goks <- function(xdat, thresh, B = 100, eps = 0.5) {
     nexc_min <- ceiling(0.25 * n)
     stopifnot(nexc_min > 20)
     thresh <- xdat[nexc_min:20]
+    nth <- length(thresh)
   } else {
     thresh <- sort(thresh)
+    nth <- length(thresh)
     stopifnot(thresh[nth] < xdat[1])
   }
-  nth <- length(thresh)
 
-  B <- as.integer(B)
-  stopifnot(B >= 19L)
   # empdist <- ecdf(xdat)(thresh)
   nexc <- sapply(thresh, function(u) {
     sum(xdat > u)
   })
   pu <- 1 - nexc / n
-  wks <- numeric(B)
   stat <- numeric(nth)
   coefs <- matrix(nrow = nth, ncol = 2)
   for (i in seq_along(thresh)) {
@@ -288,34 +288,43 @@ thselect.goks <- function(xdat, thresh, B = 100, eps = 0.5) {
       ))
   }
   i <- which.min(stat)
-  # P-value for GPD fit
-  for (b in 1:B) {
-    boot_u <- runif(n)
-    above <- which(boot_u > pu[i])
-    boot_samp <- mev::qgp(
-      p = (boot_u[above] - pu[i]) / (1 - pu[i]),
-      scale = coefs[i, 1],
-      shape = coefs[i, 2]
-    )
-    boot_fit <- mev::fit.gpd(boot_samp, thresh = 0)
-    wks[b] <- length(boot_samp)^eps *
-      max(abs(
-        rank(boot_samp) /
-          length(boot_samp) -
-          mev::pgp(
-            q = boot_samp,
-            scale = coef(boot_fit)['scale'],
-            shape = coef(boot_fit)['shape']
-          )
-      ))
+  if (isTRUE(test)) {
+    B <- as.integer(B)
+    stopifnot(B >= 19L)
+    wks <- numeric(B)
+    # P-value for GPD fit
+    for (b in 1:B) {
+      boot_u <- runif(n)
+      above <- which(boot_u > pu[i])
+      boot_samp <- mev::qgp(
+        p = (boot_u[above] - pu[i]) / (1 - pu[i]),
+        scale = coefs[i, 1],
+        shape = coefs[i, 2]
+      )
+      boot_fit <- mev::fit.gpd(boot_samp, thresh = 0)
+      wks[b] <- length(boot_samp)^eps *
+        max(abs(
+          rank(boot_samp) /
+            length(boot_samp) -
+            mev::pgp(
+              q = boot_samp,
+              scale = coef(boot_fit)['scale'],
+              shape = coef(boot_fit)['shape']
+            )
+        ))
+      pval = mean(wks > stat[i])
+    }
+  } else {
+    pval <- NULL
   }
   ret <- list(
-    thresh = thresh,
-    thresh0 = thresh[i],
-    coef = coefs[i, ],
-    nexc = round(pu[i] * n),
+    thresh = as.numeric(thresh),
+    thresh0 = as.numeric(thresh[i]),
+    coef = c(scale = coefs[i, 1], shape = coefs[i, 2]),
+    nexc = as.integer(round(pu[i] * n)),
+    eps = eps,
     stat = stat,
-    pval = mean(wks > stat[i])
+    pval = pval
   )
   class(ret) <- "mev_thselect_goks"
   return(invisible(ret))
@@ -341,7 +350,7 @@ thselect.goks <- function(xdat, thresh, B = 100, eps = 0.5) {
 #' \item{\code{var}: vector of bootstrap variance estimates}
 #' \item{\code{mse}: vector of mean squared error bootstrap estimates}
 #' }
-#' @references Caers, J., Beirlant, J. and Maes, M.A. (1999). Statistics for Modeling Heavy Tailed Distributions in Geology: Part I. Methodology. \emph{Mathematical Geology}, 31, 391–410. <doi:10.1023/A:1007538624271>
+#' @references Caers, J., Beirlant, J. and Maes, M.A. (1999). Statistics for Modeling Heavy Tailed Distributions in Geology: Part I. Methodology. \emph{Mathematical Geology}, 31, 391-410. <doi:10.1023/A:1007538624271>
 #' @examples
 #' set.seed(2025)
 #' xdat <- rnorm(1000)
@@ -432,10 +441,10 @@ print.mev_thselect_cbm <- function(
   return(invisible(NULL))
 }
 
-#' Threshold selection via minimization of the weighted Cramér-von Mises distance
+#' Threshold selection via minimization of the weighted Cramer-von Mises distance
 #'
 #' For a Pareto-type sample, return the threshold that
-#' minimizes a weighted Cramér-von Mises criterion for the
+#' minimizes a weighted Cramer-von Mises criterion for the
 #' exponential sample with scale \eqn{H_{n, n_u}} and
 #' the log increments.
 #'
@@ -449,7 +458,7 @@ print.mev_thselect_cbm <- function(
 #' \item \code{criterion}: a data frame with columns \code{k} and \code{crit} giving the criterion value
 #' }
 #' @export
-#' @references Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51–69. <doi:10.57805/revstat.v6i1.57>
+#' @references Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51-69. <doi:10.57805/revstat.v6i1.57>
 thselect.wcvm <- function(xdat, k) {
   xdat <- sort(xdat, decreasing = TRUE)
   xdat <- xdat[is.finite(xdat) & xdat > 0]
@@ -513,7 +522,7 @@ plot.mev_thselect_wcvm <- function(x, ...) {
   args$x <- x$criterion$k
   args$y <- log(x$criterion$crit)
   if (is.null(args$ylab)) {
-    args$ylab <- "log of weighted Cramér-von Mises distance"
+    args$ylab <- "log of weighted Cramer-von Mises distance"
   }
   if (is.null(args$xlab)) {
     args$xlab <- "number of exceedances"
@@ -535,6 +544,7 @@ plot.mev_thselect_wcvm <- function(x, ...) {
 #' Restricting to the largest fourth of the data, returns the number of exceedances that minimizes the Kolmogorov-Smirnov statistic, i.e., the maximum absolute difference between the estimated generalized Pareto and the empirical distribution of exceedances. Relative to the paper, different estimation methods are proposed.
 #'
 #' @references  James Pickands III (1975). \emph{Statistical inference using extreme order statistics}, Annals of Statistics, 3(\bold{1}) 119-131, \doi{10.1214/aos/1176343003}
+#' @seealso [thselect.goks]
 #' @param xdat [numeric] vector of observations
 #' @param method [string] estimation method, either the quartiles of Pickands (1975), maximum likelihood, probability weighted moments or L-moments
 #' @param thresh [numeric] vector of candidate thresholds. If missing, defaults to order statistics from the 10th to a quarter of the sample size.
@@ -619,7 +629,22 @@ plot.mev_thselect_pickands <- function(x, ...) {
     y = x$dist,
     pch = 20,
     xlab = "threshold",
-    ylab = "Kolmogorov-Smirnoff distance",
+    ylab = "absolute distance",
+    bty = "l",
+    panel.first = {
+      abline(v = x$thresh0, col = "gray", lty = 2)
+    }
+  )
+}
+
+#' @export
+plot.mev_thselect_goks <- function(x, ...) {
+  plot(
+    x = x$thresh,
+    y = x$stat,
+    pch = 20,
+    xlab = "threshold",
+    ylab = "Kolmogorov-Smirnov distance",
     bty = "l",
     panel.first = {
       abline(v = x$thresh0, col = "gray", lty = 2)
@@ -634,7 +659,7 @@ print.mev_thselect_pickands <- function(
   ...
 ) {
   cat(
-    "Threshold selection method: Pickands (1975)\n Kolmogorov-Smirnoff goodness-of-fit statistic\n"
+    "Threshold selection method: Pickands (1975)\n absolute distance\n"
   )
   cat(
     "Estimation method:",
@@ -648,5 +673,19 @@ print.mev_thselect_pickands <- function(
   )
   cat("Selected threshold:", round(x$thresh0, digits), "\n")
   cat("Number of exceedances:", round(x$k0, digits), "\n")
+  return(invisible(NULL))
+}
+
+#' @export
+print.mev_thselect_goks <- function(
+  x,
+  digits = min(3, getOption("digits") - 3),
+  ...
+) {
+  cat(
+    "Threshold selection method: Gonzalo and Olmo (2004)\n weighted Kolmogorov-Smirnoff goodness-of-fit statistic\n"
+  )
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
+  cat("Number of exceedances:", round(x$nexc, digits), "\n")
   return(invisible(NULL))
 }

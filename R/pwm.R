@@ -132,7 +132,6 @@ lmoments <- function(xdat, sorted = FALSE) {
 #' @param thresh [numeric] optional threshold argument
 #' @param sorted [logical] if \code{TRUE}, observations are sorted in increasing order
 #' @param Lskew [logical]; if \code{TRUE}, shape is obtained from L-skewness rather than first two moments.
-#' @param return string, either \code{vector} for a vector of length 2 from the parameters, or \code{list} for an object of class \code{mev_gpd}
 #' @return a vector of length two with the scale and shape estimates
 gpd.lmom <- function(
   xdat,

@@ -149,6 +149,7 @@ gev.mle <- function(
 #' @param fpar a named list with fixed parameters, either \code{scale} or \code{shape}
 #' @param warnSE logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.
 #' @param returnsamp logical; if \code{TRUE}, the object returned contains the sample vector of exceedances, which is needed for plots. This argument is useful for cases where the vector of observations takes up a lot of memory to avoid needless copies.
+#' @param ... additional parameters for backward compatibility
 #' @seealso \code{\link[evd]{fpot}} and \code{\link[ismev]{gpd.fit}}
 #'
 #' @details The default method is \code{'Grimshaw'}, which maximizes the profile likelihood for the ratio scale/shape.  Other options include \code{'obre'} for optimal \eqn{B}-robust estimator of the parameter of Dupuis (1998), vanilla maximization of the log-likelihood using constrained optimization routine \code{'auglag'}, 1-dimensional optimization of the profile likelihood using \code{\link[stats]{nlm}} and \code{\link[stats]{optim}}. Method \code{'ismev'} performs the two-dimensional optimization routine \code{\link[ismev]{gpd.fit}} from the \code{\link[ismev]{ismev}} library, with in addition the algebraic gradient.
@@ -460,7 +461,7 @@ fit.pp <- function(
           0
       ))
     ) {
-      stop("Starting values do not satisfy the inequality constraints.")
+      warning("Starting values do not satisfy the inequality constraints.")
     }
   }
   # check_init_ll <- try(pp.ll(par = spar, dat = xdat, u = u, np = np))

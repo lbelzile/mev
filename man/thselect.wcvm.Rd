@@ -2,7 +2,7 @@
 % Please edit documentation in R/thselect.R
 \name{thselect.wcvm}
 \alias{thselect.wcvm}
-\title{Threshold selection via minimization of the weighted Cramér-von Mises distance}
+\title{Threshold selection via minimization of the weighted Cramer-von Mises distance}
 \usage{
 thselect.wcvm(xdat, k)
 }
@@ -22,10 +22,10 @@ an object of class \code{mev_thselect_wcvm} (list) with elements
 }
 \description{
 For a Pareto-type sample, return the threshold that
-minimizes a weighted Cramér-von Mises criterion for the
+minimizes a weighted Cramer-von Mises criterion for the
 exponential sample with scale \eqn{H_{n, n_u}} and
 the log increments.
 }
 \references{
-Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51–69. <doi:10.57805/revstat.v6i1.57>
+Goegebeur , Y., Beirlant , J., and de Wet , T. (2008). Linking Pareto-Tail Kernel Goodness-of-fit Statistics with Tail Index at Optimal Threshold and Second Order Estimation. REVSTAT-Statistical Journal, 6(\bold{1}), 51-69. <doi:10.57805/revstat.v6i1.57>
 }

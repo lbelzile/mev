@@ -32,6 +32,8 @@ gp.fit(
 \item{warnSE}{logical; if \code{TRUE}, a warning is printed if the standard errors cannot be returned from the observed information matrix when the shape is less than -0.5.}
 
 \item{returnsamp}{logical; if \code{TRUE}, the object returned contains the sample vector of exceedances, which is needed for plots. This argument is useful for cases where the vector of observations takes up a lot of memory to avoid needless copies.}
+
+\item{...}{additional parameters for backward compatibility}
 }
 \value{
 a list; see \code{\link[mev]{fit.gpd}} for details
