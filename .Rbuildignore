@@ -43,6 +43,8 @@ R/mgp.R
 R/condextr.R
 R/regression.R
 R/taildep2.R
+R/ksdeptest.R
+R/mrl_new.R
 ^revdep$
 ^CRAN-SUBMISSION$
 ^doc$

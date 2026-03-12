@@ -2,16 +2,25 @@
 % Please edit documentation in R/tailindex.R
 \name{shape.rbm}
 \alias{shape.rbm}
+\alias{plot.mev_shape_rbm}
 \title{Random block maxima shape estimator of Wager}
 \usage{
 shape.rbm(xdat, k = 10:floor(length(xdat)/2), ...)
+
+\method{plot}{mev_shape_rbm}(x, type = c("shape", "risk"), log = TRUE, ...)
 }
 \arguments{
 \item{xdat}{[vector] sample exceedances}
 
 \item{k}{[int] vector of integers for which to compute the estimator}
 
-\item{...}{additional parameters, currently ignored}
+\item{...}{additional arguments, currently ignored}
+
+\item{x}{object of class \code{mev_shape_rbm} returned by \code{shape.rbm}}
+
+\item{type}{[string] type of plot, either \code{"shape"} for the tail index or \code{"risk"} for the empirical Bayes risk}
+
+\item{log}{[logical] if \code{TRUE} (default), the x-axis for the number of exceedances is displayed on the log scale.}
 }
 \value{
 a list with elements
@@ -24,6 +33,8 @@ a list with elements
 }
 \description{
 Computes the shape estimator for varying k up to sample size of maximum \code{kmax} largest observations
+
+The \code{plot} S3 routine returns plot of the shape estimator along with the value (and 95\% Wald-based confidence interval) at the selected threshold, or a plot of the empirical Bayes risk.
 }
 \references{
 Wager, S. (2014). Subsampling extremes: From block maxima to smooth tail estimation, \emph{Journal of Multivariate Analysis}, 130, 335-353, \doi{10.1016/j.jmva.2014.06.010}

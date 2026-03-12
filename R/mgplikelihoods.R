@@ -189,7 +189,7 @@ gpdtopar <- function(dat, loc = 0, scale, shape, lambdau = 1) {
 #' }
 #' @return the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
 #' @export
-likmgp <- function(
+mgp.ll <- function(
   dat,
   thresh,
   loc,
@@ -437,8 +437,7 @@ likmgp <- function(
 #' }
 #' @return the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
 #' @export
-#' @keywords internal
-clikmgp <- function(
+mgp.cll <- function(
   dat,
   thresh,
   mthresh = thresh,
@@ -1381,4 +1380,116 @@ expmeXS <- function(
     }
   }
   return(weights)
+}
+
+
+#' Censored likelihood for multivariate peaks over threshold models
+#'
+#' Censored likelihoods for various parametric limiting models over region determined by
+#' \deqn{\{y \in F: \max_{j=1}^D \sigma_j \frac{y^\xi_j-1}{\xi_j}+\mu_j  > u\};}
+#' where \eqn{\mu} is \code{loc}, \eqn{\sigma} is \code{scale} and \eqn{\xi} is \code{shape}.
+#'
+#' @inheritParams likmgp
+#' @param mthresh vector of individuals thresholds under which observations are censored
+#' @param ... additional arguments (see Details)
+#' @note The location and scale parameters are not identifiable unless one of them is fixed.
+#' @details
+#' Optional arguments can be passed to the function via \code{...}
+#' \itemize{
+#' \item \code{censored} matrix of booleans and \code{NA} indicating whether observations \code{dat} fall below the mthreshold \code{mthresh}
+#' \item \code{cl} cluster instance  created by \code{makeCluster} (default to \code{NULL})
+#' \item \code{ncors} number of cores for parallel computing of the likelihood
+#' \item \code{numAbovePerRow} number of observations above mthreshold (non-missing) per row
+#' \item \code{numAbovePerCol} number of observations above mthreshold (non-missing) per column
+#' \item \code{mmax} maximum per column
+#' \item \code{B1} number of replicates for quasi Monte Carlo integral for the exponent measure
+#' \item \code{B2} number of replicates for quasi Monte Carlo integral for the censored intensity contribution
+#' \item \code{genvec1} generating vector for the quasi Monte Carlo routine (exponent measure), associated with \code{B1}
+#' \item \code{genvec2} generating vector for the quasi Monte Carlo routine (individual obs contrib), associated with \code{B2}
+#' }
+#' @return the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
+#' @export
+#' @keywords internal
+clikmgp <- function(
+  dat,
+  thresh,
+  mthresh = thresh,
+  loc,
+  scale,
+  shape,
+  par,
+  model = c("log", "neglog", "br", "xstud"),
+  likt = c("mgp", "pois", "binom"),
+  lambdau = 1,
+  ...
+) {
+  .Deprecated(new = "mgp.cll", package = "mev")
+  mgp.cll(
+    dat = dat,
+    thresh = thresh,
+    mthresh = mthresh,
+    loc = loc,
+    scale = scale,
+    shape = shape,
+    par = par,
+    model = model,
+    likt = likt,
+    lambdau = lambdau,
+    ...
+  )
+}
+
+#' Likelihood for multivariate peaks over threshold models
+#'
+#' Likelihood for the various parametric limiting models over region determined by
+#' \deqn{\{y \in F: \max_{j=1}^D \sigma_j \frac{y^\xi_j-1}{\xi_j}+\mu_j  > u\};}
+#' where \eqn{\mu} is \code{loc}, \eqn{\sigma} is \code{scale} and \eqn{\xi} is \code{shape}.
+#' @param dat matrix of observations
+#' @param thresh functional threshold for the maximum
+#' @param loc vector of location parameter for the marginal generalized Pareto distribution
+#' @param scale vector of scale parameter for the marginal generalized Pareto distribution
+#' @param shape vector of shape parameter for the marginal generalized Pareto distribution
+#' @param lambdau vector of marginal rate of marginal threshold exceedance.
+#' @param likt string indicating the type of likelihood, with an additional contribution for the non-exceeding components: one of  \code{"mgp"}, \code{"binom"} and \code{"pois"}.
+#' @param ... additional arguments (see Details)
+#' @param par list of parameters: \code{alpha} for the logistic model, \code{Lambda} for the Brown--Resnick model or else \code{Sigma} and \code{df} for the extremal Student.
+#' @param model string indicating the model family, one of \code{"log"}, \code{"neglog"}, \code{"br"} or \code{"xstud"}
+#' @note The location and scale parameters are not identifiable unless one of them is fixed.
+#' @details
+#' Optional arguments can be passed to the function via \code{...}
+#' \itemize{
+#' \item \code{cl} cluster instance  created by \code{makeCluster} (default to \code{NULL})
+#' \item \code{ncors} number of cores for parallel computing of the likelihood
+#' \item \code{mmax} maximum per column
+#' \item \code{B1} number of replicates for quasi Monte Carlo integral for the exponent measure
+#' \item \code{genvec1} generating vector for the quasi Monte Carlo routine (exponent measure), associated with \code{B1}
+#' }
+#' @return the value of the log-likelihood with \code{attributes} \code{expme}, giving the exponent measure
+#' @export
+#' @keywords internal
+likmgp <- function(
+  dat,
+  thresh,
+  loc,
+  scale,
+  shape,
+  par,
+  model = c("log", "br", "xstud"),
+  likt = c("mgp", "pois", "binom"),
+  lambdau = 1,
+  ...
+) {
+  .Deprecated(new = "mgp.ll", package = "mev")
+  mgp.ll(
+    dat = dat,
+    thresh = thresh,
+    loc = loc,
+    scale = scale,
+    shape = shape,
+    par = par,
+    model = model,
+    likt = likt,
+    lambdau = lambdau,
+    ...
+  )
 }

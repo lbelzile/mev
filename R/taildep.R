@@ -17,7 +17,7 @@
 #' @param qlim limits for the sequence \code{u} of the structural variable
 #' @param depmeas dependence measure, either of \code{"eta"} or \code{"chi"}
 #' @param confint string indicating the type of confidence interval for \eqn{\eta}, one of \code{"wald"} or \code{"lrt"}
-#' @param level the confidence level required (default to 0.95).
+#' @param level confidence level requested (default to 0.95).
 #' @param trunc logical indicating whether the estimates and confidence intervals should be truncated in \eqn{[0,1]}
 #' @param ties.method string indicating the type of method for \code{rank}; see \code{\link[base]{rank}} for a list of options. Default to \code{"random"}
 #' @param margtrans marginal transformation; if \code{"none"}, data are assumed to be in uniform margins
@@ -532,6 +532,7 @@ plot.mev_taildep <- function(x, ...) {
 #' @note EXPERIMENTAL. The numerical optimization of the likelihood surface is
 #' difficult, as the function is ill-behaved. Visual inspection of estimates is
 #' often necessary to check for possible lack of convergence.
+#' @keywords internal
 #' @examples
 #' d <- 2
 #' rho <- 0.9

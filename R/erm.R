@@ -1,4 +1,4 @@
-#' Exponential regression estimator
+#' Exponential regression estimator of the shape
 #'
 #' This function implements the exponential regression estimator of the shape parameter for the case of Pareto tails with positive shape index.
 #'

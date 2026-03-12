@@ -2,7 +2,7 @@
 % Please edit documentation in R/erm.R
 \name{shape.erm}
 \alias{shape.erm}
-\title{Exponential regression estimator}
+\title{Exponential regression estimator of the shape}
 \usage{
 shape.erm(xdat, k, method = c("bdgm", "fh"), bounds = NULL)
 }

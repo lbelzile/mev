@@ -1,7 +1,7 @@
 Package: mev
 Type: Package
 Title: Modelling of Extreme Values
-Version: 2.1.00005
+Version: 2.1.00006
 Authors@R: c(
    person(given="Leo", family="Belzile", role = c("aut", "cre"), email = "belzilel@gmail.com", comment = c(ORCID = "0000-0002-9135-014X")), 
    person(given="Jennifer L.", family="Wadsworth", role=c("aut")), 
@@ -16,7 +16,7 @@ Description: Various tools for the analysis of univariate, multivariate and func
 License: GPL-3
 URL: https://lbelzile.github.io/mev/, https://github.com/lbelzile/mev/
 BugReports: https://github.com/lbelzile/mev/issues/
-Depends: R (>= 3.4)
+Depends: R (>= 3.5)
 Imports: 
     alabama,
     methods,

@@ -82,6 +82,7 @@ thselect.mrl <- function(
   xk <- xdat[-(1:(k + 1))]
   # Containers
   mse <- numeric(nt)
+  valid <- logical(nt)
   coefs <- matrix(0, nrow = nt, ncol = 2)
   # Could use rank-one update, but is improvement worth it?
   for (i in seq_along(thresh)) {
@@ -91,6 +92,20 @@ thselect.mrl <- function(
       w = weights[seq_len(nobs(fit))]
     )
     coefs[i, ] <- coef(fit)
+    # Minguez (2025) additional tests based on linear regression
+    # "Bad data detection (sic)"
+    pval_isr <- 0.5 *
+      pnorm(
+        q = abs(rstandard(fit)[which.min(fit$model$excu)]),
+        lower.tail = FALSE
+      )
+    # Chi-square test
+    pval_bad <- pchisq(
+      sum(resid(fit)^2 * weights),
+      df = fit$df.residual,
+      lower.tail = FALSE
+    )
+    valid[i] <- isTRUE(pval_bad < 0.01 | pval_isr < 0.01)
   }
   # plot(x = thresh,
   #      y = sqrt(mse),
@@ -109,7 +124,8 @@ thselect.mrl <- function(
     xdat = xdat,
     intercept = coefs[index, 1],
     slope = coefs[index, 2],
-    tmanual = user_thresh
+    tmanual = user_thresh,
+    mse = mse
   )
   class(ret) <- "mev_thselect_automrl"
   if (plot) {
@@ -117,22 +133,44 @@ thselect.mrl <- function(
   }
   return(invisible(ret))
 }
+
 #' @export
-plot.mev_thselect_automrl <- function(x, ...) {
+#' @param type string indicating the response, either mean residual life or log of mean squared error
+#' @name thselect.mrl
+plot.mev_thselect_automrl <- function(x, type = c("mrl", "mse"), ...) {
   k <- 9L # hardcoded
-  plot(
-    x = x$xdat[-(1:(k + 1))],
-    y = x$mrl,
-    ylab = "mean excess value",
-    xlab = "observation",
-    pch = 20,
-    bty = "l"
-  )
-  if (isTRUE(x$tmanual)) {
-    rug(x$thresh)
+  type <- match.arg(type)
+  if (type == "mrl") {
+    plot(
+      x = x$xdat[-(1:(k + 1))],
+      y = x$mrl,
+      ylab = "mean excess value",
+      xlab = "observation",
+      pch = 20,
+      bty = "l"
+    )
+    if (isTRUE(x$tmanual)) {
+      rug(x$thresh)
+    }
+    abline(v = x$thresh0, lty = 2)
+    abline(a = x$intercept, b = x$slope)
+  } else {
+    plot(
+      x = 21:length(x$xdat),
+      y = x$mse,
+      ylab = "mean squared error",
+      xlab = "number of exceedances",
+      pch = 20,
+      bty = "l",
+      panel.first = {
+        lines(
+          smooth.spline(x = 21:length(x$xdat), y = x$mse),
+          lty = 2,
+          col = "grey"
+        )
+      }
+    )
   }
-  abline(v = x$thresh0, lty = 2)
-  abline(a = x$intercept, b = x$slope)
 }
 
 #' @export

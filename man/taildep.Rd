@@ -35,7 +35,7 @@ taildep(
 
 \item{confint}{string indicating the type of confidence interval for \eqn{\eta}, one of \code{"wald"} or \code{"lrt"}}
 
-\item{level}{the confidence level required (default to 0.95).}
+\item{level}{confidence level requested (default to 0.95).}
 
 \item{trunc}{logical indicating whether the estimates and confidence intervals should be truncated in \eqn{[0,1]}}
 

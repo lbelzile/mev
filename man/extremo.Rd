@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremogram.R
 \name{extremo}
 \alias{extremo}
-\title{Pairwise extremogram for max-risk functional}
+\title{Spatial pairwise extremogram for max-risk functional}
 \usage{
 extremo(xdat, margp, coord, scale = 1, rho = 0, plot = FALSE, ...)
 }
@@ -25,7 +25,7 @@ extremo(xdat, margp, coord, scale = 1, rho = 0, plot = FALSE, ...)
 an invisible matrix with pairwise estimates of chi along with distance (unsorted)
 }
 \description{
-The function computes the pairwise \eqn{chi} estimates and plots them as a function of the distance between sites. The function also includes utilities for geometric anisotropy.
+The function computes the pairwise \eqn{\chi} estimates and plots them as a function of the distance between sites. The function also includes utilities for geometric anisotropy.
 }
 \examples{
 \dontrun{

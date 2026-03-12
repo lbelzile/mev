@@ -629,7 +629,7 @@ fit.gev <- function(
     }
     bpwm <- c(xmean, pwm(xdat, 1), pwm(xdat, 2))
     kst <- (2 * bpwm[2] - bpwm[1]) / (3 * bpwm[3] - bpwm[1]) - log(2) / log(3)
-    xi_start <- -(7.859 * kst + 2.9554 * kst^2)
+    xi_start <- max(-0.98, -(7.859 * kst + 2.9554 * kst^2)) # Changed march 11th, 2026 / problem with uniform or beta-type random variables
     sigma_start <- -(2 * bpwm[2] - bpwm[1]) *
       xi_start /
       (gamma(1 - xi_start) * (1 - 2^(xi_start)))
@@ -792,6 +792,7 @@ fit.gev <- function(
 #' the \code{r}-largest should be in the last column.
 #'
 #' @export
+#' @param xdat a matrix of size \code{n} by \code{r}
 #' @inheritParams fit.gpd
 #' @inheritParams fit.gev
 #' @return a list containing the following components:

@@ -14,7 +14,7 @@ fit.rlarg(
 )
 }
 \arguments{
-\item{xdat}{a numeric vector of data to be fitted.}
+\item{xdat}{a matrix of size \code{n} by \code{r}}
 
 \item{start}{named list of starting values}
 

@@ -5,11 +5,17 @@
 
 - Option `tails` for `thselect.vmetric`
 
+
 ## Changes:
 
 - Parameter `neval` for `thselect.vmetric` replaced by `pp` to let users directly select probability points, as suggested in Collings et al. (2025)
 - Range for shape plots with semiparametric methods has been reduced
-- Function `fit.gpd` now allows for `returnsamp` parameter to disable return of vector of exceedances. New method `"pwm"` implemented.
+- Function `fit.gpd` now allows for `returnsamp` parameter to disable return of vector of exceedances. 
+- New method `"pwm"` implemented for `fit.gpd`.
+
+## Bug fixes:
+
+- - Recompile with Rcpp > 1.1.1 to avoid `Rf_error`
 
 # mev 2.1  (Release date 2025-11-10)
 

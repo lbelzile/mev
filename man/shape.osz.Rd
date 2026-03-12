@@ -2,7 +2,7 @@
 % Please edit documentation in R/tailindex.R
 \name{shape.osz}
 \alias{shape.osz}
-\title{Extreme U-statistic Pickands estimator}
+\title{Extreme U-statistic Pickands shape estimator}
 \usage{
 shape.osz(xdat, k, ...)
 }

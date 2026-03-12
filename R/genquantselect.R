@@ -6,26 +6,31 @@
 #' The value of \code{k} is selected to minimize the mean squared error given optimal weighting scheme. This
 #' depends on the order of regular variation \eqn{\rho}, which is obtained based on the slope of the difference
 #' in Hill estimators, suitably reweighted. The iterative procedure of Beirlant et al. alternates between parameter estimation
-#' until convergence. It returns the Hill shape estimate, the number of higher order statistic, the parameter \code{rho} and
-#' estimates of the standard error of the shape and the mean squared error, based on the ultimate parameter values.
+#' until convergence. It returns the generalized extreme value estimate, the Hill shape estimate, the number of higher order statistic, the parameter \code{rho} and
+#' estimates of the standard error of the shape and the mean squared error, based on the ultimate parameter values. If the tail probability is provided, an estimate of the tail quantile at level \eqn{1-p} is also provided.
 #' Since the weights can become negative, there is no guarantee that the mean squared error estimate is positive, nor that
 #' the estimated value of \eqn{\rho} is nonpositive.
 #'
 #' @references Beirlant, J., Vynckier, P., & Teugels, J. L. (1996). Excess Functions and Estimation of the Extreme-Value Index. \emph{Bernoulli}, 2(\bold{4}), 293–318. \doi{10.2307/3318416}
+#' Beirlant, J., Dierckx, G., & Guillou, A. (2005). Estimation of the Extreme-Value Index and Generalized Quantile Plots. \emph{Bernoulli}, 11(\bold{6}), 949–970. \url{http://www.jstor.org/stable/25464774}
 #' @param xdat [vector] sample of exceedances
 #' @param maxiter [int] maximum number of iteration
 #' @param tol [double] tolerance for difference in value of \eqn{k} for the fixed point
 #' @param kmin [int] minimum number of exceedances for the estimator
 #' @param kmax [int] maximum number of exceedances for the estimator
+#' @param p [double] tail probability between 0 and 1/n (length of data). If provided, computes the tail quantile using the formula from Remark 2 of Beirlant and al. (2005)
 #' @param ... additional arguments, currently ignored
 #' @return a list with components
 #' \itemize{
-#' \item \code{shape} the Hill estimator of the shape, based on the \code{k} largest order statistics
+#' \item \code{shape} the exponential regression model shape estimator, based on the \code{k0} largest order statistics
+#' \item \code{hill} the Hill estimator of the shape, based on the \code{k} largest order statistics
 #' \item \code{k0} number of high order statistics for estimation of the shape using Hill's estimator
 #' \item \code{rho} estimate of the second order regular variation parameter
 #' \item \code{mse} mean squared error estimate of the shape parameter
 #' \item \code{se} standard error of the shape parameter
 #' \item \code{convergence} logical; if \code{TRUE}, indicates that the method converged to a fixed point within \code{tol} before reaching the maximum number of iterations \code{maxiter}
+#' \item \code{p} tail probability, if non-null.
+#' \item \code{quantile} tail quantile at probability level \eqn{1-p}, if \code{p} is provided.
 #' }
 #' @export
 #' @examples
@@ -38,6 +43,7 @@ thselect.expgqt <- function(
   tol = 2,
   kmin = max(10, floor(length(xdat) / 100)),
   kmax = floor(0.8 * length(xdat)),
+  p = NULL,
   ...
   # rho = c("btv","fgh"),
   # plot = FALSE
@@ -46,6 +52,15 @@ thselect.expgqt <- function(
   xdat <- sort(xdat, decreasing = TRUE)
   logx <- log(xdat)
   n <- length(logx)
+  computeQuant <- !is.null(p)
+  if (computeQuant) {
+    if (!isTRUE(all(p > 0, p * n <= 1))) {
+      warning("Invalid tail probability.")
+      computeQuant <- FALSE
+    } else {
+      computeQuant <- TRUE
+    }
+  }
   kmin <- as.integer(kmin)
   kmax <- as.integer(kmax)
   if (kmax <= kmin) {
@@ -348,12 +363,23 @@ thselect.expgqt <- function(
   res <- list(
     k0 = k_cur,
     shape = gamma_cur,
+    hill = hillest[k_cur + 1],
     rho = rho_cur,
     thresh0 = exp(logx[k_cur + 1]),
     # mse = mse,
     # se = se,
     convergence = conv
   )
+  if (isTRUE(computeQuant)) {
+    res$p <- p
+    res$quantile <- res$thresh0 *
+      (1 +
+        res$hill *
+          max(1 - res$shape, 1) *
+          ((res$k0 / n / p)^res$shape - 1) /
+          res$shape)
+  }
+
   class(res) <- "mev_thselect_expgqt"
   return(invisible(res))
 }

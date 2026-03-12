@@ -2,6 +2,7 @@
 % Please edit documentation in R/vartymetric.R
 \name{thselect.vmetric}
 \alias{thselect.vmetric}
+\alias{plot.mev_thselect_vmetric}
 \title{Metric-based threshold selection}
 \usage{
 thselect.vmetric(
@@ -17,15 +18,23 @@ thselect.vmetric(
   plot = FALSE,
   ...
 )
+
+\method{plot}{mev_thselect_vmetric}(
+  x,
+  type = c("qq", "pp", "exp", "metric"),
+  B = 1000L,
+  probs = c(0.025, 0.975),
+  ...
+)
 }
 \arguments{
 \item{xdat}{vector of observations}
 
 \item{thresh}{vector of thresholds}
 
-\item{B}{number of bootstrap replications}
+\item{B}{number of simulations for variability of estimation}
 
-\item{type}{string indicating scale, either \code{exp} for exponential quantile-quantile plot  as in Varty et al. (2021) or \code{pp} for probability-probability plot (uniform). The method \code{qq} or expected quantile discrepancy (\code{eqd}) corresponds to Murphy et al. (2024) with the quantiles on the generalized Pareto scale.}
+\item{type}{string; a single string indicating the choice of plot}
 
 \item{dist}{string indicating norm, either \code{l1} for absolute error or \code{l2} for quadratic error}
 
@@ -39,7 +48,11 @@ thselect.vmetric(
 
 \item{plot}{logical; if \code{TRUE}, returns a plot}
 
-\item{...}{additional arguments for backward compatibility}
+\item{...}{additional arguments, currently ignored}
+
+\item{x}{an object of class \code{mev_thselect_vmetric} produced by a call to \code{thselect.vmetric}}
+
+\item{probs}{quantile levels for intervals.}
 }
 \value{
 an invisible list with components
@@ -56,6 +69,8 @@ an invisible list with components
 \description{
 Adaptation of Varty et al.'s metric-based threshold
 automated diagnostic for the  independent and identically distributed case with no rounding.
+
+This S3 method produces quantile-quantile plots with confidence and tolerance bands on various scale (uniform, exponential, generalized Pareto), or a plot of the metric as a function of the threshold.
 }
 \details{
 The algorithm proceeds by first computing the maximum

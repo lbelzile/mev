@@ -2,7 +2,7 @@
 % Please edit documentation in R/lthill.R
 \name{shape.lthill}
 \alias{shape.lthill}
-\title{Lower-trimmed Hill estimator for the shape parameter}
+\title{Lower-trimmed Hill shape estimator}
 \usage{
 shape.lthill(xdat, k, k0 = k, sorted = FALSE, ...)
 }

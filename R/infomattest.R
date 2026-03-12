@@ -484,7 +484,7 @@ ext.index <- function(
   return(out)
 }
 
-#' Extremal index estimators
+#' Extremal index coefficient
 #'
 #' The function implements estimators of the extremal index based on interexceedance time and gap of exceedances. The maximum likelihood estimator and iteratively reweighted least
 #' square estimators of Suveges (2007)  as well as the intervals estimator. The implementation
@@ -698,7 +698,11 @@ xdep.xindex <- function(
           return(CI)
         }
         if (confint == "lrt") {
-          psi <- seq(theta - 3 * se, theta + 3 * se, length.out = 21)
+          psi <- seq(
+            max(0, theta - 3 * se),
+            min(1, theta + 3 * se),
+            length.out = 21
+          )
           pll <- loglik(psi)
           out <- list(
             psi = psi,

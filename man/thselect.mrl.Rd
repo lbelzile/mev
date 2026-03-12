@@ -2,9 +2,12 @@
 % Please edit documentation in R/mrl.R
 \name{thselect.mrl}
 \alias{thselect.mrl}
+\alias{plot.mev_thselect_automrl}
 \title{Automated mean residual life plots}
 \usage{
 thselect.mrl(xdat, thresh, kmax, plot = TRUE, ...)
+
+\method{plot}{mev_thselect_automrl}(x, type = c("mrl", "mse"), ...)
 }
 \arguments{
 \item{xdat}{[numeric] vector of observations}
@@ -17,6 +20,8 @@ thselect.mrl(xdat, thresh, kmax, plot = TRUE, ...)
 and the chosen threshold}
 
 \item{...}{additional arguments, currently ignored}
+
+\item{type}{string indicating the response, either mean residual life or log of mean squared error}
 }
 \value{
 a list containing

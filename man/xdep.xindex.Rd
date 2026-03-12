@@ -2,7 +2,7 @@
 % Please edit documentation in R/infomattest.R
 \name{xdep.xindex}
 \alias{xdep.xindex}
-\title{Extremal index estimators}
+\title{Extremal index coefficient}
 \usage{
 xdep.xindex(
   xdat,

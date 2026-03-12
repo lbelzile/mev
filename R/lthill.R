@@ -1,4 +1,4 @@
-#' Lower-trimmed Hill estimator for the shape parameter
+#' Lower-trimmed Hill shape estimator
 #'
 #' Given a sample of Pareto-tailed samples (positive tail index),
 #' compute the lower-trimmed Hill estimator. If \eqn{k0=k}, the estimator reduces to Hill's estimator for the shape index

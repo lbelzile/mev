@@ -716,13 +716,15 @@ plot.mev_penultimate <- function(x, ...) {
 #' maxstable(pars = maxstable(pars = c(1,2,0), m = 10), m = 10, inv = TRUE)
 #' maxstable(pars = maxstable(pars = c(1,2,0.1), m = 5), m = 1/5)
 maxstable <- function(pars, m = 1L, inverse = FALSE) {
-  stopifnot(m > 0, length(pars) == 3L, is.logical(inverse))
+  stopifnot(length(m) == 1, m > 0, length(pars) == 3L, is.logical(inverse))
   pars <- as.numeric(pars)
+  m <- as.numeric(m)
   if (isTRUE(all.equal(as.numeric(pars[3]), 0))) {
     isZero <- TRUE
   } else {
     isZero <- FALSE
   }
+
   if (isTRUE(inverse)) {
     m <- 1 / m
   }

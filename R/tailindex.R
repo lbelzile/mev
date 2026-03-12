@@ -1,4 +1,4 @@
-#' Extreme U-statistic Pickands estimator
+#' Extreme U-statistic Pickands shape estimator
 #'
 #' Given a random sample of \code{n} exceedances, the estimator
 #' returns an estimator of the shape parameter or extreme
@@ -231,7 +231,11 @@ tstab.hill <- function(
 #' }
 #' @references Wager, S. (2014). Subsampling extremes: From block maxima to smooth tail estimation, \emph{Journal of Multivariate Analysis}, 130, 335-353, \doi{10.1016/j.jmva.2014.06.010}
 #' @export
-shape.rbm = function(xdat, k = 10:floor(length(xdat) / 2), ...) {
+shape.rbm = function(
+  xdat,
+  k = 10:floor(length(xdat) / 2),
+  ...
+) {
   k <- as.integer(sort(k))
   xdat <- xdat[is.finite(xdat) & xdat > 0]
   n <- length(xdat)
@@ -271,15 +275,20 @@ shape.rbm = function(xdat, k = 10:floor(length(xdat) / 2), ...) {
 
 #' Plots for random block maximum estimator
 #'
-#' The function returns plot of the shape estimator along with the value (and 95\% Wald-based confidence interval) at the selected threshold, or a plot of the empirical Bayes risk.
+#' The \code{plot} S3 routine returns plot of the shape estimator along with the value (and 95\% Wald-based confidence interval) at the selected threshold, or a plot of the empirical Bayes risk.
 #'
 #' @param x object of class \code{mev_shape_rbm} returned by \code{shape.rbm}
 #' @param type [string] type of plot, either \code{"shape"} for the tail index or \code{"risk"} for the empirical Bayes risk
 #' @param log [logical] if \code{TRUE} (default), the x-axis for the number of exceedances is displayed on the log scale.
 #' @param ... additional arguments, currently ignored
-#' @return one or more plots
 #' @export
-plot.mev_shape_rbm <- function(x, type = c("shape", "risk"), log = TRUE, ...) {
+#' @rdname shape.rbm
+plot.mev_shape_rbm <- function(
+  x,
+  type = c("shape", "risk"),
+  log = TRUE,
+  ...
+) {
   k0 <- which.min(x$risk)
   type <- match.arg(
     arg = type,

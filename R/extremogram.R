@@ -1,6 +1,135 @@
-#' Pairwise extremogram for max-risk functional
+#' Extremogram
 #'
-#' The function computes the pairwise \eqn{chi} estimates and plots them as a function of the distance between sites. The function also includes utilities for geometric anisotropy.
+#' Given a regular time series of observations,
+#' compute the pairwise tail correlation between series
+#' at different lags.
+#' Permutation-based resampling are used to construct
+#' confidence envelope (one-sided) for comparison with the independent
+#' setting if \code{confint = TRUE}.
+#' @param x vector of observations or time series
+#' @param qlev quantile level of threshold, a scalar between (0,1)
+#' @param lag.max integer, maximum lag at which to calculate the extremogram. Default to \eqn{10\log_{10}(n)}
+#' @param plot logical; if \code{TRUE}, return a plot of the extremogram
+#' @param confint logical; if \code{TRUE}, calculate \code{level} pointwise confidence intervals under independence, using a permutation-based approach
+#' @param B integer, number of simulations for \code{confint}
+#' @param level confidence level requested (default to 0.95).
+#' @param ties.method	 string indicating the type of method for rank; see \code{\link[base]{rank}} for a list of options. Default to \code{"random"}
+#' @param na.action function to be called to handle missing values
+#' @return a list with elements \code{extremogram} for the estimate of tail correlation at different lags, \code{upper} for the upper bound of the confidence interval for independent data and \code{level} of the latter.
+#' @export
+#' @references Davis, R. A., Mikosch, T., and Cribben, I. (2012). Towards estimating extremal serial dependence via the bootstrapped extremogram. Journal of Econometrics, 170(1), 142-152, \doi{10.1016/j.jeconom.2012.04.003}.
+#' @references Davis, R. A. and T. Mikosch (2009). The extremogram: A correlogram for extreme events, \emph{Bernoulli}, 15(\bold{4}), 977-1009, \doi{10.3150/09-BEJ213}.
+#' @export
+#' @examples
+#' xacf(x = rmar1(n = 1000, theta = 0.2, shape = 0.5),
+#'      qlev = 0.95)
+xacf <- function(
+  x,
+  qlev,
+  lag.max = NULL,
+  plot = TRUE,
+  confint = FALSE,
+  B = 100L,
+  level = 0.95,
+  ties.method = "random",
+  na.action = na.fail
+) {
+  x <- na.action(x)
+  x <- as.numeric(x) # strip time attributes
+  n <- length(x)
+  qlev <- as.numeric(qlev[1])
+  ties.method <- match.arg(
+    ties.method,
+    c("average", "first", "last", "random", "max", "min")
+  )
+  stopifnot(is.finite(qlev), qlev > 0, qlev < 1)
+  if (
+    isTRUE(any(
+      is.null(lag.max),
+      !is.finite(lag.max),
+      na.rm = TRUE
+    ))
+  ) {
+    lag.max <- floor(10 * (log10(n)))
+  } else {
+    lag.max <- as.integer(min(lag.max, n - 1))
+  }
+  xgram <- numeric(length = lag.max)
+  conf_mat <- matrix(nrow = B, ncol = lag.max)
+  x <- rank(x, ties.method = "random") / (length(x) + 1)
+  chi_emp_lag <- function(x, h = 1, q) {
+    n <- length(x)
+    mean(x[(h + 1):n] > q & x[seq_len(n - h)] > q) / (1 - q)
+  }
+  if (isTRUE(confint)) {
+    B <- as.integer(B)
+    stopifnot(
+      B > 0,
+      length(level) == 1L,
+      level > 0,
+      level < 1,
+      floor((1 - level) * B) > 1
+    )
+  }
+
+  for (h in seq_len(lag.max)) {
+    xgram[h] <- chi_emp_lag(x, h = h, q = qlev)
+    # chi <- mev::xdep.chi(
+    #   xdat = cbind(x[(h + 1):n], x[seq_len(n - h)]),
+    #   qlev = qlev,
+    #   estimator = "emp",
+    #   confint = "lrt",
+    #   margtrans = "none",
+    #   plot = FALSE
+    # )
+  }
+  if (isTRUE(confint)) {
+    # Permutation test
+    for (b in seq_len(B)) {
+      xsamp <- x[sample.int(n)]
+      for (h in 1:h) {
+        conf_mat[b, h] <- chi_emp_lag(xsamp, h = h, q = qlev)
+      }
+    }
+    # 1-sided confidence interval
+    xgram_confint <- apply(conf_mat, 2, quantile, probs = level)
+  } else {
+    xgram_confint <- NULL
+  }
+  out <- list(
+    extremogram = xgram,
+    upper = xgram_confint,
+    level = level
+  )
+  class(out) <- "mev_xacf"
+  if (isTRUE(plot)) {
+    plot(out)
+  }
+  return(invisible(out))
+}
+
+#' @export
+plot.mev_xacf <- function(x, ...) {
+  lag.max <- length(x$extremogram)
+  plot(
+    x$extremogram,
+    type = "h",
+    ylim = c(0, 1),
+    yaxs = "i",
+    xaxs = "i",
+    xlim = c(1, lag.max),
+    xlab = "lag",
+    ylab = "tail correlation",
+    bty = "l",
+    panel.first = {
+      lines(x$upper, lty = 2)
+    }
+  )
+}
+
+#' Spatial pairwise extremogram for max-risk functional
+#'
+#' The function computes the pairwise \eqn{\chi} estimates and plots them as a function of the distance between sites. The function also includes utilities for geometric anisotropy.
 #' @param xdat data matrix
 #' @param margp marginal probability above which to threshold observations
 #' @param coord matrix of coordinates (one site per row)

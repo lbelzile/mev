@@ -844,7 +844,7 @@ W.diag <- function(
 #' @param x object returned by a call to \code{thselect.wseq}
 #' @param type string giving the plots to produce
 #' @param ... additional arguments passed to plotting function
-#' @return \code{NULL}; the method is used to generate plots
+#' @rdname thselect.wseq
 plot.mev_thselect_wadsworth <-
   function(x, type = c("wn", "ps"), ...) {
     args <- list(...)
