@@ -196,6 +196,7 @@ NULL
 #' Deaths from pandemics
 #'
 #' The data base contains estimated records of the number of deaths from pandemics.
+#' @docType data
 #' @format A data frame with 72 rows and 8 variables:
 #' \describe{
 #'   \item{\code{event}}{name of the event}
@@ -216,6 +217,7 @@ NULL
 #'
 #' Daily maximum data (hourly for PM10) on air pollution for the Leeds Centre station in Yorkshire and Humberside station. The data goes from January 1st, 1993, until December 31st, 2024. Data show seasonality and there are some outliers. From December 2nd, 2008 onwards, particulate matters (PM10 and PM2.5) are measured using  a tapered element oscillating microbalance (TEOM) and Filter Dynamics Measurement System (FDMS). The data for PM2.5 is missing before the change of instrumentation. A total of 231 daily measurements with only missing values were removed during preprocessing.
 #'
+#' @docType data
 #' @format A data frame with 11455 rows and 8 variables:
 #' \describe{
 #'   \item{\code{date}}{[character] a date with format yyy-mm-dd}
@@ -236,7 +238,8 @@ NULL
 #' Daily measurements of wind speed during the month of January and including
 #' February 1st, from the Cheeseboro (California) weather station.
 #' between 1996 and 2026.
-#' #' @format A data frame with 992 rows and 3 variables:
+#' @docType data
+#' @format A data frame with 992 rows and 3 variables:
 #' \describe{
 #'   \item{\code{date}}{date of observation}
 #'   \item{\code{direction}}{angle (in degrees) of the wind}

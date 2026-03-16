@@ -566,11 +566,7 @@ xdep.xindex <- function(
   if (!is.null(args$method)) {
     estimator <- args$method
   }
-  method <- match.arg(
-    estimator,
-    c("wls", "mle", "intervals"),
-    several.ok = TRUE
-  )
+  method <- match.arg(estimator)
   confint <- match.arg(confint)
   if ((confint == "lrt") & (estimator != "mle")) {
     warning(
@@ -580,7 +576,7 @@ xdep.xindex <- function(
   }
   if ((confint == "wald") & (estimator == "intervals")) {
     warning(
-      "Invalid confidence method: Wald-based confidence intervals not yet implemented for \"intervals\" estimaror."
+      "Invalid confidence method: Wald-based confidence intervals not yet implemented for \"intervals\" estimator."
     )
     confint <- "none"
   }
