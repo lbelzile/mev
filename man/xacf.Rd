@@ -4,16 +4,26 @@
 \alias{xacf}
 \title{Extremogram}
 \usage{
-xacf(xdat, thresh, lag.max = 10, plot = TRUE)
+xacf(
+  x,
+  qlev,
+  lag.max = NULL,
+  plot = TRUE,
+  confint = FALSE,
+  B = 100L,
+  level = 0.95,
+  ties.method = "random",
+  na.action = na.fail
+)
 }
 \arguments{
-\item{lag.max}{integer, maximum lag at which to calculate the extremogram. Default to \eqn{10\log_{10}(n)}}
-
-\item{plot}{logical; if \code{TRUE}, return a plot of the extremogram}
-
 \item{x}{vector of observations or time series}
 
 \item{qlev}{quantile level of threshold, a scalar between (0,1)}
+
+\item{lag.max}{integer, maximum lag at which to calculate the extremogram. Default to \eqn{10\log_{10}(n)}}
+
+\item{plot}{logical; if \code{TRUE}, return a plot of the extremogram}
 
 \item{confint}{logical; if \code{TRUE}, calculate \code{level} pointwise confidence intervals under independence, using a permutation-based approach}
 

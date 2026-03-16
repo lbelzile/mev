@@ -64,3 +64,4 @@ kj <- kjtail(xdat = data, qlev = q)
 plot(kj)
 abline(h = (1+rho)/2, col = 2)
 }
+\keyword{internal}

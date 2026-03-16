@@ -18,6 +18,11 @@ dev <- -2 *
       dat = X,
       c(1, shape, shape)
     ))
+tinytest::expect_equivalent(
+  abs(coef(fit) - c(1, shape, shape)),
+  rep(0, 3),
+  tolerance = 1e-2
+)
 pval <- pchisq(q = dev, df = 3, lower.tail = FALSE)
 tinytest::expect_true(pval > 0.05)
 # Check marginal distribution (bis)
@@ -27,7 +32,7 @@ tinytest::expect_true(
 
 set.seed(1234)
 theta <- 0.2
-X <- rmar1(n = 10000, theta = theta, shape = 0)
+X <- mev::rmar1(n = 10000, theta = theta, shape = 0)
 theta_hat <- mev::xdep.xindex(
   xdat = X,
   qlev = 0.95,
@@ -45,6 +50,11 @@ dev <- -2 *
       c(0, 1, 0)
     ))
 pval <- pchisq(q = dev, df = 3, lower.tail = FALSE)
+tinytest::expect_equivalent(
+  abs(coef(fit) - c(0, 1, 0)),
+  c(0, 0, 0),
+  tolerance = 1e-2
+)
 tinytest::expect_true(pval > 0.05)
 # Check marginal distribution (bis)
 tinytest::expect_true(

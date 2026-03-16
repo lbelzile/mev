@@ -20,10 +20,10 @@ Generate data from stationary sequences for extremes for
 non-negative shapes, following Tavares (1977) for the Gumbel case.
 }
 \details{
-The models are parametrized in terms of extremal index \eqn{\theta}.
+The models are parametrized in terms of extremal index \eqn{\theta \in (0,1]}.
 
 When \code{shape = 0}, the stationary process has unit Gumbel margins.
-When \code{shape > 0}, the margins have distribution \eqn{F(x) = \exp(-x^{-1/\xi}/\theta).}
+When \code{shape > 0}, the margins have Frechet margins with distribution \eqn{F(x) = \exp(-x^{-1/\xi}).}
 }
 \examples{
 X1 <- rmar1(n = 1000, theta = 0.5)
