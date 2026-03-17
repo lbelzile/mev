@@ -5,7 +5,12 @@
 \alias{cheeseborowind}
 \title{Cheeseboro wind speed data}
 \format{
-An object of class \code{data.frame} with 992 rows and 3 columns.
+A data frame with 992 rows and 3 variables:
+\describe{
+  \item{\code{date}}{date of observation}
+  \item{\code{direction}}{angle (in degrees) of the wind}
+  \item{\code{gust}}{maximum daily wind speed (in km per hour)}
+}
 }
 \source{
 Raw US Climate Archive, \url{https://raws.dri.edu/cgi-bin/rawMAIN.pl?caCCHB}, maintained by the Western Regional Climate Center, Desert Research Institute based in Reno, Nevada
@@ -17,11 +22,5 @@ cheeseborowind
 Daily measurements of wind speed during the month of January and including
 February 1st, from the Cheeseboro (California) weather station.
 between 1996 and 2026.
-#' @format A data frame with 992 rows and 3 variables:
-\describe{
-  \item{\code{date}}{date of observation}
-  \item{\code{direction}}{angle (in degrees) of the wind}
-  \item{\code{gust}}{maximum daily wind speed (in km per hour)}
-}
 }
 \keyword{datasets}
