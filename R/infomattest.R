@@ -623,21 +623,27 @@ xdep.xindex <- function(
       # ylim = c(0, 11)); abline(coefs)
       theta <- min(exp(coefs[1] / coefs[2]), 1)
       Nc.new <- Nc
+      fail <- FALSE
       if (Nc.new <= 1) {
         warning(
           "Could not find a self-consistent estimate using weighted least squares."
         )
-        return(NA)
+        fail <- TRUE
       }
       trials <- 0
-      while (floor(theta * (N - 1)) != Nc.new && trials < 30) {
+
+      while (
+        !fail & isTRUE((floor(theta * (N - 1)) != Nc.new)) & (trials < 30)
+      ) {
         trials <- trials + 1
         Nc.new <- floor(theta * (N - 1))
         if (Nc.new <= 1) {
           warning(
             "Could not find a self-consistent estimate using weighted least squares."
           )
-          return(NA)
+          coefs <- rep(NA, 2)
+          theta <- NA
+          fail <- TRUE
         }
         if (Nc.new > Nc) {
           # pad estimates from original fit with zeros
@@ -658,13 +664,17 @@ xdep.xindex <- function(
         gr <- c(1 / coefs[2], -coefs[1] / coefs[2]^2) * exp(coefs[1] / coefs[2])
         # Delta method
         se <- try(c(sqrt(t(gr) %*% vcov(lmod) %*% gr)), silent = TRUE)
-        if (inherits(se, "try-error")) {
+        if (inherits(se, "try-error") | theta == 1) {
           se <- NA
         }
-        return(c(
+        out <- c(
           theta,
           theta + qnorm(c(0.5 - level / 2, 0.5 + level / 2)) * se
-        ))
+        )
+        if (isTRUE(abs(out[1] - 1) < 1e-7)) {
+          out[3] <- 1
+        }
+        return(out)
       }
     } else if (method == "mle") {
       # Suveges (2007) and Suveges and Davison (2010)
@@ -676,7 +686,14 @@ xdep.xindex <- function(
         sqrt((schi + N - 1 + Nc)^2 - 8 * Nc * schi)) /
         (2 * schi)
       loglik <- function(theta) {
-        (N - 1 - Nc) * log(1 - theta) + 2 * Nc * log(theta) - theta * schi
+        ifelse(
+          theta >= 1 | theta < 0,
+          -Inf,
+          (N - 1 - Nc) *
+            log(pmax(1e-20, 1 - theta)) +
+            2 * Nc * log(theta) -
+            theta * schi
+        )
       }
       if (confint %in% c("wald", "lrt")) {
         vcov <- c(
@@ -687,18 +704,24 @@ xdep.xindex <- function(
         )
         se <- sqrt(vcov)
         if (confint == "wald") {
-          CI <- c(
+          out <- c(
             theta,
             theta + qnorm(c(0.5 - level / 2, 0.5 + level / 2)) * se
           )
-          return(CI)
-        }
-        if (confint == "lrt") {
+          if (isTRUE(abs(out[1] - 1) < 1e-7)) {
+            out[3] <- 1
+          }
+          return(out)
+        } else if (confint == "lrt") {
+          if (!is.finite(se) | se < 0.01) {
+            se <- 0.05
+          }
           psi <- seq(
             max(0, theta - 3 * se),
-            min(1, theta + 3 * se),
+            min(0.9999, theta + 3 * se),
             length.out = 21
           )
+          psi <- unique(psi)
           pll <- loglik(psi)
           out <- list(
             psi = psi,
@@ -708,8 +731,12 @@ xdep.xindex <- function(
             std.error = se
           )
           class(out) <- "eprof"
-          CI <- confint(out, level = level)
-          return(CI)
+
+          out <- confint(out, level = level)
+          if (isTRUE(abs(out[1] - 1) < 1e-7)) {
+            out[3] <- 1
+          }
+          return(out)
         }
       }
     } else if (method == "intervals") {

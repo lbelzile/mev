@@ -243,7 +243,22 @@ NULL
 #' \describe{
 #'   \item{\code{date}}{date of observation}
 #'   \item{\code{direction}}{angle (in degrees) of the wind}
-#'   \item{\code{gust}}{maximum daily wind speed (in km per hour)}
+#'   \item{\code{gust}}{maximum daily wind speed (in meters per second)}
 #'}
 #' @source Raw US Climate Archive, \url{https://raws.dri.edu/cgi-bin/rawMAIN.pl?caCCHB}, maintained by the Western Regional Climate Center, Desert Research Institute based in Reno, Nevada
 "cheeseborowind"
+
+#' Thames river flow at Kingston
+#'
+#' Time series of annual maximum daily peak flow (in meter per seconds) of the Thames River at Kingston.
+#' The 1894 record was modified as the previous value reported of 1064 cubic meter per second was
+#' considered to be an overestimate of the true flow.
+#' @docType data
+#' @source Acknowledgement: Data from the UK National River Flow Archive, \url{https://nrfa.ceh.ac.uk/data/station/info/39001}, extracted March 2026
+#' @format A data frame with 142 rows and 3 variables:
+#' \describe{
+#'   \item{\code{date}}{date of measurement}
+#'   \item{\code{flow}}{double maximum daily river flow (in cubic meter per seconds)}
+#'   \item{\code{flag}}{logical; if \code{TRUE}, the value represents the instantaneous annual maximum, otherwise the natural annual max mean daily flow}
+#'}
+"thames"
