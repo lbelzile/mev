@@ -3,8 +3,7 @@
 
 ## New:
 
-- Option `tails` for `thselect.vmetric`
-
+- New datasets, `thames` and `cheeseborowind`
 
 ## Changes:
 
@@ -15,7 +14,8 @@
 
 ## Bug fixes:
 
-- - Recompile with Rcpp > 1.1.1 to avoid `Rf_error`
+- Package recompiled with Rcpp > 1.1.1 to avoid `Rf_error`
+- `xdep.xindex` is now more robust to boundary cases when `theta=1`, and returns upper confidence intervals even when the standard error cannot be obtained. The profile likelihood method also works for these cases.
 
 # mev 2.1  (Release date 2025-11-10)
 

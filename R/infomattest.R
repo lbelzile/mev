@@ -713,13 +713,15 @@ xdep.xindex <- function(
           }
           return(out)
         } else if (confint == "lrt") {
+          lout <- 21
           if (!is.finite(se) | se < 0.01) {
-            se <- 0.05
+            se <- 0.33
+            lout <- 41
           }
           psi <- seq(
             max(0, theta - 3 * se),
             min(0.9999, theta + 3 * se),
-            length.out = 21
+            length.out = lout
           )
           psi <- unique(psi)
           pll <- loglik(psi)

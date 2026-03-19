@@ -9,7 +9,7 @@ A data frame with 992 rows and 3 variables:
 \describe{
   \item{\code{date}}{date of observation}
   \item{\code{direction}}{angle (in degrees) of the wind}
-  \item{\code{gust}}{maximum daily wind speed (in km per hour)}
+  \item{\code{gust}}{maximum daily wind speed (in meters per second)}
 }
 }
 \source{
