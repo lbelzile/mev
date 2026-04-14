@@ -21,6 +21,8 @@ and the chosen threshold}
 
 \item{...}{additional arguments, currently ignored}
 
+\item{x}{object of class \code{mev_thselect_automrl}}
+
 \item{type}{string indicating the response, either mean residual life or log of mean squared error}
 }
 \value{

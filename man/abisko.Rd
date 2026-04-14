@@ -7,7 +7,7 @@
 a data frame with 15132 rows and two variables
 }
 \source{
-Abisko Scientific Research Station
+Abisko Scientific Research Station, Swedish Meteorological and Hydrological Institute, distributed under a Creative Commons Attribution 4.0 SE license
 }
 \arguments{
 \item{date}{\code{Date} of the measurement}

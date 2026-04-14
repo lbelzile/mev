@@ -136,7 +136,7 @@ NULL
 #' @param precip rainfall amount (in mm)
 #' @format a data frame with 15132 rows and two variables
 #' @name abisko
-#' @source Abisko Scientific Research Station
+#' @source Abisko Scientific Research Station, Swedish Meteorological and Hydrological Institute, distributed under a Creative Commons Attribution 4.0 SE license
 #' @references A. Kiriliouk, H. Rootzen, J. Segers and J.L. Wadsworth (2019), \emph{Peaks over thresholds modeling with multivariate generalized Pareto distributions},  Technometrics, \bold{61}(1), 123--135, <doi:10.1080/00401706.2018.1462738>
 NULL
 

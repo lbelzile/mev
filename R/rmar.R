@@ -10,7 +10,7 @@
 #' @param n sample size
 #' @param theta extremal index, a value in (0,1]
 #' @param shape non-negative shape parameter of the GEV
-#' @param return a vector of length \code{n} drawn from the stationary distribution.
+#' @return a vector of length \code{n} drawn from the stationary distribution.
 #' @examples
 #' X1 <- rmar1(n = 1000, theta = 0.5)
 #' X2 <- rmar1(n = 1000, theta = 0.2, shape = 0.2)

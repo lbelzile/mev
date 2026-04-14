@@ -632,3 +632,153 @@ gpd.boot <- function(object, B = 1000L, method = c("post", "norm")) {
     return(boot_par)
   }
 }
+
+
+#' Bootstrap approximation for generalized extreme value parameters
+#'
+#' Given an object of class \code{mev_gev},
+#' returns a matrix of parameter values to mimic
+#' the estimation uncertainty.
+#'
+#' Two options are available: a normal approximation to
+#' the location, scale and shape based on the maximum likelihood
+#' estimates and the observed information matrix.
+#' This method uses forward sampling to simulate
+#' from a trivariate normal distribution that satisfies
+#' the support and positivity constraints
+#'
+#' The second approximation uses the ratio-of-uniforms
+#' method to obtain samples from the posterior
+#' distribution with uninformative priors, thus
+#' mimicking the joint distribution of maximum likelihood.
+#' The benefit of the latter is that it is more reliable
+#' in small samples and when the shape is negative.
+#'
+#' @param object object of class \code{mev_gev}
+#' @param B number of pairs to sample
+#' @param method string; one of \code{'norm'} for the
+#' normal approximation or \code{'post'} (default) for posterior sampling
+#' @return a matrix of size B by 3 whose columns contain scale and shape parameters
+#' @export
+#' @examples
+#' set.seed(2025)
+#' xdat <- rgev(100, loc = 0, scale = 2, shape = -0.1)
+#' fgev <- fit.gev(xdat)
+#' pairs(gev.boot(fgev, method = "post"))
+#' pairs(gev.boot(fgev, method = "norm"))
+gev.boot <- function(object, B = 1000L, method = c("post", "norm")) {
+  method <- match.arg(method)
+  B <- as.integer(B)
+  stopifnot(B > 1L, inherits(object, "mev_gev"))
+  if (is.null(object$xdat)) {
+    stop("Exported object does not contain data.")
+  }
+  if (method == "post") {
+    if (!requireNamespace("revdbayes", quietly = TRUE)) {
+      stop(
+        "Package \"revdbayes\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    rpostsamp <- suppressWarnings(
+      try(
+        revdbayes::rpost(
+          n = B,
+          model = "gev",
+          prior = revdbayes::set_prior(
+            prior = "flat",
+            model = "gev",
+            min_xi = -1
+          ),
+          data = object$xdat,
+          init_ests = coef(object),
+          trans = "BC"
+        )$sim_vals
+      )
+    )
+    if (inherits(rpostsamp, "try-error")) {
+      stop("Ratio-of-uniform method failed.")
+    }
+    boot_par <- rpostsamp
+  } else if (method == "norm") {
+    if (isTRUE(coef(object)[3] < -0.5)) {
+      stop("Observed information undefined:\ncannot use normal approximation")
+    }
+    boot_par <- matrix(NA, ncol = 3, nrow = B)
+    vmat <- vcov(object)
+    stopifnot(isTRUE(all(eigen(vmat, only.values = TRUE)$values > 0)))
+    boot_par[, c(1, 3)] <- mev::rmnorm(
+      n = B,
+      mu = coef(object)[c(1, 3)],
+      Sigma = vmat[c(1, 3), c(1, 3)]
+    )
+    cmean <- coef(object)[2] +
+      c(
+        vmat[2, c(1, 3), drop = FALSE] %*%
+          solve(vmat[c(1, 3), c(1, 3)]) %*%
+          (t(boot_par[, c(1, 3)]) - coef(object)[c(1, 3)])
+      )
+    csd <- sqrt(
+      vmat[2, 2] -
+        vmat[2, c(1, 3)] %*% solve(vmat[c(1, 3), c(1, 3)]) %*% vmat[c(1, 3), 2]
+    )
+    # This breaks down if the mean is too small,
+    # below -8.3 lower bound, once standardised
+    #  but the cases we consider here will have
+    #  positive mean
+    rangedat <- range(object$xdat)
+    # Sample one-sided truncated normal
+    rltnorm <- function(n, mean, sd, lb, ub) {
+      stopifnot(
+        isTRUE(length(lb) %in% c(1L, n)),
+        isTRUE(length(ub) %in% c(1L, n)),
+        isTRUE(length(mean) %in% c(1L, n)),
+        isTRUE(length(sd) %in% c(1L, n))
+      )
+      lbs <- (lb - mean) / sd
+      ubs <- (ub - mean) / sd
+      pa <- pnorm(lbs)
+      mean +
+        sd *
+          qnorm(pa + (pnorm(ubs) - pa) * runif(n))
+    }
+    if (requireNamespace("TruncatedNormal", quietly = TRUE)) {
+      boot_par[, 2] <-
+        suppressWarnings(TruncatedNormal::rtnorm(
+          n = 1,
+          mu = cmean,
+          sd = rep(csd, length(cmean)),
+          lb = pmax(
+            0,
+            ifelse(
+              boot_par[, 3] < 0,
+              boot_par[, 3] * (boot_par[, 1] - rangedat[2]),
+              boot_par[, 3] * (boot_par[, 1] - rangedat[1])
+            )
+          ),
+          ub = rep(Inf, length(cmean))
+        ))
+    } else {
+      # This works most of the time, but try-catch
+      boot_par[, 2] <-
+        rltnorm(
+          n = B,
+          mean = cmean,
+          sd = csd,
+          lb = pmax(
+            0,
+            ifelse(
+              boot_par[, 3] < 0,
+              boot_par[, 3] * (boot_par[, 1] - rangedat[2]),
+              boot_par[, 3] * (boot_par[, 1] - rangedat[1])
+            )
+          ),
+          ub = rep(Inf, length(cmean))
+        )
+    }
+    # browser()
+    # isTRUE(all(apply(boot_par, 1, function(x){x[2] + x[3]*(rangedat - x[1])}) > 0))
+  }
+  colnames(boot_par) <- c("loc", "scale", "shape")
+  return(boot_par)
+}

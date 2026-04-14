@@ -135,6 +135,7 @@ thselect.mrl <- function(
 }
 
 #' @export
+#' @param x object of class \code{mev_thselect_automrl}
 #' @param type string indicating the response, either mean residual life or log of mean squared error
 #' @name thselect.mrl
 plot.mev_thselect_automrl <- function(x, type = c("mrl", "mse"), ...) {

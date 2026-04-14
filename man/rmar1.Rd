@@ -12,8 +12,9 @@ rmar1(n, theta, shape = 0)
 \item{theta}{extremal index, a value in (0,1]}
 
 \item{shape}{non-negative shape parameter of the GEV}
-
-\item{return}{a vector of length \code{n} drawn from the stationary distribution.}
+}
+\value{
+a vector of length \code{n} drawn from the stationary distribution.
 }
 \description{
 Generate data from stationary sequences for extremes for

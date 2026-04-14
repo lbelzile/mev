@@ -4,6 +4,10 @@
 ## New:
 
 - New datasets, `thames` and `cheeseborowind`
+- Function `rmar1` for first-order maximum autoregressive processes
+- Function `gev.boot` for Gaussian approximation to GEV, to be used in parametric bootstrap schemes
+- Functions `test.blocksize`, `build.blocks`,  `fit.gevblock`, `qqplot.blocksize` for tests of max-stability based on comparison of block maxima, from Belzile and Davison (2026).
+- Tests of Durbin for uniformity (`test.unif`) and quantile-quantile plots for uniforms with binomial confidence intervals (`qqplot.unif`).
 
 ## Changes:
 
