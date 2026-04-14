@@ -95,6 +95,7 @@ Collings et al. (2025) recommend to use quantile-quantile plot, but with
 \code{pp} starting from some minimal threshold and going no further than the \eqn{1-10/n} probability level. This can be supplied via \code{pp}. When choosin  \code{type = "tails"}, only probability points exceeding the threshold level are kept, so the metric is evaluated at the same levels, but with fewer points, as we increase the threshold level.
 }
 \examples{
+\dontrun{
 xdat <- rexp(1000, rate = 1/2)
 thresh <- quantile(xdat, prob = c(0.25,0.5, 0.75))
 # Method of Murphy, Tawn and Varty (2024) - EQD
@@ -107,7 +108,9 @@ tails <- thselect.vmetric(
   xdat,
   thresh = thresh,
   type = "tails",
+  B = 99,
   pp = seq(0.8, 1-10/length(xdat), length.out = 250))
+}
 }
 \references{
 Varty, Z. and J.A. Tawn and P.M. Atkinson and S. Bierman (2021+), Inference for extreme earthquake magnitudes accounting for a time-varying measurement process.

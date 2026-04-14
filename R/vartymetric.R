@@ -51,6 +51,7 @@
 #' @references Collings, T.P., C. Murphy-Barltrop, C. Murphy, I.D. Haigh, P.D. Bates, and N.D. Quinn (2025). \emph{Automated tail-informed threshold selection for extreme coastal sea levels}, Natural Hazards and Earth System Sciences, 25(\bold{11}), 4545–4562, <doi:10.5194/nhess-25-4545-2025>.
 #'
 #' @examples
+#' \dontrun{
 #' xdat <- rexp(1000, rate = 1/2)
 #' thresh <- quantile(xdat, prob = c(0.25,0.5, 0.75))
 #' # Method of Murphy, Tawn and Varty (2024) - EQD
@@ -63,7 +64,9 @@
 #'   xdat,
 #'   thresh = thresh,
 #'   type = "tails",
+#'   B = 99,
 #'   pp = seq(0.8, 1-10/length(xdat), length.out = 250))
+#' }
 thselect.vmetric <- function(
   xdat,
   thresh,
