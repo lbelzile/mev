@@ -19,7 +19,7 @@
 #' plot(X2)
 #' xacf(X1, qlev = 0.9)
 #' xacf(X2, qlev = 0.9)
-#' @references Valadares Tavares, L. (1977). The Exact Distribution of Extremes of a Non-Gaussian Process. \emph{Stochastic Processes and Their Applications} (2): 151-56.\doi{10.1016/0304-4149(77)90026-6.12}
+#' @references Valadares Tavares, L. (1977). The Exact Distribution of Extremes of a Non-Gaussian Process. \emph{Stochastic Processes and Their Applications} (2): 151-56. \doi{10.1016/0304-4149(77)90026-6}
 #' @references Davis, Richard A., and Sidney I. Resnick (1989). Basic Properties and Prediction of Max-ARMA Processes, \emph{Advances in Applied Probability}, 21 (\bold{4}): 781–803. \doi{10.2307/1427767}.
 #' @export
 rmar1 <- function(n, theta, shape = 0) {
