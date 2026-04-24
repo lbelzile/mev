@@ -65,8 +65,8 @@ gevblock.ll <- function(
   }
   # Sort row from smallest to largest
   xdat <- t(apply(xdat, 1, sort))
-  rounding <- abs(rounding[1]) / 2 #HALF ROUNDING since add/subtract
-  rounded <- isTRUE(rounding > 1e-6)
+  delta <- abs(rounding[1]) / 2 #HALF ROUNDING since add/subtract
+  rounded <- isTRUE(delta > 1e-6)
   leftcens <- !is.null(lb)
   if (leftcens & !rounded) {
     # Matrix of indicators for left-censoring
@@ -91,7 +91,7 @@ gevblock.ll <- function(
         ) -
       (m - 1) *
         sum(mev::pgev(
-          q = as.numeric(xdat[, m]),
+          q = as.numeric(pmax(lb, xdat[, m])),
           loc = pars[1],
           scale = pars[2],
           shape = pars[3],
@@ -114,70 +114,107 @@ gevblock.ll <- function(
           log.p = TRUE
         )
   } else if (leftcens & rounded) {
-    lcens <- apply(xdat, 1:2, function(x) {
-      (x + rounding) <= lb
-    })
-    # GEV for smaller blocks, truncated above by block max
-    # if xdat[,m] + rounding < lb, then no information from
-    out <- sum(
-      log(
-        mev::pgev(
-          q = pmax(lb, as.numeric(xdat[, -m]) + rounding),
+    # browser()
+    weight_fn <- function(x, pars) {
+      w <- rep(0, length(x))
+      w[((x - delta) < lb) & ((x + delta) >= lb)]
+      w[x - delta > lb] <- 1
+      indet <- which(((x - delta) < lb) & ((x + delta) >= lb))
+      if (length(indet) > 0) {
+        plb <- pgev(lb, pars[1], pars[2], pars[3])
+        pu <- pgev(
+          x[indet] + delta,
           loc = pars[1],
           scale = pars[2],
           shape = pars[3]
-        ) -
-          ifelse(
-            c(lcens[, -m]),
-            0,
+        )
+        pl <- pgev(
+          x[indet] - delta,
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3]
+        )
+        w[indet] <- (pu - plb) / (pu - pl)
+      }
+      return(w)
+    }
+    wmat <- cbind(
+      apply(xdat[, -m, drop = FALSE], 2, weight_fn, pars = pars),
+      weight_fn(xdat[, m], pars = pars2)
+    )
+    # GEV for smaller blocks, truncated above by block max
+    out <-
+      sum(1 - wmat[, -m]) *
+      mev::pgev(
+        q = lb,
+        loc = pars[1],
+        scale = pars[2],
+        shape = pars[3],
+        log.p = TRUE
+      ) +
+      sum(
+        c(wmat[, -m]) *
+          log(pmax(
+            1e-16, # to handle zero cases
             mev::pgev(
-              q = as.numeric(xdat[, -m]) - rounding,
+              q = pmax(lb, c(xdat[, -m]) + delta),
               loc = pars[1],
               scale = pars[2],
               shape = pars[3]
-            )
-          )
-      )
-    ) -
-      (m - 1) *
-        sum(mev::pgev(
-          q = pmax(lb, as.numeric(xdat[, m]) + rounding),
-          loc = pars[1],
-          scale = pars[2],
-          shape = pars[3],
-          log = TRUE
-        )) +
-      # Null hypothesis model: maximum is GEV
-      sum(
-        log(
-          mev::pgev(
-            q = pmax(lb, as.numeric(xdat[, m]) + rounding),
-            loc = pars2[1],
-            scale = pars2[2],
-            shape = pars2[3]
-          ) -
-            ifelse(
-              c(lcens[, m]),
-              0,
+            ) -
               mev::pgev(
-                q = as.numeric(xdat[, m]) - rounding,
+                q = pmax(lb, c(xdat[, -m]) - delta),
+                loc = pars[1],
+                scale = pars[2],
+                shape = pars[3]
+              )
+          ))
+      )
+    -(m - 1) *
+      sum(mev::pgev(
+        q = pmax(lb, as.numeric(xdat[, m]) + delta),
+        loc = pars[1],
+        scale = pars[2],
+        shape = pars[3],
+        log = TRUE
+      )) +
+      # Null hypothesis model: maximum is GEV
+      sum(1 - wmat[, m]) *
+        mev::pgev(
+          q = lb,
+          loc = pars2[1],
+          scale = pars2[2],
+          shape = pars2[3],
+          log.p = TRUE
+        ) +
+      sum(
+        wmat[, m] *
+          log(pmax(
+            1e-16,
+            mev::pgev(
+              q = as.numeric(xdat[, m]) + delta,
+              loc = pars2[1],
+              scale = pars2[2],
+              shape = pars2[3]
+            ) -
+              mev::pgev(
+                q = pmax(lb, as.numeric(xdat[, m]) - delta),
                 loc = pars2[1],
                 scale = pars2[2],
                 shape = pars2[3]
               )
-            )
-        )
+          ))
       )
   } else if (rounded & !leftcens) {
     out <- sum(log(
       mev::pgev(
-        q = as.numeric(xdat[, -m]) + rounding,
+        q = as.numeric(xdat[, -m]) + delta,
         loc = pars[1],
         scale = pars[2],
         shape = pars[3]
       ) -
         mev::pgev(
-          q = as.numeric(xdat[, -m]) - rounding,
+          q = as.numeric(xdat[, -m]) - delta,
           loc = pars[1],
           scale = pars[2],
           shape = pars[3]
@@ -185,7 +222,7 @@ gevblock.ll <- function(
     )) -
       (m - 1) *
         sum(mev::pgev(
-          q = as.numeric(xdat[, m]) + rounding,
+          q = as.numeric(xdat[, m]) + delta,
           loc = pars[1],
           scale = pars[2],
           shape = pars[3],
@@ -194,13 +231,13 @@ gevblock.ll <- function(
       # Null hypothesis model: maximum is GEV
       sum(log(
         mev::pgev(
-          q = as.numeric(xdat[, m]) + rounding,
+          q = as.numeric(xdat[, m]) + delta,
           loc = pars2[1],
           scale = pars2[2],
           shape = pars2[3]
         ) -
           mev::pgev(
-            q = as.numeric(xdat[, m]) - rounding,
+            q = as.numeric(xdat[, m]) - delta,
             loc = pars2[1],
             scale = pars2[2],
             shape = pars2[3]
@@ -352,7 +389,8 @@ test.blocksize <- function(
 #' @param m number of columns for further sub-blocking
 #' @return a matrix with \eqn{\lfloor n/b \rfloor} observations, ordered by row, with \code{m} columns.
 build.blocks <- function(xdat, block = 1L, m = 2L) {
-  data <- c(xdat)
+  data <- as.numeric(c(xdat))
+  data <- data[is.finite(data)]
   block <- as.integer(block)
   nb <- floor(length(data) / (m * block))
   n <- nb * block * m
@@ -1021,7 +1059,12 @@ plot.mev_plot_blocksize <- function(
       col = "grey70"
     )
     abline(a = 0, b = 1)
-    points(x = xpos, y = ypos, pch = 20)
+    points(
+      x = xpos,
+      y = ypos,
+      pch = 20,
+      col = ifelse((ypos < lower_simult) | (ypos > upper_simult), 2, 1)
+    )
   }
 }
 
@@ -1143,7 +1186,7 @@ qqplot.blocksize.parametric <- function(
   stopifnot(B > 0)
   level <- rep(level, length.out = 2)
   stopifnot(is.numeric(level), isTRUE(all(level > 0, level < 1)))
-  alpha <- 0.5 - 0.5 * rep(level, length.out = 2L)
+  alpha <- 1 - rep(level, length.out = 2L)
   type <- match.arg(type, several.ok = TRUE)
   # Create containers
   boot_out <- list()
@@ -1282,7 +1325,8 @@ qqplot.blocksize.parametric <- function(
       # confidence = conf,
       confint = list(pointwise = ptwise_conf, simultaneous = simult_conf),
       type = type[t],
-      dist = distribution[t]
+      dist = distribution[t],
+      alpha = c(alpha[1], alpha_star)
     )
   }
   out <- list(
@@ -1343,7 +1387,7 @@ qqplot.blocksize.rounded <- function(
   stopifnot(B > 0)
   level <- rep(level, length.out = 2)
   stopifnot(is.numeric(level), isTRUE(all(level > 0, level < 1)))
-  alpha <- 0.5 - 0.5 * rep(level, length.out = 2L)
+  alpha <- 1 - rep(level, length.out = 2L)
   type <- unique(match.arg(type, several.ok = TRUE))
   # Create containers
   boot_out <- list()
@@ -1594,7 +1638,8 @@ qqplot.blocksize.rounded <- function(
       y = as.numeric(sort(xdat_out[[t]])),
       confint = list(pointwise = ptwise_conf, simultaneous = simult_conf),
       type = type[t],
-      dist = distribution[t]
+      dist = distribution[t],
+      alpha = c(alpha[1], alpha_star)
     )
   }
   out <- list(
@@ -1648,7 +1693,7 @@ qqplot.unif <- function(
   alpha <- (1 - level)
   u <- sort(xdat)
   n <- length(u)
-  stopifnot(u[1] > 0, u[n] < 1)
+  stopifnot(u[1] >= 0, u[n] <= 1)
   # Plotting positions, equally spaced (do not evaluate 0 and N
   z <- 1:(K - 1) / K
   ecdf_u <- ecdf(u)

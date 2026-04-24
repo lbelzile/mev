@@ -51,3 +51,5 @@ R/mrl_new.R
 ^Meta$
 TODO.txt
 
+^\.positai$
+^\.claude$
