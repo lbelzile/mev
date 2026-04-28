@@ -114,10 +114,8 @@ gevblock.ll <- function(
           log.p = TRUE
         )
   } else if (leftcens & rounded) {
-    # browser()
     weight_fn <- function(x, pars) {
       w <- rep(0, length(x))
-      w[((x - delta) < lb) & ((x + delta) >= lb)]
       w[x - delta > lb] <- 1
       indet <- which(((x - delta) < lb) & ((x + delta) >= lb))
       if (length(indet) > 0) {
@@ -144,7 +142,7 @@ gevblock.ll <- function(
     )
     # GEV for smaller blocks, truncated above by block max
     out <-
-      sum(1 - wmat[, -m]) *
+      sum(1-wmat[, -m]) *
       mev::pgev(
         q = lb,
         loc = pars[1],
@@ -154,8 +152,7 @@ gevblock.ll <- function(
       ) +
       sum(
         c(wmat[, -m]) *
-          log(pmax(
-            1e-16, # to handle zero cases
+          log(pmax(1e-16,
             mev::pgev(
               q = pmax(lb, c(xdat[, -m]) + delta),
               loc = pars[1],
@@ -169,8 +166,7 @@ gevblock.ll <- function(
                 shape = pars[3]
               )
           ))
-      )
-    -(m - 1) *
+      ) - (m - 1) *
       sum(mev::pgev(
         q = pmax(lb, as.numeric(xdat[, m]) + delta),
         loc = pars[1],
@@ -179,14 +175,14 @@ gevblock.ll <- function(
         log = TRUE
       )) +
       # Null hypothesis model: maximum is GEV
-      sum(1 - wmat[, m]) *
+      sum( (1 - wmat[, m]) *
         mev::pgev(
           q = lb,
           loc = pars2[1],
           scale = pars2[2],
           shape = pars2[3],
           log.p = TRUE
-        ) +
+        )) +
       sum(
         wmat[, m] *
           log(pmax(
@@ -286,6 +282,7 @@ gevblock.ll <- function(
 #' @export
 #' @examples
 #' samp <- build.blocks(mev::rgev(50, scale = 10), m = 4)
+#' # x=-5 is approximately the 0.2 quantile of the above
 #' test.blocksize(xdat = round(samp, 0), rounding = 1, lb = -5)
 #' test.blocksize(xdat = round(samp, 0), rounding = 1)
 #' test.blocksize(xdat = samp)
@@ -298,25 +295,22 @@ test.blocksize <- function(
 ) {
   m <- ncol(xdat)
   # Get starting values from the null model fit using standard routines
-  fitgev <- mev::fit.gev(xdat = as.numeric(xdat))
-  start <- coef(fitgev)
+  start <- fit.gevblock(xdat = xdat, lb = lb, rounding = rounding)
   # Log likelihood of null model
-  null <- gevblock.ll(
-    pars = start,
+  null <- optim(
+    fn = gevblock.ll,
+    par = start,
     xdat = xdat,
     null = TRUE,
     rounding = rounding,
     lb = lb,
-    logscale = FALSE
+    control = list(fnscale = -1)
   )
-  if (isTRUE(any(2:3 %in% alternative))) {
-    fitgev_max <- mev::fit.gev(xdat = xdat[, m])
-  }
   alt <- alternative[alternative %in% 1:3]
   if (length(alt) == 0) {
     stop("Invalid vector of alternative: must be integer between 1 and 3.")
   }
-  maxstab <- mev::maxstable(pars = start, m = m)
+  maxstab <- mev::maxstable(pars = null$par, m = m)
   # Alternative where only shape varies
   alt_stat <- numeric(length(alternative))
   df <- numeric(length(alternative))
@@ -337,7 +331,7 @@ test.blocksize <- function(
     } else if (alt[i] == 2L) {
       # Alternative 2: fix shape, allow location and scale to vary
       alt_opt2 <- optim(
-        par = c(start, coef(fitgev_max)[1:2]),
+        par = c(start, maxstab[1:2]),
         fn = gevblock.ll,
         method = "Nelder",
         control = list(fnscale = -1, maxit = 2e4L),
@@ -351,7 +345,7 @@ test.blocksize <- function(
     } else if (alt[i] == 3L) {
       # Alternative 3: fit model, but allowing all three parameters to vary
       alt_opt3 <- optim(
-        par = c(start, coef(fitgev_max)),
+        par = c(start, maxstab),
         fn = gevblock.ll,
         method = "Nelder",
         control = list(fnscale = -1, maxit = 2e4L),
@@ -367,11 +361,9 @@ test.blocksize <- function(
     }
   }
   # P-values
-  stat <- 2 * (alt_stat - null)
+  stat <- 2 * (alt_stat - null$value)
   pvals <- pchisq(stat, df = df, lower.tail = FALSE)
   data.frame(alternative = paste0("A", alt), stat = stat, df = df, pval = pvals)
-  # names(pvals) <- paste0("A", alt)
-  # return(pvals)
 }
 
 
@@ -409,47 +401,6 @@ build.blocks <- function(xdat, block = 1L, m = 2L) {
   } else {
     return(out)
   }
-}
-
-
-#' Durbin's mapping of uniforms
-#'
-#' Given a set of uniform variates, obtained for example through application
-#' of the probability integral  transform, consider alternative scaling which
-#' are also uniform but may lead to more powerful tests.
-#' @param xdat sample of uniform variates
-#' @return a data frame with elements \code{stat} containing the test statistics and \code{pval} for the p-values from the null distributions, for the modified probability product, median and (one-sided) Kolmogorov--Smirnov tests.
-#' @references Durbin, J. (1961). Some Methods of Constructing Exact Tests. \emph{Biometrika}, 48(\bold{1/2}), 41–55. \doi{10.2307/2333128}
-#' @export
-#' @keywords internal
-durbin.unif <- function(xdat) {
-  u_vec <- sort(c(xdat))
-  n <- length(u_vec)
-  stopifnot(u_vec[1] >= 0, u_vec[n] <= 1)
-  c_vec <- sort(c(u_vec[1], diff(u_vec), 1 - u_vec[n]))
-  g_vec <- (n + 2 - 1:(n + 1)) * diff(c(0, c_vec))
-  # tinytest::expect_equal(sum(c_vec), 1)
-  # tinytest::expect_equal(sum(g_vec), 1)
-  w_vec <- cumsum(g_vec[-(n + 1)])
-  # Modified probability product test
-  stat_1 <- -2 * sum(log(w_vec))
-  # More affected by rounding errors.
-  pval_1 <- pchisq(q = stat_1, df = 2 * n, lower.tail = FALSE)
-  # Modified median test
-  r <- ifelse(n %% 2 == 0, round(n / 2), ceiling(n / 2))
-  stat_2 <- r / (n + 1 - r) * (1 - w_vec[r]) / w_vec[r]
-  pval_2 <- pf(
-    q = stat_2,
-    df1 = 2 * (n + 1 - r),
-    df2 = 2 * r,
-    lower.tail = FALSE
-  )
-  stat_3 <- ks.test(x = w_vec, y = "punif", alternative = "greater")
-  # Formula in Durbin is max((1:n) / n - w_vec)
-  return(data.frame(
-    stat = c(stat_1, stat_2, stat_3$statistic),
-    pval = c(pval_1, pval_2, stat_3$p.value)
-  ))
 }
 
 
@@ -529,14 +480,11 @@ fit.gevblock.marginal <- function(
 ) {
   m <- ncol(xdat)
   maxx <- max(xdat[, m])
-  rounding <- rounding[1] / 2
-  if (!is.null(lb)) {
-    lcens <- xdat[, -m] < lb
-    # We consider the actual measurement as lower bound
-  }
-  if (abs(rounding) < 1e-6) {
-    if (is.null(lb)) {
-      gev_nll_os <- function(pars, xdat, rounding, lb, ...) {
+  delta <- abs(rounding[1]) / 2
+  icens <- isTRUE(delta > 1e-6)
+  lcens <- !is.null(lb)
+  if (!icens & !lcens) { # No censoring
+      gev_nll_os <- function(pars, xdat, delta, lb, ...) {
         m <- ncol(xdat)
         -sum(mev::dgev(
           x = c(xdat[, -m]),
@@ -554,26 +502,27 @@ fit.gevblock.marginal <- function(
             log.p = TRUE
           ))
       }
-    } else {
-      gev_nll_os <- function(pars, xdat, rounding, lb, ...) {
+    } else if(!icens & lcens){
+      gev_nll_os <- function(pars, xdat, delta, lb, ...) {
+        lcens_ind <- xdat[, -m] < lb
         m <- ncol(xdat)
         -sum(mev::dgev(
-          x = c(xdat[, -m])[!c(lcens)],
+          x = c(xdat[, -m])[!c(lcens_ind)],
           loc = pars[1],
           scale = pars[2],
           shape = pars[3],
           log = TRUE
-        )) +
-          sum(lcens) *
+        )) -
+          sum(lcens_ind) *
             mev::pgev(
               q = lb,
               loc = pars[1],
               scale = pars[2],
               shape = pars[3],
               log.p = TRUE
-            ) +
-          -sum(mev::pgev(
-            q = c(xdat[, m - 1])[!lcens[, m - 1]],
+            ) - # no information if x[m-1] is left-censored for largest
+           sum(mev::pgev(
+            q = pmax(lb, c(xdat[, m - 1])[!lcens_ind[, m - 1]]),
             loc = pars[1],
             scale = pars[2],
             shape = pars[3],
@@ -581,21 +530,19 @@ fit.gevblock.marginal <- function(
             log.p = TRUE
           ))
       }
-    }
-  } else {
-    if (is.null(lb)) {
-      gev_nll_os <- function(pars, xdat, rounding, lb, ...) {
+    } else if(!lcens & icens) {  # interval-censored data
+      gev_nll_os <- function(pars, xdat, delta, lb, ...) {
         m <- ncol(xdat)
         -sum(
           log(
             mev::pgev(
-              q = c(xdat[, -m]) + rounding,
+              q = c(xdat[, -m]) + delta,
               loc = pars[1],
               scale = pars[2],
               shape = pars[3]
             ) -
               mev::pgev(
-                q = c(xdat[, -m]) - rounding,
+                q = c(xdat[, -m]) - delta,
                 loc = pars[1],
                 scale = pars[2],
                 shape = pars[3]
@@ -603,7 +550,7 @@ fit.gevblock.marginal <- function(
           )
         ) -
           sum(mev::pgev(
-            q = c(xdat[, m - 1]) - rounding,
+            q = c(xdat[, m - 1]) - delta,
             loc = pars[1],
             scale = pars[2],
             shape = pars[3],
@@ -611,41 +558,75 @@ fit.gevblock.marginal <- function(
             log.p = TRUE
           ))
       }
-    } else {
-      #rounding and truncation
-      gev_nll_os <- function(pars, xdat, rounding, lb, ...) {
+    } else if(lcens & icens){
+      # rounding and left-censoring
+      # use expected likelihood
+      weight_fn <- function(x, pars) {
+        w <- rep(0, length(x))
+        w[x - delta > lb] <- 1
+        indet <- which(((x - delta) < lb) & ((x + delta) >= lb))
+        if (length(indet) > 0) {
+          plb <- pgev(lb, pars[1], pars[2], pars[3])
+          pu <- pgev(
+            x[indet] + delta,
+            loc = pars[1],
+            scale = pars[2],
+            shape = pars[3]
+          )
+          pl <- pgev(
+            x[indet] - delta,
+            loc = pars[1],
+            scale = pars[2],
+            shape = pars[3]
+          )
+          w[indet] <- (pu - plb) / (pu - pl)
+        }
+        return(w)
+      }
+
+      gev_nll_os <- function(pars, xdat, delta, lb, ...) {
         m <- ncol(xdat)
-        -sum(
-          log(
-            mev::pgev(
-              q = pmax(lb, c(xdat[, -m]) + rounding),
-              loc = pars[1],
-              scale = pars[2],
-              shape = pars[3]
-            ) -
-              ifelse(
-                c(lcens[, -m]),
-                0,
-                mev::pgev(
-                  q = as.numeric(xdat[, -m]) - rounding,
-                  loc = pars[1],
-                  scale = pars[2],
-                  shape = pars[3]
-                )
+        wmat <- apply(xdat[, -m, drop = FALSE], 2, weight_fn, pars = pars)
+        out <- sum(1-wmat) *
+          mev::pgev(
+            q = lb,
+            loc = pars[1],
+            scale = pars[2],
+            shape = pars[3],
+            log.p = TRUE
+          ) +
+          sum(
+            c(wmat) *
+              log(pmax(1e-16,
+                       mev::pgev(
+                         q = pmax(lb, c(xdat[, -m]) + delta),
+                         loc = pars[1],
+                         scale = pars[2],
+                         shape = pars[3]
+                       ) -
+                         mev::pgev(
+                           q = pmax(lb, c(xdat[, -m]) - delta),
+                           loc = pars[1],
+                           scale = pars[2],
+                           shape = pars[3]
+                         )
+              ))
+          ) +
+          # Null hypothesis model: maximum is GEV
+          sum(
+            wmat[, m-1] *
+              mev::pgev(
+                q = pmax(lb, as.numeric(xdat[, m-1]) - delta),
+                loc = pars[1],
+                scale = pars[2],
+                shape = pars[3],
+                lower.tail = FALSE,
+                log.p = TRUE
               )
           )
-        ) - # The largest only contributes if the (m-1) order statistic is not left-censored
-          sum(mev::pgev(
-            q = c(xdat[, m - 1] - rounding)[xdat[, m - 1] > lb],
-            loc = pars[1],
-            scale = pars[2],
-            shape = pars[3],
-            lower.tail = FALSE,
-            log.p = TRUE
-          ))
+        return(-out)
       }
     }
-  }
   if (is.null(start)) {
     start <- coef(mev::fit.gev(c(xdat)))
   }
@@ -655,10 +636,10 @@ fit.gevblock.marginal <- function(
         gev_nll_os(
           pars = c(xp[1], exp(xp[2]), xp[3]),
           xdat = xdat,
-          rounding = rounding,
+          delta= delta,
           lb = lb
         ),
-        silent = TRUE
+        silent = FALSE
       )
       if (inherits(out, "try-error")) {
         out <- 1e10
@@ -860,6 +841,7 @@ fit.gevblock <- function(
     stopifnot(is.matrix(xdat), ncol(xdat) >= 1)
     return(fit.gevblock.marginal(
       xdat = xdat,
+      lb = lb,
       constraint = constraint,
       rounding = rounding,
       start = start,
@@ -1114,7 +1096,8 @@ qqplot.blocksize <- function(
   lb = NULL,
   plot = TRUE,
   level = 0.95,
-  np = NULL
+  np = NULL,
+  simult = TRUE
 ) {
   scale <- "unif"
   if (is.null(lb)) {
@@ -1141,6 +1124,8 @@ qqplot.blocksize <- function(
     scale <- scale[type != "range"]
     type <- type[type != "range"]
   }
+
+
   if (isTRUE(any(icens, lcens))) {
     qqplot.blocksize.rounded(
       xdat = xdat,
@@ -1313,7 +1298,6 @@ qqplot.blocksize.parametric <- function(
       qbinom(alpha_star / 2, prob = pp[[t]], size = nobs[t]) / nobs[t],
       qbinom(1 - alpha_star / 2, prob = pp[[t]], size = nobs[t]) / nobs[t]
     )
-    # colnames(conf) <-
     colnames(simult_conf) <- colnames(ptwise_conf) <- c(
       "lower",
       "upper"
@@ -1411,26 +1395,6 @@ qqplot.blocksize.rounded <- function(
     )
   }
   # Utility function to simulate continuous observations from rounded records
-  impute_rounded <- function(x, rounding, pars) {
-    p_lb <- pgev(
-      x - rounding / 2,
-      loc = pars[1],
-      scale = pars[2],
-      shape = pars[3]
-    )
-    p_ub <- pgev(
-      x + rounding / 2,
-      loc = pars[1],
-      scale = pars[2],
-      shape = pars[3]
-    )
-    qgev(
-      p_lb + runif(length(x)) * (p_ub - p_lb),
-      loc = pars[1],
-      scale = pars[2],
-      shape = pars[3]
-    )
-  }
   mle_coefs_boot <- matrix(nrow = B, ncol = 3)
   # 0. obtain MLE
   mle <- fit.gevblock(
@@ -1442,7 +1406,7 @@ qqplot.blocksize.rounded <- function(
   )
   xdat_new <- c(t(xdat))
   if (icens) {
-    xdat_new <- impute_rounded(x = xdat_new, rounding = rounding, pars = mle)
+    xdat_new <- impute_rounded(x = xdat_new, delta = delta, pars = mle)
   }
 
   # Calculate statistics on the original sample
@@ -1540,7 +1504,7 @@ qqplot.blocksize.rounded <- function(
         # make continuous
         xdat_boot_new <- impute_rounded(
           x = xdat_boot_new,
-          rounding = rounding,
+          delta = delta,
           pars = mle_boot
         )
       }
@@ -1666,6 +1630,23 @@ qqplot.blocksize.rounded <- function(
 }
 
 
+# Simultaneous confidence intervals via simulation
+# Only works for exact uniforms
+get_alpha_simult <- function(n, K, B, level = 0.95){
+  z <- 1:(K - 1) / K
+ gamma <- numeric(B)
+ for (b in seq_len(B)) {
+   Fz_boot <- ecdf(runif(n))(z)
+   gamma[b] <- 2 *
+     min(
+       pbinom(n * Fz_boot, size = n, prob = z),
+       pbinom(n * Fz_boot - 1, size = n, prob = z, lower.tail = FALSE)
+     )
+ }
+ return(1 - as.numeric(quantile(gamma, probs = 1 - level)))
+}
+
+
 #' Pointwise and simultaneous binomial confidence intervals for uniform via simulation
 #'
 #' Given a vector of draws transformed using the probability integral transform scale
@@ -1688,7 +1669,10 @@ qqplot.unif <- function(
   level = 0.95,
   plot = TRUE
 ) {
-  level <- rep(level, length = 2L)
+  if(length(level) == 1L){
+    level <- c(level, get_alpha_simult(n = length(xdat), K = K, B = B, level = level))
+  }
+  level <- rep(level, length.out = 2L)
   stopifnot(isTRUE(all(is.finite(level), level > 0, level < 1)))
   alpha <- (1 - level)
   u <- sort(xdat)
@@ -1704,22 +1688,11 @@ qqplot.unif <- function(
     qbinom(alpha[1] / 2, prob = z, size = n) / n,
     qbinom(1 - alpha[1] / 2, prob = z, size = n) / n
   )
-  # Simultaneous confidence intervals via simulation
-  gamma <- numeric(B)
-  for (b in seq_len(B)) {
-    Fz_boot <- ecdf(runif(n))(z)
-    gamma[b] <- 2 *
-      min(
-        pbinom(n * Fz_boot, size = n, prob = z),
-        1 - pbinom(n * Fz_boot - 1, size = n, prob = z)
-      )
-  }
-  alpha_star <- quantile(gamma, alpha[2])
   simult_conf <- cbind(
-    qbinom(alpha_star / 2, prob = z, size = n) / n,
-    qbinom(1 - alpha_star / 2, prob = z, size = n) / n
+    qbinom(alpha[2] / 2, prob = z, size = n) / n,
+    qbinom(1 - alpha[2] / 2, prob = z, size = n) / n
   )
-  out <- list(x = z, y = Fz, ptwise = ptwise_conf, simult = simult_conf)
+  out <- list(x = z, y = Fz, ptwise = ptwise_conf, simult = simult_conf, alpha = alpha)
   class(out) <- "mev_ecdf_unif"
   if (isTRUE(plot)) {
     plot(out)
@@ -1749,5 +1722,27 @@ plot.mev_ecdf_unif <- function(x, ...) {
     y = x$y,
     pch = 20,
     col = ifelse((x$y > x$simult[, 2] | x$y < x$simult[, 1]), "red", "black")
+  )
+}
+
+# Utility function to simulate continuous observations from rounded records
+impute_rounded <- function(x, delta, pars) {
+  p_lb <- pgev(
+    x - delta,
+    loc = pars[1],
+    scale = pars[2],
+    shape = pars[3]
+  )
+  p_ub <- pgev(
+    x + delta,
+    loc = pars[1],
+    scale = pars[2],
+    shape = pars[3]
+  )
+  qgev(
+    p_lb + runif(length(x)) * (p_ub - p_lb),
+    loc = pars[1],
+    scale = pars[2],
+    shape = pars[3]
   )
 }
