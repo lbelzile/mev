@@ -142,7 +142,7 @@ gevblock.ll <- function(
     )
     # GEV for smaller blocks, truncated above by block max
     out <-
-      sum(1-wmat[, -m]) *
+      sum(1 - wmat[, -m]) *
       mev::pgev(
         q = lb,
         loc = pars[1],
@@ -152,7 +152,8 @@ gevblock.ll <- function(
       ) +
       sum(
         c(wmat[, -m]) *
-          log(pmax(1e-16,
+          log(pmax(
+            1e-16,
             mev::pgev(
               q = pmax(lb, c(xdat[, -m]) + delta),
               loc = pars[1],
@@ -166,23 +167,26 @@ gevblock.ll <- function(
                 shape = pars[3]
               )
           ))
-      ) - (m - 1) *
-      sum(mev::pgev(
-        q = pmax(lb, as.numeric(xdat[, m]) + delta),
-        loc = pars[1],
-        scale = pars[2],
-        shape = pars[3],
-        log = TRUE
-      )) +
-      # Null hypothesis model: maximum is GEV
-      sum( (1 - wmat[, m]) *
-        mev::pgev(
-          q = lb,
-          loc = pars2[1],
-          scale = pars2[2],
-          shape = pars2[3],
-          log.p = TRUE
+      ) -
+      (m - 1) *
+        sum(mev::pgev(
+          q = pmax(lb, as.numeric(xdat[, m]) + delta),
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3],
+          log = TRUE
         )) +
+      # Null hypothesis model: maximum is GEV
+      sum(
+        (1 - wmat[, m]) *
+          mev::pgev(
+            q = lb,
+            loc = pars2[1],
+            scale = pars2[2],
+            shape = pars2[3],
+            log.p = TRUE
+          )
+      ) +
       sum(
         wmat[, m] *
           log(pmax(
@@ -483,163 +487,167 @@ fit.gevblock.marginal <- function(
   delta <- abs(rounding[1]) / 2
   icens <- isTRUE(delta > 1e-6)
   lcens <- !is.null(lb)
-  if (!icens & !lcens) { # No censoring
-      gev_nll_os <- function(pars, xdat, delta, lb, ...) {
-        m <- ncol(xdat)
-        -sum(mev::dgev(
-          x = c(xdat[, -m]),
+  if (!icens & !lcens) {
+    # No censoring
+    gev_nll_os <- function(pars, xdat, delta, lb, ...) {
+      m <- ncol(xdat)
+      -sum(mev::dgev(
+        x = c(xdat[, -m]),
+        loc = pars[1],
+        scale = pars[2],
+        shape = pars[3],
+        log = TRUE
+      )) -
+        sum(mev::pgev(
+          q = c(xdat[, m - 1]),
           loc = pars[1],
           scale = pars[2],
           shape = pars[3],
-          log = TRUE
-        )) -
-          sum(mev::pgev(
-            q = c(xdat[, m - 1]),
-            loc = pars[1],
-            scale = pars[2],
-            shape = pars[3],
-            lower.tail = FALSE,
-            log.p = TRUE
-          ))
-      }
-    } else if(!icens & lcens){
-      gev_nll_os <- function(pars, xdat, delta, lb, ...) {
-        lcens_ind <- xdat[, -m] < lb
-        m <- ncol(xdat)
-        -sum(mev::dgev(
-          x = c(xdat[, -m])[!c(lcens_ind)],
-          loc = pars[1],
-          scale = pars[2],
-          shape = pars[3],
-          log = TRUE
-        )) -
-          sum(lcens_ind) *
-            mev::pgev(
-              q = lb,
-              loc = pars[1],
-              scale = pars[2],
-              shape = pars[3],
-              log.p = TRUE
-            ) - # no information if x[m-1] is left-censored for largest
-           sum(mev::pgev(
-            q = pmax(lb, c(xdat[, m - 1])[!lcens_ind[, m - 1]]),
-            loc = pars[1],
-            scale = pars[2],
-            shape = pars[3],
-            lower.tail = FALSE,
-            log.p = TRUE
-          ))
-      }
-    } else if(!lcens & icens) {  # interval-censored data
-      gev_nll_os <- function(pars, xdat, delta, lb, ...) {
-        m <- ncol(xdat)
-        -sum(
-          log(
-            mev::pgev(
-              q = c(xdat[, -m]) + delta,
-              loc = pars[1],
-              scale = pars[2],
-              shape = pars[3]
-            ) -
-              mev::pgev(
-                q = c(xdat[, -m]) - delta,
-                loc = pars[1],
-                scale = pars[2],
-                shape = pars[3]
-              )
-          )
-        ) -
-          sum(mev::pgev(
-            q = c(xdat[, m - 1]) - delta,
-            loc = pars[1],
-            scale = pars[2],
-            shape = pars[3],
-            lower.tail = FALSE,
-            log.p = TRUE
-          ))
-      }
-    } else if(lcens & icens){
-      # rounding and left-censoring
-      # use expected likelihood
-      weight_fn <- function(x, pars) {
-        w <- rep(0, length(x))
-        w[x - delta > lb] <- 1
-        indet <- which(((x - delta) < lb) & ((x + delta) >= lb))
-        if (length(indet) > 0) {
-          plb <- pgev(lb, pars[1], pars[2], pars[3])
-          pu <- pgev(
-            x[indet] + delta,
-            loc = pars[1],
-            scale = pars[2],
-            shape = pars[3]
-          )
-          pl <- pgev(
-            x[indet] - delta,
-            loc = pars[1],
-            scale = pars[2],
-            shape = pars[3]
-          )
-          w[indet] <- (pu - plb) / (pu - pl)
-        }
-        return(w)
-      }
-
-      gev_nll_os <- function(pars, xdat, delta, lb, ...) {
-        m <- ncol(xdat)
-        wmat <- apply(xdat[, -m, drop = FALSE], 2, weight_fn, pars = pars)
-        out <- sum(1-wmat) *
+          lower.tail = FALSE,
+          log.p = TRUE
+        ))
+    }
+  } else if (!icens & lcens) {
+    gev_nll_os <- function(pars, xdat, delta, lb, ...) {
+      lcens_ind <- xdat[, -m, drop = FALSE] < lb
+      m <- ncol(xdat)
+      -sum(mev::dgev(
+        x = c(xdat[, -m])[!c(lcens_ind)],
+        loc = pars[1],
+        scale = pars[2],
+        shape = pars[3],
+        log = TRUE
+      )) -
+        sum(lcens_ind) *
           mev::pgev(
             q = lb,
             loc = pars[1],
             scale = pars[2],
             shape = pars[3],
             log.p = TRUE
-          ) +
-          sum(
-            c(wmat) *
-              log(pmax(1e-16,
-                       mev::pgev(
-                         q = pmax(lb, c(xdat[, -m]) + delta),
-                         loc = pars[1],
-                         scale = pars[2],
-                         shape = pars[3]
-                       ) -
-                         mev::pgev(
-                           q = pmax(lb, c(xdat[, -m]) - delta),
-                           loc = pars[1],
-                           scale = pars[2],
-                           shape = pars[3]
-                         )
-              ))
-          ) +
-          # Null hypothesis model: maximum is GEV
-          sum(
-            wmat[, m-1] *
+          ) - # no information if x[m-1] is left-censored for largest
+        sum(mev::pgev(
+          q = pmax(lb, c(xdat[, m - 1])[!lcens_ind[, m - 1]]),
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3],
+          lower.tail = FALSE,
+          log.p = TRUE
+        ))
+    }
+  } else if (!lcens & icens) {
+    # interval-censored data
+    gev_nll_os <- function(pars, xdat, delta, lb, ...) {
+      m <- ncol(xdat)
+      -sum(
+        log(
+          mev::pgev(
+            q = c(xdat[, -m]) + delta,
+            loc = pars[1],
+            scale = pars[2],
+            shape = pars[3]
+          ) -
+            mev::pgev(
+              q = c(xdat[, -m]) - delta,
+              loc = pars[1],
+              scale = pars[2],
+              shape = pars[3]
+            )
+        )
+      ) -
+        sum(mev::pgev(
+          q = c(xdat[, m - 1]) - delta,
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3],
+          lower.tail = FALSE,
+          log.p = TRUE
+        ))
+    }
+  } else if (lcens & icens) {
+    # rounding and left-censoring
+    # use expected likelihood
+    weight_fn <- function(x, pars) {
+      w <- rep(0, length(x))
+      w[x - delta > lb] <- 1
+      indet <- which(((x - delta) < lb) & ((x + delta) >= lb))
+      if (length(indet) > 0) {
+        plb <- pgev(lb, pars[1], pars[2], pars[3])
+        pu <- pgev(
+          x[indet] + delta,
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3]
+        )
+        pl <- pgev(
+          x[indet] - delta,
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3]
+        )
+        w[indet] <- (pu - plb) / (pu - pl)
+      }
+      return(w)
+    }
+
+    gev_nll_os <- function(pars, xdat, delta, lb, ...) {
+      m <- ncol(xdat)
+      wmat <- apply(xdat[, -m, drop = FALSE], 2, weight_fn, pars = pars)
+      out <- sum(1 - wmat) *
+        mev::pgev(
+          q = lb,
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3],
+          log.p = TRUE
+        ) +
+        sum(
+          c(wmat) *
+            log(pmax(
+              1e-16,
               mev::pgev(
-                q = pmax(lb, as.numeric(xdat[, m-1]) - delta),
+                q = pmax(lb, c(xdat[, -m]) + delta),
                 loc = pars[1],
                 scale = pars[2],
-                shape = pars[3],
-                lower.tail = FALSE,
-                log.p = TRUE
-              )
-          )
-        return(-out)
-      }
+                shape = pars[3]
+              ) -
+                mev::pgev(
+                  q = pmax(lb, c(xdat[, -m]) - delta),
+                  loc = pars[1],
+                  scale = pars[2],
+                  shape = pars[3]
+                )
+            ))
+        ) +
+        # Null hypothesis model: maximum is GEV
+        sum(
+          wmat[, m - 1] *
+            mev::pgev(
+              q = pmax(lb, as.numeric(xdat[, m - 1]) - delta),
+              loc = pars[1],
+              scale = pars[2],
+              shape = pars[3],
+              lower.tail = FALSE,
+              log.p = TRUE
+            )
+        )
+      return(-out)
     }
+  }
   if (is.null(start)) {
     start <- coef(mev::fit.gev(c(xdat)))
   }
+  # browser()
   if (isTRUE(constraint)) {
     obj_fn <- function(xp, xdat, maxx, rounding, lb, ...) {
       out <- try(
         gev_nll_os(
           pars = c(xp[1], exp(xp[2]), xp[3]),
           xdat = xdat,
-          delta= delta,
+          delta = delta,
           lb = lb
         ),
-        silent = FALSE
+        silent = TRUE
       )
       if (inherits(out, "try-error")) {
         out <- 1e10
@@ -675,7 +683,7 @@ fit.gevblock.marginal <- function(
       lb = lb
     )
     #if (opt$kkt1 & opt$kkt2) {
-    if (opt$convergence == 0 | opt$value == 1e10) {
+    if (opt$convergence == 0) {
       out <- opt$par
       out[2] <- exp(out[2])
       # because the gradient isn't zero
@@ -1125,7 +1133,6 @@ qqplot.blocksize <- function(
     type <- type[type != "range"]
   }
 
-
   if (isTRUE(any(icens, lcens))) {
     qqplot.blocksize.rounded(
       xdat = xdat,
@@ -1178,10 +1185,13 @@ qqplot.blocksize.parametric <- function(
   xdat_out <- list()
   pp <- list()
   if (!isTRUE(is.finite(np))) {
-    np <- n * m
+    np <- sapply(type, function(x) {
+      switch(x, "max" = n, "range" = n, "all" = n * m)
+    })
   }
-  nobs <- integer(length(type))
   np <- rep(as.integer(np), length.out = length(type))
+  nobs <- integer(length(type))
+
   for (t in seq_along(type)) {
     pp[[t]] <- (1:(np[t] - 1)) / np[t]
     boot_out[[t]] <- matrix(
@@ -1376,17 +1386,15 @@ qqplot.blocksize.rounded <- function(
   # Create containers
   boot_out <- list()
   xdat_out <- list()
-  if (lcens & is.null(np)) {
-    np <- sapply(seq_along(type), function(t) {
-      ifelse(type[t] == "all", length(xdat), nrow(xdat))
+  if (!isTRUE(is.finite(np))) {
+    np <- sapply(type, function(x) {
+      switch(x, "max" = n, "range" = n, "all" = n * m)
     })
   }
-  pp <- list()
-  if (!isTRUE(is.finite(np))) {
-    np <- n * m
-  }
-  nobs <- integer(length(type))
   np <- rep(as.integer(np), length.out = length(type))
+  pp <- list()
+  nobs <- integer(length(type))
+
   for (t in seq_along(type)) {
     pp[[t]] <- (1:(np[t] - 1)) / np[t]
     boot_out[[t]] <- matrix(
@@ -1632,18 +1640,18 @@ qqplot.blocksize.rounded <- function(
 
 # Simultaneous confidence intervals via simulation
 # Only works for exact uniforms
-get_alpha_simult <- function(n, K, B, level = 0.95){
+get_alpha_simult <- function(n, K, B, level = 0.95) {
   z <- 1:(K - 1) / K
- gamma <- numeric(B)
- for (b in seq_len(B)) {
-   Fz_boot <- ecdf(runif(n))(z)
-   gamma[b] <- 2 *
-     min(
-       pbinom(n * Fz_boot, size = n, prob = z),
-       pbinom(n * Fz_boot - 1, size = n, prob = z, lower.tail = FALSE)
-     )
- }
- return(1 - as.numeric(quantile(gamma, probs = 1 - level)))
+  gamma <- numeric(B)
+  for (b in seq_len(B)) {
+    Fz_boot <- ecdf(runif(n))(z)
+    gamma[b] <- 2 *
+      min(
+        pbinom(n * Fz_boot, size = n, prob = z),
+        pbinom(n * Fz_boot - 1, size = n, prob = z, lower.tail = FALSE)
+      )
+  }
+  return(1 - as.numeric(quantile(gamma, probs = 1 - level)))
 }
 
 
@@ -1669,8 +1677,11 @@ qqplot.unif <- function(
   level = 0.95,
   plot = TRUE
 ) {
-  if(length(level) == 1L){
-    level <- c(level, get_alpha_simult(n = length(xdat), K = K, B = B, level = level))
+  if (length(level) == 1L) {
+    level <- c(
+      level,
+      get_alpha_simult(n = length(xdat), K = K, B = B, level = level)
+    )
   }
   level <- rep(level, length.out = 2L)
   stopifnot(isTRUE(all(is.finite(level), level > 0, level < 1)))
@@ -1692,7 +1703,13 @@ qqplot.unif <- function(
     qbinom(alpha[2] / 2, prob = z, size = n) / n,
     qbinom(1 - alpha[2] / 2, prob = z, size = n) / n
   )
-  out <- list(x = z, y = Fz, ptwise = ptwise_conf, simult = simult_conf, alpha = alpha)
+  out <- list(
+    x = z,
+    y = Fz,
+    ptwise = ptwise_conf,
+    simult = simult_conf,
+    alpha = alpha
+  )
   class(out) <- "mev_ecdf_unif"
   if (isTRUE(plot)) {
     plot(out)

@@ -25,6 +25,7 @@ chi-square distribution.
 }
 \examples{
 samp <- build.blocks(mev::rgev(50, scale = 10), m = 4)
+# x=-5 is approximately the 0.2 quantile of the above
 test.blocksize(xdat = round(samp, 0), rounding = 1, lb = -5)
 test.blocksize(xdat = round(samp, 0), rounding = 1)
 test.blocksize(xdat = samp)

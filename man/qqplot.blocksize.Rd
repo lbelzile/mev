@@ -13,7 +13,8 @@ qqplot.blocksize(
   lb = NULL,
   plot = TRUE,
   level = 0.95,
-  np = NULL
+  np = NULL,
+  simult = TRUE
 )
 }
 \arguments{
