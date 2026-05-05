@@ -42,7 +42,7 @@ Suggests:
     TruncatedNormal (>= 1.1)
 LinkingTo: Rcpp, RcppArmadillo
 LazyData: true
-RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Encoding: UTF-8
 ByteCompile: true
+Config/roxygen2/version: 8.0.0

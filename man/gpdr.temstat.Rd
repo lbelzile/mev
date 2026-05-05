@@ -27,7 +27,5 @@ Vector implementing conditioning on approximate ancillary statistics for the TEM
 }
 \seealso{
 \code{\link{gpdr}}
-
-\code{\link{gpdr}}
 }
 \keyword{internal}
