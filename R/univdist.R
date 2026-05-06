@@ -189,6 +189,14 @@ gpd.infomat <- function(
   method <- match.arg(method)
   sigma <- as.vector(par[1])
   xi <- as.vector(par[2])
+  if (isTRUE(xi <= -0.5)) {
+    warning(
+      "The Fisher information is not defined if the shape parameter is -0.5 or less."
+    )
+    out <- matrix(NA, nrow = 2, ncol = 2)
+    colnames(out) <- rownames(out) <- c("scale","shape")
+    return(out)
+  }
   if (method == "obs") {
     dat <- as.vector(dat)
     if (any((1 + xi * dat / sigma) < 0)) {
@@ -423,10 +431,13 @@ gev.infomat <- function(
       sigma = par[1]
       xi = as.vector(par[2])
     }
-    if (xi < -0.5) {
-      stop(
-        "The Fisher information is not defined if the shape parameter of the GEV is less than -0.5"
-      )
+    if (isTRUE(xi <= -0.5)) {
+      warning(
+        "The Fisher information is not defined if the shape parameter is -0.5 or less."
+        out <- matrix(NA, nrow = 3, ncol = 3)
+        colnames(out) <- rownames(out) <- c("loc","scale","shape")
+        return(out)
+      }
     }
     # Limiting case when xi=0 Fix to value at zero
     if (abs(xi) < 0.001) {
@@ -521,9 +532,9 @@ gev.infomat <- function(
     mu = par[1]
     sigma = par[2]
     xi = as.vector(par[3])
-    if (xi < -0.5) {
+    if (isTRUE(xi <= -0.5)) {
       stop(
-        "The observed information matrix is not defined if the shape parameter of the GEV is less than -0.5"
+        "The observed information matrix is not defined if the shape parameter of the GEV is -0.5 or less."
       )
     }
     # Bug fixed 21-10-2016 (parameter were defined after they were used).
@@ -1108,8 +1119,11 @@ gpde.infomat <- function(
   if (missing(m)) {
     stop("User must provide \"m\" parameter in \"gpde.infomat\".")
   }
-  if (xi < -0.5) {
-    return(matrix(NA, 2, 2))
+  if (isTRUE(xi <= -0.5)) {
+
+    infomat <- matrix(NA, nrow = 2, ncol = 2)
+    colnames(infomat) <- rownames(infomat) <- c("es", "shape")
+    return
   }
   xizero <- abs(xi) < 1e-5
   logm <- log(m)
@@ -1555,8 +1569,13 @@ gpdr.infomat <- function(
   xi = as.vector(par[2])
   r = as.vector(par[1])
   method <- method[1]
-  if (xi < -0.5) {
-    return(matrix(NA, 2, 2))
+  if (isTRUE(xi <= -0.5)) {
+   warning(
+        "The Fisher information is not defined if the shape parameter is -0.5 or less."
+      )
+      infomat <- matrix(NA, nrow = 2, ncol = 2)
+      colnames(infomat) <- rownames(infomat) <- c("retlev", "shape")
+      return(infomat)
   }
   xizero <- abs(xi) < 1e-5
   logm <- log(m)
@@ -1980,6 +1999,15 @@ gevr.infomat <- function(
   z = par[1]
   sigma = par[2]
   xi = par[3]
+  if (isTRUE(xi <= -0.5)) {
+    warning(
+      "The Fisher information is not defined if the shape parameter is -0.5 or less."
+    )
+    infomat <- matrix(NA, nrow = 3, ncol = 3)
+    colnames(infomat) <- rownames(infomat) <- c("retlev", "scale", "shape")
+    return(infomat)
+  }
+
   log1mp <- log(1 - p)
   logmlog1mp <- log(-log1mp)
   if (method == "obs") {
@@ -2824,8 +2852,13 @@ gpdN.infomat <- function(
 ) {
   z = as.vector(par[1])
   xi = as.vector(par[2])
-  if (xi < -0.5) {
-    return(matrix(NA, 2, 2))
+  if (isTRUE(xi <= -0.5)) {
+    warning(
+      "The Fisher information is not defined if the shape parameter is -0.5 or less."
+    )
+    infomat <- matrix(NA, nrow = 2, ncol = 2)
+    colnames(infomat) <- rownames(infomat) <- c("Nmean", "shape")
+    return(infomat)
   }
   method <- method[1] #default corresponds to observed information rather than Fisher information
   xizero <- abs(xi) < 1e-4
@@ -3600,10 +3633,24 @@ gevN.infomat <- function(
   mu = par[1]
   z = par[2]
   xi = par[3]
+  qty <- match.arg(qty)
+  if(isTRUE(xi <= -0.5)){
+    warning(
+      "The Fisher information is not defined if the shape parameter is -0.5 or less."
+    )
+    infomat <- matrix(NA, nrow = 3, ncol = 3)
+    if(qty == "mean"){
+    colnames(infomat) <- rownames(infomat) <- c("loc", "Nmean", "shape")
+    } else{
+      colnames(infomat) <- rownames(infomat) <- c("loc", "Nquant", "shape")
+    }
+   return(infomat)
+  }
+
   logN = log(N)
   log1q = log(1 / q)
   loglog1q = log(log1q)
-  qty <- match.arg(qty)
+
   xizero <- isTRUE(all.equal(
     xi,
     0,
@@ -6087,6 +6134,14 @@ rlarg.infomat <- function(
   eta <- par[1]
   tau <- par[2]
   xi <- par[3]
+  if (isTRUE(xi <= -0.5)) {
+    warning(
+      "The Fisher information is not defined if the shape parameter is -0.5 or less."
+      out <- matrix(NA, nrow = 3, ncol = 3)
+      colnames(out) <- rownames(out) <- c("loc","scale","shape")
+      return(out)
+      }
+  }
   r <- as.integer(r)
   xizero <- abs(xi) < 1e-5
   if (method == "exp") {
@@ -6738,6 +6793,14 @@ pp.infomat <- function(
   mu <- par[1]
   sigma <- par[2]
   xi <- as.vector(par[3])
+  if (isTRUE(xi <= -0.5)) {
+    warning(
+      "The Fisher information is not defined if the shape parameter is -0.5 or less."
+      out <- matrix(NA, nrow = 3, ncol = 3)
+      colnames(out) <- rownames(out) <- c("loc","scale","shape")
+      return(out)
+      }
+  }
   r1 <- nobs
   m <- np
 
