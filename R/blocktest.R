@@ -892,26 +892,20 @@ fit.gevblock <- function(
   }
 }
 
-
 #' @export
 plot.mev_plot_blocksize <- function(
-  x,
-  type = c("max", "range", "all"),
-  scale = "unif",
-  ...
+    x,
+    type = c("max", "range", "all"),
+    ...
 ) {
   type <- unique(match.arg(type, several.ok = TRUE))
   type_plot <- lapply(x$plots, function(x) {
     x$type
   })
   lcens <- isTRUE(all(is.numeric(x$lb), is.finite(x$lb)))
-
-  scale <- match.arg(scale, c("unif", "gev", "exp"), several.ok = TRUE)
   type <- type[type %in% type_plot]
-  scale <- rep(scale, length.out = length(type))
   # The following should never be executed...
   if (lcens & "range" %in% type) {
-    scale <- scale[type != "range"]
     type <- type[type != "range"]
   }
   if (length(type) == 0L) {
@@ -922,110 +916,12 @@ plot.mev_plot_blocksize <- function(
     ind <- which(type_plot == type[t])
     lb_unif <- 0
     xx <- x$plots[[ind]]
-    if (scale[t] == "gev") {
-      gevpars <- switch(
-        type[t],
-        "max" = mev::maxstable(x$mle, m = x$m),
-        "all" = x$mle,
-        "range" = c(0, 1, 0)
-      ) # gumbel for lack of better scale
-    }
-    # if (!lcens) {
-    xpos <- switch(
-      scale[t],
-      "unif" = xx$x,
-      "exp" = qexp(xx$x),
-      "gev" = mev::qgev(
-        xx$x,
-        loc = gevpars[1],
-        scale = gevpars[2],
-        shape = gevpars[3]
-      )
-    )
-
-    ypos <- switch(
-      scale[t],
-      "unif" = xx$y,
-      "exp" = qexp(xx$y),
-      "gev" = mev::qgev(
-        xx$y,
-        loc = gevpars[1],
-        scale = gevpars[2],
-        shape = gevpars[3]
-      )
-    )
-    lower_confint <- switch(
-      scale[t],
-      "unif" = xx$confint$pointwise[, "lower"],
-      "exp" = qexp(xx$confint$pointwise[, "lower"]),
-      "gev" = mev::qgev(
-        xx$confint$pointwise[, "lower"],
-        loc = gevpars[1],
-        scale = gevpars[2],
-        shape = gevpars[3]
-      )
-    )
-    upper_confint <- switch(
-      scale[t],
-      "unif" = xx$confint$pointwise[, "upper"],
-      "exp" = qexp(xx$confint$pointwise[, "upper"]),
-      "gev" = mev::qgev(
-        xx$confint$pointwise[, "upper"],
-        loc = gevpars[1],
-        scale = gevpars[2],
-        shape = gevpars[3]
-      )
-    )
-    lower_simult <- switch(
-      scale[t],
-      "unif" = xx$confint$simultaneous[, "lower"],
-      "exp" = qexp(xx$confint$simultaneous[, "lower"]),
-      "gev" = mev::qgev(
-        xx$confint$simultaneous[, "lower"],
-        loc = gevpars[1],
-        scale = gevpars[2],
-        shape = gevpars[3]
-      )
-    )
-    upper_simult <- switch(
-      scale[t],
-      "unif" = xx$confint$simultaneous[, "upper"],
-      "exp" = qexp(xx$confint$simultaneous[, "upper"]),
-      "gev" = mev::qgev(
-        xx$confint$simultaneous[, "upper"],
-        loc = gevpars[1],
-        scale = gevpars[2],
-        shape = gevpars[3]
-      )
-    )
+    xpos <- xx$x
+    ypos <- xx$y
+    lower <- xx$confint[, "lower"]
+    upper <- xx$confint[, "upper"]
     np <- length(xpos)
-    ran <- switch(
-      scale[t],
-      "unif" = c(lb_unif, 1),
-      "exp" = c(
-        qexp(lb_unif),
-        max(
-          tail(xpos[is.finite(xpos)], 1),
-          tail(ypos[is.finite(ypos)], 1),
-          tail(upper_confint[is.finite(upper_confint)], 1),
-          tail(upper_simult[is.finite(upper_simult)], 1)
-        )
-      ),
-      "gev" = c(
-        min(
-          xpos[is.finite(xpos)][1],
-          ypos[is.finite(ypos)][1],
-          lower_confint[is.finite(lower_confint)][1],
-          lower_simult[is.finite(lower_simult)][1]
-        ),
-        max(
-          tail(xpos[is.finite(xpos)], 1),
-          tail(ypos[is.finite(ypos)], 1),
-          tail(upper_confint[is.finite(upper_confint)], 1),
-          tail(upper_simult[is.finite(upper_simult)], 1)
-        )
-      )
-    )
+    ran <- c(lb_unif, 1)
     plot(
       x = NULL,
       ylim = ran,
@@ -1036,16 +932,11 @@ plot.mev_plot_blocksize <- function(
       ylab = "empirical quantiles",
       bty = "l",
     )
-    polygon(
-      x = c(xpos, rev(xpos)),
-      c(pmax(ran[1], lower_simult), rev(pmin(ran[2], upper_simult))),
-      col = "grey95",
-    )
     segments(
       x0 = xpos,
       x1 = xpos,
-      y0 = pmax(ran[1], lower_confint),
-      y1 = pmin(ran[2], upper_confint),
+      y0 = pmax(ran[1], lower),
+      y1 = pmin(ran[2], upper),
       col = "grey70"
     )
     abline(a = 0, b = 1)
@@ -1053,10 +944,233 @@ plot.mev_plot_blocksize <- function(
       x = xpos,
       y = ypos,
       pch = 20,
-      col = ifelse((ypos < lower_simult) | (ypos > upper_simult), 2, 1)
+      col = ifelse((ypos < lower) | (ypos > upper), 2, 1)
     )
   }
 }
+
+
+get_alpha_simult_blocksize <- function(
+    n,
+    pars,
+    B = 200,
+    m = 1,
+    np = NULL,
+    marginal = FALSE,
+    type = c("max", "range", "all"),
+    rounding = 0,
+    lb = NULL,
+    level = 0.95
+) {
+  type <- match.arg(type, several.ok = TRUE)
+  stopifnot(length(level) == 1L)
+  B <- as.integer(B)
+  stopifnot(B > 0)
+  lcens <- !is.null(lb)
+  if (lcens) {
+    stopifnot(length(lb) == 1L, is.numeric(lb))
+  }
+  icens <- !is.null(rounding)
+  if (icens) {
+    if (abs(rounding) < 1e-12) {
+      icens <- FALSE
+    } else {
+      stopifnot(length(rounding) == 1L, is.numeric(rounding))
+      delta <- rounding / 2
+    }
+  }
+  mle_coef_boot <- matrix(nrow = B, ncol = 3L)
+  gamma <- matrix(nrow = B, ncol = length(type))
+  z <- list()
+  if (!isTRUE(is.finite(np))) {
+    np <- sapply(type, function(x) {
+      switch(x, "max" = n, "range" = n, "all" = n * m)
+    })
+  }
+  np <- rep(as.integer(np), length.out = length(type))
+  for (i in seq_along(type)) {
+    z[[i]] <- 1:(np[i] - 1) / np[i]
+  }
+  if (isTRUE(any(icens, lcens))) {
+    for (b in seq_len(B)) {
+      # 1. Generate bootstrap sample
+      xdat_boot <- mev::build.blocks(
+        mev::rgev(
+          n = n * m,
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3]
+        ),
+        m = m
+      )
+      if (icens) {
+        # Round to same precision as observation
+        xdat_boot <- round(xdat_boot / rounding, 0) * rounding
+      }
+      # 2. Fit MLE to bootstrap sample,
+      mle_boot <- try(
+        mev::fit.gevblock(
+          xdat = xdat_boot,
+          marginal = marginal,
+          start = pars,
+          constraint = TRUE,
+          rounding = rounding,
+          lb = lb
+        ),
+        silent = TRUE
+      )
+      if (!inherits(mle_boot, "try-error")) {
+        xdat_boot_new <- c(t(xdat_boot))
+        if (icens) {
+          # make continuous
+          xdat_boot_new <- impute_rounded(
+            x = xdat_boot_new,
+            delta = delta,
+            pars = mle_boot
+          )
+        }
+        # 3. Map to uniform, calculate pivot and map to uniform again
+        mle_coef_boot[b, ] <- mle_boot
+        unif_boot <- mev::build.blocks(
+          mev::pgev(
+            xdat_boot_new,
+            loc = mle_boot[1],
+            scale = mle_boot[2],
+            shape = mle_boot[3]
+          ),
+          m = m
+        )
+        if (lcens) {
+          lb_unif_boot <- mev::pgev(
+            lb,
+            loc = mle_boot[1],
+            scale = mle_boot[2],
+            shape = mle_boot[3]
+          )
+          lcens_mat_boot <- unif_boot < lb_unif_boot
+        }
+        for (t in seq_along(type)) {
+          if (lcens) {
+            pivots_boot <- switch(
+              type[t],
+              # Focus on either spacing X_{(m)} - X_{(m-1)} or X_{(m)}
+              "max" = pbeta(q = unif_boot[, m], shape1 = m, shape2 = 1)[
+                !lcens_mat_boot[, m]
+              ],
+              "all" = c(unif_boot)[c(!lcens_mat_boot)]
+            )
+            if (type[t] == "max") {
+              lb_unif_boot_pivot <- pbeta(
+                q = lb_unif_boot,
+                shape1 = m,
+                shape2 = 1
+              )
+            } else if (type[t] == "all") {
+              lb_unif_boot_pivot <- lb_unif_boot
+            }
+            pivots_boot <- (pivots_boot - lb_unif_boot_pivot) /
+              (1 - lb_unif_boot_pivot)
+          } else {
+            pivots_boot <- sort(switch(
+              type[t],
+              "max" = pbeta(q = unif_boot[, m], shape1 = m, shape2 = 1),
+              "range" = pbeta(
+                q = unif_boot[, m] - unif_boot[, 1],
+                shape1 = m - 1,
+                shape2 = 2
+              ),
+              "all" = c(unif_boot)
+            ))
+          }
+          Fz_boot <- ecdf(pivots_boot)(z[[t]])
+          N <- length(pivots_boot)
+          gamma[b, t] <- 2 *
+            min(
+              pbinom(N * Fz_boot, size = length(pivots_boot), prob = z[[t]]),
+              pbinom(
+                N * Fz_boot - 1,
+                size = N,
+                prob = z[[t]],
+                lower.tail = FALSE
+              )
+            )
+        }
+      }
+    }
+  } else {
+    # regular parametric
+    # Bootstrap loop
+    for (b in seq_len(B)) {
+      # 1. Generate bootstrap sample
+      xdat_boot <- mev::build.blocks(
+        mev::rgev(
+          n = n * m,
+          loc = pars[1],
+          scale = pars[2],
+          shape = pars[3]
+        ),
+        m = m
+      )
+      # 2. Fit MLE to bootstrap sample, map to uniform
+      mle_boot <- try(
+        mev::fit.gevblock(
+          xdat = xdat_boot,
+          marginal = marginal,
+          start = pars
+        ),
+        silent = TRUE
+      )
+      if (!inherits(mle_boot, "try-error")) {
+        # 3. Map to uniform, calculate pivot and map to uniform again
+        mle_coef_boot[b, ] <- mle_boot
+        unif_boot <- matrix(
+          mev::pgev(
+            xdat_boot,
+            loc = mle_boot[1],
+            scale = mle_boot[2],
+            shape = mle_boot[3]
+          ),
+          ncol = m
+        )
+        for (t in seq_along(type)) {
+          pivots_boot <- switch(
+            type[t],
+            "max" = pbeta(q = unif_boot[, m], shape1 = m, shape2 = 1),
+            "range" = pbeta(
+              q = unif_boot[, m] - unif_boot[, 1],
+              shape1 = m - 1,
+              shape2 = 2
+            ),
+            "all" = c(unif_boot)
+          )
+          N <- length(pivots_boot)
+
+          Fz_boot <- ecdf(pivots_boot)(z[[t]])
+          gamma[b, t] <- 2 *
+            min(
+              pbinom(N * Fz_boot, size = N, prob = z[[t]]),
+              pbinom(
+                N * Fz_boot - 1,
+                size = N,
+                prob = z[[t]],
+                lower.tail = FALSE
+              )
+            )
+        }
+      }
+    }
+  }
+
+  list(
+    alpha = apply(gamma, 2, quantile, probs = 1 - level, na.rm = TRUE),
+    level = level,
+    gamma = gamma,
+    np = np,
+    type = type,
+    coefs = mle_coef_boot
+  )
+}
+
 
 #' Diagnostic plots for max-stability based on blocks of GEV samples
 #'
@@ -1095,19 +1209,17 @@ plot.mev_plot_blocksize <- function(
 #' qqplot.blocksize(xdat, type = "max", marginal = TRUE, B = 100)
 #' }
 qqplot.blocksize <- function(
-  xdat,
-  type = c("max", "range", "all"),
-  # scale = "unif",
-  B = 1e3L,
-  marginal = FALSE,
-  rounding = 0,
-  lb = NULL,
-  plot = TRUE,
-  level = 0.95,
-  np = NULL,
-  simult = TRUE
+    xdat,
+    type = c("max", "range", "all"),
+    B = 1e3L,
+    marginal = FALSE,
+    rounding = 0,
+    lb = NULL,
+    plot = TRUE,
+    level = 0.95,
+    np = NULL,
+    simult = TRUE
 ) {
-  scale <- "unif"
   if (is.null(lb)) {
     lcens <- FALSE
   }
@@ -1120,92 +1232,103 @@ qqplot.blocksize <- function(
   if (is.numeric(lb)) {
     lcens <- is.finite(lb[1])
   }
-  scale <- match.arg(
-    scale,
-    choices = c("unif", "gev", "exp"),
-    several.ok = TRUE
-  )
+  n <- nrow(xdat)
+  m <- ncol(xdat)
   type <- unique(match.arg(type, several.ok = TRUE))
-  scale <- rep(scale, length.out = length(type))
   if ("range" %in% type & lcens) {
     warning("May not be able to determine \"range\" with left-censoring.")
-    scale <- scale[type != "range"]
     type <- type[type != "range"]
   }
+  if (missing(np)) {
+    np <- integer(length(type))
+    for (i in seq_along(type)) {
+      np[i] <- switch(type[i], "max" = n, "range" = n, "all" = n * m)
+    }
+  }
 
+  mle <- mev::fit.gevblock(
+    xdat = xdat,
+    marginal = marginal,
+    constraint = TRUE,
+    rounding = rounding,
+    lb = lb
+  )
+  if (isTRUE(simult)) {
+    level_simult <- get_alpha_simult_blocksize(
+      n = nrow(xdat),
+      B = B,
+      pars = mle,
+      m = ncol(xdat),
+      np = np,
+      marginal = FALSE,
+      type = type,
+      rounding = rounding,
+      lb = lb,
+      level = level
+    )
+    level <- 1 - level_simult$alpha
+  } else if (isFALSE(simult)) {
+    # Potentially a scalar or a vector
+    level <- level
+  } else if (is.numeric(simult)) {
+    level <- simult
+  }
+  level <- rep(level, length.out = length(type))
   if (isTRUE(any(icens, lcens))) {
-    qqplot.blocksize.rounded(
+    out <- qqplot.blocksize.rounded(
       xdat = xdat,
       type = type,
-      B = B,
+      mle = mle,
       marginal = marginal,
       rounding = rounding,
       lb = lb,
-      scale = scale,
       plot = plot,
       level = level,
       np = np
     )
   } else {
-    qqplot.blocksize.parametric(
+    out <- qqplot.blocksize.parametric(
       xdat = xdat,
       type = type,
-      B = B,
+      mle = mle,
       marginal = marginal,
-      scale = scale,
       plot = plot,
       level = level,
       np = np
     )
   }
+  if (isTRUE(simult)) {
+    out$param <- level_simult$coefs
+    out$B <- B
+    out$gamma <- level_simult$gamma
+  }
+  return(out)
 }
 
 # Dispatch to different methods depending on fully observed / rounded / left-censored
 qqplot.blocksize.parametric <- function(
-  xdat,
-  type = c("max", "range", "all"),
-  B = 1e3L,
-  marginal = FALSE,
-  scale = "unif",
-  plot = TRUE,
-  level = 0.95,
-  np = 500L
+    xdat,
+    mle,
+    type = c("max", "range", "all"),
+    marginal = FALSE,
+    scale = "unif",
+    plot = TRUE,
+    level = 0.95,
+    np = 500L
 ) {
   scale <- "unif"
   n <- nrow(xdat)
   m <- ncol(xdat)
-  B <- as.integer(B)
-  stopifnot(B > 0)
-  level <- rep(level, length.out = 2)
   stopifnot(is.numeric(level), isTRUE(all(level > 0, level < 1)))
-  alpha <- 1 - rep(level, length.out = 2L)
+  alpha <- 1 - level
   type <- match.arg(type, several.ok = TRUE)
   # Create containers
-  boot_out <- list()
-  xdat_out <- list()
   pp <- list()
-  if (!isTRUE(is.finite(np))) {
-    np <- sapply(type, function(x) {
-      switch(x, "max" = n, "range" = n, "all" = n * m)
-    })
-  }
+  nobs <- integer(length = length(type))
   np <- rep(as.integer(np), length.out = length(type))
-  nobs <- integer(length(type))
-
   for (t in seq_along(type)) {
     pp[[t]] <- (1:(np[t] - 1)) / np[t]
-    boot_out[[t]] <- matrix(
-      nrow = np[t] - 1,
-      ncol = B
-    )
   }
-  mle_coefs_boot <- matrix(nrow = B, ncol = 3)
-  # 0. obtain MLE
-  mle <- fit.gevblock(
-    xdat = xdat,
-    marginal = marginal,
-    constraint = TRUE
-  )
   unif_xdat <- apply(
     xdat,
     2,
@@ -1214,6 +1337,8 @@ qqplot.blocksize.parametric <- function(
     scale = mle[2],
     shape = mle[3]
   )
+  alpha <- 1 - level
+  plots <- list()
   for (t in seq_along(type)) {
     pivots_xdat <- switch(
       type[t],
@@ -1226,110 +1351,23 @@ qqplot.blocksize.parametric <- function(
       "all" = c(unif_xdat)
     )
     nobs[t] <- length(pivots_xdat)
-    xdat_out[[t]] <- ecdf(pivots_xdat)(pp[[t]])
-    #quantile(pivots_xdat, pp[[t]])
-  }
-
-  gamma <- matrix(nrow = B, ncol = length(type))
-  # Bootstrap loop
-  for (b in seq_len(B)) {
-    # 1. Generate bootstrap sample
-    xdat_boot <- build.blocks(
-      mev::rgev(
-        n = n * m,
-        loc = mle[1],
-        scale = mle[2],
-        shape = mle[3]
-      ),
-      m = m
+    ypos <- ecdf(pivots_xdat)(pp[[t]])
+    conf <- cbind(
+      lower = qbinom(alpha[t] / 2, prob = pp[[t]], size = nobs[t]) / nobs[t],
+      upper = qbinom(1 - alpha[t] / 2, prob = pp[[t]], size = nobs[t]) / nobs[t]
     )
-    # 2. Fit MLE to bootstrap sample, map to uniform
-    mle_boot <- try(
-      fit.gevblock(
-        xdat = xdat_boot,
-        marginal = marginal,
-        start = mle
-      ),
-      silent = TRUE
-    )
-    if (!inherits(mle_boot, "try-error")) {
-      # 3. Map to uniform, calculate pivot and map to uniform again
-      mle_coefs_boot[b, ] <- mle_boot
-      unif_boot <- matrix(
-        pgev(
-          xdat_boot,
-          loc = mle_boot[1],
-          scale = mle_boot[2],
-          shape = mle_boot[3]
-        ),
-        ncol = m
-      )
-      for (t in seq_along(type)) {
-        pivots_boot <- switch(
-          type[t],
-          "max" = pbeta(q = unif_boot[, m], shape1 = m, shape2 = 1),
-          "range" = pbeta(
-            q = unif_boot[, m] - unif_boot[, 1],
-            shape1 = m - 1,
-            shape2 = 2
-          ),
-          "all" = c(unif_boot)
-        )
-
-        Fz_boot <- ecdf(pivots_boot)(pp[[t]])
-        gamma[b, t] <- 2 *
-          min(
-            pbinom(
-              length(pivots_boot) * Fz_boot,
-              size = length(pivots_boot),
-              prob = pp[[t]]
-            ),
-            1 -
-              pbinom(
-                length(pivots_boot) * Fz_boot - 1,
-                size = length(pivots_boot),
-                prob = pp[[t]]
-              )
-          )
-        boot_out[[t]][, b] <- Fz_boot
-      }
-    }
-  }
-
-  distribution <- rep("unif", length.out = length(type))
-  plots <- list()
-  for (t in seq_along(type)) {
-    ptwise_conf <- cbind(
-      qbinom(alpha[1] / 2, prob = pp[[t]], size = nobs[t]) / nobs[t],
-      qbinom(1 - alpha[1] / 2, prob = pp[[t]], size = nobs[t]) / nobs[t]
-    )
-    alpha_star <- quantile(gamma[, t], probs = alpha[2], na.rm = TRUE)
-    simult_conf <- cbind(
-      qbinom(alpha_star / 2, prob = pp[[t]], size = nobs[t]) / nobs[t],
-      qbinom(1 - alpha_star / 2, prob = pp[[t]], size = nobs[t]) / nobs[t]
-    )
-    colnames(simult_conf) <- colnames(ptwise_conf) <- c(
-      "lower",
-      "upper"
-    )
-
     plots[[t]] <- list(
       x = pp[[t]],
-      y = as.numeric(xdat_out[[t]]),
-      # confidence = conf,
-      confint = list(pointwise = ptwise_conf, simultaneous = simult_conf),
+      y = ypos,
+      confint = conf,
       type = type[t],
-      dist = distribution[t],
-      alpha = c(alpha[1], alpha_star)
+      alpha = alpha[t]
     )
   }
   out <- list(
     plots = plots,
     mle = mle,
-    param = mle_coefs_boot,
     type = type,
-    bootstrap = "parametric",
-    B = B,
     n = n,
     m = m,
     marginal = marginal,
@@ -1341,7 +1379,7 @@ qqplot.blocksize.parametric <- function(
   )
   class(out) <- "mev_plot_blocksize"
   if (isTRUE(plot)) {
-    plot(out, type = type, scale = scale)
+    plot(out, type = type)
   }
   return(invisible(out))
 }
@@ -1349,17 +1387,26 @@ qqplot.blocksize.parametric <- function(
 
 # Dispatch to different methods depending on fully observed / rounded / left-censored
 qqplot.blocksize.rounded <- function(
-  xdat,
-  type = c("max", "range", "all"),
-  B = 1e3L,
-  marginal = FALSE,
-  rounding = 0,
-  lb = NULL,
-  scale = "unif",
-  plot = TRUE,
-  level = 0.95,
-  np = 500L
+    xdat,
+    mle,
+    type = c("max", "range", "all"),
+    marginal = FALSE,
+    rounding = 0,
+    lb = NULL,
+    scale = "unif",
+    plot = TRUE,
+    level = 0.95,
+    np = 500L
 ) {
+  n <- nrow(xdat)
+  m <- ncol(xdat)
+  pp <- list()
+  np <- rep(as.integer(np), length.out = length(type))
+  for (t in seq_along(type)) {
+    pp[[t]] <- (1:(np[t] - 1)) / np[t]
+  }
+  level <- rep(level, length(type))
+  nobs <- integer(length = length(type))
   lcens <- !is.null(lb)
   if (lcens) {
     stopifnot(length(lb) == 1L, is.numeric(lb))
@@ -1374,51 +1421,13 @@ qqplot.blocksize.rounded <- function(
     }
   }
 
-  n <- nrow(xdat) # this is the number of replications
-  # the number of exceedances of lb may be lower than n*m
-  m <- ncol(xdat)
-  B <- as.integer(B)
-  stopifnot(B > 0)
-  level <- rep(level, length.out = 2)
-  stopifnot(is.numeric(level), isTRUE(all(level > 0, level < 1)))
-  alpha <- 1 - rep(level, length.out = 2L)
-  type <- unique(match.arg(type, several.ok = TRUE))
-  # Create containers
-  boot_out <- list()
-  xdat_out <- list()
-  if (!isTRUE(is.finite(np))) {
-    np <- sapply(type, function(x) {
-      switch(x, "max" = n, "range" = n, "all" = n * m)
-    })
-  }
-  np <- rep(as.integer(np), length.out = length(type))
-  pp <- list()
-  nobs <- integer(length(type))
-
-  for (t in seq_along(type)) {
-    pp[[t]] <- (1:(np[t] - 1)) / np[t]
-    boot_out[[t]] <- matrix(
-      nrow = np[t] - 1,
-      ncol = B
-    )
-  }
-  # Utility function to simulate continuous observations from rounded records
-  mle_coefs_boot <- matrix(nrow = B, ncol = 3)
-  # 0. obtain MLE
-  mle <- fit.gevblock(
-    xdat = xdat,
-    marginal = marginal,
-    rounding = rounding,
-    lb = lb,
-    constraint = TRUE
-  )
   xdat_new <- c(t(xdat))
   if (icens) {
     xdat_new <- impute_rounded(x = xdat_new, delta = delta, pars = mle)
   }
 
   # Calculate statistics on the original sample
-  unif_xdat <- build.blocks(
+  unif_xdat <- mev::build.blocks(
     mev::pgev(
       xdat_new,
       loc = mle[1],
@@ -1428,11 +1437,13 @@ qqplot.blocksize.rounded <- function(
     m = m
   )
   if (lcens) {
-    lb_unif <- pgev(lb, loc = mle[1], scale = mle[2], shape = mle[3])
-    mmle <- maxstable(mle, m = m)
-    lb_max_unif <- pgev(lb, loc = mmle[1], scale = mmle[2], shape = mmle[3])
+    lb_unif <- mev::pgev(lb, loc = mle[1], scale = mle[2], shape = mle[3])
+    mmle <- mev::maxstable(mle, m = m)
+    lb_max_unif <- mev::pgev(lb, loc = mmle[1], scale = mmle[2], shape = mmle[3])
     lcens_mat <- unif_xdat < lb_unif
   }
+  alpha <- 1 - level
+  plots <- list()
   for (t in seq_along(type)) {
     if (lcens) {
       pivots_xdat <- switch(
@@ -1475,153 +1486,25 @@ qqplot.blocksize.rounded <- function(
       )
     }
     nobs[t] <- length(pivots_xdat)
-    xdat_out[[t]] <- ecdf(pivots_xdat)(pp[[t]])
-  }
-  gamma <- matrix(nrow = B, ncol = length(type))
-  # Bootstrap loop
-  for (b in seq_len(B)) {
-    # 1. Generate bootstrap sample
-    xdat_boot <- build.blocks(
-      mev::rgev(
-        n = n * m,
-        loc = mle[1],
-        scale = mle[2],
-        shape = mle[3]
-      ),
-      m = m
-    )
-    if (icens) {
-      # Round to same precision as observation
-      xdat_boot <- round(xdat_boot / rounding, 0) * rounding
-    }
-    # 2. Fit MLE to bootstrap sample,
-    mle_boot <- try(
-      fit.gevblock(
-        xdat = xdat_boot,
-        marginal = marginal,
-        start = mle,
-        constraint = TRUE,
-        rounding = rounding,
-        lb = lb
-      ),
-      silent = TRUE
-    )
-    if (!inherits(mle_boot, "try-error")) {
-      xdat_boot_new <- c(t(xdat_boot))
-      if (icens) {
-        # make continuous
-        xdat_boot_new <- impute_rounded(
-          x = xdat_boot_new,
-          delta = delta,
-          pars = mle_boot
-        )
-      }
-      # 3. Map to uniform, calculate pivot and map to uniform again
-      mle_coefs_boot[b, ] <- mle_boot
-      unif_boot <- build.blocks(
-        pgev(
-          xdat_boot_new,
-          loc = mle_boot[1],
-          scale = mle_boot[2],
-          shape = mle_boot[3]
-        ),
-        m = m
-      )
-      if (lcens) {
-        lb_unif_boot <- pgev(
-          lb,
-          loc = mle_boot[1],
-          scale = mle_boot[2],
-          shape = mle_boot[3]
-        )
-        lcens_mat_boot <- unif_boot < lb_unif_boot
-      }
-      for (t in seq_along(type)) {
-        if (lcens) {
-          pivots_boot <- switch(
-            type[t],
-            # Focus on either spacing X_{(m)} - X_{(m-1)} or X_{(m)}
-            "max" = pbeta(q = unif_boot[, m], shape1 = m, shape2 = 1)[
-              !lcens_mat_boot[, m]
-            ],
-            "all" = c(unif_boot)[c(!lcens_mat_boot)]
-          )
-          if (type[t] == "max") {
-            lb_unif_boot_pivot <- pbeta(
-              q = lb_unif_boot,
-              shape1 = m,
-              shape2 = 1
-            )
-          } else if (type[t] == "all") {
-            lb_unif_boot_pivot <- lb_unif_boot
-          }
-          pivots_boot <- (pivots_boot - lb_unif_boot_pivot) /
-            (1 - lb_unif_boot_pivot)
-        } else {
-          pivots_boot <- sort(switch(
-            type[t],
-            "max" = pbeta(q = unif_boot[, m], shape1 = m, shape2 = 1),
-            "range" = pbeta(
-              q = unif_boot[, m] - unif_boot[, 1],
-              shape1 = m - 1,
-              shape2 = 2
-            ),
-            "all" = c(unif_boot)
-          ))
-        }
-        Fz_boot <- ecdf(pivots_boot)(pp[[t]])
-        gamma[b, t] <- 2 *
-          min(
-            pbinom(
-              length(pivots_boot) * Fz_boot,
-              size = length(pivots_boot),
-              prob = pp[[t]]
-            ),
-            1 -
-              pbinom(
-                length(pivots_boot) * Fz_boot - 1,
-                size = length(pivots_boot),
-                prob = pp[[t]]
-              )
-          )
-        boot_out[[t]][, b] <- Fz_boot # quantile(pivots_boot, probs = pp[[t]])
-      }
-    }
-  }
-
-  distribution <- rep("unif", length.out = length(type))
-  plots <- list()
-  for (t in seq_along(type)) {
-    ptwise_conf <- cbind(
-      qbinom(alpha[1] / 2, prob = pp[[t]], size = nobs[t]) / nobs[t],
-      qbinom(1 - alpha[1] / 2, prob = pp[[t]], size = nobs[t]) / nobs[t]
-    )
-    alpha_star <- quantile(gamma[, t], probs = alpha[2], na.rm = TRUE)
-    simult_conf <- cbind(
-      qbinom(alpha_star / 2, prob = pp[[t]], size = nobs[t]) / nobs[t],
-      qbinom(1 - alpha_star / 2, prob = pp[[t]], size = nobs[t]) / nobs[t]
-    )
-    colnames(simult_conf) <- colnames(ptwise_conf) <- c(
-      "lower",
-      "upper"
+    ypos <- ecdf(pivots_xdat)(pp[[t]])
+    conf <- cbind(
+      lower = qbinom(alpha[t] / 2, prob = pp[[t]], size = nobs[t]) / nobs[t],
+      upper = qbinom(1 - alpha[t] / 2, prob = pp[[t]], size = nobs[t]) / nobs[t]
     )
     plots[[t]] <- list(
       x = pp[[t]],
-      y = as.numeric(sort(xdat_out[[t]])),
-      confint = list(pointwise = ptwise_conf, simultaneous = simult_conf),
+      y = ypos,
+      confint = conf,
       type = type[t],
-      dist = distribution[t],
-      alpha = c(alpha[1], alpha_star)
+      alpha = alpha[t]
     )
   }
   out <- list(
     plots = plots,
     xdat = xdat,
     mle = mle,
-    param = mle_coefs_boot,
     type = type,
     bootstrap = "parametric",
-    B = B,
     n = n,
     m = m,
     marginal = marginal,
@@ -1638,9 +1521,9 @@ qqplot.blocksize.rounded <- function(
 }
 
 
-# Simultaneous confidence intervals via simulation
-# Only works for exact uniforms
+# Get simultaneous confidence intervals for exact uniform draws
 get_alpha_simult <- function(n, K, B, level = 0.95) {
+  # Simultaneous confidence intervals via simulation
   z <- 1:(K - 1) / K
   gamma <- numeric(B)
   for (b in seq_len(B)) {
@@ -1671,11 +1554,11 @@ get_alpha_simult <- function(n, K, B, level = 0.95) {
 #' xdat <- runif(200)
 #' qqplot.unif(xdat)
 qqplot.unif <- function(
-  xdat,
-  K = 100,
-  B = 1000,
-  level = 0.95,
-  plot = TRUE
+    xdat,
+    K = 100,
+    B = 1000,
+    level = 0.95,
+    plot = TRUE
 ) {
   if (length(level) == 1L) {
     level <- c(
@@ -1744,19 +1627,19 @@ plot.mev_ecdf_unif <- function(x, ...) {
 
 # Utility function to simulate continuous observations from rounded records
 impute_rounded <- function(x, delta, pars) {
-  p_lb <- pgev(
+  p_lb <- mev::pgev(
     x - delta,
     loc = pars[1],
     scale = pars[2],
     shape = pars[3]
   )
-  p_ub <- pgev(
+  p_ub <- mev::pgev(
     x + delta,
     loc = pars[1],
     scale = pars[2],
     shape = pars[3]
   )
-  qgev(
+  mev::qgev(
     p_lb + runif(length(x)) * (p_ub - p_lb),
     loc = pars[1],
     scale = pars[2],
