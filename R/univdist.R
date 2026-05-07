@@ -434,11 +434,12 @@ gev.infomat <- function(
     if (isTRUE(xi <= -0.5)) {
       warning(
         "The Fisher information is not defined if the shape parameter is -0.5 or less."
+      )
         out <- matrix(NA, nrow = 3, ncol = 3)
         colnames(out) <- rownames(out) <- c("loc","scale","shape")
         return(out)
       }
-    }
+
     # Limiting case when xi=0 Fix to value at zero
     if (abs(xi) < 0.001) {
       return(
@@ -6136,11 +6137,10 @@ rlarg.infomat <- function(
   xi <- par[3]
   if (isTRUE(xi <= -0.5)) {
     warning(
-      "The Fisher information is not defined if the shape parameter is -0.5 or less."
+      "The Fisher information is not defined if the shape parameter is -0.5 or less.")
       out <- matrix(NA, nrow = 3, ncol = 3)
       colnames(out) <- rownames(out) <- c("loc","scale","shape")
       return(out)
-      }
   }
   r <- as.integer(r)
   xizero <- abs(xi) < 1e-5
@@ -6796,10 +6796,10 @@ pp.infomat <- function(
   if (isTRUE(xi <= -0.5)) {
     warning(
       "The Fisher information is not defined if the shape parameter is -0.5 or less."
+    )
       out <- matrix(NA, nrow = 3, ncol = 3)
       colnames(out) <- rownames(out) <- c("loc","scale","shape")
       return(out)
-      }
   }
   r1 <- nobs
   m <- np
