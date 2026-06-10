@@ -1,4 +1,15 @@
-# mev 2.2
+# mev 2.3
+
+## New:
+
+- Empirical estimator of the tail pairwise dependence matrix
+- Estimator of the $d$- dimensional Pickands dependence function (via empirical likelihood)
+
+## Changes:
+
+- New constraints on `test.blocksize` for the shape parameter (to avoid optimization problems that arise in small samples) and sanity checks of convergence
+
+# mev 2.2 (Release date 2026-04-15)
 
 
 ## New:

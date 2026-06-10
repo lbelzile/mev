@@ -63,6 +63,9 @@ gevblock.ll <- function(
       pars2[2] <- exp(pars2[2])
     }
   }
+  if (min(pars[3], pars2[3]) < -1 | max(pars2[3], pars[3]) > 1.5) {
+    return(-1e10)
+  }
   # Sort row from smallest to largest
   xdat <- t(apply(xdat, 1, sort))
   delta <- abs(rounding[1]) / 2 #HALF ROUNDING since add/subtract

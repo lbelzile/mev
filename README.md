@@ -147,6 +147,8 @@ Measures of tail dependence $\theta$, $\eta$, $\chi$ and $\varphi$, with common 
 - `xdep.chibar`: coefficient $\overline{\chi}$
 - `xdep.xindex`: extremal index estimators based on interexceedance time and gap of exceedances
 - `xdep.asym`: estimators of the extremal asymmetry coefficient $\varphi$.
+- `xdep.pickands`: self-consistent estimator of the Pickands dependence function
+- `xdep.tpdm`: empirical estimator of the tail pairwise dependence matrix 
 
 Older functions that return similar summaries
 
