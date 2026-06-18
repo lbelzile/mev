@@ -94,18 +94,18 @@ thselect.mrl <- function(
     coefs[i, ] <- coef(fit)
     # Minguez (2025) additional tests based on linear regression
     # "Bad data detection (sic)"
-    pval_isr <- 0.5 *
-      pnorm(
-        q = abs(rstandard(fit)[which.min(fit$model$excu)]),
-        lower.tail = FALSE
-      )
-    # Chi-square test
-    pval_bad <- pchisq(
-      sum(resid(fit)^2 * weights),
-      df = fit$df.residual,
-      lower.tail = FALSE
-    )
-    valid[i] <- isTRUE(pval_bad < 0.01 | pval_isr < 0.01)
+    # pval_isr <- 0.5 *
+    #   pnorm(
+    #     q = abs(rstandard(fit)[which.min(fit$model$excu)]),
+    #     lower.tail = FALSE
+    #   )
+    # # Chi-square test
+    # pval_bad <- pchisq(
+    #   sum(resid(fit)^2 * weights[seq_len(nobs(fit))]),
+    #   df = fit$df.residual,
+    #   lower.tail = FALSE
+    # )
+    # valid[i] <- isTRUE(pval_bad < 0.01 | pval_isr < 0.01)
   }
   # plot(x = thresh,
   #      y = sqrt(mse),
