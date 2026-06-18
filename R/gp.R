@@ -1263,11 +1263,11 @@ gp.fit <- function(
     )),
     error = function(e) {
       "notinvert"
-    },
-    warning = function(w) w
+    }#,
+    # warning = function(w) w
   )
   if (
-    any(c(
+    isTRUE(any(
       isTRUE(invobsinfomat == "notinvert"),
       all(is.nan(invobsinfomat)),
       all(is.na(invobsinfomat))
