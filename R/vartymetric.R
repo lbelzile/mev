@@ -22,7 +22,7 @@
 #' returned is the one with the lowest average value of the metric.
 #'
 #' Collings et al. (2025) recommend to use quantile-quantile plot, but with
-#' \code{pp} starting from some minimal threshold and going no further than the \eqn{1-10/n} probability level. This can be supplied via \code{pp}. When choosin  \code{type = "tails"}, only probability points exceeding the threshold level are kept, so the metric is evaluated at the same levels, but with fewer points, as we increase the threshold level.
+#' \code{pp} starting from some minimal threshold and going no further than the \eqn{1-10/n} probability level. This can be supplied via \code{pp}. When choosing \code{type = "tails"}, only probability points exceeding the threshold level are kept, so the metric is evaluated at the same levels, but with fewer points, as we increase the threshold level.
 #'
 #' @param xdat vector of observations
 #' @param thresh vector of thresholds

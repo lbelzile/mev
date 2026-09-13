@@ -659,6 +659,147 @@ shape.vries <- function(xdat, k) {
   }
 }
 
+#' Generalized Pickands estimator
+#'
+#' Implements the generalized Pickands shape parameter estimator with or without constraints. The estimator obtains an initial value for the shape by taking \eqn{\xi=0} and \eqn{\rho=-1}.
+#' @param xdat vector of observations
+#' @param k vector of the number of exceedances for the threshold
+#' @param cst double in the unit interval, the constant for the fraction. Default to 0.75
+#' @param constrained logical; if \code{TRUE}, implements the constrained estimator taking the second-order parameters.
+#' @references Johan Segers (2005). Generalized Pickands estimators for the extreme value index, Journal of Statistical Planning and Inference, 128(2), 381-396, <doi:10.1016/j.jspi.2003.11.004>
+#' @return a data frame with the number of order statistics \code{k} and the shape parameter estimate \code{shape}, or a single numeric value if \code{k} is a scalar.
+#' @examples
+#' par(mfrow = c(1,2))
+#' shape0 <- runif(1,-0.5,0.5)
+#' xdat <- mev::rgp(n = 500, shape = shape0)
+#' est_unc <- shape.genpickands(
+#'  xdat, k = 15:400,
+#'  constrained = FALSE)
+#'  plot(
+#'   est_unc,
+#'   type = "l",
+#'   panel.first = {abline(h = shape0)},
+#'   ylim = c(-0.75,0.75)
+#'   )
+#' est_con <- shape.genpickands(
+#'  xdat, k = 15:400,
+#'  constrained = TRUE)
+#'  plot(
+#'   est_con,
+#'   type = "l",
+#'   panel.first = {abline(h = shape0)},
+#'   ylim = c(-0.75,0.75)
+#'   )
+shape.genpickands <- function(
+  xdat,
+  k,
+  cst = 0.75,
+  constrained = FALSE,
+  ...
+  #shape0 = NULL,
+  #rho0 = NULL
+) {
+  args <- list(...)
+  shape0 <- args$shape0
+  rho0 <- args$rho0
+  xdat <- sort(xdat[is.finite(xdat)], decreasing = FALSE)
+  n <- length(xdat)
+  k_vec <- sort(as.integer(k[is.finite(k)]))
+  stopifnot(
+    k_vec[length(k_vec)] < n,
+    k_vec[1] >= 10
+  )
+  shape <- numeric(length = length(k_vec))
+  for (k_ind in seq_along(k_vec)) {
+    k <- k_vec[k_ind]
+    t_seq <- seq(0, 1, length.out = 1 + k) #ppoints(n = k+1)
+    logdiff <- log(xdat[n - floor(cst * 1:k)] - xdat[n - 1:k])
+    if (isTRUE(any(!is.finite(logdiff)))) {
+      warning("Estimator undefined due to the presence of ties in the data.")
+      shape[k_ind] <- NA
+    } else {
+      lambda_measure <- function(tseq, shape, rho, cst) {
+        stopifnot(isTRUE(all(
+          tseq >= 0,
+          tseq <= 1,
+          length(shape) == 1L,
+          length(rho) == 1L,
+          abs(shape + 0.5) >= 1e-8, # shape != -0.5
+          rho <= 0
+        )))
+        j_vec <- floor(log(tseq) / log(cst)) + 1
+        delta <- abs(shape + 0.5) - 0.5
+        if (abs(delta + rho) > 1e-8) {
+          # delta + rho != 0
+          lambda <- (1 - cst^(1 + delta)) *
+            tseq^(1 - rho) *
+            (1 - cst^((delta + rho) * j_vec)) /
+            (1 - cst^(delta + rho))
+        } else {
+          lambda <- (1 - cst^(1 + delta)) * tseq^(1 - rho)
+        }
+        lambda[is.infinite(j_vec)] <- 0
+        lambda[abs(tseq) > 1 - 1e-10] <- 0
+        return(lambda)
+      }
+      lambda_constr_measure <- function(tseq, shape, rho, cst) {
+        stopifnot(length(rho) == 1L, length(shape) == 1, rho < 0)
+        (1 - rho)^2 /
+          (rho^2) *
+          lambda_measure(tseq, shape = shape, rho = 0, cst = cst) -
+          (1 - rho) *
+            (1 - 2 * rho) /
+            (rho^2) *
+            lambda_measure(tseq, shape = shape, rho = rho, cst = cst)
+      }
+
+      if (!isTRUE(constrained)) {
+        lambda_init <- diff(lambda_measure(
+          tseq = t_seq,
+          shape = 0,
+          rho = 0,
+          cst = cst
+        ))
+        shape_init <- sum(lambda_init * logdiff)
+        lambda_est <- diff(
+          lambda_measure(
+            tseq = t_seq,
+            shape = shape_init,
+            rho = 0,
+            cst = cst
+          )
+        )
+        shape_est <- sum(lambda_est * logdiff)
+      } else {
+        lambda_init <- diff(lambda_constr_measure(
+          tseq = t_seq,
+          shape = 0,
+          rho = -1,
+          cst = cst
+        ))
+        shape_init <- sum(lambda_init * logdiff)
+        lambda_est <- diff(
+          lambda_constr_measure(
+            tseq = t_seq,
+            shape = shape_init,
+            rho = -1,
+            cst = cst
+          )
+        )
+        shape_est <- sum(lambda_est * logdiff)
+      }
+      shape[k_ind] <- shape_est
+    }
+  }
+  if (length(k_vec) > 1) {
+    return(
+      data.frame(k = k_vec, shape = shape)
+    )
+  } else {
+    return(c(shape = as.numeric(shape)))
+  }
+}
+
 
 #' Shape parameter estimates
 #'
@@ -682,6 +823,7 @@ fit.shape <- function(
     "dekkers",
     "genquant",
     "pickands",
+    "genpickands",
     "erm"
   ),
   ...
@@ -703,6 +845,8 @@ fit.shape <- function(
     return(shape.genjack(xdat = xdat, k = k))
   } else if (method == "rbm") {
     return(shape.rbm(xdat = xdat, kmax = max(k)))
+  } else if (method == "genpickands") {
+    return(shape.genpickands(xdat = xdat, k = k, ...))
   } else if (method == "erm") {
     res <- shape.erm(xdat = xdat, k = k, ...)
     if (length(k) == 1L) {
