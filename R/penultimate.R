@@ -115,8 +115,10 @@ smith.penult <- function(
   if (!missing(family)) {
     densF <- paste0("d", family)
     distF <- paste0("p", family)
-    quantF <- paste0("q", family)
-    computeQuant <- TRUE
+    if (method == "pot") {
+      quantF <- paste0("q", family)
+      computeQuant <- TRUE
+    }
   } else {
     #compatibility - copy from previous
     if (any(c(is.null(ellips$densF), is.null(ellips$distF)))) {

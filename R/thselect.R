@@ -2,7 +2,7 @@
 #'
 #' Smooth asymptotic mean squared error estimator
 #' of Schneider et al. (2021) for threshold selection.
-#' The implementation uses a second-order regular variation index of -1
+#' The implementation uses a second-order regular variation index of \eqn{-1}.
 #'
 #' @references Schneider, L.F., Krajina, A. and Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881-913 \doi{10.1007/s10687-021-00405-7}
 #' @param xdat vector of positive exceedances
@@ -687,5 +687,107 @@ print.mev_thselect_goks <- function(
   )
   cat("Selected threshold:", round(x$thresh0, digits), "\n")
   cat("Number of exceedances:", round(x$nexc, digits), "\n")
+  return(invisible(NULL))
+}
+
+#' Smooth inverse Hill threshold selection
+#'
+#' Threshold selection via smooth inverse Hill statistic. We use a simple generalized additive model with first-order autoregressive structure via package \code{mgcv}. As the latter is computationally intensive, it is recommended to limit the number of order statistics considered.
+#'
+#' @references Schneider, L.F., Krajina, A. & Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881–913 \url{https://doi.org/10.1007/s10687-021-00405-7}
+#' @param xdat vector of positive exceedances
+#' @param kmax maximum number of exceedances for the method, default to 500.
+#' @param method method for smoothing: currently only GAMM with AR(1) correlation is supported
+#' @param plot logical; if \code{TRUE}, returns a plot of the inverse Hill statistic
+#' @return a list with components
+#' \describe{
+#' \item{\code{k0}}{order statistic corresponding to threshold (number of exceedances)}
+#' \item{\code{shape}}{Hill's estimator of the tail index based on k0 exceedances}
+#' \item{\code{thresh0}}{numerical value of the threshold, the \eqn{n-k_0+1} order statistic of the original sample}
+#' }
+#' @export
+thselect.sihs <- function(
+  xdat,
+  kmax = 500L,
+  method = "gamm", #c("mgcv", "eBsc"),
+  plot = FALSE,
+  ...
+) {
+  method <- "gamm" #match.arg(method)
+  # Keep log exceedances and sort
+  xdat <- xdat[is.finite(xdat) & xdat > 0]
+  n <- length(xdat)
+  logdat <- sort(log(xdat), decreasing = TRUE)
+  cumlogdat <- cumsum(logdat)
+  k <- 1:(n - 1)
+  kmax <- min(kmax, n)
+  xl <- 10:kmax
+  # Hill estimator for k=2, ..., n
+  gamma_hill <- cumlogdat[k] / k - logdat[k + 1]
+  ihs <- (4 - k) / (2 * gamma_hill * k)
+  # if (method == "eBsc") {
+  #   sihs <- eBsc::eBsc(
+  #     y = ihs[xl],
+  #     tol.lambda = 1e-6,
+  #     method = "N"
+  #   )
+  #   fhat <- sihs$f.hat
+  # } else
+  if (method == "gamm") {
+    if (!require("mgcv", character.only = TRUE)) {
+      stop("\"mgcv\" package must be installed for this function to work.")
+    }
+
+    corAR1 <- function(value = 0, form = ~1, fixed = FALSE) {
+      if (abs(value) >= 1) {
+        stop("parameter in AR(1) structure must be between -1 and 1")
+      }
+      value <- log((1 + value) / (1 - value))
+      attr(value, "formula") <- form
+      attr(value, "fixed") <- fixed
+      class(value) <- c("corAR1", "corStruct")
+      value
+    }
+    sihs <- mgcv::gamm(
+      formula = y ~ s(x, bs = "cr", k = 40),
+      method = "REML",
+      data = data.frame(y = ihs[xl], x = log(xl, 10)),
+      correlation = corAR1()
+    )$gam
+    fhat <- mgcv::predict.gam(
+      object = sihs,
+      newdata = data.frame(x = log10(xl))
+    )
+    if (isTRUE(plot)) {
+      plot(
+        y = ihs[xl],
+        x = xl,
+        ylab = "inverse Hill statistic",
+        xlab = "number of exceedances"
+      )
+      lines(x = xl, y = fhat)
+    }
+  }
+  k0 <- which.min(as.numeric(fhat)) + 9
+  out <- list(k0 = k0, thresh0 = xdat[k0], shape = gamma_hill[k0])
+  class(out) <- "mev_thselect_sihs"
+  return(out)
+  # sihs = sihs$f.hat,
+  # ihs = ihs[1:kmax],
+  # gamma_hill = gamma_hill[1:kmax])
+}
+
+#' @export
+print.mev_thselect_sihs <- function(
+  x,
+  digits = min(3, getOption("digits") - 3),
+  ...
+) {
+  cat(
+    "Threshold selection method: Schneider, Krajina and Krivobokova (2021)\nSelection via smooth inverse Hill statistic\n"
+  )
+  cat("Selected threshold:", round(x$thresh0, digits), "\n")
+  cat("Number of exceedances:", round(x$k0, 0), "\n")
+  cat("Shape estimate:", round(x$shape, digits), "\n")
   return(invisible(NULL))
 }
