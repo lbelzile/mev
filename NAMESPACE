@@ -82,6 +82,7 @@ S3method(print,mev_thselect_pec)
 S3method(print,mev_thselect_pickands)
 S3method(print,mev_thselect_rbm)
 S3method(print,mev_thselect_samsee)
+S3method(print,mev_thselect_sihs)
 S3method(print,mev_thselect_vmetric)
 S3method(print,mev_thselect_wadsworth)
 S3method(print,mev_thselect_wcvm)
@@ -302,6 +303,7 @@ export(thselect.pickands)
 export(thselect.rbm)
 export(thselect.samsee)
 export(thselect.sdinfo)
+export(thselect.sihs)
 export(thselect.vmetric)
 export(thselect.wcvm)
 export(thselect.wseq)
@@ -323,39 +325,51 @@ export(xdep.xcoef)
 export(xdep.xindex)
 import(stats)
 importFrom("utils","combn")
-importFrom('graphics','plot.new')
-importFrom('graphics','plot.window')
-importFrom(Rcpp,evalCpp)
-importFrom(Rcpp,sourceCpp)
+importFrom('graphics',
+  'plot.new',
+  'plot.window'
+)
+importFrom(Rcpp,
+  evalCpp,
+  sourceCpp
+)
 importFrom(Rsolnp,solnp)
-importFrom(alabama,auglag)
-importFrom(alabama,constrOptim.nl)
-importFrom(grDevices,"colorRampPalette")
-importFrom(grDevices,"gray.colors")
-importFrom(grDevices,grey.colors)
-importFrom(grDevices,hcl.colors)
-importFrom(grDevices,rgb)
-importFrom(graphics,"abline")
-importFrom(graphics,"axis")
-importFrom(graphics,"image")
-importFrom(graphics,"legend")
-importFrom(graphics,"lines")
-importFrom(graphics,"matplot")
-importFrom(graphics,"mtext")
-importFrom(graphics,"par")
-importFrom(graphics,"rug")
-importFrom(graphics,"text")
-importFrom(graphics,arrows)
-importFrom(graphics,hist)
-importFrom(graphics,layout)
-importFrom(graphics,points)
-importFrom(graphics,polygon)
-importFrom(graphics,segments)
-importFrom(graphics,title)
+importFrom(alabama,
+  auglag,
+  constrOptim.nl
+)
+importFrom(grDevices,
+  "colorRampPalette",
+  "gray.colors",
+  grey.colors,
+  hcl.colors,
+  rgb
+)
+importFrom(graphics,
+  "abline",
+  "axis",
+  "image",
+  "legend",
+  "lines",
+  "matplot",
+  "mtext",
+  "par",
+  "rug",
+  "text",
+  arrows,
+  hist,
+  layout,
+  points,
+  polygon,
+  segments,
+  title
+)
 importFrom(methods,formalArgs)
 importFrom(nleqslv,nleqslv)
-importFrom(utils,bibentry)
-importFrom(utils,capture.output)
-importFrom(utils,head)
-importFrom(utils,tail)
+importFrom(utils,
+  bibentry,
+  capture.output,
+  head,
+  tail
+)
 useDynLib(mev, .registration = TRUE)

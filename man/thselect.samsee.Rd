@@ -20,7 +20,7 @@ a list with elements
 \description{
 Smooth asymptotic mean squared error estimator
 of Schneider et al. (2021) for threshold selection.
-The implementation uses a second-order regular variation index of -1
+The implementation uses a second-order regular variation index of \eqn{-1}.
 }
 \references{
 Schneider, L.F., Krajina, A. and Krivobokova, T. (2021). \emph{Threshold selection in univariate extreme value analysis}, Extremes, \bold{24}, 881-913 \doi{10.1007/s10687-021-00405-7}
