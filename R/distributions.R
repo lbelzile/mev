@@ -382,7 +382,7 @@ qgp <- function(p, loc = 0, scale = 1, shape = 0, lower.tail = TRUE) {
 #' @export
 rgp <- function(n, loc = 0, scale = 1, shape = 0) {
   n <- as.integer(n)
-  stopifnot(n > 1, length(n) == 1L)
+  stopifnot(n > 0, length(n) == 1L)
   stopifnot(
     "\"loc\" must be a vector of length 1 or \"n\"." = length(loc) %in%
       c(1L, n),
